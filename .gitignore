@@ -1,0 +1,90 @@
+# --- Secrets & local config ----------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Python --------------------------------------------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.eggs/
+build/dist/
+dist/
+*.whl
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# --- Verification + live capture artifacts -------------------------------
+# These contain real (sanitized) responses + request bodies from a test
+# SOAR. Even after sanitize they're an inventory-leak risk - regenerate
+# with src/verify_curated.py.
+build/verification.json
+build/curated_verification.json
+build/lifecycle.json
+build/lifecycle.log
+build/pipeline.log
+build/demo_run.json
+build/demo_run.md
+build/troubleshooting.json
+build/fixtures.json
+build/operations.index.json
+build/crosscheck.md
+build/status.json
+build/status.diff.md
+
+# --- Generated specs & site artifacts ------------------------------------
+# build/fortisoar.curated.openapi.yaml IS committed - it's the published
+# spec for GitHub Pages. Rebuild it locally with src/build_curated.py +
+# verify_curated.py and commit the new file when you want fresh examples.
+build/fortisoar.openapi.yaml
+build/public/
+# Vendored Scalar bundle is re-fetched by api-docs-deploy.sh on first run.
+build/appliance/scalar.js
+
+# --- Editor / OS noise ---------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Node (if Scalar build chain is ever added) --------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- Source markdown (public PDF + internal references) -----------------
+# These are the inputs to build_curated.py, not the output. They contain
+# example license keys / node IDs / hashes that trigger secret scanners.
+# Keep locally to drive the build; do not commit.
+FortiSOAR-API-Guide.md
+
+# --- Unused renderer alternative -----------------------------------------
+# Earlier exploration of a Svelte-based renderer; superseded by the
+# CDN-loaded Scalar in web/index.html. Lockfile triggers false-positive
+# secret scans.
+web/svelte/
+
+# --- Local scratch -------------------------------------------------------
+scratch/
+*.local.*
+TODO.local.md
+
+# --- Internal-only docs (kept on disk, never committed) ------------------
+TODOS.md
+APPLIANCE_HOSTING.md

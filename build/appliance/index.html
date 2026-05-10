@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FortiSOAR API</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    .fsr-hidden { display: none !important; }
+
+    /* ---------- Sidebar group-header styling ----------
+       `fsr-group-header` is added by JS to the immediate header row of
+       each tag-group LI. Scalar nests leaf tags inside the group, so a
+       pure-CSS descendant selector would also catch leaves. */
+    .fsr-group-header {
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #7aa2ff !important;
+      opacity: 1 !important;
+      padding: 8px 10px 6px !important;
+      cursor: default !important;
+      background: transparent !important;
+      border-bottom: 1px solid var(--scalar-border-color, rgba(127,127,127,0.2)) !important;
+      margin-bottom: 4px !important;
+      border-radius: 0 !important;
+    }
+    .fsr-group-header:hover { background: transparent !important; }
+    .fsr-group-header svg { display: none !important; }
+    [data-sidebar-id*="tag-group/"] { margin-top: 22px !important; }
+    [data-sidebar-id*="tag-group/"]:first-of-type { margin-top: 6px !important; }
+
+    /* ---------- Hide intro right pane ----------
+       Scalar's overview section is too tall when the Server / Auth /
+       Client Libraries cards eat the right column. Drop them so the
+       prose can use full width; per-operation pages still get the panel. */
+    .introduction-section .sticky-cards { display: none !important; }
+    .introduction-section .section-columns {
+      grid-template-columns: 1fr !important;
+      display: block !important;
+    }
+    .introduction-section .section-column { width: 100% !important; max-width: none !important; }
+
+    /* ---------- Top server-config button ---------- */
+    #fsr-server-bar {
+      position: fixed; top: 8px; right: 16px; z-index: 9999;
+      display: flex; align-items: center; gap: 6px;
+      background: var(--scalar-background-2, #1b2230);
+      color: var(--scalar-color-1, #e5e7eb);
+      border: 1px solid var(--scalar-border-color, rgba(127,127,127,0.25));
+      border-radius: 6px; padding: 4px 10px;
+      font: 600 12px/1.4 var(--scalar-font, system-ui);
+      cursor: pointer;
+    }
+    #fsr-server-bar:hover { background: var(--scalar-background-3, #232a39); }
+    #fsr-server-bar .fsr-server-label { color: #7aa2ff; }
+
+    /* ---------- Server-edit modal ---------- */
+    #fsr-modal-backdrop {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.55);
+      display: none; align-items: center; justify-content: center;
+    }
+    #fsr-modal-backdrop.fsr-open { display: flex; }
+    #fsr-modal {
+      background: var(--scalar-background-1, #131826);
+      color: var(--scalar-color-1, #e5e7eb);
+      border: 1px solid var(--scalar-border-color, rgba(127,127,127,0.3));
+      border-radius: 10px;
+      padding: 20px 22px;
+      width: min(440px, 90vw);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+      font: 400 14px/1.45 var(--scalar-font, system-ui);
+    }
+    #fsr-modal h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+    #fsr-modal p  { margin: 0 0 12px; opacity: 0.75; font-size: 12px; }
+    #fsr-modal input {
+      width: 100%; box-sizing: border-box;
+      background: var(--scalar-background-2, #1b2230);
+      border: 1px solid var(--scalar-border-color, rgba(127,127,127,0.3));
+      border-radius: 6px; padding: 8px 10px;
+      color: inherit; font: inherit;
+    }
+    #fsr-modal input:focus { outline: 2px solid #7aa2ff; outline-offset: 0; }
+    #fsr-modal label {
+      display: block; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin: 14px 0 4px; opacity: 0.75;
+    }
+    #fsr-modal label:first-of-type { margin-top: 4px; }
+    .fsr-jwt-row { display: flex; gap: 6px; }
+    .fsr-jwt-row input { flex: 1; }
+    .fsr-inline-btn {
+      background: transparent; color: inherit;
+      border: 1px solid var(--scalar-border-color, rgba(127,127,127,0.3));
+      border-radius: 6px; padding: 6px 10px;
+      font: 600 11px/1.4 var(--scalar-font, system-ui);
+      cursor: pointer; white-space: nowrap;
+    }
+    .fsr-inline-btn:hover { background: var(--scalar-background-2, #1b2230); }
+    #fsr-jwt-status { font-size: 11px; margin-top: 4px; min-height: 14px; opacity: 0.8; }
+    #fsr-jwt-status.fsr-err { color: #ff8b8b; }
+    #fsr-jwt-status.fsr-ok  { color: #86efac; }
+    #fsr-modal-actions {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-top: 14px;
+    }
+    #fsr-modal button {
+      background: transparent; color: inherit;
+      border: 1px solid var(--scalar-border-color, rgba(127,127,127,0.3));
+      border-radius: 6px; padding: 6px 14px;
+      font: 600 12px/1.4 var(--scalar-font, system-ui);
+      cursor: pointer;
+    }
+    #fsr-modal button:hover { background: var(--scalar-background-2, #1b2230); }
+    #fsr-modal button.fsr-primary {
+      background: #7aa2ff; color: #0b1020; border-color: #7aa2ff;
+    }
+    #fsr-modal button.fsr-primary:hover { background: #92b4ff; border-color: #92b4ff; }
+  </style>
+</head>
+<body>
+  <script id="api-reference" data-url="/api-docs/spec/fortisoar.openapi.yaml"></script>
+  <script>
+    // Build-time flavor toggle. Build scripts rewrite this line:
+    //   appliance build: stays false (Test Request panel + modal enabled)
+    //   public build:    becomes true  (read-only docs, no modal)
+    window.__FSR_DOCS_PUBLIC__ = false;
+  </script>
+  <script>
+    // ---- Configuration persisted in localStorage, edited via top button ----
+    const FSR_SERVER_KEY = 'fsr-server-url';
+    const FSR_APIKEY_KEY = 'fsr-api-key';
+    const FSR_JWT_KEY    = 'fsr-jwt';
+    const fsrServerUrl =
+      localStorage.getItem(FSR_SERVER_KEY) || location.origin;
+    const fsrApiKey = localStorage.getItem(FSR_APIKEY_KEY) || '';
+    const fsrJwt    = localStorage.getItem(FSR_JWT_KEY)    || '';
+
+    if (!window.__FSR_DOCS_PUBLIC__) {
+    const bar = document.createElement('div');
+    bar.id = 'fsr-server-bar';
+    bar.title = 'Configure server URL and credentials for Test Request';
+    const labelLead = document.createElement('span');
+    labelLead.textContent = 'Server: ';
+    const labelValue = document.createElement('span');
+    labelValue.className = 'fsr-server-label';
+    labelValue.textContent = fsrServerUrl;
+    const labelTrail = document.createElement('span');
+    labelTrail.style.opacity = '0.6';
+    labelTrail.textContent = ' configure';
+    bar.append(labelLead, labelValue, labelTrail);
+    document.body.appendChild(bar);
+
+    // Build modal once.
+    const backdrop = document.createElement('div');
+    backdrop.id = 'fsr-modal-backdrop';
+    const modal = document.createElement('div');
+    modal.id = 'fsr-modal';
+
+    const title = document.createElement('h3');
+    title.textContent = 'Configure Test Request';
+    const help = document.createElement('p');
+    help.textContent = 'Stored in your browser only. Never sent anywhere except your FortiSOAR.';
+
+    const lblServer = document.createElement('label');
+    lblServer.textContent = 'Server URL';
+    const inServer = document.createElement('input');
+    inServer.type = 'url'; inServer.spellcheck = false;
+    inServer.placeholder = 'https://soar.example.com';
+    inServer.value = fsrServerUrl;
+
+    const lblApiKey = document.createElement('label');
+    lblApiKey.textContent = 'API key (optional)';
+    const inApiKey = document.createElement('input');
+    inApiKey.type = 'password'; inApiKey.spellcheck = false;
+    inApiKey.placeholder = 'From Settings -> Security Management -> Access Keys';
+    inApiKey.value = fsrApiKey;
+
+    const lblJwt = document.createElement('label');
+    lblJwt.textContent = 'JWT (optional)';
+    const jwtRow = document.createElement('div');
+    jwtRow.className = 'fsr-jwt-row';
+    const inJwt = document.createElement('input');
+    inJwt.type = 'password'; inJwt.spellcheck = false;
+    inJwt.placeholder = 'Paste, or fetch with loginid/password below';
+    inJwt.value = fsrJwt;
+    jwtRow.appendChild(inJwt);
+
+    const lblLogin = document.createElement('label');
+    lblLogin.textContent = 'Loginid + password (only used to fetch a JWT)';
+    const loginRow = document.createElement('div');
+    loginRow.className = 'fsr-jwt-row';
+    const inLogin = document.createElement('input');
+    inLogin.type = 'text'; inLogin.spellcheck = false;
+    inLogin.placeholder = 'loginid';
+    const inPass = document.createElement('input');
+    inPass.type = 'password'; inPass.spellcheck = false;
+    inPass.placeholder = 'password';
+    const btnFetch = document.createElement('button');
+    btnFetch.type = 'button'; btnFetch.className = 'fsr-inline-btn';
+    btnFetch.textContent = 'Get JWT';
+    loginRow.append(inLogin, inPass, btnFetch);
+    const status = document.createElement('div');
+    status.id = 'fsr-jwt-status';
+
+    const actions = document.createElement('div');
+    actions.id = 'fsr-modal-actions';
+    const btnCancel = document.createElement('button');
+    btnCancel.type = 'button';
+    btnCancel.textContent = 'Cancel';
+    const btnSave = document.createElement('button');
+    btnSave.type = 'button'; btnSave.className = 'fsr-primary';
+    btnSave.textContent = 'Save & reload';
+    actions.append(btnCancel, btnSave);
+
+    modal.append(title, help, lblServer, inServer, lblApiKey, inApiKey,
+      lblJwt, jwtRow, lblLogin, loginRow, status, actions);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+
+    function setStatus(text, kind) {
+      status.textContent = text || '';
+      status.classList.remove('fsr-err', 'fsr-ok');
+      if (kind) status.classList.add('fsr-' + kind);
+    }
+    function openModal() {
+      setStatus('');
+      backdrop.classList.add('fsr-open');
+      setTimeout(() => { inServer.focus(); inServer.select(); }, 0);
+    }
+    function closeModal() { backdrop.classList.remove('fsr-open'); }
+
+    btnFetch.addEventListener('click', async () => {
+      const baseUrl = (inServer.value || '').trim().replace(/\/+$/, '');
+      const loginid = (inLogin.value || '').trim();
+      const password = inPass.value || '';
+      if (!baseUrl || !loginid || !password) {
+        setStatus('Server URL + loginid + password required.', 'err');
+        return;
+      }
+      setStatus('Requesting JWT...');
+      try {
+        const r = await fetch(baseUrl + '/auth/authenticate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credentials: { loginid, password } }),
+        });
+        if (!r.ok) {
+          setStatus('Authenticate failed: ' + r.status + ' (check creds + CORS).', 'err');
+          return;
+        }
+        const data = await r.json();
+        if (!data.token) {
+          setStatus('No token in response.', 'err');
+          return;
+        }
+        inJwt.value = data.token;
+        inPass.value = '';
+        setStatus('JWT fetched. Click Save & reload to apply.', 'ok');
+      } catch (exc) {
+        setStatus('Network error: ' + exc.message + ' (likely CORS).', 'err');
+      }
+    });
+
+    function save() {
+      const trimmed = (inServer.value || '').trim().replace(/\/+$/, '');
+      if (!trimmed) return;
+      localStorage.setItem(FSR_SERVER_KEY, trimmed);
+      const apiKey = (inApiKey.value || '').trim();
+      const jwt    = (inJwt.value    || '').trim();
+      if (apiKey) localStorage.setItem(FSR_APIKEY_KEY, apiKey);
+      else localStorage.removeItem(FSR_APIKEY_KEY);
+      if (jwt) localStorage.setItem(FSR_JWT_KEY, jwt);
+      else localStorage.removeItem(FSR_JWT_KEY);
+      location.reload();
+    }
+    bar.addEventListener('click', openModal);
+    btnCancel.addEventListener('click', closeModal);
+    btnSave.addEventListener('click', save);
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+    } // end !__FSR_DOCS_PUBLIC__ guard
+
+    // Note: there is no shared place to "borrow" the Angular UI's JWT.
+    // localStorage["cs.TOKEN"] is FSR's opaque UI session token, NOT a
+    // JWT. The real bearer JWT (eyJ...) is minted by /auth/authenticate
+    // and held only in Angular's JS memory. Use the modal's loginid +
+    // password "Get JWT" button to mint one for the docs page.
+    const apiKeyForScalar = fsrApiKey;
+    const jwtForScalar    = fsrJwt;
+    document.getElementById('api-reference').setAttribute(
+      'data-configuration',
+      JSON.stringify({
+        layout: 'modern',
+        theme: 'elysiajs',
+        hideClientButton: true,
+        hideTestRequestButton: !!window.__FSR_DOCS_PUBLIC__,
+        mcp: { name: 'disabled', url: 'about:blank', disabled: true },
+        agent: { disabled: true },
+        persistAuth: true,
+        servers: [{ url: fsrServerUrl, description: 'Configured FortiSOAR' }],
+        authentication: {
+          preferredSecurityScheme: jwtForScalar ? 'bearerJwt' : 'apiKeyAuth',
+          securitySchemes: {
+            apiKeyAuth: { value: apiKeyForScalar },
+            bearerJwt:  { token: jwtForScalar },
+          },
+        },
+      })
+    );
+  </script>
+  <script src="scalar.js"></script>
+  <script>
+    /* Decorate Scalar's sidebar after it renders. Two jobs:
+       - hide the built-in Ask AI button (no DOM-stable config flag)
+       - tag each x-tagGroups header so our CSS can style only those rows
+       MutationObserver re-runs both on every Scalar re-render. */
+    (function () {
+      function decorate() {
+        for (const el of document.querySelectorAll('button, a')) {
+          if (/^\s*ask\s*ai\s*$/i.test(el.innerText || '')) el.classList.add('fsr-hidden');
+        }
+        for (const li of document.querySelectorAll('li[data-sidebar-id*="tag-group/"]')) {
+          const header = li.querySelector('[aria-selected]');
+          if (header) header.classList.add('fsr-group-header');
+        }
+      }
+      decorate();
+      new MutationObserver(decorate).observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>
+</body>
+</html>
