@@ -319,6 +319,7 @@
        - tag each x-tagGroups header so our CSS can style only those rows
        MutationObserver re-runs both on every Scalar re-render. */
     (function () {
+      let introOpened = false;
       function decorate() {
         for (const el of document.querySelectorAll('button, a')) {
           if (/^\s*ask\s*ai\s*$/i.test(el.innerText || '')) el.classList.add('fsr-hidden');
@@ -326,6 +327,19 @@
         for (const li of document.querySelectorAll('li[data-sidebar-id*="tag-group/"]')) {
           const header = li.querySelector('[aria-selected]');
           if (header) header.classList.add('fsr-group-header');
+        }
+        // First render only: auto-expand the Introduction section so the
+        // landing page exposes the prose subnav (Query reference, etc.)
+        // instead of just a collapsed header. User collapses still stick.
+        if (!introOpened) {
+          for (const el of document.querySelectorAll('aside [aria-expanded]')) {
+            const label = (el.innerText || el.textContent || '').trim().split('\n')[0];
+            if (/^introduction$/i.test(label)) {
+              if (el.getAttribute('aria-expanded') === 'false') el.click();
+              introOpened = true;
+              break;
+            }
+          }
         }
       }
       decorate();
