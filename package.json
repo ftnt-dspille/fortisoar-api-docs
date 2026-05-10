@@ -1,0 +1,12 @@
+{
+  "name": "fortisoar-api-docs-tests",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:sidebar": "node scripts/check-sidebar.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
