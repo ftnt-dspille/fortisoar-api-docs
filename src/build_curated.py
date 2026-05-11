@@ -1139,14 +1139,16 @@ TAG_DESCRIPTIONS = {
 }
 
 
-A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST API.
+REFERENCE_PROSE = r"""A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST API.
 
-> **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Operations marked with a green **`Live-verified`** badge were exercised end-to-end against a real FortiSOAR instance. Anything without that badge is documented from the API guide and DB introspection only — request/response shapes are best-effort and not guaranteed to be correct. Always validate against your own appliance before relying on it.
+> **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Operations stamped with **Live-verified** at the top of the page were exercised end-to-end against a real FortiSOAR. Anything without that stamp is documented from the API guide and DB introspection only - request/response shapes are best-effort, not guaranteed to be correct. Always validate against your own appliance before relying on it.
 >
-> **What the badges mean.**
-> - **`Live-verified`** — the operation was called with both an API key and a JWT bearer token and returned 2xx on at least one combination. Captured (sanitized) responses are folded into the `200` example.
-> - **No badge** — never executed by the verifier. Either it's a mutating operation we skip by default (DELETE, PUT, well-known mutating POSTs) or we just haven't gotten to it. Treat as documentation-only.
-> - **JWT-only / API-key-only** — one auth mode returned 2xx and the other returned 401/403. Common for endpoints that enforce a single auth pathway.
+> **What the Live-verified line tells you.** It looks like: **Live-verified** (`apikey: OK` - `jwt: OK`, YYYY-MM-DD).
+>
+> - `apikey: OK` / `jwt: OK` - the verifier called the operation with that auth mode and got a 2xx response. Captured (sanitized) responses are folded into the `200` example.
+> - `apikey: 401` (or `403`, `404`, ...) - that auth mode returned the listed status code. Some endpoints only accept one auth mode; that's fine, just means the other won't work for you either.
+> - Trailing date - when the verifier last hit this op.
+> - No Live-verified line at all - never executed by the verifier. Treat as documentation-only.
 
 Schemas (`Alert`, `RecordLog`, ...) are validated against captured responses where present. Run `python src/verify_curated.py` against your FortiSOAR (creds in `.env`) to refresh the verification report.
 
