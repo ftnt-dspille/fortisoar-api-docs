@@ -1110,12 +1110,12 @@ PATHS["/api/3/cache_util"] = {
 # ---------------------------------------------------------------------------
 
 TAG_GROUPS = [
-    {"name": "Auth & system", "tags": ["Authentication", "System"]},
+    {"name": "Auth & system", "tags": ["Authentication", "System", "Access management"]},
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Query", "tags": ["Query"]},
     {"name": "Audit", "tags": ["Audit"]},
     {"name": "Automation", "tags": ["Workflows", "Triggers", "Connectors"]},
-    {"name": "Reference", "tags": ["Metadata", "Files", "Access management", "Import / export"]},
+    {"name": "Reference", "tags": ["Metadata", "Files", "Import / export"]},
 ]
 
 TAG_DESCRIPTIONS = {

@@ -209,6 +209,7 @@ x-tagGroups:
   tags:
   - Authentication
   - System
+  - Access management
 - name: Records
   tags:
   - Records (generic)
@@ -229,7 +230,6 @@ x-tagGroups:
   tags:
   - Metadata
   - Files
-  - Access management
   - Import / export
 paths:
   /auth/authenticate:
