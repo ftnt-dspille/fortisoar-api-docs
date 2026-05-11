@@ -1111,7 +1111,7 @@ PATHS["/api/3/cache_util"] = {
 
 TAG_GROUPS = [
     {"name": "Auth & system", "tags": ["Authentication", "System"]},
-    {"name": "Records", "tags": ["Records (generic)", "Alerts", "Bulk operations"]},
+    {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Query", "tags": ["Query"]},
     {"name": "Audit", "tags": ["Audit"]},
     {"name": "Automation", "tags": ["Workflows", "Triggers", "Connectors"]},
@@ -1139,9 +1139,16 @@ TAG_DESCRIPTIONS = {
 }
 
 
-REFERENCE_PROSE = r"""A curated OpenAPI 3.1 reference for the FortiSOAR REST API. Every operation here is hand-shaped against a real instance; per-op **`Live-verified`** badges tell you which ones were exercised end-to-end.
+A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST API.
 
-Schemas (`Alert`, `RecordLog`, ...) are validated against captured responses. Run `python src/verify_curated.py` against your FortiSOAR (creds in `.env`) to refresh the verification report.
+> **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Operations marked with a green **`Live-verified`** badge were exercised end-to-end against a real FortiSOAR instance. Anything without that badge is documented from the API guide and DB introspection only — request/response shapes are best-effort and not guaranteed to be correct. Always validate against your own appliance before relying on it.
+>
+> **What the badges mean.**
+> - **`Live-verified`** — the operation was called with both an API key and a JWT bearer token and returned 2xx on at least one combination. Captured (sanitized) responses are folded into the `200` example.
+> - **No badge** — never executed by the verifier. Either it's a mutating operation we skip by default (DELETE, PUT, well-known mutating POSTs) or we just haven't gotten to it. Treat as documentation-only.
+> - **JWT-only / API-key-only** — one auth mode returned 2xx and the other returned 401/403. Common for endpoints that enforce a single auth pathway.
+
+Schemas (`Alert`, `RecordLog`, ...) are validated against captured responses where present. Run `python src/verify_curated.py` against your FortiSOAR (creds in `.env`) to refresh the verification report.
 
 ## Concepts
 
@@ -1429,9 +1436,9 @@ If a workflow UUID matches one already in a *different* collection, FortiSOAR re
 SPEC = {
     "openapi": "3.1.0",
     "info": {
-        "title": "FortiSOAR API (curated)",
-        "version": "0.1.0-curated",
-        "summary": "Curated, hand-shaped subset of the FortiSOAR REST API.",
+        "title": "FortiSOAR API",
+        "version": "0.1.0",
+        "summary": "Hand-shaped subset of the FortiSOAR REST API.",
         "description": REFERENCE_PROSE,
     },
     "servers": [
