@@ -9,6 +9,11 @@
     html, body { margin: 0; padding: 0; height: 100%; }
     .fsr-hidden { display: none !important; }
 
+    /* Sidebar scroll-chain trap: when the sidebar hits its top/bottom edge
+       the wheel event was leaking into the main scroll container and
+       jumping the page to the opposite end. Contain stops the leak. */
+    aside, aside * { overscroll-behavior: contain; }
+
     /* ---------- Sidebar group-header styling ----------
        `fsr-group-header` is added by JS to the immediate header row of
        each tag-group LI. Scalar nests leaf tags inside the group, so a
