@@ -290,15 +290,11 @@ paths:
       tags:
       - Authentication
       summary: Issue a JWT bearer token
-      description: '**See:** [Authentication](#description/authentication)
-
-
-        Token-based authentication. Returns a JWT for use as `Authorization: Bearer <token>` on subsequent requests. Default
-        TTL is ~30 minutes; long-running clients should re-authenticate on 401.
-
-
-        **Note:** The path is `/auth/authenticate` (no `/api` prefix). The PDF references `/api/auth/token` as the canonical
-        endpoint, but on current builds it returns 403 even with a valid bearer; use this one.'
+      description: "**See:** [Authentication](#description/authentication)\n\nToken-based authentication. Returns a JWT for\
+        \ use as `Authorization: Bearer <token>` on subsequent requests. Default TTL is ~30 minutes; long-running clients\
+        \ should re-authenticate on 401.\n\n**Note:** The path is `/auth/authenticate` (no `/api` prefix). The PDF references\
+        \ `/api/auth/token` as the canonical endpoint, but on current builds it returns 403 even with a valid bearer; use\
+        \ this one.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       security: []
       requestBody:
         required: true
@@ -309,7 +305,7 @@ paths:
             example:
               credentials:
                 loginid: csadmin
-                password: <password>
+                password: $3curityFabric
       responses:
         '200':
           description: JWT issued.
@@ -318,7 +314,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
               example:
-                token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...
+                token: <jwt-token>
         '401':
           description: Invalid credentials.
           content:
@@ -330,6 +326,9 @@ paths:
                 '@type': Error
                 hydra:title: An error occurred
                 hydra:description: Validation failed.
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/logout:
     post:
       tags:
@@ -367,11 +366,11 @@ paths:
                   - rabbitmq
                   not_connected: []
                 cpu:
-                  load_avg_minute_1: 0.16
-                  load_avg_minute_15: 0.34
-                  load_avg_minute_5: 0.19
+                  load_avg_minute_1: 10.91
+                  load_avg_minute_15: 1.97
+                  load_avg_minute_5: 4.93
                   no_of_logical_cpu_core: 12
-                  percent: 1.9
+                  percent: 67.0
                 disk:
                 - avail: 26.3G
                   device: /dev/mapper/vgos-root
@@ -414,44 +413,44 @@ paths:
                   mountpoint: /var/lib/elasticsearch
                   percent: 0.7
                   total: 98.6G
-                  used: 740.5M
-                - avail: 178.7G
+                  used: 740.6M
+                - avail: 178.6G
                   device: /dev/mapper/vgos-relations
                   mountpoint: /var/lib/pgsql
-                  percent: 2.4
+                  percent: 2.5
                   total: 183.2G
-                  used: 4.5G
+                  used: 4.6G
                 - avail: 9.2G
                   device: /dev/mapper/vgos-log
                   mountpoint: /var/log
-                  percent: 7.3
+                  percent: 7.1
                   total: 9.9G
-                  used: 744.7M
+                  used: 717.6M
                 - avail: 13.3G
                   device: /dev/mapper/vgos-rabbitmq
                   mountpoint: /var/lib/rabbitmq
                   percent: 1.3
                   total: 13.4G
-                  used: 173.3M
+                  used: 174.4M
                 - avail: 48.6G
                   device: /dev/mapper/vgos-coredump
                   mountpoint: /var/log/cyops/coredump
                   percent: 0.8
                   total: 48.9G
                   used: 381.7M
-                - avail: 886.4M
+                - avail: 886.3M
                   device: /dev/mapper/vgos-audit
                   mountpoint: /var/log/audit
                   percent: 7.7
                   total: 960.0M
-                  used: 73.6M
-                health_details_collect_time: May-12-2026 20:32:07 UTC
+                  used: 73.7M
+                health_details_collect_time: May-12-2026 21:02:27 UTC
                 memory:
                   ram:
-                    avail: 7.9G
-                    percent: 65.9
+                    avail: 7.4G
+                    percent: 68.0
                     total: 23.2G
-                    used: 13.7G
+                    used: 14.2G
                   swap:
                     free: 7.2G
                     percent: 10.4
@@ -460,11 +459,11 @@ paths:
                 misc_stat:
                   database:
                     gateway:
-                      size: 31511011
+                      size: 31674851
                     sealab:
-                      size: 450826723
+                      size: 459076067
                     venom:
-                      size: 1234072035
+                      size: 1278407139
                   heartbeat: []
                   is_primary: true
                   nginx_cert_status:
@@ -476,8 +475,8 @@ paths:
                   sme_cert_status:
                     expiry_status: Not Expired
                   uptime:
-                    human_readable: 3 days, 6:26:33.570000
-                    seconds: 282393.57
+                    human_readable: 3 days, 6:56:53.730000
+                    seconds: 284213.73
                   wal:
                     count: 32
                     size_gb: 0.5
@@ -490,31 +489,31 @@ paths:
                   cpu:
                   - cmdline: /opt/cyops-workflow/.env/bin/python -m celery -A sealab worker --pidfile=/var/run/celery/celeryd.pid
                       --logfile=/var/log/cyops/cyops-workflow/celeryd.l
-                    cpu_percent: '2.7'
+                    cpu_percent: '72.6'
                     memory_percent: '1.2'
-                    pid: '1254164'
-                    ram: 302.0M
+                    pid: '1272010'
+                    ram: 295.1M
                     uid: '987'
                     user: nginx
-                    vsize: 798.2M
+                    vsize: 791.4M
                   - cmdline: /opt/cyops-workflow/.env/bin/python -m celery -A sealab worker --pidfile=/var/run/celery/celeryd.pid
                       --logfile=/var/log/cyops/cyops-workflow/celeryd.l
-                    cpu_percent: '2.7'
+                    cpu_percent: '49.6'
                     memory_percent: '1.2'
-                    pid: '1254213'
-                    ram: 300.9M
+                    pid: '1271967'
+                    ram: 302.3M
                     uid: '987'
                     user: nginx
-                    vsize: 797.4M
+                    vsize: 798.5M
                   - cmdline: /opt/cyops-workflow/.env/bin/python -m celery -A sealab worker --pidfile=/var/run/celery/celeryd.pid
                       --logfile=/var/log/cyops/cyops-workflow/celeryd.l
-                    cpu_percent: '2.7'
+                    cpu_percent: '41.6'
                     memory_percent: '1.3'
-                    pid: '1254258'
-                    ram: 309.6M
+                    pid: '1272071'
+                    ram: 317.3M
                     uid: '987'
                     user: nginx
-                    vsize: 805.8M
+                    vsize: 813.5M
                   ram:
                   - cmdline: /usr/lib/jvm/java-17-openjdk-17.0.17.0.10-1.el9.x86_64/bin/java -Des.networkaddress.cache.ttl=60
                       -Des.networkaddress.cache.negative.ttl=10 -XX:+Always
@@ -578,7 +577,7 @@ paths:
                   - celerybeatd
                   - cyops-ha
                 status: green
-                timestamp: 1778617927
+                timestamp: 1778619747
                 workflow:
                   mq:
                     higher: <Check the primary cluster node for this data>
@@ -588,17 +587,17 @@ paths:
                   playbook:
                     data:
                     - name: '> FortiGuard Threat Intelligence > Fetch and Create'
-                      total: 18
-                    - name: FortiGuard Threat Intelligence > Ingest
-                      total: 1
-                    - name: Purge Integration Logs
-                      total: 1
-                    from_time: 2026-05-12+19:32:07
-                    to_time: 2026-05-12+20:32:07
-                    total: 2
+                      total: 25
+                    - name: Extract Indicators (Alerts)
+                      total: 4
+                    - name: Alert - Update SLA Details
+                      total: 4
+                    from_time: 2026-05-12+20:02:27
+                    to_time: 2026-05-12+21:02:27
+                    total: 13
                   vaccum:
-                    log_size: 1410
-                    percent: 0.0
+                    log_size: 1458
+                    percent: 95.72127139364304
                     status: completed
                 workflow_vacuum: null
       x-verified-live:
@@ -607,11 +606,28 @@ paths:
     get:
       tags:
       - System
-      summary: License information
-      description: "**See:** [Authentication](#description/authentication)\n\n*Heads-up:* JWT-only on 7.6.x (API key returns\
-        \ 403). Some builds also return a generic 400 on the JWT path - the endpoint is wired through the auth standalone\
-        \ service and is sensitive to backend-side state. Skip if your monitoring doesn't strictly need it.\n\n**Auth coverage:**\
-        \ `API-KEY: 403` \xB7 `Bearer JWT: 400`"
+      summary: Retrieve license details
+      description: "**See:** [Authentication](#description/authentication)\n\nReturns the current license state for the cluster\
+        \ (or a specific node, with `node_id`). Authenticated equivalent of the `POST /api/public/license` `get_info` flow,\
+        \ but reports deployed-license state (`remaining_days`, `expired_nodes`, per-node max users, issue/expiry dates) rather\
+        \ than parsing an unsubmitted key.\n\n**Auth quirk on 7.6.x:** typically JWT-only - API key returns 403. Some builds\
+        \ also surface a generic 400 on the JWT path when the auth standalone service is unhappy; callers that just need basic\
+        \ build info should prefer `GET /api/version` instead.\n\n**Auth coverage:** `API-KEY: 403` \xB7 `Bearer JWT: 400`"
+      parameters:
+      - name: param
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - license_details
+        description: Set to `license_details` to return the full per-node license report. Omitted -> compact summary.
+      - name: node_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Limit the response to one node. Pass `SELF` to mean the node serving the request (added in 7.0.0).
       responses:
         '200':
           description: License details.
@@ -639,6 +655,107 @@ paths:
       x-verified-live:
         apikey: 403
         jwt: 400
+    post:
+      tags:
+      - System
+      summary: Deploy a license (authenticated)
+      description: '**See:** [Authentication](#description/authentication)
+
+
+        Authenticated license deployment. Requires a **previously valid** license to be currently active - this form is intended
+        for renewals / replacements, not first-time activation. For first-time activation on a fresh appliance use the unauthenticated
+        `POST /api/public/license` with `action: deploy_license`.
+
+
+        Body carries the raw `license_key` (the contents of the `.lic` file). Returns 200 OK on success.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - license_key
+              properties:
+                license_key:
+                  type: string
+                  description: Raw contents of the license file.
+            example:
+              license_key: <license-file-contents>
+      responses:
+        '200':
+          description: License deployed.
+  /api/public/license:
+    post:
+      tags:
+      - System
+      summary: Public license API (deploy / status / info)
+      description: '**Public, no auth required** (since 7.0.0). One endpoint with three behaviors keyed off the `action` discriminator:
+
+
+        - `action: deploy_license` - install a license on a fresh / unlicensed appliance.   Body: `license_key`, `nodeId`,
+        `action`. Returns 200 OK on success. This is the   first-time-activation path - once a valid license is deployed,
+        prefer the   authenticated `POST /api/auth/license` for renewals.
+
+        - `action: get_status` - poll deployment progress. Body: `nodeId`, `action`.   Returns `depl_status` (e.g. `finished`)
+        plus `depl_info` (`source`, `user_id`,   `ws_session_id`, `depl_start_time`).
+
+        - `action: get_info` - parse a license key **without** deploying it. Body:   `license_key`, `action`. Returns `serial_no`,
+        `expiry_time`, `hardware_key`,   `max_users`, `entitlements`, `type`, `edition`. For Subscription-type licenses,   `max_users`
+        / `expiry_time` are only populated after deployment (they''re fetched   from FDN at activation time).'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - action
+              properties:
+                action:
+                  type: string
+                  enum:
+                  - deploy_license
+                  - get_status
+                  - get_info
+                  description: Discriminator. See description for the body shape each action expects.
+                license_key:
+                  type: string
+                  description: Raw license file contents. Required for `deploy_license` and `get_info`.
+                nodeId:
+                  type: string
+                  description: Target node id. Required for `deploy_license` and `get_status`. Discoverable via `GET /api/auth/license?param=license_details`
+                    (`nodes.<id>.node.nodeId`).
+            examples:
+              deploy_license:
+                summary: Deploy on a fresh appliance
+                value:
+                  action: deploy_license
+                  license_key: <license-file-contents>
+                  nodeId: 0961991714b6089a1d31983ea76f869e
+              get_status:
+                summary: Poll deployment progress
+                value:
+                  action: get_status
+                  nodeId: 0961991714b6089a1d31983ea76f869e
+              get_info:
+                summary: Parse a key without deploying
+                value:
+                  action: get_info
+                  license_key: <license-file-contents>
+      responses:
+        '200':
+          description: Action-specific payload. See description.
+          content:
+            application/json:
+              example:
+                depl_status: finished
+                depl_info:
+                  source: 192.168.56.1
+                  user_id: null
+                  ws_session_id: null
+                  depl_start_time: '2026-12-23T12:23:30.771975'
   /api/version:
     get:
       tags:
@@ -663,7 +780,7 @@ paths:
       - Authentication
       summary: Current user's effective permissions
       description: "78-key map of module -> {create, read, update, delete, execute} booleans. Authoritative for UI gating.\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Permission matrix.
@@ -1106,6 +1223,7 @@ paths:
                   update: true
       x-verified-live:
       - apikey
+      - jwt
   /api/3/actors/current:
     get:
       tags:
@@ -1113,15 +1231,15 @@ paths:
       summary: Current actor (user or appliance)
       description: "Returns the calling principal as a unified Actor record - either a user or an appliance/agent. Use this\
         \ when code needs to work uniformly across both auth modes; for user-only fields, prefer `GET /api/3/people/current`.\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Actor record.
           content:
             application/json:
               example:
-                '@context': /api/3/contexts/ApiKey
-                '@id': /api/3/api_keys/<uuid>
+                '@context': /api/3/contexts/Person
+                '@id': /api/3/people/<uuid>
                 '@permissions':
                   activities:
                     create: true
@@ -1604,6 +1722,32 @@ paths:
                     phone:
                       countryId: US
                     view:
+                      details:
+                        alerts:
+                          openCollab: true
+                          subtabs:
+                            Indicators: indicators
+                        announcements:
+                          subtabs:
+                            Correlations: warrooms
+                        attachments:
+                          subtabs:
+                            Correlations: alerts
+                        collapsible-columns:
+                          4b3adda5-9f14-45fa-affe-503e3dee8d6e: false
+                          50602f2c-ef13-4750-ad4e-d43c9fedc803: false
+                          8b6203f5-fea3-4592-a7f7-8f663e7fd2d0: false
+                        mitre_groups:
+                          selectedTab: Mitigations
+                        tasks:
+                          subtabs:
+                            Correlations: alerts
+                        threat_intel_feeds:
+                          selectedTab: Threat Feeds
+                      modules-managers-list:
+                        chart:
+                          0fbe8760-87bc-4c68-9c12-39302477efa5: collapsed
+                          ff8bba3d-eeb1-487e-a8a7-f63ed8c16bc7: collapsed
                       theme: steel
                   workflow_log_config:
                     allow_pb_to_override: false
@@ -1617,72 +1761,33 @@ paths:
                     enabled: true
                     scheduleId: gAAAAABpZYzpsetarBUmdkGKeazk0iBXzOzXz7pVb5msYItn5xh637biSiyYgGGCj5R3bmCFNOxVxHDz0b7CVKuCiPgGfTyYiQ==
                     ttl: '0'
-                '@type': ApiKey
+                '@type': Person
+                accessType: Named
                 avatar: null
-                createDate: 1778353734.090001
-                createUser:
-                  '@id': /api/3/people/<uuid>
-                  '@settings': /api/3/user_settings/<uuid>
-                  '@type': Person
-                  accessType: Named
-                  avatar: null
-                  companyId: null
-                  createDate: 1734423156.396393
-                  createUser: /api/3/people/<uuid>
-                  csActive: true
-                  department: null
-                  description: null
-                  email: admin@example.com
-                  firstname: CS
-                  id: 3
-                  lastname: Admin
-                  modifyDate: 1734423156.396393
-                  modifyUser: /api/3/people/<uuid>
-                  phoneFax: null
-                  phoneHome: null
-                  phoneMobile: null
-                  phoneWork: '+16462759691'
-                  title: Admin
-                  type: null
-                  userId: <uuid>
-                  userType: null
-                  uuid: <uuid>
-                id: 7
-                modifyDate: 1778353734.090001
-                modifyUser:
-                  '@id': /api/3/people/<uuid>
-                  '@settings': /api/3/user_settings/<uuid>
-                  '@type': Person
-                  accessType: Named
-                  avatar: null
-                  companyId: null
-                  createDate: 1734423156.396393
-                  createUser: /api/3/people/<uuid>
-                  csActive: true
-                  department: null
-                  description: null
-                  email: admin@example.com
-                  firstname: CS
-                  id: 3
-                  lastname: Admin
-                  modifyDate: 1734423156.396393
-                  modifyUser: /api/3/people/<uuid>
-                  phoneFax: null
-                  phoneHome: null
-                  phoneMobile: null
-                  phoneWork: '+16462759691'
-                  title: Admin
-                  type: null
-                  userId: <uuid>
-                  userType: null
-                  uuid: <uuid>
-                name: test2
-                recordTags: []
+                companyId: null
+                createDate: 1734423156.396393
+                createUser: /api/3/people/<uuid>
+                csActive: true
+                department: null
+                description: null
+                email: admin@example.com
+                firstname: CS
+                id: 3
+                lastname: Admin
+                modifyDate: 1734423156.396393
+                modifyUser: /api/3/people/<uuid>
+                phoneFax: null
+                phoneHome: null
+                phoneMobile: null
+                phoneWork: '+16462759691'
+                title: Admin
+                type: null
                 userId: <uuid>
                 userType: null
                 uuid: <uuid>
       x-verified-live:
       - apikey
+      - jwt
   /api/3/alerts:
     get:
       tags:
@@ -2319,7 +2424,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Alert'
             example:
-              name: live-f35a6698-alert
+              name: live-99f4773b-alert
               severity: /api/3/picklists/<uuid>
               source: live-test
               status: /api/3/picklists/<uuid>
@@ -2368,7 +2473,7 @@ paths:
                 companies: []
                 computerName: null
                 conflict: false
-                createDate: 1778617977.316307
+                createDate: 1778619907.860349
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -2437,7 +2542,7 @@ paths:
                 fsrQueue: null
                 hunt: []
                 iPAddresses: null
-                id: 31
+                id: 35
                 incidents: []
                 indicators: []
                 killChainPhase: null
@@ -2451,7 +2556,7 @@ paths:
                 mitremitigations: []
                 mitresoftware: []
                 mitretactics: []
-                modifyDate: 1778617977.316307
+                modifyDate: 1778619907.860349
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -2479,7 +2584,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-f35a6698-alert
+                name: live-99f4773b-alert
                 parentProcessCmdLine: null
                 parentProcessName: null
                 parentProcessPid: null
@@ -2581,7 +2686,7 @@ paths:
                   role: self
                   tenantId: <self-agent>
                   uuid: <uuid>
-                tenantRecordId: 31
+                tenantRecordId: 35
                 ticketID: null
                 type:
                   '@id': /api/3/picklists/<uuid>
@@ -2659,7 +2764,7 @@ paths:
                 commandLine: null
                 computerName: null
                 conflict: false
-                createDate: 1778617977.316307
+                createDate: 1778619907.860349
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -2726,13 +2831,13 @@ paths:
                 filePath: null
                 fsrQueue: null
                 iPAddresses: null
-                id: 31
+                id: 35
                 killChainPhase: null
                 latestLogin: null
                 metrics: null
                 mitreTechnique: null
                 mitreattackid: null
-                modifyDate: 1778617977.316307
+                modifyDate: 1778619907.860349
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -2760,7 +2865,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-f35a6698-alert
+                name: live-99f4773b-alert
                 parentProcessCmdLine: null
                 parentProcessName: null
                 parentProcessPid: null
@@ -2859,7 +2964,7 @@ paths:
                   role: self
                   tenantId: <self-agent>
                   uuid: <uuid>
-                tenantRecordId: 31
+                tenantRecordId: 35
                 ticketID: null
                 type:
                   '@id': /api/3/picklists/<uuid>
@@ -2939,7 +3044,7 @@ paths:
                 commandLine: null
                 computerName: null
                 conflict: false
-                createDate: 1778617977.316307
+                createDate: 1778619907.860349
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -3006,13 +3111,13 @@ paths:
                 filePath: null
                 fsrQueue: null
                 iPAddresses: null
-                id: 31
+                id: 35
                 killChainPhase: null
                 latestLogin: null
                 metrics: null
                 mitreTechnique: null
                 mitreattackid: null
-                modifyDate: 1778617978.511885
+                modifyDate: 1778619909.01171
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -3040,7 +3145,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-f35a6698-alert
+                name: live-99f4773b-alert
                 parentProcessCmdLine: null
                 parentProcessName: null
                 parentProcessPid: null
@@ -3139,7 +3244,7 @@ paths:
                   role: self
                   tenantId: <self-agent>
                   uuid: <uuid>
-                tenantRecordId: 31
+                tenantRecordId: 35
                 ticketID: null
                 type:
                   '@id': /api/3/picklists/<uuid>
@@ -3190,17 +3295,13 @@ paths:
       tags:
       - Records (generic)
       summary: List records of any module
-      description: '**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)
-
-
-        Generic Hydra-paged listing for any module. Every record-bearing entity is auto-exposed at `/api/3/<plural>`; this
-        template documents the shared contract.
-
-
-        Common collections: `alerts`, `incidents`, `indicators`, `tasks`, `assets`, `people`, `appliances`, `workflows`, `playbooks`,
-        `connectors`, `roles`, `teams`, `api_keys`, `comments`, `notes`, `attachments`, `picklists`, `picklist_names`, `model_metadatas`,
-        `attribute_metadatas`, `dashboard`, `reporting`, `tenants`, `agents`, `routers`, `solutionpacks`, `widgets`, `workflow_collections`,
-        `query_objects`, `import_jobs`, `export_jobs`, `preprocessing_rules`.'
+      description: "**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)\n\
+        \nGeneric Hydra-paged listing for any module. Every record-bearing entity is auto-exposed at `/api/3/<plural>`; this\
+        \ template documents the shared contract.\n\nCommon collections: `alerts`, `incidents`, `indicators`, `tasks`, `assets`,\
+        \ `people`, `appliances`, `workflows`, `playbooks`, `connectors`, `roles`, `teams`, `api_keys`, `comments`, `notes`,\
+        \ `attachments`, `picklists`, `picklist_names`, `model_metadatas`, `attribute_metadatas`, `dashboard`, `reporting`,\
+        \ `tenants`, `agents`, `routers`, `solutionpacks`, `widgets`, `workflow_collections`, `query_objects`, `import_jobs`,\
+        \ `export_jobs`, `preprocessing_rules`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters: &id027
       - *id002
       - *id003
@@ -3218,16 +3319,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/HydraCollection'
               example:
-                '@context': /api/3/contexts/Alert
-                '@id': /api/3/alerts
-                '@type': hydra:PagedCollection
-                hydra:totalItems: 1
-                hydra:itemsPerPage: 30
-                hydra:nextPage: /api/3/alerts?%24page=2
-                hydra:firstPage: example
-                hydra:lastPage: example
-                hydra:member: []
-                hydra:search: {}
+                '@context': /api/3/contexts/Team
+                '@id': /api/3/teams
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/teams/<uuid>
+                  '@type': Team
+                  description: East-coast SOC team
+                  importedBy: []
+                  name: SOC East
+                  uuid: <uuid>
+                hydra:totalItems: 8
+                hydra:view:
+                  '@id': /api/3/teams?%24limit=1&%24page=1
+                  '@type': hydra:PartialCollectionView
+                  hydra:first: /api/3/teams?%24limit=1&%24page=1
+                  hydra:last: /api/3/teams?%24limit=1&%24page=8
+                  hydra:next: /api/3/teams?%24limit=1&%24page=2
+      x-verified-live:
+      - apikey
+      - jwt
     post:
       tags:
       - Records (generic)
@@ -3239,32 +3350,30 @@ paths:
             schema:
               type: object
             example:
-              name: Phishing email - finance
-              source: Proofpoint
-              severity: /api/3/picklists/high-uuid
-              status: /api/3/picklists/open-uuid
+              description: live_test team
+              name: live-99f4773b-team
       responses:
         '201':
           description: Created.
           content:
             application/json:
               example:
-                '@context': /api/3/contexts/Alert
-                '@id': /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                '@type': Alert
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                id: 12847
-                name: Phishing email - finance
-                source: Proofpoint
-                severity: /api/3/picklists/97e9bc03-5a4c-43c6-b3a3-47422b42d288
-                status: /api/3/picklists/57111d6e-09a9-4d9e-93d4-cf6a8b9d77e2
-                createDate: 1736380800
-                modifyDate: 1736380800
-                createUser: /api/3/people/bcb46d5a-0ad8-4480-ac68-9ebc28502a30
-      description: '**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)
-
-
-        '
+                '@context': /api/3/contexts/Team
+                '@id': /api/3/teams/<uuid>
+                '@type': Team
+                actors: []
+                children: []
+                description: live_test team
+                importedBy: []
+                name: live-99f4773b-team
+                parents: []
+                siblings: []
+                uuid: <uuid>
+      description: "**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)\n\
+        \n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/{collection}/{uuid}:
     parameters:
     - name: collection
@@ -3527,9 +3636,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
       - apikey
+      - jwt
     put:
       tags:
       - Records (generic)
@@ -3541,23 +3651,24 @@ paths:
             schema:
               type: object
             example:
-              '@id': /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-              status: /api/3/picklists/closed-uuid
+              description: renamed by live_test
       responses:
         '200':
           description: Updated.
           content:
             application/json:
               example:
-                '@id': /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                '@type': Alert
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                status: /api/3/picklists/closed-uuid
-                modifyDate: 1736384400
-      description: '**See:** [Concepts](#description/concepts)
-
-
-        '
+                '@context': /api/3/contexts/Team
+                '@id': /api/3/teams/<uuid>
+                '@type': Team
+                description: renamed by live_test
+                importedBy: []
+                name: live-99f4773b-team
+                uuid: <uuid>
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      x-verified-live:
+      - apikey
+      - jwt
     delete:
       tags:
       - Records (generic)
@@ -3565,10 +3676,10 @@ paths:
       responses:
         '204':
           description: Deleted.
-      description: '**See:** [Concepts](#description/concepts)
-
-
-        '
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/insert/{moduleType}:
     parameters:
     - name: moduleType
@@ -3584,7 +3695,9 @@ paths:
       description: '**See:** [Concepts](#description/concepts) (trigger-bypass semantics)
 
 
-        Insert multiple records of the given module type in one call.'
+        Documented bulk-insert path. **Broken on FSR 7.6.x:** every body shape and every module type probed returned 400 with
+        `TypeError: Internal Server Error`. Use `/api/3/{collection}` (single POST per record) or `/api/3/bulkupsert/{moduleType}`
+        instead.'
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -3633,7 +3746,8 @@ paths:
       description: '**See:** [Concepts](#description/concepts)
 
 
-        Update multiple records (each with its `@id`). **Method is PUT**, not POST.'
+        Documented bulk-update path. **Broken on FSR 7.6.x:** returns 400 `HttpException`. Update records individually via
+        `PUT /api/3/{collection}/{uuid}`.'
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -3672,7 +3786,8 @@ paths:
       description: '**See:** [Concepts](#description/concepts)
 
 
-        Delete multiple records by IRI list. **Method is DELETE**, not POST.'
+        Documented bulk-delete path. **Broken on FSR 7.6.x:** returns 400 `TypeError`. Delete records individually via `DELETE
+        /api/3/{collection}/{uuid}`.'
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -3707,7 +3822,7 @@ paths:
       summary: Upsert by natural key
       description: "**See:** [Concepts](#description/concepts)\n\nInsert-or-update **a single record** keyed on the module's\
         \ identifier field. Body is a JSON object, not an array \u2014 use `/api/3/bulkupsert/{moduleType}` for the array\
-        \ variant."
+        \ variant.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -3720,6 +3835,281 @@ paths:
                 results:
                 - status: updated
                   uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+        '201':
+          description: Live-captured response.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/Alert
+                '@id': /api/3/alerts/<uuid>
+                '@type': Alert
+                ackDate: null
+                ackSLApausedon: null
+                ackSlaStatus:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                alertDetectionDate: null
+                alertRemainingAckSLA: null
+                alertRemainingRespSLA: null
+                alerts: []
+                assets: []
+                assignedTo: null
+                assigneddate: null
+                attachmentNames: null
+                attachments: []
+                bucketName: null
+                bytesTransferred: null
+                cVEs: []
+                campaigns: []
+                closureNotes: null
+                closureReason: null
+                commandLine: null
+                comments: []
+                communications: []
+                companies: []
+                computerName: null
+                conflict: false
+                createDate: 1778619922.475495
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                decodedCommandLine: null
+                description: null
+                destinationID: null
+                destinationIp: null
+                destinationPort: null
+                deviceOwner: null
+                deviceSerialNo: null
+                deviceType: null
+                deviceUID: null
+                domain: null
+                dueBy: null
+                emailBody: null
+                emailClassification: null
+                emailFrom: null
+                emailHeaders: null
+                emailSubject: null
+                emailTo: null
+                epochTime: null
+                escalatedtoincident:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 350
+                  importedBy: []
+                  itemValue: 'No'
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                escalationReason: null
+                eventTime: null
+                events: []
+                fileEmail: null
+                fileHash: null
+                fileHashes: null
+                fileName: null
+                fileNames: null
+                filePath: null
+                fsrQueue: null
+                hunt: []
+                iPAddresses: null
+                id: 37
+                incidents: []
+                indicators: []
+                killChainPhase: null
+                latestLogin: null
+                metrics: null
+                mitreTechnique: null
+                mitre_sub_techniques: []
+                mitre_techniques: []
+                mitreattackid: null
+                mitregroups: []
+                mitremitigations: []
+                mitresoftware: []
+                mitretactics: []
+                modifyDate: 1778619922.475495
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-99f4773b-upsert
+                parentProcessCmdLine: null
+                parentProcessName: null
+                parentProcessPid: null
+                persons: []
+                priorityWeight: 1
+                processGuid: null
+                processId: null
+                processName: null
+                processTree: null
+                recipientEmailAddress: null
+                recordTags: []
+                registryKey: null
+                registryKeyValue: null
+                reporter: null
+                reporterEmailBody: null
+                resolvedAutomatedly: null
+                resolveddate: null
+                respDate: null
+                respDueDate: null
+                respSLApausedon: null
+                respSlaStatus:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                responseSLAResumeDate: null
+                returnPath: null
+                rule: null
+                scans: []
+                scheduledTask: null
+                senderDomain: null
+                senderEmailAddress: null
+                services: null
+                severity:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#157DD9'
+                  icon: null
+                  id: 438
+                  importedBy: []
+                  itemValue: Minimal
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                source: live_test
+                sourceId: null
+                sourceIp: null
+                sourcePort: null
+                sourceProcess: null
+                sourceTool: null
+                sourceType: null
+                sourcedata: null
+                state:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 193
+                  importedBy: []
+                  itemValue: New
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                status:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 196
+                  importedBy: []
+                  itemValue: Open
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                targetAsset: null
+                targetProcess: null
+                tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 37
+                ticketID: null
+                type:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 222
+                  importedBy: []
+                  itemValue: Other / Unknown
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 19
+                  uuid: <uuid>
+                url: null
+                userDetails: null
+                userName: null
+                uuid: <uuid>
+                vulnerabilities: []
+                vulnerabilitySeverity: null
+                warrooms: []
       requestBody:
         required: true
         content:
@@ -3727,9 +4117,13 @@ paths:
             schema:
               type: object
             example:
-            - sourceId: spl-1001
-              name: alert-001-updated
-              source: Splunk
+              name: live-99f4773b-upsert
+              severity: /api/3/picklists/<uuid>
+              source: live_test
+              status: /api/3/picklists/<uuid>
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/bulkupsert/{moduleType}:
     parameters:
     - name: moduleType
@@ -3742,11 +4136,9 @@ paths:
       tags:
       - Bulk operations
       summary: Bulk upsert
-      description: '**See:** [Concepts](#description/concepts)
-
-
-        Array-input version of upsert. Body must be a JSON array; some 7.6.x builds return 500 (server-side TypeError) when
-        given anything else.'
+      description: "**See:** [Concepts](#description/concepts)\n\nArray-input version of upsert. Body must be a JSON array.\
+        \ Works under JWT auth on FSR 7.6.x; under API-KEY auth the server fans out to its own credentials and may report\
+        \ `Invalid credentials` per item.\n\n**Auth coverage:** `API-KEY: 500` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -3761,6 +4153,284 @@ paths:
                   uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 - status: updated
                   uuid: a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
+        '201':
+          description: Live-captured response.
+          content:
+            application/json:
+              example:
+                '@type': hydra:Collection
+                hydra:member:
+                - '@context': /api/3/contexts/Alert
+                  '@id': /api/3/alerts/<uuid>
+                  '@type': Alert
+                  ackDate: null
+                  ackSLApausedon: null
+                  ackSlaStatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#808080'
+                    icon: null
+                    id: 436
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  alertDetectionDate: null
+                  alertRemainingAckSLA: null
+                  alertRemainingRespSLA: null
+                  alerts: []
+                  assets: []
+                  assignedTo: null
+                  assigneddate: null
+                  attachmentNames: null
+                  attachments: []
+                  bucketName: null
+                  bytesTransferred: null
+                  cVEs: []
+                  campaigns: []
+                  closureNotes: null
+                  closureReason: null
+                  commandLine: null
+                  comments: []
+                  communications: []
+                  companies: []
+                  computerName: null
+                  conflict: false
+                  createDate: 1778619923.149082
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1734423156.396393
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1734423156.396393
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  decodedCommandLine: null
+                  description: null
+                  destinationID: null
+                  destinationIp: null
+                  destinationPort: null
+                  deviceOwner: null
+                  deviceSerialNo: null
+                  deviceType: null
+                  deviceUID: null
+                  domain: null
+                  dueBy: null
+                  emailBody: null
+                  emailClassification: null
+                  emailFrom: null
+                  emailHeaders: null
+                  emailSubject: null
+                  emailTo: null
+                  epochTime: null
+                  escalatedtoincident:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#808080'
+                    icon: null
+                    id: 350
+                    importedBy: []
+                    itemValue: 'No'
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  escalationReason: null
+                  eventTime: null
+                  events: []
+                  fileEmail: null
+                  fileHash: null
+                  fileHashes: null
+                  fileName: null
+                  fileNames: null
+                  filePath: null
+                  fsrQueue: null
+                  hunt: []
+                  iPAddresses: null
+                  id: 38
+                  incidents: []
+                  indicators: []
+                  killChainPhase: null
+                  latestLogin: null
+                  metrics: null
+                  mitreTechnique: null
+                  mitre_sub_techniques: []
+                  mitre_techniques: []
+                  mitreattackid: null
+                  mitregroups: []
+                  mitremitigations: []
+                  mitresoftware: []
+                  mitretactics: []
+                  modifyDate: 1778619923.149082
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1734423156.396393
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1734423156.396393
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: live-99f4773b-bulkupsert
+                  parentProcessCmdLine: null
+                  parentProcessName: null
+                  parentProcessPid: null
+                  persons: []
+                  priorityWeight: 1
+                  processGuid: null
+                  processId: null
+                  processName: null
+                  processTree: null
+                  recipientEmailAddress: null
+                  recordTags: []
+                  registryKey: null
+                  registryKeyValue: null
+                  reporter: null
+                  reporterEmailBody: null
+                  resolvedAutomatedly: null
+                  resolveddate: null
+                  respDate: null
+                  respDueDate: null
+                  respSLApausedon: null
+                  respSlaStatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#808080'
+                    icon: null
+                    id: 436
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  responseSLAResumeDate: null
+                  returnPath: null
+                  rule: null
+                  scans: []
+                  scheduledTask: null
+                  senderDomain: null
+                  senderEmailAddress: null
+                  services: null
+                  severity:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#157DD9'
+                    icon: null
+                    id: 438
+                    importedBy: []
+                    itemValue: Minimal
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  source: live_test
+                  sourceId: null
+                  sourceIp: null
+                  sourcePort: null
+                  sourceProcess: null
+                  sourceTool: null
+                  sourceType: null
+                  sourcedata: null
+                  state:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 193
+                    importedBy: []
+                    itemValue: New
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  status:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 196
+                    importedBy: []
+                    itemValue: Open
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  targetAsset: null
+                  targetProcess: null
+                  tasks: []
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 38
+                  ticketID: null
+                  type:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 222
+                    importedBy: []
+                    itemValue: Other / Unknown
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 19
+                    uuid: <uuid>
+                  url: null
+                  userDetails: null
+                  userName: null
+                  uuid: <uuid>
+                  vulnerabilities: []
+                  vulnerabilitySeverity: null
+                  warrooms: []
+                hydra:totalItems: 1
       requestBody:
         required: true
         content:
@@ -3770,10 +4440,12 @@ paths:
               items:
                 type: object
             example:
-            - sourceId: spl-1001
-              name: alert-001
-            - sourceId: spl-1002
-              name: alert-002
+            - name: live-99f4773b-bulkupsert
+              severity: /api/3/picklists/<uuid>
+              source: live_test
+              status: /api/3/picklists/<uuid>
+      x-verified-live:
+      - jwt
   /api/ingest-feeds/indicators:
     post:
       tags:
@@ -4385,7 +5057,7 @@ paths:
                         type: object
             example:
               models: /api/3/model_metadatas/<uuid>
-              name: live-274d08ca-savedq
+              name: live-99f4773b-savedq
               query:
                 filters:
                 - field: status.itemValue
@@ -4460,7 +5132,7 @@ paths:
                   userOwnable: false
                   uuid: <uuid>
                   writable: true
-                name: live-274d08ca-savedq
+                name: live-99f4773b-savedq
                 query:
                   filters:
                   - field: status.itemValue
@@ -4558,12 +5230,10 @@ paths:
       tags:
       - Audit
       summary: Query audit log slice
-      description: '**See:** [Audit gateway quirks](#description/audit-gateway-quirks)
-
-
-        Returns a slice of audit records for `[startDate, endDate]`. **Slice pagination** - response has no `totalElements`
-        / `totalPages` / `last`. Detect end-of-data via empty `content` or `content.length < limit`. For totals use the sibling
-        `/count` endpoint.'
+      description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\nReturns a slice of audit records\
+        \ for `[startDate, endDate]`. **Slice pagination** - response has no `totalElements` / `totalPages` / `last`. Detect\
+        \ end-of-data via empty `content` or `content.length < limit`. For totals use the sibling `/count` endpoint.\n\n**Auth\
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -4606,11 +5276,9 @@ paths:
                   type: string
                   description: Free-text - unreliable; returns 0 hits in many cases.
             example:
-              startDate: 1761696000000
-              endDate: 1764288000000
-              page: 0
-              limit: 100
-              operation: Login Success
+              filters: []
+              limit: 2
+              logic: AND
       responses:
         '200':
           description: Slice of records.
@@ -4618,11 +5286,73 @@ paths:
             application/json:
               example:
                 content:
-                - id: 1
-                  transactionDate: 1764288000000
-                  operation: Login Success
-                  component: das
-                  userId: csadmin
+                - component: crudhub
+                  data:
+                    '@id': /api/3/alerts/<uuid>
+                    Ack Due Date: 05-12-2026 22:15 PM UTC
+                    Ack SLA: Awaiting Action
+                    Created By: test2
+                    Created On: 05-12-2026 21:05 PM UTC
+                    Email Body: ''
+                    Escalated: 'No'
+                    Id: 39
+                    Name: live-99f4773b-upsert
+                    Priority Weight: 1
+                    Response Due Date: 05-12-2026 22:25 PM UTC
+                    Response SLA: Awaiting Action
+                    Severity: Minimal
+                    Source: live_test
+                    State: Indicator Extracted
+                    Status: Open
+                    Type: Other / Unknown
+                    UUID: <uuid>
+                    conflict: false
+                    recordTags: []
+                    tenant: Self
+                    tenantRecordId: 39
+                  displayName: live-99f4773b-upsert
+                  entitySingularName: Alert
+                  entityType: alerts
+                  entityUuid: <uuid>
+                  id: 76212
+                  operation: Delete
+                  source: 10.100.88.254
+                  subComponent: EntityRecord
+                  teamIris:
+                  - cs-non-ownable
+                  title: Alert [live-99f4773b-upsert] Deleted
+                  transactionDate: 1778619932881
+                  user: test2
+                  userId: <uuid>
+                  userOwnerIris: []
+                - component: crudhub
+                  data:
+                    Ack Due Date:
+                      newData: 05-12-2026 22:15 PM UTC
+                    Response Due Date:
+                      newData: 05-12-2026 22:25 PM UTC
+                  displayName: live-99f4773b-upsert
+                  entitySingularName: Alert
+                  entityType: alerts
+                  entityUuid: <uuid>
+                  id: 76211
+                  operation: Update
+                  playbookIri: /api/3/workflows/<uuid>
+                  playbookName: Alert - Update SLA Details
+                  source: 127.0.0.1
+                  subComponent: EntityRecord
+                  teamIris:
+                  - cs-non-ownable
+                  title: Attribute(s) [Ack Due Date, Response Due Date] Updated in Alert [live-99f4773b-upsert]
+                  transactionDate: 1778619932687
+                  user: Playbook
+                  userId: <uuid>
+                  userOwnerIris: []
+                first: true
+                number: 0
+      x-verified-live:
+      - apikey
+      - jwt
     delete:
       tags:
       - Audit
@@ -4649,19 +5379,20 @@ paths:
           application/json:
             schema: *id010
             example:
-              startDate: 1735689600000
-              endDate: 1764288000000
+              filters: []
+              logic: AND
       responses:
         '200':
           description: Count.
           content:
             application/json:
               example:
-                total: 5918
-      description: '**See:** [Audit gateway quirks](#description/audit-gateway-quirks)
-
-
-        '
+                total: 27528
+      description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
+      x-verified-live:
+      - apikey
+      - jwt
   /api/gateway/audit/activities/{auditId}:
     parameters:
     - name: auditId
@@ -4681,31 +5412,50 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordLog'
               example:
-                id: 0
-                transactionDate: null
-                component: das
-                subComponent: example
-                operation: null
-                user: example
-                userId: example
-                source: example
-                entityUuid: 028b37fa-bb35-4e3b-8afb-a3274a8cb343
+                component: crudhub
+                data:
+                  '@id': /api/3/alerts/<uuid>
+                  Ack Due Date: 05-12-2026 22:15 PM UTC
+                  Ack SLA: Awaiting Action
+                  Created By: test2
+                  Created On: 05-12-2026 21:05 PM UTC
+                  Email Body: ''
+                  Escalated: 'No'
+                  Id: 39
+                  Name: live-99f4773b-upsert
+                  Priority Weight: 1
+                  Response Due Date: 05-12-2026 22:25 PM UTC
+                  Response SLA: Awaiting Action
+                  Severity: Minimal
+                  Source: live_test
+                  State: Indicator Extracted
+                  Status: Open
+                  Type: Other / Unknown
+                  UUID: <uuid>
+                  conflict: false
+                  recordTags: []
+                  tenant: Self
+                  tenantRecordId: 39
+                displayName: live-99f4773b-upsert
+                entitySingularName: Alert
                 entityType: alerts
-                entitySingularName: example
-                title: example
-                displayName: example
-                playbookIri: example
-                playbookName: example
-                data: {}
-                rawData: {}
-                linkEntityDetails: {}
-                teamIris: []
+                entityUuid: <uuid>
+                id: 76212
+                operation: Delete
+                source: 10.100.88.254
+                subComponent: EntityRecord
+                teamIris:
+                - cs-non-ownable
+                title: Alert [live-99f4773b-upsert] Deleted
+                transactionDate: 1778619932881
+                user: test2
+                userId: <uuid>
                 userOwnerIris: []
-                legacy: false
-      description: '**See:** [Audit gateway quirks](#description/audit-gateway-quirks)
-
-
-        '
+      description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
+      x-verified-live:
+      - apikey
+      - jwt
   /api/gateway/audit/operations:
     get:
       tags:
@@ -4763,9 +5513,10 @@ paths:
               - Pre-Processing(Update)
               - Pre-Processing(Fail)
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
-        \ OK` \xB7 `Bearer JWT: gated`"
+        \ OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
       - apikey
+      - jwt
   /api/gateway/audit/activities/ttl:
     delete:
       tags:
@@ -4799,7 +5550,7 @@ paths:
         - `status=failed&created_after=2024-11-08&created_before=2024-11-10` \u2014 failed runs in a window.\n- `tags_include=ingestion,critical&tags_exclude=system`\
         \ \u2014 tag allow/deny lists.\n\nEach `hydra:member` entry has `status` (one of `incipient`, `active`, `pending`,\
         \ `running`, `finished`, `failed`, `awaiting`, `skipped`, `terminated`, `paused`) and `@id` \u2014 the trailing segment\
-        \ is the workflow pk used by the per-run detail GET.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ is the workflow pk used by the per-run detail GET.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters: &id011
       - &id012
         name: format
@@ -4908,13 +5659,13 @@ paths:
                 '@context': /wf/api/workflows/context/
                 hydra:firstPage: /wf/api/workflows/?limit=1&ordering=-modified&parent_wf__isnull=True
                 hydra:itemsPerPage: 1
-                hydra:lastPage: /wf/api/workflows/?limit=1&offset=3&ordering=-modified&parent_wf__isnull=True
+                hydra:lastPage: /wf/api/workflows/?limit=1&offset=16&ordering=-modified&parent_wf__isnull=True
                 hydra:member:
-                - '@id': /wf/api/workflows/4745/
+                - '@id': /wf/api/workflows/4784/
                   '@type': Workflow
-                  created: '2026-05-12T20:00:00.558540Z'
+                  created: '2026-05-12T21:00:00.542462Z'
                   debug: true
-                  modified: '2026-05-12T20:00:27.769941Z'
+                  modified: '2026-05-12T21:00:46.242407Z'
                   name: FortiGuard Threat Intelligence > Ingest
                   node_name: soar
                   parent_wf: null
@@ -4922,9 +5673,10 @@ paths:
                   tags: dataingestion,fortinet-fortiguard-threat-intelligence,ingest
                 hydra:nextPage: /wf/api/workflows/?limit=1&offset=1&ordering=-modified&parent_wf__isnull=True
                 hydra:previousPage: null
-                hydra:totalItems: 4
+                hydra:totalItems: 17
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/workflows/{pk}/:
     parameters:
     - name: pk
@@ -4942,7 +5694,7 @@ paths:
         \ by step UUID with each step's output \u2014 this is where playbook return values live. Use after polling the list\
         \ endpoint by `task_id` and seeing a terminal `status`.\n\nIf the run has been moved to historical storage, this returns\
         \ 404. Refetch from `GET /api/wf/api/historical-workflows/{pk}/` in that case.\n\n**Auth coverage:** `API-KEY: OK`\
-        \ \xB7 `Bearer JWT: gated`"
+        \ \xB7 `Bearer JWT: OK`"
       parameters:
       - name: format
         in: query
@@ -4955,29 +5707,29 @@ paths:
           content:
             application/json:
               example:
-                '@id': /wf/api/workflows/4745/
+                '@id': /wf/api/workflows/4784/
                 '@type': Workflow
-                created: '2026-05-12T20:00:00.558540Z'
+                created: '2026-05-12T21:00:00.542462Z'
                 debug: true
                 env:
                   auth_info:
                     auth_method: CS HMAC
                   child_step_id: null
                   debug: true
-                  fetchTime: 1778616001
+                  fetchTime: 1778619601
                   globalMock: false
                   input:
                     params: {}
                     records: []
-                  lastPullTime: 1778612400
-                  last_run_at: '2026-05-12T19:00:00.258664Z'
+                  lastPullTime: 1778616001
+                  last_run_at: '2026-05-12T20:00:00.353558Z'
                   mockPlaybookId: null
                   pullTimeMacro: FortiguardIntelligenceLastPullTime__26191d34_e980_40b0_bfc1_0e7bfb04dab5
                   request: {}
                   resources: {}
-                  step_id: 34778
+                  step_id: 35059
                   task_id: <uuid>
-                  wf_id: 4745
+                  wf_id: 4784
                 metadata:
                   id: 24
                   metadata:
@@ -5031,7 +5783,7 @@ paths:
                     trigger_step_type: /api/3/workflow_step_types/<uuid>
                   template_iri: /api/3/workflows/<uuid>
                   wf_modified: '2026-01-12T23:36:18Z'
-                modified: '2026-05-12T20:00:27.769941Z'
+                modified: '2026-05-12T21:00:46.242407Z'
                 name: FortiGuard Threat Intelligence > Ingest
                 node_name: soar
                 parent_wf: null
@@ -5041,15 +5793,15 @@ paths:
                     default_value: '1768261474'
                     id: 23
                     name: FortiguardIntelligenceLastPullTime__26191d34_e980_40b0_bfc1_0e7bfb04dab5
-                    value: '1778616001'
+                    value: '1778619601'
                   message: ''
                   operation: null
                   status: Success
                 status: finished
                 steps:
-                - '@id': /wf/api/steps/34773/
+                - '@id': /wf/api/steps/35054/
                   '@type': Step
-                  completed: '2026-05-12T20:00:01.065182Z'
+                  completed: '2026-05-12T21:00:01.053240Z'
                   func: set_multiple
                   metadata:
                     id: 134
@@ -5069,11 +5821,11 @@ paths:
                     template_iri: /api/3/workflow_steps/<uuid>
                     wf_metadata: 24
                   name: Configuration
-                  started: '2026-05-12T20:00:01.038679Z'
+                  started: '2026-05-12T21:00:01.025468Z'
                   status: finished
-                - '@id': /wf/api/steps/34774/
+                - '@id': /wf/api/steps/35055/
                   '@type': Step
-                  completed: '2026-05-12T20:00:01.569465Z'
+                  completed: '2026-05-12T21:00:01.543650Z'
                   func: set_multiple
                   metadata:
                     id: 135
@@ -5093,11 +5845,11 @@ paths:
                     template_iri: /api/3/workflow_steps/<uuid>
                     wf_metadata: 24
                   name: Extract Value from Response
-                  started: '2026-05-12T20:00:01.535880Z'
+                  started: '2026-05-12T21:00:01.511600Z'
                   status: finished
-                - '@id': /wf/api/steps/34775/
+                - '@id': /wf/api/steps/35056/
                   '@type': Step
-                  completed: '2026-05-12T20:00:27.163607Z'
+                  completed: '2026-05-12T21:00:45.765949Z'
                   func: connector
                   metadata:
                     id: 136
@@ -5119,11 +5871,11 @@ paths:
                     template_iri: /api/3/workflow_steps/<uuid>
                     wf_metadata: 24
                   name: Fetch and Create
-                  started: '2026-05-12T20:00:01.612489Z'
+                  started: '2026-05-12T21:00:01.569747Z'
                   status: finished
-                - '@id': /wf/api/steps/34776/
+                - '@id': /wf/api/steps/35057/
                   '@type': Step
-                  completed: '2026-05-12T20:00:01.505047Z'
+                  completed: '2026-05-12T21:00:01.472311Z'
                   func: connector
                   metadata:
                     id: 137
@@ -5143,11 +5895,11 @@ paths:
                     template_iri: /api/3/workflow_steps/<uuid>
                     wf_metadata: 24
                   name: Get Macro Value
-                  started: '2026-05-12T20:00:01.096144Z'
+                  started: '2026-05-12T21:00:01.090296Z'
                   status: finished
-                - '@id': /wf/api/steps/34777/
+                - '@id': /wf/api/steps/35058/
                   '@type': Step
-                  completed: '2026-05-12T20:00:01.008682Z'
+                  completed: '2026-05-12T21:00:00.993272Z'
                   func: set_multiple
                   metadata:
                     id: 138
@@ -5167,11 +5919,11 @@ paths:
                     template_iri: /api/3/workflow_steps/<uuid>
                     wf_metadata: 24
                   name: Start
-                  started: '2026-05-12T20:00:00.984736Z'
+                  started: '2026-05-12T21:00:00.977349Z'
                   status: finished
-                - '@id': /wf/api/steps/34778/
+                - '@id': /wf/api/steps/35059/
                   '@type': Step
-                  completed: '2026-05-12T20:00:27.697468Z'
+                  completed: '2026-05-12T21:00:46.204849Z'
                   func: connector
                   metadata:
                     id: 139
@@ -5191,13 +5943,14 @@ paths:
                     template_iri: /api/3/workflow_steps/<uuid>
                     wf_metadata: 24
                   name: Update Pull Time
-                  started: '2026-05-12T20:00:27.187140Z'
+                  started: '2026-05-12T21:00:45.789577Z'
                   status: finished
                 tags: dataingestion,fortinet-fortiguard-threat-intelligence,ingest
                 template_iri: /api/3/workflows/<uuid>
                 user: ''
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/workflows/log_list/:
     post:
       tags:
@@ -5207,7 +5960,7 @@ paths:
         \ trigger POST returns (top-level on `/api/triggers/1/{name}`, sometimes nested under `data` for legacy triggers).\n\
         \nPagination + sort + filter params are passed in the query string; the request body is empty `{}`. Pair `task_id=<uuid>`\
         \ with `parent_wf__isnull=True` to skip sub-playbook child runs.\n\nExample: `POST /api/wf/api/workflows/log_list/?format=json&limit=10&offset=0&ordering=-modified&page=1&task_id=c762219d-947a-483e-8818-e2795dbc1b7b&parent_wf__isnull=True`\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters: *id011
       requestBody:
         required: false
@@ -5225,33 +5978,34 @@ paths:
                 '@context': /wf/api/workflows/log_list/context/
                 hydra:firstPage: /wf/api/workflows/log_list/?format=json&limit=2&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:itemsPerPage: 2
-                hydra:lastPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=2&ordering=-modified&page=1&parent_wf__isnull=True
+                hydra:lastPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=16&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:member:
-                - '@id': /wf/api/workflows/4745/
+                - '@id': /wf/api/workflows/4784/
                   '@type': Workflow
-                  created: '2026-05-12T20:00:00.558540Z'
+                  created: '2026-05-12T21:00:00.542462Z'
                   debug: true
-                  modified: '2026-05-12T20:00:27.769941Z'
+                  modified: '2026-05-12T21:00:46.242407Z'
                   name: FortiGuard Threat Intelligence > Ingest
                   node_name: soar
                   parent_wf: null
                   status: finished
                   tags: dataingestion,fortinet-fortiguard-threat-intelligence,ingest
-                - '@id': /wf/api/workflows/4744/
+                - '@id': /wf/api/workflows/4782/
                   '@type': Workflow
-                  created: '2026-05-12T20:00:00.260570Z'
+                  created: '2026-05-12T21:00:00.232581Z'
                   debug: true
-                  modified: '2026-05-12T20:00:00.875014Z'
-                  name: Purge Integration Logs
+                  modified: '2026-05-12T21:00:01.325636Z'
+                  name: Purge Expired Feeds
                   node_name: soar
                   parent_wf: null
                   status: finished
                   tags: system
                 hydra:nextPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=2&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:previousPage: null
-                hydra:totalItems: 4
+                hydra:totalItems: 17
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/historical-workflows/:
     get:
       tags:
@@ -5260,7 +6014,7 @@ paths:
       description: "Hydra-paged list of playbook runs that have been moved to historical storage (added in 7.6.1). Same filter\
         \ grammar as `/api/wf/api/workflows/` with one nit: the parent-only filter is named `parent__isnull` here (vs `parent_wf__isnull`\
         \ on the recent endpoint).\n\nUse `GET /api/wf/api/workflows/count?logs=all` for a combined count across recent +\
-        \ historical.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ historical.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - *id012
       - *id013
@@ -22361,6 +23115,7 @@ paths:
                 hydra:totalItems: 1388
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/historical-workflows/{pk}/:
     parameters:
     - name: pk
@@ -22375,7 +23130,7 @@ paths:
       summary: Historical run detail
       description: "Detail view for one historical playbook run. Shape mirrors `/api/wf/api/workflows/{pk}/` \u2014 `result`\
         \ per-step output, `template_iri` to the source playbook, `created`/`modified` timestamps, `env` snapshot.\n\n**Auth\
-        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: format
         in: query
@@ -39452,6 +40207,7 @@ paths:
                 user: /api/3/people/<uuid>
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/query/workflow_logs/:
     post:
       tags:
@@ -39463,7 +40219,7 @@ paths:
         \ as `POST /api/query/{collection}`. Otherwise URL query params drive the result set.\n\nSupported leaf operators\
         \ for `filters`: `eq`, `neq`, `contains`, `ncontains`, `gte`, `lte`. Filterable fields include `status`, `user`, `tags`,\
         \ `modified`, `name`. `aggregates` supports `groupBy` and `count` over `status`, `user`, `name`, `id`. Logic groups\
-        \ (`AND` / `OR`) nest.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ (`AND` / `OR`) nest.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: logs
         in: query
@@ -39575,9 +40331,9 @@ paths:
                 hydra:itemsPerPage: 10
                 hydra:lastPage: /wf/api/query/workflow_logs/?logs=all&offset=0
                 hydra:member:
-                - '@id': /wf/api/query/4762/
+                - '@id': /wf/api/query/4810/
                   '@type': Workflow
-                  created: '2026-05-12T20:00:47.705724Z'
+                  created: '2026-05-12T21:01:39.883018Z'
                   debug: true
                   env: {}
                   metadata:
@@ -39633,19 +40389,19 @@ paths:
                       trigger_step_type: /api/3/workflow_step_types/<uuid>
                     template_iri: /api/3/workflows/<uuid>
                     wf_modified: '2026-01-12T23:36:18Z'
-                  modified: '2026-05-12T20:01:54.647721Z'
+                  modified: '2026-05-12T21:02:38.761078Z'
                   name: '> FortiGuard Threat Intelligence > Fetch and Create'
                   node_name: soar
-                  parent_wf_id: 4745
+                  parent_wf_id: 4784
                   peer_details: null
                   result: {}
                   status: finished
                   tags: create,dataingestion,fetch,fortinet-fortiguard-threat-intelligence
                   template_iri: /api/3/workflows/<uuid>
                   user: cyberpgsql
-                - '@id': /wf/api/query/4758/
+                - '@id': /wf/api/query/4809/
                   '@type': Workflow
-                  created: '2026-05-12T20:00:23.452879Z'
+                  created: '2026-05-12T21:01:37.689462Z'
                   debug: true
                   env: {}
                   metadata:
@@ -39701,10 +40457,10 @@ paths:
                       trigger_step_type: /api/3/workflow_step_types/<uuid>
                     template_iri: /api/3/workflows/<uuid>
                     wf_modified: '2026-01-12T23:36:18Z'
-                  modified: '2026-05-12T20:01:44.652454Z'
+                  modified: '2026-05-12T21:02:36.211370Z'
                   name: '> FortiGuard Threat Intelligence > Fetch and Create'
                   node_name: soar
-                  parent_wf_id: 4745
+                  parent_wf_id: 4784
                   peer_details: null
                   result: {}
                   status: finished
@@ -39716,6 +40472,7 @@ paths:
                 hydra:totalItems: 2
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/workflows/count/:
     get:
       tags:
@@ -39724,7 +40481,7 @@ paths:
       description: "Total run count. `?logs=all` (default) combines recent + historical; pass `logs=recent` or `logs=historical`\
         \ to restrict.\n\n**Trailing slash matters.** `/api/wf/api/workflows/count` (no slash) hits an HMAC-gated handler\
         \ that returns `403 \"Could not validate HMAC fingerprint\"` under Bearer or API-KEY; the slashed form `/api/wf/api/workflows/count/`\
-        \ returns the count under either auth.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ returns the count under either auth.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: logs
         in: query
@@ -39747,9 +40504,10 @@ paths:
           content:
             application/json:
               example:
-                count: 1410
+                count: 1458
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/workflows/{pk}/start/:
     parameters:
     - name: pk
@@ -39893,7 +40651,7 @@ paths:
       - Workflows
       summary: Render a Jinja template
       description: "Live Jinja evaluation. Supports ~144 filters (Jinja2 + Ansible + FortiSOAR-specific). YAQL also available\
-        \ via `| yaql(...)` in 7.2.0+.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ via `| yaql(...)` in 7.2.0+.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -39926,13 +40684,14 @@ paths:
                 result: ALERT-001
       x-verified-live:
       - apikey
+      - jwt
   /api/wf/api/manual-wf-input/list_wfinput/:
     post:
       tags:
       - Workflows
       summary: List pending manual inputs
       description: "**See:** [Workflows & triggers](#description/workflows-triggers) (canonical resume path)\n\nGET on this\
-        \ path returns 405 - must be POST.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ path returns 405 - must be POST.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: false
         content:
@@ -39972,7 +40731,7 @@ paths:
                   title: Fill in Device Information
                   type: InputBased
                   unauthenticated_input: false
-                  workflow: gAAAAABqA45zaVEVpMc1X9uG9r5rPOiJOFKrxipmyzYPyUVsj-qJj0q8xL-oByPOYaoCfeBMWVQjTJJJWOue5Sy7UI8YW-XxHA==
+                  workflow: gAAAAABqA5XMAOnCZITJvWx-XDjjff-4HpCB7DSXB04rT09BM5nd6MPxY0YA80QYq6Npddgq71Mu_O_Qn1xz1eJ57eKBdabTpg==
                 - agent_id: null
                   assignment_type: none
                   created: '2026-05-09T19:19:33.298567Z'
@@ -39994,12 +40753,13 @@ paths:
                   title: Fill in Device Information
                   type: InputBased
                   unauthenticated_input: false
-                  workflow: gAAAAABqA45zc_w65siBMhzVZqVUET2m49bUqxdVCvkis14P9OM2Qm8KbdEMvmuZGdFwrLyCWiQ2W_YS3s2c5OvHLYk9I2TZ7Q==
+                  workflow: gAAAAABqA5XMtT7uV3vaIliaaA94qLx773bgMoQebnde2YNOMNe30TJ9RW9sk5zxoi9Ny06HKjV5WVaX3oiNq5aTrWeBtySs6Q==
                 hydra:nextPage: null
                 hydra:previousPage: null
                 hydra:totalItems: 2
       x-verified-live:
       - apikey
+      - jwt
   /api/triggers/1/{name}:
     parameters:
     - name: name
@@ -40157,7 +40917,7 @@ paths:
                 config_count: 0
                 configuration: []
                 contributor: null
-                created: '2026-05-12T20:33:10.683451Z'
+                created: '2026-05-12T21:04:43.580051Z'
                 cs_approved: false
                 cs_compatible: true
                 description: A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings
@@ -40168,14 +40928,14 @@ paths:
                 icon_large: ''
                 icon_large_name: large_icon.png
                 icon_small_name: small_icon.png
-                id: 79
+                id: 81
                 ingestion_supported: false
                 install_result:
                   message: Success
                   output: ''
                 installed: true
                 label: Hello World
-                modified: '2026-05-12T20:33:10.683923Z'
+                modified: '2026-05-12T21:04:43.580094Z'
                 name: hello-world
                 operations:
                 - {}
@@ -40249,20 +41009,20 @@ paths:
                   config_count: 0
                   configuration: []
                   contributor: null
-                  created: '2026-05-12T20:33:10.683451Z'
+                  created: '2026-05-12T21:04:43.580051Z'
                   description: A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings
                     and messages.
                   development: false
                   help_online: null
                   icon_large: ''
                   icon_small: ''
-                  id: 79
+                  id: 81
                   ingestion_supported: false
                   install_result:
                     message: Success
                     output: ''
                   label: Hello World
-                  modified: '2026-05-12T20:33:10.683923Z'
+                  modified: '2026-05-12T21:04:43.580094Z'
                   name: hello-world
                   publisher: Workshop Student
                   remote_status:
@@ -40358,9 +41118,9 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 79
+              connector: 81
               default: false
-              name: live-f35a6698-hwcfg
+              name: live-99f4773b-hwcfg
               status: 1
               teams: []
       responses:
@@ -40374,13 +41134,13 @@ paths:
                   default_greeting: Hello
                   salutation: Mr.
                 config_id: <uuid>
-                connector: 79
+                connector: 81
                 connector_name: hello-world
                 connector_version: 1.0.4
                 default: false
                 health_status: {}
-                id: 57
-                name: live-f35a6698-hwcfg
+                id: 59
+                name: live-99f4773b-hwcfg
                 remote_status: {}
                 status:
                   message: Connector hello-world version 1.0.4 as been configured successfully
@@ -40454,7 +41214,7 @@ paths:
                     visible: true
                 configuration: []
                 contributor: null
-                created: '2026-05-12T20:33:10.683451Z'
+                created: '2026-05-12T21:04:43.580051Z'
                 cs_approved: false
                 cs_compatible: true
                 description: A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings
@@ -40466,22 +41226,22 @@ paths:
                 icon_large_name: large_icon.png
                 icon_small: ''
                 icon_small_name: small_icon.png
-                id: 79
+                id: 81
                 ingestion_supported: false
                 install_result:
                   message: Success
                   output: ''
                 installed: true
                 label: Hello World
-                modified: '2026-05-12T20:33:10.683923Z'
+                modified: '2026-05-12T21:04:43.580094Z'
                 name: hello-world
                 operations:
                 - annotation: null
                   category: investigation
-                  connector: 79
+                  connector: 81
                   description: Returns a simple greeting message using the configured greeting word and a name you provide.
                   enabled: true
-                  id: 943
+                  id: 949
                   operation: say_hello
                   output_schema: {}
                   parameters:
@@ -40499,10 +41259,10 @@ paths:
                   title: Say Hello
                   visible: true
                 - annotation: null
-                  connector: 79
+                  connector: 81
                   description: Adds two numbers together and returns the result. Demonstrates how to work with numeric parameters.
                   enabled: true
-                  id: 944
+                  id: 950
                   operation: add_numbers
                   output_schema: {}
                   parameters:
@@ -40525,10 +41285,10 @@ paths:
                   visible: true
                 - annotation: null
                   category: investigation
-                  connector: 79
+                  connector: 81
                   description: Reverses a string of text and returns the result. Demonstrates simple string manipulation.
                   enabled: true
-                  id: 945
+                  id: 951
                   operation: reverse_text
                   output_schema: {}
                   parameters:
@@ -40719,7 +41479,7 @@ paths:
       - Metadata
       summary: List module / model definitions
       description: "Drift-resistant alternative to a static schema snapshot.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer\
-        \ JWT: gated`"
+        \ JWT: OK`"
       responses:
         '200':
           description: Collection of ModelMetadata.
@@ -40935,6 +41695,7 @@ paths:
                   hydra:next: /api/3/model_metadatas?%24limit=5&%24page=2
       x-verified-live:
       - apikey
+      - jwt
   /api/3/picklists/{uuid}:
     parameters:
     - name: uuid
@@ -40948,7 +41709,7 @@ paths:
       summary: Picklist value
       description: "Resolves one picklist *value* record by uuid - the leaf entries that record fields point at (`severity`,\
         \ `status`, etc.). The owning picklist taxonomy is `GET /api/3/picklist_names/{uuid}`.\n\n**Auth coverage:** `API-KEY:\
-        \ OK` \xB7 `Bearer JWT: gated`"
+        \ OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Picklist record.
@@ -40968,6 +41729,7 @@ paths:
                 uuid: <uuid>
       x-verified-live:
       - apikey
+      - jwt
   /api/3/picklist_names:
     get:
       tags:
@@ -40975,7 +41737,7 @@ paths:
       summary: List picklist taxonomies
       description: "Hydra collection of every picklist *taxonomy* (named list). Each entry's `@id` is the IRI you pass as\
         \ `listName` when fetching values via `GET /api/3/picklists?listName=<iri>`. Names are PascalCase (e.g. `AlertSeverity`,\
-        \ `AlertStatus`, `Severity`).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ `AlertStatus`, `Severity`).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Hydra collection of picklist taxonomies.
@@ -41135,6 +41897,7 @@ paths:
                   hydra:next: /api/3/picklist_names?%24limit=1&%24page=2
       x-verified-live:
       - apikey
+      - jwt
   /api/3/picklist_names/{uuid}:
     parameters:
     - name: uuid
@@ -41147,7 +41910,7 @@ paths:
       - Metadata
       summary: Picklist taxonomy
       description: "Resolves one picklist *taxonomy* record by uuid - the named list (e.g. `AlertSeverity`) whose members\
-        \ are exposed via `GET /api/3/picklists/{uuid}`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ are exposed via `GET /api/3/picklists/{uuid}`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Picklist name record.
@@ -41297,6 +42060,7 @@ paths:
                 uuid: <uuid>
       x-verified-live:
       - apikey
+      - jwt
   /api/3/contexts/{shortName}:
     parameters:
     - name: shortName
@@ -41309,7 +42073,7 @@ paths:
       - Metadata
       summary: Hydra @context for a model
       description: "Authoritative property list for one entity. Returns `application/ld+json`.\n\n**Auth coverage:** `API-KEY:\
-        \ OK` \xB7 `Bearer JWT: gated`"
+        \ OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: JSON-LD context.
@@ -41554,6 +42318,7 @@ paths:
                   warroomsCount: Alert/warroomsCount
       x-verified-live:
       - apikey
+      - jwt
   /api/3/docs.jsonld:
     get:
       tags:
@@ -41562,7 +42327,7 @@ paths:
       description: "Walks `hydra:supportedClass` for every entity (114 classes on 7.6.5). Per-entity properties + supported\
         \ operations. Less ergonomic than OpenAPI but exhaustive - use as the source of truth when expanding this curated\
         \ spec.\n\nNote: `/api/3/docs.json` returns 'Format \"json\" is not supported' on this build; only `.jsonld` works.\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: ApiDocumentation (JSON-LD).
@@ -69617,15 +70382,15 @@ paths:
                   subClassOf: hydra:Error
       x-verified-live:
       - apikey
+      - jwt
   /api/3/files:
     post:
       tags:
       - Files
       summary: Upload a file / attachment
-      description: '**See:** [Imports & exports](#description/imports-exports) (file upload is step 1 of import)
-
-
-        Multipart upload. Used by every connector that captures evidence and as the first step of import-job ingestion.'
+      description: "**See:** [Imports & exports](#description/imports-exports) (file upload is step 1 of import)\n\nMultipart\
+        \ upload. Used by every connector that captures evidence and as the first step of import-job ingestion.\n\n**Auth\
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -69638,6 +70403,9 @@ paths:
                   format: binary
               required:
               - file
+          application/json:
+            example:
+              file: <binary>
       responses:
         '201':
           description: File record (carries `@id` for use as IRI ref).
@@ -69645,14 +70413,20 @@ paths:
             application/json:
               example:
                 '@context': /api/3/contexts/File
-                '@id': /api/3/files/1f9a3c4d-5e6b-4789-a012-3b4c5d6e7f80
+                '@id': /api/3/files/<uuid>
                 '@type': File
-                uuid: 1f9a3c4d-5e6b-4789-a012-3b4c5d6e7f80
-                name: evidence.pcap
-                size: 102842
-                mimeType: application/vnd.tcpdump.pcap
-                createDate: 1736380800
-                createUser: /api/3/people/bcb46d5a-0ad8-4480-ac68-9ebc28502a30
+                assignee: ''
+                filename: live-test.txt
+                id: <uuid>
+                metadata: []
+                mimeType: text/plain
+                size: 17
+                thumbnail: null
+                uploadDate: 1778619942.061519
+                uuid: <uuid>
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/roles:
     get:
       tags:
@@ -69660,7 +70434,7 @@ paths:
       summary: List roles
       parameters: *id027
       description: "Hydra-paged listing of all roles in the tenant. Same `$`-param grammar as any other record collection.\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Collection.
@@ -69697,12 +70471,14 @@ paths:
                   hydra:next: /api/3/roles?%24limit=2&%24page=2
       x-verified-live:
       - apikey
+      - jwt
     post:
       tags:
       - Access management
       summary: Create role
-      description: Creates a new role. Body shape follows the generic record contract (`name` plus module-specific fields);
-        see `GET /api/3/contexts/Role` for the full property list.
+      description: "Creates a new role. Body shape follows the generic record contract (`name` plus module-specific fields);\
+        \ see `GET /api/3/contexts/Role` for the full property list.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
+        \ OK`"
       requestBody:
         required: true
         content:
@@ -69710,23 +70486,25 @@ paths:
             schema:
               type: object
             example:
-              name: Tier1 Analyst
-              description: Read all, write alerts/incidents.
-              permissions:
-                alerts:
-                  read: true
-                  create: true
-                  update: true
-                  delete: false
+              description: live_test role
+              name: live-99f4773b-role
       responses:
         '201':
           description: Created.
           content:
             application/json:
               example:
-                '@id': /api/3/roles/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                name: Tier1 Analyst
+                '@context': /api/3/contexts/Role
+                '@id': /api/3/roles/<uuid>
+                '@type': Role
+                description: live_test role
+                importedBy: []
+                modulePermissions: []
+                name: live-99f4773b-role
+                uuid: <uuid>
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/teams:
     get:
       tags:
@@ -69734,7 +70512,7 @@ paths:
       summary: List teams
       parameters: *id027
       description: "Hydra-paged listing of all teams in the tenant. Same `$`-param grammar as any other record collection.\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Collection.
@@ -69768,12 +70546,14 @@ paths:
                   hydra:next: /api/3/teams?%24limit=2&%24page=2
       x-verified-live:
       - apikey
+      - jwt
     post:
       tags:
       - Access management
       summary: Create team
-      description: Creates a new team. Body shape follows the generic record contract (`name` plus module-specific fields);
-        see `GET /api/3/contexts/Team` for the full property list.
+      description: "Creates a new team. Body shape follows the generic record contract (`name` plus module-specific fields);\
+        \ see `GET /api/3/contexts/Team` for the full property list.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
+        \ OK`"
       requestBody:
         required: true
         content:
@@ -69781,19 +70561,28 @@ paths:
             schema:
               type: object
             example:
-              name: SOC East
-              description: East-coast SOC team
-              members:
-              - /api/3/people/bcb46d5a-0ad8-4480-ac68-9ebc28502a30
+              description: live_test team (typed)
+              name: live-99f4773b-team2
       responses:
         '201':
           description: Created.
           content:
             application/json:
               example:
-                '@id': /api/3/teams/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                name: SOC East
+                '@context': /api/3/contexts/Team
+                '@id': /api/3/teams/<uuid>
+                '@type': Team
+                actors: []
+                children: []
+                description: live_test team (typed)
+                importedBy: []
+                name: live-99f4773b-team2
+                parents: []
+                siblings: []
+                uuid: <uuid>
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/api_keys:
     get:
       tags:
@@ -69801,7 +70590,7 @@ paths:
       summary: List API-key scopes
       description: "Returns one object per scope binding (`name`, `uuid`, `userId`, roles, teams). Use `userId` values as\
         \ input to `POST /api/auth/query/users` to fetch the actual keys.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer\
-        \ JWT: gated`"
+        \ JWT: OK`"
       parameters: *id027
       responses:
         '200':
@@ -69956,6 +70745,7 @@ paths:
                   hydra:next: /api/3/api_keys?%24limit=2&%24page=2
       x-verified-live:
       - apikey
+      - jwt
     post:
       tags:
       - Access management
@@ -69988,7 +70778,7 @@ paths:
                   type: string
                   description: User uuid returned by `POST /api/auth/users`.
             example:
-              name: live-457d48d3-apikey
+              name: live-99f4773b-apikey
               roles: []
               teams: []
               userId: <uuid>
@@ -70003,7 +70793,7 @@ paths:
                 '@settings': /api/3/user_settings/<uuid>
                 '@type': ApiKey
                 avatar: null
-                createDate: 1778602980.160417
+                createDate: 1778619830.205371
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -70031,8 +70821,8 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                id: 25
-                modifyDate: 1778602980.160417
+                id: 26
+                modifyDate: 1778619830.205371
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -70060,7 +70850,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-457d48d3-apikey
+                name: live-99f4773b-apikey
                 recordTags: []
                 roles: []
                 teams: []
@@ -70095,7 +70885,7 @@ paths:
                 '@settings': /api/3/user_settings/<uuid>
                 '@type': ApiKey
                 avatar: null
-                createDate: 1778602980.160417
+                createDate: 1778619830.205371
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -70123,8 +70913,8 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                id: 25
-                modifyDate: 1778602980.160417
+                id: 26
+                modifyDate: 1778619830.205371
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -70152,7 +70942,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-457d48d3-apikey
+                name: live-99f4773b-apikey
                 recordTags: []
                 userId: <uuid>
                 userType: null
@@ -70186,7 +70976,7 @@ paths:
                 userId:
                   type: string
             example:
-              name: live-457d48d3-apikey-renamed
+              name: live-99f4773b-apikey-renamed
               roles: []
               teams: []
               userId: <uuid>
@@ -70201,7 +70991,7 @@ paths:
                 '@settings': /api/3/user_settings/<uuid>
                 '@type': ApiKey
                 avatar: null
-                createDate: 1778602980.160417
+                createDate: 1778619830.205371
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -70229,8 +71019,8 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                id: 25
-                modifyDate: 1778602981.575482
+                id: 26
+                modifyDate: 1778619831.171385
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -70258,7 +71048,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-457d48d3-apikey-renamed
+                name: live-99f4773b-apikey-renamed
                 recordTags: []
                 roles: []
                 teams: []
@@ -70296,12 +71086,12 @@ paths:
                 usersresp:
                 - access_type: Concurrent
                   api_key:
-                    key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxfa71
-                    modify_date: 1778602979
+                    key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxd81b
+                    modify_date: 1778619829
                     retrievable: false
                     status: Active
                     time_remaining: 1
-                    valid_until: 1778689379
+                    valid_until: 1778706229
                   bind_name: null
                   domain: null
                   is_logged_in: false
@@ -70416,7 +71206,7 @@ paths:
                   retrievable: false
                   status: Active
                   time_remaining: 5
-                  valid_until: 1779034984
+                  valid_until: 1779051833
                 uuid: <uuid>
       x-verified-live:
       - jwt
@@ -70456,12 +71246,12 @@ paths:
                 usersresp:
                 - access_type: Concurrent
                   api_key:
-                    key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxfa71
-                    modify_date: 1778602979
+                    key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxd81b
+                    modify_date: 1778619829
                     retrievable: false
                     status: Active
                     time_remaining: 1
-                    valid_until: 1778689379
+                    valid_until: 1778706229
                   bind_name: null
                   domain: null
                   is_logged_in: false
@@ -70478,7 +71268,7 @@ paths:
       - Access management
       summary: Read auth config section
       description: "Section-scoped config read. Pass `section=API-KEYS` to inspect API-key settings (including `retrievable_mode`).\n\
-        \n**Auth coverage:** `API-KEY: 403` \xB7 `Bearer JWT: gated`"
+        \n**Auth coverage:** `API-KEY: 403` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: section
         in: query
@@ -70489,9 +71279,28 @@ paths:
       responses:
         '200':
           description: Config section payload.
+          content:
+            application/json:
+              example:
+                hydra:member:
+                - dataType: int
+                  id: 61
+                  key: api_key_validity_min
+                  section: API-KEYS
+                  value: 1
+                - dataType: int
+                  id: 62
+                  key: api_key_validity_max
+                  section: API-KEYS
+                  value: 365
+                - dataType: boolean
+                  id: 63
+                  key: retrievable_mode
+                  section: API-KEYS
+                  value: false
+                hydra:totalItems: 3
       x-verified-live:
-        apikey: 403
-        jwt: null
+      - jwt
     put:
       tags:
       - Access management
@@ -70637,7 +71446,7 @@ paths:
       summary: Feature-flag introspection
       description: "License-tier-aware feature-flag map. Each key is a product feature; the boolean indicates whether the\
         \ current license unlocks it. Use to gate UI/automation paths without hard-coding tier checks.\n\n**Auth coverage:**\
-        \ `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+        \ `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Flag map.
@@ -70649,31 +71458,7 @@ paths:
                 restricted_url_states: []
       x-verified-live:
       - apikey
-  /api/3/cache_util:
-    post:
-      tags:
-      - System
-      summary: Force cache invalidation
-      description: Flushes internal server-side caches (metadata, picklists, RBAC). Useful after schema or role changes when
-        stale lookups would otherwise persist until the next worker restart.
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-            example:
-              action: invalidate
-              scope: all
-      responses:
-        '200':
-          description: OK.
-          content:
-            application/json:
-              example:
-                status: ok
-                invalidated: 14
-                at: 1736380800
+      - jwt
 components:
   securitySchemes:
     apiKeyAuth:
