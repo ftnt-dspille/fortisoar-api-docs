@@ -40389,140 +40389,6 @@ paths:
       x-verified-live:
       - apikey
       - jwt
-  /api/integration/execute/:
-    post:
-      tags:
-      - Connectors
-      summary: Execute a connector action
-      description: "Runs a connector operation against a configured connector.\n\n**Discovering what to send:** the `operation`\
-        \ key, its required `params`, and the available `config` values all come from `POST /api/integration/connectors/{id}/`\
-        \ (operations + configurations for the installed connector). There is no separate `/operations/` route - that POST\
-        \ is the operations-discovery endpoint.\n\n**Body fields:**\n- `connector` (required) \u2014 connector `name` (e.g.\
-        \ `hello-world`).\n- `operation` (required) \u2014 operation key from the connector's `info.json`   (e.g. `reverse_text`).\
-        \ Discover available operations via   `POST /api/integration/connectors/{id}/` (response `operations[].operation`).\n\
-        - `config` (required when the operation needs a configuration) \u2014 accepts **either**   the configuration uuid\
-        \ (`config_id`) **or** the configuration `name`.   Stateless operations (e.g. `cyops_utilities` formatters) still\
-        \ accept the field   but ignore its value. Omitting or `null` returns `INTEGRATION-12: Could not find a connector\
-        \   configuration matching the given configuration id or name`.\n- `version` (optional) \u2014 connector version.\
-        \ If omitted, the appliance resolves the   installed default version. Provide it explicitly when multiple versions\
-        \ are installed.\n- `params` (required when the operation declares required parameters) \u2014 the action's   input\
-        \ payload as defined by the connector's `info.json`. Discover required params via   the same connector-detail endpoint\
-        \ (`operations[].parameters[]` with `required: true`).\n\nErrors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*`\
-        \ code in `message`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - connector
-              - operation
-              properties:
-                connector:
-                  type: string
-                  description: Connector name (e.g. `hello-world`).
-                operation:
-                  type: string
-                  description: Operation key from the connector's `info.json` (e.g. `reverse_text`).
-                config:
-                  type: string
-                  description: Configuration uuid (`config_id`) **or** configuration `name`. Required when the operation needs
-                    a configuration.
-                version:
-                  type: string
-                  description: Connector version (e.g. `1.0.4`). Optional - server resolves a default when omitted.
-                params:
-                  type: object
-                  description: Action input payload. Shape varies per operation; see `operations[].parameters` from the connector
-                    detail.
-            example:
-              config: <uuid>
-              connector: hello-world
-              operation: reverse_text
-              params:
-                input_text: live-test
-              version: 1.0.4
-      responses:
-        '200':
-          description: Action result.
-          content:
-            application/json:
-              example:
-                data:
-                  original: live-test
-                  reversed: tset-evil
-                message: ''
-                operation: null
-                status: Success
-      x-verified-live:
-      - apikey
-      - jwt
-  /api/integration/connectors/healthcheck/{name}/{version}/:
-    parameters:
-    - name: name
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Connector name (e.g. `hello-world`).
-    - name: version
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Connector version (e.g. `1.0.4`).
-    get:
-      tags:
-      - Connectors
-      summary: Health-check a connector via existing config
-      description: "Lighter-weight check than the POST form: takes the configuration uuid as a query parameter rather than\
-        \ re-sending the full config body.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters:
-      - name: config
-        in: query
-        required: true
-        schema:
-          $ref: '#/components/schemas/UUID'
-        description: Configuration uuid (`config_id`).
-      responses:
-        '200':
-          description: 'Health status with `status: Available` on success.'
-          content:
-            application/json:
-              example:
-                _status: true
-                config_id: <uuid>
-                message: Connector is available
-                name: hello-world
-                request_id: null
-                status: Available
-                version: 1.0.4
-      x-verified-live:
-      - apikey
-      - jwt
-  /api/integration/configuration/{config_id}/:
-    parameters:
-    - name: config_id
-      in: path
-      required: true
-      schema:
-        $ref: '#/components/schemas/UUID'
-      description: Configuration uuid (the `config_id` field, not the integer `id`).
-    delete:
-      tags:
-      - Connectors
-      summary: Delete a connector configuration
-      description: "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not the integer DB id\
-        \ (which returns 500), and the **trailing slash is mandatory** \u2014 without it the request is routed to an HMAC-gated\
-        \ handler that returns the misleading `403 Could not validate HMAC fingerprint`.\n\n**Auth coverage:** `API-KEY: OK`\
-        \ \xB7 `Bearer JWT: OK`"
-      responses:
-        '204':
-          description: Deleted.
-      x-verified-live:
-      - apikey
-      - jwt
   /api/integration/connectors/{id}/:
     parameters:
     - name: id
@@ -40710,6 +40576,140 @@ paths:
       responses:
         '204':
           description: Uninstalled.
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/integration/execute/:
+    post:
+      tags:
+      - Connectors
+      summary: Execute a connector action
+      description: "Runs a connector operation against a configured connector.\n\n**Discovering what to send:** the `operation`\
+        \ key, its required `params`, and the available `config` values all come from `POST /api/integration/connectors/{id}/`\
+        \ (operations + configurations for the installed connector). There is no separate `/operations/` route - that POST\
+        \ is the operations-discovery endpoint.\n\n**Body fields:**\n- `connector` (required) \u2014 connector `name` (e.g.\
+        \ `hello-world`).\n- `operation` (required) \u2014 operation key from the connector's `info.json`   (e.g. `reverse_text`).\
+        \ Discover available operations via   `POST /api/integration/connectors/{id}/` (response `operations[].operation`).\n\
+        - `config` (required when the operation needs a configuration) \u2014 accepts **either**   the configuration uuid\
+        \ (`config_id`) **or** the configuration `name`.   Stateless operations (e.g. `cyops_utilities` formatters) still\
+        \ accept the field   but ignore its value. Omitting or `null` returns `INTEGRATION-12: Could not find a connector\
+        \   configuration matching the given configuration id or name`.\n- `version` (optional) \u2014 connector version.\
+        \ If omitted, the appliance resolves the   installed default version. Provide it explicitly when multiple versions\
+        \ are installed.\n- `params` (required when the operation declares required parameters) \u2014 the action's   input\
+        \ payload as defined by the connector's `info.json`. Discover required params via   the same connector-detail endpoint\
+        \ (`operations[].parameters[]` with `required: true`).\n\nErrors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*`\
+        \ code in `message`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - connector
+              - operation
+              properties:
+                connector:
+                  type: string
+                  description: Connector name (e.g. `hello-world`).
+                operation:
+                  type: string
+                  description: Operation key from the connector's `info.json` (e.g. `reverse_text`).
+                config:
+                  type: string
+                  description: Configuration uuid (`config_id`) **or** configuration `name`. Required when the operation needs
+                    a configuration.
+                version:
+                  type: string
+                  description: Connector version (e.g. `1.0.4`). Optional - server resolves a default when omitted.
+                params:
+                  type: object
+                  description: Action input payload. Shape varies per operation; see `operations[].parameters` from the connector
+                    detail.
+            example:
+              config: <uuid>
+              connector: hello-world
+              operation: reverse_text
+              params:
+                input_text: live-test
+              version: 1.0.4
+      responses:
+        '200':
+          description: Action result.
+          content:
+            application/json:
+              example:
+                data:
+                  original: live-test
+                  reversed: tset-evil
+                message: ''
+                operation: null
+                status: Success
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/integration/connectors/healthcheck/{name}/{version}/:
+    parameters:
+    - name: name
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector name (e.g. `hello-world`).
+    - name: version
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector version (e.g. `1.0.4`).
+    get:
+      tags:
+      - Connectors
+      summary: Health-check a connector via existing config
+      description: "Lighter-weight check than the POST form: takes the configuration uuid as a query parameter rather than\
+        \ re-sending the full config body.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      parameters:
+      - name: config
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/UUID'
+        description: Configuration uuid (`config_id`).
+      responses:
+        '200':
+          description: 'Health status with `status: Available` on success.'
+          content:
+            application/json:
+              example:
+                _status: true
+                config_id: <uuid>
+                message: Connector is available
+                name: hello-world
+                request_id: null
+                status: Available
+                version: 1.0.4
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/integration/configuration/{config_id}/:
+    parameters:
+    - name: config_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: Configuration uuid (the `config_id` field, not the integer `id`).
+    delete:
+      tags:
+      - Connectors
+      summary: Delete a connector configuration
+      description: "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not the integer DB id\
+        \ (which returns 500), and the **trailing slash is mandatory** \u2014 without it the request is routed to an HMAC-gated\
+        \ handler that returns the misleading `403 Could not validate HMAC fingerprint`.\n\n**Auth coverage:** `API-KEY: OK`\
+        \ \xB7 `Bearer JWT: OK`"
+      responses:
+        '204':
+          description: Deleted.
       x-verified-live:
       - apikey
       - jwt

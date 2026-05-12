@@ -1336,6 +1336,42 @@ PATHS["/api/integration/configuration/"] = {
              "responses": {"201": _resp("Created.")}},
 }
 
+# Step 3.5: discover operations + configurations for an installed connector.
+# Placed before /execute/ so the lifecycle reads install -> list ops -> execute.
+# The DELETE verb on this path uninstalls; both verbs share the path object.
+PATHS["/api/integration/connectors/{id}/"] = {
+    "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
+                    "description": "Integer connector id (`data[].id` from `/api/integration/connectors/`)."}],
+    "post": {"tags": ["Connectors"],
+             "summary": "List connector operations (and configurations)",
+             "description": (
+                 "**This is the operations-discovery endpoint** - the only way to enumerate "
+                 "the operations installed for a connector. There is no separate "
+                 "`/operations/` route; this POST handler returns the full connector record, "
+                 "including:\n\n"
+                 "- `operations[]` - each with `operation` key, `title`, `description`, "
+                 "  `parameters[]` (with `name`, `type`, `required`, `tooltip`, ...), `output_schema`.\n"
+                 "- `configuration[]` - each with `config_id`, `name`, `config`, `agent`.\n"
+                 "- `config_schema` - the connector's installable config field definitions.\n\n"
+                 "Use the response to build a call to `POST /api/integration/execute/`:\n"
+                 "- `operations[].operation` -> the `operation` body field.\n"
+                 "- `operations[].parameters[]` entries with `required: true` -> the required "
+                 "  keys under `params`.\n"
+                 "- `configuration[].config_id` or `configuration[].name` -> the `config` field "
+                 "  (both forms are accepted).\n\n"
+                 "**Quirks:** GET returns `Get method for this API is forbidden, Please use POST method`. "
+                 "An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. "
+                 "Trailing slash is required. The DELETE verb on this same path uninstalls the "
+                 "connector - don't confuse the two."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object"}, "example": {}}}},
+             "responses": {"200": _resp("Connector detail with operations and configurations.")}},
+    "delete": {"tags": ["Connectors"], "summary": "Uninstall a connector",
+               "description": "Trailing slash is required. Returns 204 on success.",
+               "responses": {"204": {"description": "Uninstalled."}}},
+}
+
 # Step 4: execute a connector action.
 PATHS["/api/integration/execute/"] = {
     "post": {
@@ -1423,38 +1459,9 @@ PATHS["/api/integration/configuration/{config_id}/"] = {
 }
 
 # Step 6b: uninstall the connector. POST returns connector detail + operations.
-PATHS["/api/integration/connectors/{id}/"] = {
-    "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
-                    "description": "Integer connector id (`data[].id` from `/api/integration/connectors/`)."}],
-    "post": {"tags": ["Connectors"],
-             "summary": "List connector operations (and configurations)",
-             "description": (
-                 "**This is the operations-discovery endpoint** - the only way to enumerate "
-                 "the operations installed for a connector. There is no separate "
-                 "`/operations/` route; this POST handler returns the full connector record, "
-                 "including:\n\n"
-                 "- `operations[]` - each with `operation` key, `title`, `description`, "
-                 "  `parameters[]` (with `name`, `type`, `required`, `tooltip`, ...), `output_schema`.\n"
-                 "- `configuration[]` - each with `config_id`, `name`, `config`, `agent`.\n"
-                 "- `config_schema` - the connector's installable config field definitions.\n\n"
-                 "Use the response to build a call to `POST /api/integration/execute/`:\n"
-                 "- `operations[].operation` -> the `operation` body field.\n"
-                 "- `operations[].parameters[]` entries with `required: true` -> the required "
-                 "  keys under `params`.\n"
-                 "- `configuration[].config_id` or `configuration[].name` -> the `config` field "
-                 "  (both forms are accepted).\n\n"
-                 "**Quirks:** GET returns `Get method for this API is forbidden, Please use POST method`. "
-                 "An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. "
-                 "Trailing slash is required. The DELETE verb on this same path uninstalls the "
-                 "connector - don't confuse the two."
-             ),
-             "requestBody": {"required": True, "content": {"application/json": {
-                 "schema": {"type": "object"}, "example": {}}}},
-             "responses": {"200": _resp("Connector detail with operations and configurations.")}},
-    "delete": {"tags": ["Connectors"], "summary": "Uninstall a connector",
-               "description": "Trailing slash is required. Returns 204 on success.",
-               "responses": {"204": {"description": "Uninstalled."}}},
-}
+# DELETE for /api/integration/connectors/{id}/ is registered in the
+# operations-discovery block above (placed before /execute/ in the spec
+# so the discovery endpoint reads first in the lifecycle).
 
 
 # --- Modules / metadata ----------------------------------------------------
