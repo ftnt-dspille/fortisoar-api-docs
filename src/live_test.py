@@ -261,6 +261,29 @@ def sweep(s: Session) -> int:
     removed += _sweep_connector_configs(s)
     removed += _sweep_hello_world_connectors(s)
     removed += _sweep_query_objects(s)
+    removed += _sweep_alerts(s)
+    return removed
+
+
+def _sweep_alerts(s: Session) -> int:
+    """DELETE /api/3/alerts/{uuid} for any alert whose name starts with LIVE_PREFIX."""
+    removed = 0
+    r = s.request("GET", "/api/3/alerts?$limit=200&$search=live-")
+    if not r.ok:
+        return 0
+    try:
+        members = r.json().get("hydra:member", [])
+    except ValueError:
+        return 0
+    for m in members:
+        if not (m.get("name") or "").startswith(LIVE_PREFIX):
+            continue
+        uuid_ = m.get("uuid") or (m.get("@id", "").rsplit("/", 1)[-1])
+        if not uuid_:
+            continue
+        if s.request("DELETE", f"/api/3/alerts/{uuid_}").ok:
+            removed += 1
+            print(f"  swept alert {m['name']} ({uuid_})")
     return removed
 
 
@@ -433,9 +456,41 @@ def scenario_smoke(s: Session) -> None:
 
     No record creation — every call is either a GET or a side-effect-free POST.
     """
+    print("[smoke] system identity (public + auth-required)")
+    s.call("GET", "/api/version", want=200)
+    s.call("GET", "/api/auth/cluster/health", want=(200, 403))
+    s.call("GET", "/api/auth/license", want=(200, 403))
+
     print("[smoke] permissions + actor")
     s.call("GET", "/api/permissions/current", want=200)
     s.call("GET", "/api/3/actors/current", want=200)
+
+    print("[smoke] audit gateway catalog")
+    s.call("GET", "/api/gateway/audit/operations", want=200)
+
+    print("[smoke] access management read")
+    s.call("GET", "/api/3/roles", want=200, params={"$limit": 2})
+    s.call("GET", "/api/3/teams", want=200, params={"$limit": 2})
+    # api_keys is JWT-only on the box we tested - record coverage either way.
+    s.call("GET", "/api/3/api_keys", want=(200, 403), params={"$limit": 2})
+
+    print("[smoke] picklist taxonomy")
+    _, pln = s.call("GET", "/api/3/picklist_names", want=200, params={"$limit": 1})
+    members = (pln or {}).get("hydra:member") or []
+    if members:
+        pln_uuid = members[0].get("uuid") or (members[0].get("@id", "").rsplit("/", 1)[-1])
+        if pln_uuid:
+            s.call("GET", "/api/3/picklist_names/{uuid}", want=200,
+                   path_params={"uuid": pln_uuid})
+            # Drill into one picklist value owned by this taxonomy.
+            r = s.request("GET", f"/api/3/picklists?listName=/api/3/picklist_names/{pln_uuid}&$limit=1")
+            if r.ok:
+                pmem = (r.json() or {}).get("hydra:member") or []
+                if pmem:
+                    pk_uuid = pmem[0].get("uuid") or (pmem[0].get("@id", "").rsplit("/", 1)[-1])
+                    if pk_uuid:
+                        s.call("GET", "/api/3/picklists/{uuid}", want=200,
+                               path_params={"uuid": pk_uuid})
 
     print("[smoke] feature access + auth config read")
     s.call("GET", "/api/product/feature-access", want=200)
@@ -621,6 +676,11 @@ def scenario_connector_lifecycle(s: Session) -> None:
 
     print("[connector] step 2: list connectors + configurations (read-only)")
     s.call("GET", "/api/integration/connectors/", want=200, params={"name": NAME})
+    # Connector-detail (operations + configurations) - the discovery endpoint
+    # for what to pass to /api/integration/execute/. Body must be `{}`; empty
+    # body returns 415 and GET returns a "use POST" 200 envelope.
+    s.call("POST", "/api/integration/connectors/{id}/", want=200,
+           path_params={"id": connector_id}, json={})
     # `page_size` (not `limit`) is the pagination param for the integration
     # collections — Django REST style, distinct from the Hydra `limit` used
     # under `/api/3/`. Capping to 1 keeps the captured example readable.
@@ -647,12 +707,17 @@ def scenario_connector_lifecycle(s: Session) -> None:
                            "params": {"input_text": "live-test"}})
     print(f"  execute -> {r.status_code}  {str(body)[:200]}")
 
-    print("[connector] step 5: healthcheck")
+    print("[connector] step 5: healthcheck (GET form using existing config)")
     r, body = s.call("GET",
                      "/api/integration/connectors/healthcheck/{name}/{version}/",
                      path_params={"name": NAME, "version": VERSION},
                      params={"config": cfg_uuid})
-    print(f"  healthcheck -> {r.status_code}  {str(body)[:200]}")
+    print(f"  healthcheck GET -> {r.status_code}  {str(body)[:200]}")
+
+    # NOTE: POST /api/integration/connectors/healthcheck/ (the inline-body
+    # form) appears to be unrouted on FSR 7.6.x - every body shape probed
+    # returned 404 with an empty message. The GET form (above) is the only
+    # working variant. The spec entry for the POST form was removed.
 
     print("[connector] step 6: cleanup")
     # Config DELETE requires uuid (config_id) + trailing slash. Without it the
@@ -663,6 +728,60 @@ def scenario_connector_lifecycle(s: Session) -> None:
     r, _ = s.call("DELETE", "/api/integration/connectors/{id}/",
                   path_params={"id": connector_id})
     print(f"  DELETE connector -> {r.status_code}")
+
+
+@scenario("alerts_crud")
+def scenario_alerts_crud(s: Session) -> None:
+    """Full alert lifecycle against the dedicated `/api/3/alerts` routes.
+
+    Covers the typed-collection CRUD endpoints distinct from the generic
+    `/api/3/{collection}` form: list, create, read-by-uuid, update, delete.
+    """
+    print("[alerts] step 1: list")
+    s.call("GET", "/api/3/alerts", want=200, params={"$limit": 2})
+
+    print("[alerts] step 2: resolve picklist IRIs for severity + status")
+    # Both severity and status point at picklist values, not free strings.
+    # Picklist names on FSR 7.6.x are PascalCase: `Severity`, `AlertStatus`.
+    def _first_value(pln_id: str) -> str | None:
+        rr = s.request("GET", f"/api/3/picklists?listName={pln_id}&$limit=1")
+        if not rr.ok:
+            return None
+        pmem = (rr.json() or {}).get("hydra:member") or []
+        return pmem[0].get("@id") if pmem else None
+
+    sev_iri = status_iri = None
+    r = s.request("GET", "/api/3/picklist_names?$limit=200")
+    if r.ok:
+        for m in (r.json().get("hydra:member") or []):
+            name = (m.get("name") or "")
+            if name == "Severity" and not sev_iri:
+                sev_iri = _first_value(m.get("@id"))
+            elif name == "AlertStatus" and not status_iri:
+                status_iri = _first_value(m.get("@id"))
+    assert sev_iri and status_iri, f"could not resolve picklist IRIs (sev={sev_iri}, status={status_iri})"
+
+    print("[alerts] step 3: create")
+    alert_name = s.live_name("alert")
+    body = {"name": alert_name, "source": "live-test", "severity": sev_iri, "status": status_iri}
+    _, created = s.call("POST", "/api/3/alerts", want=(200, 201), json=body)
+    created = created or {}
+    alert_uuid = created.get("uuid") or (created.get("@id", "").rsplit("/", 1)[-1])
+    assert alert_uuid, f"no uuid in create response: {created}"
+    s.track("alert", alert_uuid)
+    print(f"  created alert {alert_uuid}")
+
+    print("[alerts] step 4: read by uuid")
+    s.call("GET", "/api/3/alerts/{uuid}", want=200, path_params={"uuid": alert_uuid})
+
+    print("[alerts] step 5: update (PUT)")
+    s.call("PUT", "/api/3/alerts/{uuid}", want=200, path_params={"uuid": alert_uuid},
+           json={"description": "updated by live_test"})
+
+    print("[alerts] step 6: delete")
+    r, _ = s.call("DELETE", "/api/3/alerts/{uuid}", want=(200, 204),
+                  path_params={"uuid": alert_uuid})
+    print(f"  DELETE alert -> {r.status_code}")
 
 
 # --- CLI -----------------------------------------------------------------

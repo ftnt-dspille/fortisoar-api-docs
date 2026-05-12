@@ -1304,7 +1304,7 @@ PATHS["/api/integration/execute/"] = {
         "summary": "Execute a connector action",
         "description": (
             "Runs a connector operation against a configured connector.\n\n"
-            "**Body fields** (verified by probing the live API):\n"
+            "**Body fields:**\n"
             "- `connector` (required) — connector `name` (e.g. `hello-world`).\n"
             "- `operation` (required) — operation key from the connector's `info.json` "
             "  (e.g. `reverse_text`). Discover available operations via "
@@ -1360,18 +1360,10 @@ PATHS["/api/integration/connectors/healthcheck/{name}/{version}/"] = {
             "responses": {"200": _resp("Health status with `status: Available` on success.")}},
 }
 
-# Step 5b: healthcheck — POST form when re-sending a full config inline.
-PATHS["/api/integration/connectors/healthcheck/"] = {
-    "post": {"tags": ["Connectors"], "summary": "Health-check a connector configuration (inline body)",
-             "description": (
-                 "Body must carry a full connector configuration object (connector name/version + config "
-                 "fields). An empty or wrong-shape body returns 404 with a generic message rather than 400. "
-                 "For the cheaper GET form (uses an already-created config), see "
-                 "`/api/integration/connectors/healthcheck/{name}/{version}/`."
-             ),
-             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
-             "responses": {"200": _resp("Health status.")}},
-}
+# Step 5b: POST /api/integration/connectors/healthcheck/ was previously
+# documented as an "inline body" form, but every body shape probed on
+# FSR 7.6.x returned 404. The GET form above is the only working variant
+# and has been retained.
 
 # Step 6a: delete the configuration.
 PATHS["/api/integration/configuration/{config_id}/"] = {
