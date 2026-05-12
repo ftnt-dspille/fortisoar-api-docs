@@ -262,6 +262,31 @@ def sweep(s: Session) -> int:
     removed += _sweep_hello_world_connectors(s)
     removed += _sweep_query_objects(s)
     removed += _sweep_alerts(s)
+    removed += _sweep_named(s, "/api/3/roles", "role")
+    removed += _sweep_named(s, "/api/3/teams", "team")
+    return removed
+
+
+def _sweep_named(s: Session, collection_url: str, kind: str) -> int:
+    """Generic sweeper for collections that have a `name` and a uuid-based DELETE."""
+    removed = 0
+    r = s.request("GET", f"{collection_url}?$limit=200")
+    if not r.ok:
+        return 0
+    try:
+        members = r.json().get("hydra:member", [])
+    except ValueError:
+        return 0
+    for m in members:
+        name = m.get("name") or ""
+        if not name.startswith(LIVE_PREFIX):
+            continue
+        uuid_ = m.get("uuid") or (m.get("@id", "").rsplit("/", 1)[-1])
+        if not uuid_:
+            continue
+        if s.request("DELETE", f"{collection_url}/{uuid_}").ok:
+            removed += 1
+            print(f"  swept {kind} {name} ({uuid_})")
     return removed
 
 
@@ -456,10 +481,23 @@ def scenario_smoke(s: Session) -> None:
 
     No record creation — every call is either a GET or a side-effect-free POST.
     """
+    print("[smoke] credential login (captures /auth/authenticate)")
+    # Mint a fresh JWT explicitly so the operation gets recorded under the
+    # current auth mode. Session creds already work; this just publishes
+    # the example shape.
+    user = os.environ.get("FSR_USERNAME")
+    pw = os.environ.get("FSR_PASSWORD")
+    if user and pw:
+        s.call("POST", "/auth/authenticate", want=200,
+               json={"credentials": {"loginid": user, "password": pw}})
+
     print("[smoke] system identity (public + auth-required)")
     s.call("GET", "/api/version", want=200)
     s.call("GET", "/api/auth/cluster/health", want=(200, 403))
-    s.call("GET", "/api/auth/license", want=(200, 403))
+    # License GET returns 400 under JWT on FSR 7.6.x (internal error) but
+    # 200 under API-KEY. Accept both so the per-auth coverage gets recorded
+    # without aborting the rest of the smoke run.
+    s.call("GET", "/api/auth/license", want=(200, 400, 403))
 
     print("[smoke] permissions + actor")
     s.call("GET", "/api/permissions/current", want=200)
@@ -782,6 +820,133 @@ def scenario_alerts_crud(s: Session) -> None:
     r, _ = s.call("DELETE", "/api/3/alerts/{uuid}", want=(200, 204),
                   path_params={"uuid": alert_uuid})
     print(f"  DELETE alert -> {r.status_code}")
+
+
+@scenario("bulk_crud")
+def scenario_bulk_crud(s: Session) -> None:
+    """Exercise the working bulk endpoints against `alerts`.
+
+    On FSR 7.6.x, `POST /api/3/insert/{moduleType}`, `PUT /api/3/update/{moduleType}`,
+    and `DELETE /api/3/delete/{moduleType}` consistently 500 (TypeError /
+    HttpException) for every body shape probed - they're documented but
+    skipped here. The two endpoints below DO work.
+    """
+    # Resolve severity + status IRIs (same as alerts_crud).
+    def _first_value(pln_id: str) -> str | None:
+        r = s.request("GET", f"/api/3/picklists?listName={pln_id}&$limit=1")
+        if not r.ok:
+            return None
+        m = (r.json() or {}).get("hydra:member") or []
+        return m[0].get("@id") if m else None
+    sev_iri = status_iri = None
+    r = s.request("GET", "/api/3/picklist_names?$limit=200")
+    if r.ok:
+        for m in (r.json().get("hydra:member") or []):
+            if m.get("name") == "Severity" and not sev_iri:
+                sev_iri = _first_value(m["@id"])
+            elif m.get("name") == "AlertStatus" and not status_iri:
+                status_iri = _first_value(m["@id"])
+    assert sev_iri and status_iri
+
+    print("[bulk] step 1: upsert (single object) on alerts")
+    _, created = s.call("POST", "/api/3/upsert/{moduleType}", want=(200, 201),
+                        path_params={"moduleType": "alerts"},
+                        json={"name": s.live_name("upsert"), "source": "live_test",
+                              "severity": sev_iri, "status": status_iri})
+    if created:
+        s.track("alert", (created.get("@id") or "").rsplit("/", 1)[-1])
+
+    print("[bulk] step 2: bulkupsert (array) on alerts")
+    # bulkupsert returns invalid-credentials under API-KEY auth on this build;
+    # accept that as a captured outcome rather than failing the scenario.
+    s.call("POST", "/api/3/bulkupsert/{moduleType}", want=(200, 201, 500),
+           path_params={"moduleType": "alerts"},
+           json=[{"name": s.live_name("bulkupsert"), "source": "live_test",
+                  "severity": sev_iri, "status": status_iri}])
+
+
+@scenario("audit_query")
+def scenario_audit_query(s: Session) -> None:
+    """Audit gateway: query / count / fetch-by-id. All read-only."""
+    print("[audit] step 1: query recent activities")
+    _, page = s.call("POST", "/api/gateway/audit/activities", want=200,
+                     json={"limit": 2, "logic": "AND", "filters": []})
+    print("[audit] step 2: count")
+    s.call("POST", "/api/gateway/audit/activities/count", want=200,
+           json={"logic": "AND", "filters": []})
+    print("[audit] step 3: fetch one activity by auditId")
+    content = (page or {}).get("content") or []
+    if content:
+        audit_id = content[0].get("id") or content[0].get("auditId")
+        if audit_id:
+            s.call("GET", "/api/gateway/audit/activities/{auditId}", want=(200, 404),
+                   path_params={"auditId": str(audit_id)})
+
+
+@scenario("files_upload")
+def scenario_files_upload(s: Session) -> None:
+    """Multipart upload to /api/3/files. Cleanup not needed (uploads expire)."""
+    print("[files] step 1: upload a small text fixture")
+    s.call("POST", "/api/3/files", want=(200, 201),
+           files={"file": ("live-test.txt", b"live-test payload", "text/plain")})
+
+
+@scenario("rbac_and_generic_crud")
+def scenario_rbac_and_generic_crud(s: Session) -> None:
+    """Exercise roles + teams POST, plus the generic /api/3/{collection} CRUD template.
+
+    The generic-template calls capture observations under the literal
+    `/api/3/{collection}` / `/{collection}/{uuid}` keys - distinct from the
+    typed-collection forms (`/api/3/roles`, `/api/3/teams`).
+    """
+    role_name = s.live_name("role")
+    team_name = s.live_name("team")
+
+    print("[rbac] step 1: POST /api/3/roles (typed)")
+    _, role = s.call("POST", "/api/3/roles", want=(200, 201),
+                     json={"name": role_name, "description": "live_test role"})
+    role = role or {}
+    role_uuid = role.get("uuid") or (role.get("@id", "").rsplit("/", 1)[-1])
+    if role_uuid:
+        s.track("role", role_uuid)
+
+    print("[rbac] step 2a: GET /api/3/{collection} (generic listing)")
+    s.call("GET", "/api/3/{collection}", want=200,
+           path_params={"collection": "teams"}, params={"$limit": 1})
+
+    print("[rbac] step 2b: POST /api/3/teams (typed)")
+    second_team = s.live_name("team2")
+    _, team2 = s.call("POST", "/api/3/teams", want=(200, 201),
+                      json={"name": second_team, "description": "live_test team (typed)"})
+    team2 = team2 or {}
+    team2_uuid = team2.get("uuid") or (team2.get("@id", "").rsplit("/", 1)[-1])
+    if team2_uuid:
+        # Cleanup via raw request - the generic DELETE template gets captured below.
+        s.request("DELETE", f"/api/3/teams/{team2_uuid}")
+
+    print("[rbac] step 2c: POST /api/3/{collection} (generic, collection=teams)")
+    _, team = s.call("POST", "/api/3/{collection}", want=(200, 201),
+                     path_params={"collection": "teams"},
+                     json={"name": team_name, "description": "live_test team"})
+    team = team or {}
+    team_uuid = team.get("uuid") or (team.get("@id", "").rsplit("/", 1)[-1])
+    assert team_uuid, f"no uuid in team create response: {team}"
+    s.track("team", team_uuid)
+
+    print("[rbac] step 3: PUT /api/3/{collection}/{uuid} (rename via generic)")
+    s.call("PUT", "/api/3/{collection}/{uuid}", want=200,
+           path_params={"collection": "teams", "uuid": team_uuid},
+           json={"description": "renamed by live_test"})
+
+    print("[rbac] step 4: DELETE /api/3/{collection}/{uuid} (generic)")
+    r, _ = s.call("DELETE", "/api/3/{collection}/{uuid}", want=(200, 204),
+                  path_params={"collection": "teams", "uuid": team_uuid})
+    print(f"  DELETE team -> {r.status_code}")
+
+    # Cleanup the role via a raw call (no observation needed - generic DELETE
+    # was already captured above).
+    if role_uuid:
+        s.request("DELETE", f"/api/3/roles/{role_uuid}")
 
 
 # --- CLI -----------------------------------------------------------------

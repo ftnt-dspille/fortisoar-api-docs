@@ -427,15 +427,120 @@ PATHS["/api/auth/cluster/health"] = {
 PATHS["/api/auth/license"] = {
     "get": {
         "tags": ["System"],
-        "summary": "License information",
+        "summary": "Retrieve license details",
         "description": (
-            "*Heads-up:* JWT-only on 7.6.x (API key returns 403). Some "
-            "builds also return a generic 400 on the JWT path - the "
-            "endpoint is wired through the auth standalone service and "
-            "is sensitive to backend-side state. Skip if your monitoring "
-            "doesn't strictly need it."
+            "Returns the current license state for the cluster (or a specific node, with `node_id`). "
+            "Authenticated equivalent of the `POST /api/public/license` `get_info` flow, but reports "
+            "deployed-license state (`remaining_days`, `expired_nodes`, per-node max users, "
+            "issue/expiry dates) rather than parsing an unsubmitted key.\n\n"
+            "**Auth quirk on 7.6.x:** typically JWT-only - API key returns 403. Some builds also "
+            "surface a generic 400 on the JWT path when the auth standalone service is unhappy; "
+            "callers that just need basic build info should prefer `GET /api/version` instead."
         ),
-        "responses": {"200": _resp("License details.")},
+        "parameters": [
+            {"name": "param", "in": "query", "required": False,
+             "schema": {"type": "string", "enum": ["license_details"]},
+             "description": "Set to `license_details` to return the full per-node license report. "
+                            "Omitted -> compact summary."},
+            {"name": "node_id", "in": "query", "required": False,
+             "schema": {"type": "string"},
+             "description": "Limit the response to one node. Pass `SELF` to mean the node serving "
+                            "the request (added in 7.0.0)."},
+        ],
+        "responses": {"200": _resp("License details.", example={
+            "expired": False, "expired_nodes": [], "remaining_days": 180,
+            "details": {"is_distributed": False, "role": ["master"], "entitlements": {}},
+            "nodes": {"<node-id>": {
+                "message": "License Details: Max Users: 10, Expiring on: 2026-12-01, Issued for 180 days",
+                "details": {"total_users": 10, "remaining_users": 9, "total_days": 180,
+                             "remaining_days": 180, "customer_name": "abc",
+                             "is_distributed": False, "entitlements": {}, "role": ["master"]},
+                "node": {"nodeId": "<node-id>", "nodeName": "fortisoar.localhost",
+                          "status": "active", "role": "primary", "currentState": "primary server"},
+            }},
+        })},
+    },
+    "post": {
+        "tags": ["System"],
+        "summary": "Deploy a license (authenticated)",
+        "description": (
+            "Authenticated license deployment. Requires a **previously valid** license to be "
+            "currently active - this form is intended for renewals / replacements, not first-time "
+            "activation. For first-time activation on a fresh appliance use the unauthenticated "
+            "`POST /api/public/license` with `action: deploy_license`.\n\n"
+            "Body carries the raw `license_key` (the contents of the `.lic` file). Returns 200 OK "
+            "on success."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {
+                "type": "object",
+                "required": ["license_key"],
+                "properties": {
+                    "license_key": {"type": "string",
+                                    "description": "Raw contents of the license file."},
+                },
+            },
+            "example": {"license_key": "<license-file-contents>"},
+        }}},
+        "responses": {"200": _resp("License deployed.")},
+    },
+}
+
+PATHS["/api/public/license"] = {
+    "post": {
+        "tags": ["System"],
+        "summary": "Public license API (deploy / status / info)",
+        "description": (
+            "**Public, no auth required** (since 7.0.0). One endpoint with three behaviors keyed off "
+            "the `action` discriminator:\n\n"
+            "- `action: deploy_license` - install a license on a fresh / unlicensed appliance. "
+            "  Body: `license_key`, `nodeId`, `action`. Returns 200 OK on success. This is the "
+            "  first-time-activation path - once a valid license is deployed, prefer the "
+            "  authenticated `POST /api/auth/license` for renewals.\n"
+            "- `action: get_status` - poll deployment progress. Body: `nodeId`, `action`. "
+            "  Returns `depl_status` (e.g. `finished`) plus `depl_info` (`source`, `user_id`, "
+            "  `ws_session_id`, `depl_start_time`).\n"
+            "- `action: get_info` - parse a license key **without** deploying it. Body: "
+            "  `license_key`, `action`. Returns `serial_no`, `expiry_time`, `hardware_key`, "
+            "  `max_users`, `entitlements`, `type`, `edition`. For Subscription-type licenses, "
+            "  `max_users` / `expiry_time` are only populated after deployment (they're fetched "
+            "  from FDN at activation time)."
+        ),
+        "security": [],
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                    "action": {"type": "string",
+                               "enum": ["deploy_license", "get_status", "get_info"],
+                               "description": "Discriminator. See description for the body shape each action expects."},
+                    "license_key": {"type": "string",
+                                    "description": "Raw license file contents. Required for `deploy_license` and `get_info`."},
+                    "nodeId": {"type": "string",
+                               "description": "Target node id. Required for `deploy_license` and `get_status`. "
+                                              "Discoverable via `GET /api/auth/license?param=license_details` "
+                                              "(`nodes.<id>.node.nodeId`)."},
+                },
+            },
+            "examples": {
+                "deploy_license": {"summary": "Deploy on a fresh appliance",
+                                    "value": {"action": "deploy_license",
+                                              "license_key": "<license-file-contents>",
+                                              "nodeId": "0961991714b6089a1d31983ea76f869e"}},
+                "get_status": {"summary": "Poll deployment progress",
+                                "value": {"action": "get_status",
+                                          "nodeId": "0961991714b6089a1d31983ea76f869e"}},
+                "get_info": {"summary": "Parse a key without deploying",
+                              "value": {"action": "get_info",
+                                        "license_key": "<license-file-contents>"}},
+            },
+        }}},
+        "responses": {"200": _resp("Action-specific payload. See description.", example={
+            "depl_status": "finished",
+            "depl_info": {"source": "192.168.56.1", "user_id": None,
+                           "ws_session_id": None, "depl_start_time": "2026-12-23T12:23:30.771975"},
+        })},
     },
 }
 
@@ -595,15 +700,23 @@ PATHS["/api/3/{collection}/{uuid}"] = {
 # --- Bulk record ops -------------------------------------------------------
 
 for verb, op_method, op_summary, op_desc, body_shape in [
-    ("insert",     "post",   "Bulk insert", "Insert multiple records of the given module type in one call.", "array_obj"),
-    ("update",     "put",    "Bulk update", "Update multiple records (each with its `@id`). **Method is PUT**, not POST.", "array_obj"),
-    ("delete",     "delete", "Bulk delete", "Delete multiple records by IRI list. **Method is DELETE**, not POST.", "array_str"),
+    ("insert",     "post",   "Bulk insert",
+     "Documented bulk-insert path. **Broken on FSR 7.6.x:** every body shape and every module type "
+     "probed returned 400 with `TypeError: Internal Server Error`. Use `/api/3/{collection}` (single "
+     "POST per record) or `/api/3/bulkupsert/{moduleType}` instead.", "array_obj"),
+    ("update",     "put",    "Bulk update",
+     "Documented bulk-update path. **Broken on FSR 7.6.x:** returns 400 `HttpException`. "
+     "Update records individually via `PUT /api/3/{collection}/{uuid}`.", "array_obj"),
+    ("delete",     "delete", "Bulk delete",
+     "Documented bulk-delete path. **Broken on FSR 7.6.x:** returns 400 `TypeError`. "
+     "Delete records individually via `DELETE /api/3/{collection}/{uuid}`.", "array_str"),
     ("upsert",     "post",   "Upsert by natural key",
      "Insert-or-update **a single record** keyed on the module's identifier field. Body is a JSON object, "
      "not an array — use `/api/3/bulkupsert/{moduleType}` for the array variant.", "object"),
     ("bulkupsert", "post",   "Bulk upsert",
-     "Array-input version of upsert. Body must be a JSON array; some 7.6.x builds return 500 (server-side "
-     "TypeError) when given anything else.", "array_obj"),
+     "Array-input version of upsert. Body must be a JSON array. Works under JWT auth on FSR 7.6.x; "
+     "under API-KEY auth the server fans out to its own credentials and may report "
+     "`Invalid credentials` per item.", "array_obj"),
 ]:
     op_def = {
         "tags": ["Bulk operations"],
@@ -1817,19 +1930,6 @@ PATHS["/api/product/feature-access"] = {
             "responses": {"200": _resp("Flag map.")}},
 }
 
-PATHS["/api/3/cache_util"] = {
-    "post": {"tags": ["System"], "summary": "Force cache invalidation",
-             "description": (
-                 "Flushes internal server-side caches (metadata, picklists, RBAC). Useful after schema or "
-                 "role changes when stale lookups would otherwise persist until the next worker restart."
-             ),
-             "requestBody": {"required": False, "content": {"application/json": {
-                 "schema": {"type": "object"}, "example": {},
-             }}},
-             "responses": {"200": _resp("OK.")}},
-}
-
-
 # ---------------------------------------------------------------------------
 # Spec assembly
 # ---------------------------------------------------------------------------
@@ -2679,10 +2779,6 @@ CURATED_EXAMPLES = {
                               "status": "Queued", "createDate": 1736380800}},
     },
 
-    ("POST", "/api/3/cache_util"): {
-        "request": {"action": "invalidate", "scope": "all"},
-        "response": {"200": {"status": "ok", "invalidated": 14, "at": 1736380800}},
-    },
 }
 
 
