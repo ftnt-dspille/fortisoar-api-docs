@@ -497,9 +497,10 @@ PATHS["/api/public/license"] = {
             "  Body: `license_key`, `nodeId`, `action`. Returns 200 OK on success. This is the "
             "  first-time-activation path - once a valid license is deployed, prefer the "
             "  authenticated `POST /api/auth/license` for renewals.\n"
-            "- `action: get_status` - poll deployment progress. Body: `nodeId`, `action`. "
-            "  Returns `depl_status` (e.g. `finished`) plus `depl_info` (`source`, `user_id`, "
-            "  `ws_session_id`, `depl_start_time`).\n"
+            "- `action: get_status` - poll deployment progress. Body: `action` (+ optional "
+            "  `nodeId` for per-node status; omit for cluster-wide). Returns `depl_status` "
+            "  (e.g. `finished`) plus either `depl_message` (cluster summary) or `depl_info` "
+            "  (`source`, `user_id`, `ws_session_id`, `depl_start_time`) for a single node.\n"
             "- `action: get_info` - parse a license key **without** deploying it. Body: "
             "  `license_key`, `action`. Returns `serial_no`, `expiry_time`, `hardware_key`, "
             "  `max_users`, `entitlements`, `type`, `edition`. For Subscription-type licenses, "
@@ -518,8 +519,9 @@ PATHS["/api/public/license"] = {
                     "license_key": {"type": "string",
                                     "description": "Raw license file contents. Required for `deploy_license` and `get_info`."},
                     "nodeId": {"type": "string",
-                               "description": "Target node id. Required for `deploy_license` and `get_status`. "
-                                              "Discoverable via `GET /api/auth/license?param=license_details` "
+                               "description": "Target node id. Required for `deploy_license`; optional for "
+                                              "`get_status` (omit -> cluster-wide). Discoverable via "
+                                              "`GET /api/auth/license?param=license_details` "
                                               "(`nodes.<id>.node.nodeId`)."},
                 },
             },

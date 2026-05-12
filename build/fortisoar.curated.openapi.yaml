@@ -366,11 +366,11 @@ paths:
                   - rabbitmq
                   not_connected: []
                 cpu:
-                  load_avg_minute_1: 10.91
-                  load_avg_minute_15: 1.97
-                  load_avg_minute_5: 4.93
+                  load_avg_minute_1: 0.25
+                  load_avg_minute_15: 1.57
+                  load_avg_minute_5: 2.09
                   no_of_logical_cpu_core: 12
-                  percent: 67.0
+                  percent: 1.9
                 disk:
                 - avail: 26.3G
                   device: /dev/mapper/vgos-root
@@ -413,57 +413,57 @@ paths:
                   mountpoint: /var/lib/elasticsearch
                   percent: 0.7
                   total: 98.6G
-                  used: 740.6M
-                - avail: 178.6G
+                  used: 740.7M
+                - avail: 178.5G
                   device: /dev/mapper/vgos-relations
                   mountpoint: /var/lib/pgsql
-                  percent: 2.5
+                  percent: 2.6
                   total: 183.2G
-                  used: 4.6G
+                  used: 4.7G
                 - avail: 9.2G
                   device: /dev/mapper/vgos-log
                   mountpoint: /var/log
                   percent: 7.1
                   total: 9.9G
-                  used: 717.6M
+                  used: 717.9M
                 - avail: 13.3G
                   device: /dev/mapper/vgos-rabbitmq
                   mountpoint: /var/lib/rabbitmq
                   percent: 1.3
                   total: 13.4G
-                  used: 174.4M
+                  used: 178.0M
                 - avail: 48.6G
                   device: /dev/mapper/vgos-coredump
                   mountpoint: /var/log/cyops/coredump
                   percent: 0.8
                   total: 48.9G
                   used: 381.7M
-                - avail: 886.3M
+                - avail: 886.1M
                   device: /dev/mapper/vgos-audit
                   mountpoint: /var/log/audit
                   percent: 7.7
                   total: 960.0M
-                  used: 73.7M
-                health_details_collect_time: May-12-2026 21:02:27 UTC
+                  used: 73.9M
+                health_details_collect_time: May-12-2026 21:07:31 UTC
                 memory:
                   ram:
-                    avail: 7.4G
-                    percent: 68.0
+                    avail: 7.7G
+                    percent: 66.7
                     total: 23.2G
-                    used: 14.2G
+                    used: 13.9G
                   swap:
                     free: 7.2G
                     percent: 10.4
                     total: 8.0G
-                    used: 855.5M
+                    used: 855.0M
                 misc_stat:
                   database:
                     gateway:
-                      size: 31674851
+                      size: 31814115
                     sealab:
-                      size: 459076067
+                      size: 458854883
                     venom:
-                      size: 1278407139
+                      size: 1301721571
                   heartbeat: []
                   is_primary: true
                   nginx_cert_status:
@@ -475,11 +475,11 @@ paths:
                   sme_cert_status:
                     expiry_status: Not Expired
                   uptime:
-                    human_readable: 3 days, 6:56:53.730000
-                    seconds: 284213.73
+                    human_readable: 3 days, 7:01:57.910000
+                    seconds: 284517.91
                   wal:
-                    count: 32
-                    size_gb: 0.5
+                    count: 42
+                    size_gb: 0.66
                 mode: operational
                 node_id: <self-agent>
                 node_name: soar
@@ -489,31 +489,30 @@ paths:
                   cpu:
                   - cmdline: /opt/cyops-workflow/.env/bin/python -m celery -A sealab worker --pidfile=/var/run/celery/celeryd.pid
                       --logfile=/var/log/cyops/cyops-workflow/celeryd.l
-                    cpu_percent: '72.6'
-                    memory_percent: '1.2'
+                    cpu_percent: '21.0'
+                    memory_percent: '1.3'
                     pid: '1272010'
-                    ram: 295.1M
+                    ram: 309.8M
                     uid: '987'
                     user: nginx
-                    vsize: 791.4M
+                    vsize: 806.0M
                   - cmdline: /opt/cyops-workflow/.env/bin/python -m celery -A sealab worker --pidfile=/var/run/celery/celeryd.pid
                       --logfile=/var/log/cyops/cyops-workflow/celeryd.l
-                    cpu_percent: '49.6'
+                    cpu_percent: '14.3'
                     memory_percent: '1.2'
                     pid: '1271967'
                     ram: 302.3M
                     uid: '987'
                     user: nginx
                     vsize: 798.5M
-                  - cmdline: /opt/cyops-workflow/.env/bin/python -m celery -A sealab worker --pidfile=/var/run/celery/celeryd.pid
-                      --logfile=/var/log/cyops/cyops-workflow/celeryd.l
-                    cpu_percent: '41.6'
-                    memory_percent: '1.3'
-                    pid: '1272071'
-                    ram: 317.3M
-                    uid: '987'
-                    user: nginx
-                    vsize: 813.5M
+                  - cmdline: /opt/cyops-auth/.env/bin/python /opt/cyops/scripts/manage_passwords.py --decrypt n+E+yIcv/7WJbuO1hsBVbAQUkgSg18ZdfkWCDZVAsR5yfF//d4Z2innULdEjbq0CI3dmc
+                    cpu_percent: '13.0'
+                    memory_percent: '0.0'
+                    pid: '1275541'
+                    ram: 14.7M
+                    uid: '0'
+                    user: root
+                    vsize: 16.9M
                   ram:
                   - cmdline: /usr/lib/jvm/java-17-openjdk-17.0.17.0.10-1.el9.x86_64/bin/java -Des.networkaddress.cache.ttl=60
                       -Des.networkaddress.cache.negative.ttl=10 -XX:+Always
@@ -536,7 +535,7 @@ paths:
                     cpu_percent: '0.7'
                     memory_percent: '3.5'
                     pid: '20545'
-                    ram: 838.6M
+                    ram: 838.7M
                     uid: '984'
                     user: tomcat
                     vsize: 11.8G
@@ -577,7 +576,7 @@ paths:
                   - celerybeatd
                   - cyops-ha
                 status: green
-                timestamp: 1778619747
+                timestamp: 1778620051
                 workflow:
                   mq:
                     higher: <Check the primary cluster node for this data>
@@ -587,17 +586,17 @@ paths:
                   playbook:
                     data:
                     - name: '> FortiGuard Threat Intelligence > Fetch and Create'
-                      total: 25
-                    - name: Extract Indicators (Alerts)
-                      total: 4
+                      total: 27
+                    - name: Alert - [01] Capture All SLA (Upon Create)
+                      total: 9
                     - name: Alert - Update SLA Details
-                      total: 4
-                    from_time: 2026-05-12+20:02:27
-                    to_time: 2026-05-12+21:02:27
-                    total: 13
+                      total: 9
+                    from_time: 2026-05-12+20:07:32
+                    to_time: 2026-05-12+21:07:32
+                    total: 26
                   vaccum:
-                    log_size: 1458
-                    percent: 95.72127139364304
+                    log_size: 1481
+                    percent: 94.6335833814195
                     status: completed
                 workflow_vacuum: null
       x-verified-live:
@@ -612,7 +611,7 @@ paths:
         \ but reports deployed-license state (`remaining_days`, `expired_nodes`, per-node max users, issue/expiry dates) rather\
         \ than parsing an unsubmitted key.\n\n**Auth quirk on 7.6.x:** typically JWT-only - API key returns 403. Some builds\
         \ also surface a generic 400 on the JWT path when the auth standalone service is unhappy; callers that just need basic\
-        \ build info should prefer `GET /api/version` instead.\n\n**Auth coverage:** `API-KEY: 403` \xB7 `Bearer JWT: 400`"
+        \ build info should prefer `GET /api/version` instead.\n\n**Auth coverage:** `API-KEY: 403` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: param
         in: query
@@ -634,27 +633,83 @@ paths:
           content:
             application/json:
               example:
-                uuid: fsr-license-9876
-                serialNumber: FSRVMS0000000001
-                edition: Enterprise
-                tier: Premium
-                issueDate: 1727740800
-                expiryDate: 1759276800
-                users:
-                  licensed: 25
-                  active: 14
-                agents:
-                  licensed: 50
-                  active: 12
-                features:
-                - MSSP
-                - SOAR
-                - TI
-                - SOC
-                - AGENTS
+                details:
+                  contracts:
+                    expiry_time: '2027-04-14 00:00:00'
+                    fsrm_is_active: true
+                    has_additional_users_active: true
+                    has_tim_subscription: true
+                    tim_expiry: '2027-04-14 00:00:00'
+                    tim_supported_ingestion_limit: 1000
+                    tim_supported_query_limit: 100
+                    users: 4
+                  entitlements:
+                    branding: advanced
+                    daily_action_limit: 0
+                  is_distributed: true
+                  role:
+                  - master
+                  users: 4
+                device_uuid_changed: false
+                device_uuid_changed_nodes: []
+                duplicate: false
+                duplicate_nodes: []
+                edition: MT
+                expired: false
+                expired_nodes: []
+                expiring_on: '2027-04-14'
+                is_cloud_instance: false
+                nodes:
+                  09d958b2af45ea4d15b83910e2e64359:
+                    details:
+                      contracts:
+                        expiry_time: '2027-04-14 00:00:00'
+                        fsrm_is_active: true
+                        has_additional_users_active: true
+                        has_tim_subscription: true
+                        tim_expiry: '2027-04-14 00:00:00'
+                        tim_supported_ingestion_limit: 1000
+                        tim_supported_query_limit: 100
+                        users: 4
+                      customer_name: null
+                      edition: MT
+                      entitlements:
+                        branding: advanced
+                        daily_action_limit: 0
+                      expiring_on: '2027-04-14'
+                      is_distributed: true
+                      issue_time: '2026-05-09 14:35:06.078151'
+                      remaining_days: 337
+                      remaining_users: -22
+                      role:
+                      - master
+                      serial_no: FSRVMOTM26000132
+                      sub_type: null
+                      total_users: 4
+                      type: Subscription
+                    node:
+                      comment: primary server
+                      nodeId: <self-agent>
+                      nodeMetadata:
+                        fsrVersion: 7.6.1-5275
+                        mode: operational
+                      nodeName: soar
+                      node_id: <self-agent>
+                      role: primary
+                      status: active
+                product_name: FortiSOAR
+                remaining_days: 337
+                setup_type: single-node
+                sub_type: null
+                type: Subscription
+                user_stats:
+                  concurrent_active_users: 25
+                  concurrent_logged_in_users: 0
+                  fixed_active_users: 1
+                  fixed_logged_in_users: 1
+                users: 4
       x-verified-live:
-        apikey: 403
-        jwt: 400
+      - jwt
     post:
       tags:
       - System
@@ -690,19 +745,16 @@ paths:
       tags:
       - System
       summary: Public license API (deploy / status / info)
-      description: '**Public, no auth required** (since 7.0.0). One endpoint with three behaviors keyed off the `action` discriminator:
-
-
-        - `action: deploy_license` - install a license on a fresh / unlicensed appliance.   Body: `license_key`, `nodeId`,
-        `action`. Returns 200 OK on success. This is the   first-time-activation path - once a valid license is deployed,
-        prefer the   authenticated `POST /api/auth/license` for renewals.
-
-        - `action: get_status` - poll deployment progress. Body: `nodeId`, `action`.   Returns `depl_status` (e.g. `finished`)
-        plus `depl_info` (`source`, `user_id`,   `ws_session_id`, `depl_start_time`).
-
-        - `action: get_info` - parse a license key **without** deploying it. Body:   `license_key`, `action`. Returns `serial_no`,
-        `expiry_time`, `hardware_key`,   `max_users`, `entitlements`, `type`, `edition`. For Subscription-type licenses,   `max_users`
-        / `expiry_time` are only populated after deployment (they''re fetched   from FDN at activation time).'
+      description: "**Public, no auth required** (since 7.0.0). One endpoint with three behaviors keyed off the `action` discriminator:\n\
+        \n- `action: deploy_license` - install a license on a fresh / unlicensed appliance.   Body: `license_key`, `nodeId`,\
+        \ `action`. Returns 200 OK on success. This is the   first-time-activation path - once a valid license is deployed,\
+        \ prefer the   authenticated `POST /api/auth/license` for renewals.\n- `action: get_status` - poll deployment progress.\
+        \ Body: `action` (+ optional   `nodeId` for per-node status; omit for cluster-wide). Returns `depl_status`   (e.g.\
+        \ `finished`) plus either `depl_message` (cluster summary) or `depl_info`   (`source`, `user_id`, `ws_session_id`,\
+        \ `depl_start_time`) for a single node.\n- `action: get_info` - parse a license key **without** deploying it. Body:\
+        \   `license_key`, `action`. Returns `serial_no`, `expiry_time`, `hardware_key`,   `max_users`, `entitlements`, `type`,\
+        \ `edition`. For Subscription-type licenses,   `max_users` / `expiry_time` are only populated after deployment (they're\
+        \ fetched   from FDN at activation time).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       security: []
       requestBody:
         required: true
@@ -725,8 +777,8 @@ paths:
                   description: Raw license file contents. Required for `deploy_license` and `get_info`.
                 nodeId:
                   type: string
-                  description: Target node id. Required for `deploy_license` and `get_status`. Discoverable via `GET /api/auth/license?param=license_details`
-                    (`nodes.<id>.node.nodeId`).
+                  description: Target node id. Required for `deploy_license`; optional for `get_status` (omit -> cluster-wide).
+                    Discoverable via `GET /api/auth/license?param=license_details` (`nodes.<id>.node.nodeId`).
             examples:
               deploy_license:
                 summary: Deploy on a fresh appliance
@@ -744,18 +796,19 @@ paths:
                 value:
                   action: get_info
                   license_key: <license-file-contents>
+            example:
+              action: get_status
       responses:
         '200':
           description: Action-specific payload. See description.
           content:
             application/json:
               example:
+                depl_message: null
                 depl_status: finished
-                depl_info:
-                  source: 192.168.56.1
-                  user_id: null
-                  ws_session_id: null
-                  depl_start_time: '2026-12-23T12:23:30.771975'
+      x-verified-live:
+      - apikey
+      - jwt
   /api/version:
     get:
       tags:
@@ -5659,21 +5712,21 @@ paths:
                 '@context': /wf/api/workflows/context/
                 hydra:firstPage: /wf/api/workflows/?limit=1&ordering=-modified&parent_wf__isnull=True
                 hydra:itemsPerPage: 1
-                hydra:lastPage: /wf/api/workflows/?limit=1&offset=16&ordering=-modified&parent_wf__isnull=True
+                hydra:lastPage: /wf/api/workflows/?limit=1&offset=29&ordering=-modified&parent_wf__isnull=True
                 hydra:member:
-                - '@id': /wf/api/workflows/4784/
+                - '@id': /wf/api/workflows/4834/
                   '@type': Workflow
-                  created: '2026-05-12T21:00:00.542462Z'
+                  created: '2026-05-12T21:05:32.368960Z'
                   debug: true
-                  modified: '2026-05-12T21:00:46.242407Z'
-                  name: FortiGuard Threat Intelligence > Ingest
+                  modified: '2026-05-12T21:05:33.016183Z'
+                  name: Find and Relate Similar Alerts
                   node_name: soar
                   parent_wf: null
                   status: finished
-                  tags: dataingestion,fortinet-fortiguard-threat-intelligence,ingest
+                  tags: PostUpdate,PostUpdate ,system
                 hydra:nextPage: /wf/api/workflows/?limit=1&offset=1&ordering=-modified&parent_wf__isnull=True
                 hydra:previousPage: null
-                hydra:totalItems: 17
+                hydra:totalItems: 30
       x-verified-live:
       - apikey
       - jwt
@@ -5707,31 +5760,397 @@ paths:
           content:
             application/json:
               example:
-                '@id': /wf/api/workflows/4784/
+                '@id': /wf/api/workflows/4834/
                 '@type': Workflow
-                created: '2026-05-12T21:00:00.542462Z'
+                created: '2026-05-12T21:05:32.368960Z'
                 debug: true
                 env:
                   auth_info:
                     auth_method: CS HMAC
-                  child_step_id: null
+                  currentUser: /api/3/appliances/<uuid>
                   debug: true
-                  fetchTime: 1778619601
+                  fieldbasedtrigger:
+                    filters:
+                    - _value: []
+                      field: state
+                      operator: changed
+                      type: object
+                      value: /api/3/picklists/<uuid>
+                    - _value:
+                        display: Indicator Extracted
+                        itemValue: Indicator Extracted
+                      field: state
+                      operator: eq
+                      type: object
+                      value: /api/3/picklists/<uuid>
+                    limit: 30
+                    logic: AND
+                    sort: []
+                  func_name: update_data
                   globalMock: false
                   input:
                     params: {}
-                    records: []
-                  lastPullTime: 1778616001
-                  last_run_at: '2026-05-12T20:00:00.353558Z'
+                    records:
+                    - '@context': /api/3/contexts/Alert
+                      '@id': /api/3/alerts/<uuid>
+                      '@type': Alert
+                      ackDate: null
+                      ackSLApausedon: null
+                      ackSlaStatus:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: '#808080'
+                        icon: null
+                        id: 436
+                        importedBy: []
+                        itemValue: Awaiting Action
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 2
+                        uuid: <uuid>
+                      alertDetectionDate: null
+                      alertRemainingAckSLA: null
+                      alertRemainingRespSLA: null
+                      assignedTo: null
+                      assigneddate: null
+                      attachmentNames: null
+                      bucketName: null
+                      bytesTransferred: null
+                      closureNotes: null
+                      closureReason: null
+                      commandLine: null
+                      computerName: null
+                      conflict: false
+                      createDate: 1778619929.717306
+                      createUser:
+                        '@id': /api/3/api_keys/<uuid>
+                        '@settings': /api/3/user_settings/<uuid>
+                        '@type': ApiKey
+                        avatar: null
+                        createDate: 1778353734.090001
+                        createUser: /api/3/people/<uuid>
+                        id: 7
+                        modifyDate: 1778353734.090001
+                        modifyUser: /api/3/people/<uuid>
+                        name: test2
+                        recordTags: []
+                        userId: <uuid>
+                        userType: null
+                        uuid: <uuid>
+                      decodedCommandLine: null
+                      description: null
+                      destinationID: null
+                      destinationIp: null
+                      destinationPort: null
+                      deviceOwner: null
+                      deviceSerialNo: null
+                      deviceType: null
+                      deviceUID: null
+                      domain: null
+                      dueBy: null
+                      emailBody: ''
+                      emailClassification: null
+                      emailFrom: null
+                      emailHeaders: null
+                      emailSubject: null
+                      emailTo: null
+                      epochTime: null
+                      escalatedtoincident:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: '#808080'
+                        icon: null
+                        id: 350
+                        importedBy: []
+                        itemValue: 'No'
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 1
+                        uuid: <uuid>
+                      escalationReason: null
+                      eventTime: null
+                      fileEmail: null
+                      fileHash: null
+                      fileHashes: null
+                      fileName: null
+                      fileNames: null
+                      filePath: null
+                      fsrQueue: null
+                      iPAddresses: null
+                      id: 39
+                      indicators: []
+                      killChainPhase: null
+                      latestLogin: null
+                      metrics: null
+                      mitreTechnique: null
+                      mitreattackid: null
+                      modifyDate: 1778619932.163714
+                      modifyUser:
+                        '@id': /api/3/appliances/<uuid>
+                        '@type': Appliance
+                        avatar: null
+                        createDate: 1734423156.392058
+                        createUser: null
+                        id: 1
+                        modifyDate: 1734423156.392058
+                        modifyUser: null
+                        name: Playbook
+                        userId: <uuid>
+                        userType: null
+                        uuid: <uuid>
+                      name: live-99f4773b-upsert
+                      parentProcessCmdLine: null
+                      parentProcessName: null
+                      parentProcessPid: null
+                      priorityWeight: 1
+                      processGuid: null
+                      processId: null
+                      processName: null
+                      processTree: null
+                      recipientEmailAddress: null
+                      recordTags: []
+                      registryKey: null
+                      registryKeyValue: null
+                      reporter: null
+                      reporterEmailBody: null
+                      resolvedAutomatedly: null
+                      resolveddate: null
+                      respDate: null
+                      respDueDate: null
+                      respSLApausedon: null
+                      respSlaStatus:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: '#808080'
+                        icon: null
+                        id: 436
+                        importedBy: []
+                        itemValue: Awaiting Action
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 2
+                        uuid: <uuid>
+                      responseSLAResumeDate: null
+                      returnPath: null
+                      rule: null
+                      scheduledTask: null
+                      senderDomain: null
+                      senderEmailAddress: null
+                      services: null
+                      severity:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: '#157DD9'
+                        icon: null
+                        id: 438
+                        importedBy: []
+                        itemValue: Minimal
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 0
+                        uuid: <uuid>
+                      source: live_test
+                      sourceId: null
+                      sourceIp: null
+                      sourcePort: null
+                      sourceProcess: null
+                      sourceTool: null
+                      sourceType: null
+                      sourcedata: null
+                      state:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: null
+                        icon: null
+                        id: 190
+                        importedBy: []
+                        itemValue: Indicator Extracted
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 2
+                        uuid: <uuid>
+                      status:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: null
+                        icon: null
+                        id: 196
+                        importedBy: []
+                        itemValue: Open
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 1
+                        uuid: <uuid>
+                      targetAsset: null
+                      targetProcess: null
+                      tenant:
+                        '@id': /api/3/tenants/<uuid>
+                        '@type': Tenant
+                        allowRemoteMMDModification: true
+                        createDate: null
+                        createUser: null
+                        description: sample
+                        id: 1
+                        industry: null
+                        isDedicated: true
+                        license: null
+                        modifyDate: null
+                        modifyUser: null
+                        name: Self
+                        region: null
+                        role: self
+                        tenantId: <self-agent>
+                        uuid: <uuid>
+                      tenantRecordId: 39
+                      ticketID: null
+                      type:
+                        '@id': /api/3/picklists/<uuid>
+                        '@type': Picklist
+                        color: null
+                        icon: null
+                        id: 222
+                        importedBy: []
+                        itemValue: Other / Unknown
+                        listName: /api/3/picklist_names/<uuid>
+                        orderIndex: 19
+                        uuid: <uuid>
+                      url: null
+                      userDetails: null
+                      userName: null
+                      uuid: <uuid>
+                      vulnerabilitySeverity: null
+                  last_run_at: null
                   mockPlaybookId: null
-                  pullTimeMacro: FortiguardIntelligenceLastPullTime__26191d34_e980_40b0_bfc1_0e7bfb04dab5
-                  request: {}
+                  previous:
+                    data:
+                      '@context': /api/3/contexts/Alert
+                      '@id': /api/3/alerts/<uuid>
+                      '@type': Alert
+                      ackDate: null
+                      ackSLApausedon: null
+                      ackSlaStatus: /api/3/picklists/<uuid>
+                      alertDetectionDate: null
+                      alertRemainingAckSLA: null
+                      alertRemainingRespSLA: null
+                      assignedTo: null
+                      assigneddate: null
+                      attachmentNames: null
+                      bucketName: null
+                      bytesTransferred: null
+                      closureNotes: null
+                      closureReason: null
+                      commandLine: null
+                      computerName: null
+                      conflict: false
+                      createDate: 1778619929.717306
+                      createUser: /api/3/api_keys/<uuid>
+                      decodedCommandLine: null
+                      description: null
+                      destinationID: null
+                      destinationIp: null
+                      destinationPort: null
+                      deviceOwner: null
+                      deviceSerialNo: null
+                      deviceType: null
+                      deviceUID: null
+                      domain: null
+                      dueBy: null
+                      emailBody: null
+                      emailClassification: null
+                      emailFrom: null
+                      emailHeaders: null
+                      emailSubject: null
+                      emailTo: null
+                      epochTime: null
+                      escalatedtoincident: /api/3/picklists/<uuid>
+                      escalationReason: null
+                      eventTime: null
+                      fileEmail: null
+                      fileHash: null
+                      fileHashes: null
+                      fileName: null
+                      fileNames: null
+                      filePath: null
+                      fsrQueue: null
+                      iPAddresses: null
+                      id: 39
+                      indicators: []
+                      killChainPhase: null
+                      latestLogin: null
+                      metrics: null
+                      mitreTechnique: null
+                      mitreattackid: null
+                      modifyDate: 1778619929.717306
+                      modifyUser: /api/3/api_keys/<uuid>
+                      name: live-99f4773b-upsert
+                      parentProcessCmdLine: null
+                      parentProcessName: null
+                      parentProcessPid: null
+                      priorityWeight: 1
+                      processGuid: null
+                      processId: null
+                      processName: null
+                      processTree: null
+                      recipientEmailAddress: null
+                      recordTags: []
+                      registryKey: null
+                      registryKeyValue: null
+                      reporter: null
+                      reporterEmailBody: null
+                      resolvedAutomatedly: null
+                      resolveddate: null
+                      respDate: null
+                      respDueDate: null
+                      respSLApausedon: null
+                      respSlaStatus: /api/3/picklists/<uuid>
+                      responseSLAResumeDate: null
+                      returnPath: null
+                      rule: null
+                      scheduledTask: null
+                      senderDomain: null
+                      senderEmailAddress: null
+                      services: null
+                      severity: /api/3/picklists/<uuid>
+                      source: live_test
+                      sourceId: null
+                      sourceIp: null
+                      sourcePort: null
+                      sourceProcess: null
+                      sourceTool: null
+                      sourceType: null
+                      sourcedata: null
+                      state: /api/3/picklists/<uuid>
+                      status: /api/3/picklists/<uuid>
+                      targetAsset: null
+                      targetProcess: null
+                      tenant: /api/3/tenants/<uuid>
+                      tenantRecordId: 39
+                      ticketID: null
+                      type: /api/3/picklists/<uuid>
+                      url: null
+                      userDetails: null
+                      userName: null
+                      uuid: <uuid>
+                      vulnerabilitySeverity: null
+                  request:
+                    baseUri: https://localhost
+                    body: ''
+                    headers:
+                      accept: '*/*'
+                      accept-encoding: gzip, deflate
+                      authorization: '*******'
+                      connection: keep-alive
+                      content-length: '113'
+                      content-type: application/json
+                      host: localhost
+                      proxy: ''
+                      user-agent: python-requests/2.32.5
+                      x-cyops-playbookiri: /api/3/workflows/<uuid>
+                      x-cyops-playbookname: Extract Indicators (Alerts)
+                      x-php-ob-level: '1'
+                    method: PUT
+                    query: []
+                    uri: https://localhost/api/3/alerts/<uuid>
+                  resource: alerts
                   resources: {}
-                  step_id: 35059
+                  similarAlertsIRIs: []
                   task_id: <uuid>
-                  wf_id: 4784
                 metadata:
-                  id: 24
+                  id: 169
                   metadata:
                     groups: []
                     routes:
@@ -5740,7 +6159,7 @@ paths:
                       group: null
                       isExecuted: false
                       label: null
-                      name: Configuration -> Get Macro Value
+                      name: Find Similar Alerts -> Correlate Similar Alerts And Update State
                       sourceStep: /api/3/workflow_steps/<uuid>
                       targetStep: /api/3/workflow_steps/<uuid>
                       uuid: <uuid>
@@ -5749,7 +6168,25 @@ paths:
                       group: null
                       isExecuted: false
                       label: null
-                      name: Extract Value from Response -> Fetch and Create
+                      name: Find Similar Alerts Enterprise -> Correlate Similar Alerts And Update State
+                      sourceStep: /api/3/workflow_steps/<uuid>
+                      targetStep: /api/3/workflow_steps/<uuid>
+                      uuid: <uuid>
+                    - '@id': /api/3/workflow_routes/<uuid>
+                      '@type': WorkflowRoute
+                      group: null
+                      isExecuted: false
+                      label: Enterprise
+                      name: Is MSSP -> Find Similar Alerts Enterprise
+                      sourceStep: /api/3/workflow_steps/<uuid>
+                      targetStep: /api/3/workflow_steps/<uuid>
+                      uuid: <uuid>
+                    - '@id': /api/3/workflow_routes/<uuid>
+                      '@type': WorkflowRoute
+                      group: null
+                      isExecuted: false
+                      label: MSSP
+                      name: Is MSSP -> Find Similar Alerts MSSP
                       sourceStep: /api/3/workflow_steps/<uuid>
                       targetStep: /api/3/workflow_steps/<uuid>
                       uuid: <uuid>
@@ -5758,53 +6195,71 @@ paths:
                       group: null
                       isExecuted: false
                       label: null
-                      name: Fetch and Create -> Update Pull Time
-                      sourceStep: /api/3/workflow_steps/<uuid>
-                      targetStep: /api/3/workflow_steps/<uuid>
-                      uuid: <uuid>
-                    - '@id': /api/3/workflow_routes/<uuid>
-                      '@type': WorkflowRoute
-                      group: null
-                      isExecuted: false
-                      label: null
-                      name: Get Macro Value -> Extract Value from Response
-                      sourceStep: /api/3/workflow_steps/<uuid>
-                      targetStep: /api/3/workflow_steps/<uuid>
-                      uuid: <uuid>
-                    - '@id': /api/3/workflow_routes/<uuid>
-                      '@type': WorkflowRoute
-                      group: null
-                      isExecuted: false
-                      label: null
-                      name: Start -> Configuration
+                      name: Start -> Is MSSP
                       sourceStep: /api/3/workflow_steps/<uuid>
                       targetStep: /api/3/workflow_steps/<uuid>
                       uuid: <uuid>
                     trigger_step_type: /api/3/workflow_step_types/<uuid>
                   template_iri: /api/3/workflows/<uuid>
-                  wf_modified: '2026-01-12T23:36:18Z'
-                modified: '2026-05-12T21:00:46.242407Z'
-                name: FortiGuard Threat Intelligence > Ingest
+                  wf_modified: '2025-12-11T15:06:22Z'
+                modified: '2026-05-12T21:05:33.016183Z'
+                name: Find and Relate Similar Alerts
                 node_name: soar
                 parent_wf: null
                 peer_details: {}
-                result:
-                  data:
-                    default_value: '1768261474'
-                    id: 23
-                    name: FortiguardIntelligenceLastPullTime__26191d34_e980_40b0_bfc1_0e7bfb04dab5
-                    value: '1778619601'
-                  message: ''
-                  operation: null
-                  status: Success
+                result: {}
                 status: finished
                 steps:
-                - '@id': /wf/api/steps/35054/
+                - '@id': /wf/api/steps/35422/
                   '@type': Step
-                  completed: '2026-05-12T21:00:01.053240Z'
-                  func: set_multiple
+                  completed: '2026-05-12T21:05:32.979063Z'
+                  func: update_data
                   metadata:
-                    id: 134
+                    id: 1233
+                    metadata:
+                      globalMockUsed: false
+                      group: null
+                      ignore_errors: false
+                      left: '300'
+                      mockOutputUsed: false
+                      stepType:
+                        background: '#f7ac20'
+                        displayName: Update Record
+                        icon: icon icon-update-record
+                      top: '440'
+                      uuid: <uuid>
+                      when: false
+                    template_iri: /api/3/workflow_steps/<uuid>
+                    wf_metadata: 169
+                  name: Correlate Similar Alerts And Update State
+                  started: '2026-05-12T21:05:32.956111Z'
+                  status: skipped
+                - '@id': /wf/api/steps/35423/
+                  '@type': Step
+                  completed: null
+                  func: find_data
+                  metadata:
+                    id: 1234
+                    metadata:
+                      group: null
+                      left: '475'
+                      stepType:
+                        background: '#f7ac20'
+                        displayName: Find Records
+                        icon: icon icon-find-record
+                      top: '300'
+                      uuid: <uuid>
+                    template_iri: /api/3/workflow_steps/<uuid>
+                    wf_metadata: 169
+                  name: Find Similar Alerts Enterprise
+                  started: null
+                  status: skipped
+                - '@id': /wf/api/steps/35424/
+                  '@type': Step
+                  completed: '2026-05-12T21:05:32.928322Z'
+                  func: find_data
+                  metadata:
+                    id: 1235
                     metadata:
                       globalMockUsed: false
                       group: null
@@ -5813,141 +6268,67 @@ paths:
                       mockOutputUsed: false
                       stepType:
                         background: '#f7ac20'
-                        displayName: Set Variable
-                        icon: icon icon-set-variables
-                      top: '165'
-                      uuid: <uuid>
-                      when: true
-                    template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 24
-                  name: Configuration
-                  started: '2026-05-12T21:00:01.025468Z'
-                  status: finished
-                - '@id': /wf/api/steps/35055/
-                  '@type': Step
-                  completed: '2026-05-12T21:00:01.543650Z'
-                  func: set_multiple
-                  metadata:
-                    id: 135
-                    metadata:
-                      globalMockUsed: false
-                      group: null
-                      ignore_errors: false
-                      left: '125'
-                      mockOutputUsed: false
-                      stepType:
-                        background: '#f7ac20'
-                        displayName: Set Variable
-                        icon: icon icon-set-variables
-                      top: '435'
-                      uuid: <uuid>
-                      when: true
-                    template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 24
-                  name: Extract Value from Response
-                  started: '2026-05-12T21:00:01.511600Z'
-                  status: finished
-                - '@id': /wf/api/steps/35056/
-                  '@type': Step
-                  completed: '2026-05-12T21:00:45.765949Z'
-                  func: connector
-                  metadata:
-                    id: 136
-                    metadata:
-                      globalMockUsed: false
-                      group: null
-                      ignore_errors: false
-                      left: '125'
-                      mockOutputUsed: false
-                      stepType:
-                        background: '#ff7600'
-                        connectorName: Fortinet FortiGuard Threat Intelligence
-                        connectorVersion: 3.2.0
-                        displayName: Connector
-                        icon: icon icon-connectors
-                      top: '570'
-                      uuid: <uuid>
-                      when: true
-                    template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 24
-                  name: Fetch and Create
-                  started: '2026-05-12T21:00:01.569747Z'
-                  status: finished
-                - '@id': /wf/api/steps/35057/
-                  '@type': Step
-                  completed: '2026-05-12T21:00:01.472311Z'
-                  func: connector
-                  metadata:
-                    id: 137
-                    metadata:
-                      globalMockUsed: false
-                      group: null
-                      ignore_errors: false
-                      left: '125'
-                      mockOutputUsed: false
-                      stepType:
-                        background: '#ff7600'
-                        displayName: Utilities
-                        icon: icon icon-utilities
+                        displayName: Find Records
+                        icon: icon icon-find-record
                       top: '300'
                       uuid: <uuid>
                       when: true
                     template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 24
-                  name: Get Macro Value
-                  started: '2026-05-12T21:00:01.090296Z'
+                    wf_metadata: 169
+                  name: Find Similar Alerts MSSP
+                  started: '2026-05-12T21:05:32.792576Z'
                   status: finished
-                - '@id': /wf/api/steps/35058/
+                - '@id': /wf/api/steps/35425/
                   '@type': Step
-                  completed: '2026-05-12T21:00:00.993272Z'
-                  func: set_multiple
+                  completed: '2026-05-12T21:05:32.770586Z'
+                  func: cond
                   metadata:
-                    id: 138
+                    id: 1236
                     metadata:
                       globalMockUsed: false
                       group: null
                       ignore_errors: false
-                      left: '125'
+                      left: '300'
                       mockOutputUsed: false
                       stepType:
-                        background: null
-                        displayName: Referenced
-                        icon: icon icon-referenced
+                        background: '#52b200'
+                        displayName: Decision
+                        icon: icon icon-decision
+                      top: '165'
+                      uuid: <uuid>
+                      when: true
+                    template_iri: /api/3/workflow_steps/<uuid>
+                    wf_metadata: 169
+                  name: Is MSSP
+                  started: '2026-05-12T21:05:32.730146Z'
+                  status: finished
+                - '@id': /wf/api/steps/35426/
+                  '@type': Step
+                  completed: '2026-05-12T21:05:32.696145Z'
+                  func: set_multiple
+                  metadata:
+                    id: 1237
+                    metadata:
+                      globalMockUsed: false
+                      group: null
+                      ignore_errors: false
+                      left: '300'
+                      mockOutputUsed: false
+                      stepType:
+                        background: '#e1e815'
+                        displayName: On Update
+                        icon: icon icon-on-update
                       top: '30'
                       uuid: <uuid>
                       when: true
                     template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 24
+                    wf_metadata: 169
                   name: Start
-                  started: '2026-05-12T21:00:00.977349Z'
+                  started: '2026-05-12T21:05:32.671872Z'
                   status: finished
-                - '@id': /wf/api/steps/35059/
-                  '@type': Step
-                  completed: '2026-05-12T21:00:46.204849Z'
-                  func: connector
-                  metadata:
-                    id: 139
-                    metadata:
-                      globalMockUsed: false
-                      group: null
-                      ignore_errors: false
-                      left: '125'
-                      mockOutputUsed: false
-                      stepType:
-                        background: '#ff7600'
-                        displayName: Utilities
-                        icon: icon icon-utilities
-                      top: '705'
-                      uuid: <uuid>
-                      when: true
-                    template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 24
-                  name: Update Pull Time
-                  started: '2026-05-12T21:00:45.789577Z'
-                  status: finished
-                tags: dataingestion,fortinet-fortiguard-threat-intelligence,ingest
+                tags: PostUpdate,PostUpdate ,system
                 template_iri: /api/3/workflows/<uuid>
-                user: ''
+                user: /api/3/appliances/<uuid>
       x-verified-live:
       - apikey
       - jwt
@@ -5978,31 +6359,31 @@ paths:
                 '@context': /wf/api/workflows/log_list/context/
                 hydra:firstPage: /wf/api/workflows/log_list/?format=json&limit=2&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:itemsPerPage: 2
-                hydra:lastPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=16&ordering=-modified&page=1&parent_wf__isnull=True
+                hydra:lastPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=28&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:member:
-                - '@id': /wf/api/workflows/4784/
+                - '@id': /wf/api/workflows/4834/
                   '@type': Workflow
-                  created: '2026-05-12T21:00:00.542462Z'
+                  created: '2026-05-12T21:05:32.368960Z'
                   debug: true
-                  modified: '2026-05-12T21:00:46.242407Z'
-                  name: FortiGuard Threat Intelligence > Ingest
+                  modified: '2026-05-12T21:05:33.016183Z'
+                  name: Find and Relate Similar Alerts
                   node_name: soar
                   parent_wf: null
                   status: finished
-                  tags: dataingestion,fortinet-fortiguard-threat-intelligence,ingest
-                - '@id': /wf/api/workflows/4782/
+                  tags: PostUpdate,PostUpdate ,system
+                - '@id': /wf/api/workflows/4831/
                   '@type': Workflow
-                  created: '2026-05-12T21:00:00.232581Z'
+                  created: '2026-05-12T21:05:30.070648Z'
                   debug: true
-                  modified: '2026-05-12T21:00:01.325636Z'
-                  name: Purge Expired Feeds
+                  modified: '2026-05-12T21:05:32.843257Z'
+                  name: Alert - [01] Capture All SLA (Upon Create)
                   node_name: soar
                   parent_wf: null
                   status: finished
-                  tags: system
+                  tags: PostCreate,SLA,system
                 hydra:nextPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=2&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:previousPage: null
-                hydra:totalItems: 17
+                hydra:totalItems: 30
       x-verified-live:
       - apikey
       - jwt
@@ -40331,13 +40712,13 @@ paths:
                 hydra:itemsPerPage: 10
                 hydra:lastPage: /wf/api/query/workflow_logs/?logs=all&offset=0
                 hydra:member:
-                - '@id': /wf/api/query/4810/
+                - '@id': /wf/api/query/4834/
                   '@type': Workflow
-                  created: '2026-05-12T21:01:39.883018Z'
+                  created: '2026-05-12T21:05:32.368960Z'
                   debug: true
                   env: {}
                   metadata:
-                    id: 25
+                    id: 169
                     metadata:
                       groups: []
                       routes:
@@ -40346,25 +40727,7 @@ paths:
                         group: null
                         isExecuted: false
                         label: null
-                        name: Configuration -> Resolve Range
-                        sourceStep: /api/3/workflow_steps/<uuid>
-                        targetStep: /api/3/workflow_steps/<uuid>
-                        uuid: <uuid>
-                      - '@id': /api/3/workflow_routes/<uuid>
-                        '@type': WorkflowRoute
-                        group: null
-                        isExecuted: false
-                        label: No, For Ingestion
-                        name: Is data only for mapping -> Copy  of Create Record
-                        sourceStep: /api/3/workflow_steps/<uuid>
-                        targetStep: /api/3/workflow_steps/<uuid>
-                        uuid: <uuid>
-                      - '@id': /api/3/workflow_routes/<uuid>
-                        '@type': WorkflowRoute
-                        group: null
-                        isExecuted: false
-                        label: Yes, For Mapping
-                        name: Is data only for mapping -> Return Sample Data
+                        name: Find Similar Alerts -> Correlate Similar Alerts And Update State
                         sourceStep: /api/3/workflow_steps/<uuid>
                         targetStep: /api/3/workflow_steps/<uuid>
                         uuid: <uuid>
@@ -40373,7 +40736,25 @@ paths:
                         group: null
                         isExecuted: false
                         label: null
-                        name: Resolve Range -> Is data only for mapping
+                        name: Find Similar Alerts Enterprise -> Correlate Similar Alerts And Update State
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: Enterprise
+                        name: Is MSSP -> Find Similar Alerts Enterprise
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: MSSP
+                        name: Is MSSP -> Find Similar Alerts MSSP
                         sourceStep: /api/3/workflow_steps/<uuid>
                         targetStep: /api/3/workflow_steps/<uuid>
                         uuid: <uuid>
@@ -40382,30 +40763,30 @@ paths:
                         group: null
                         isExecuted: false
                         label: null
-                        name: Start -> Configuration
+                        name: Start -> Is MSSP
                         sourceStep: /api/3/workflow_steps/<uuid>
                         targetStep: /api/3/workflow_steps/<uuid>
                         uuid: <uuid>
                       trigger_step_type: /api/3/workflow_step_types/<uuid>
                     template_iri: /api/3/workflows/<uuid>
-                    wf_modified: '2026-01-12T23:36:18Z'
-                  modified: '2026-05-12T21:02:38.761078Z'
-                  name: '> FortiGuard Threat Intelligence > Fetch and Create'
+                    wf_modified: '2025-12-11T15:06:22Z'
+                  modified: '2026-05-12T21:05:33.016183Z'
+                  name: Find and Relate Similar Alerts
                   node_name: soar
-                  parent_wf_id: 4784
+                  parent_wf_id: null
                   peer_details: null
                   result: {}
                   status: finished
-                  tags: create,dataingestion,fetch,fortinet-fortiguard-threat-intelligence
+                  tags: PostUpdate,PostUpdate ,system
                   template_iri: /api/3/workflows/<uuid>
                   user: cyberpgsql
-                - '@id': /wf/api/query/4809/
+                - '@id': /wf/api/query/4833/
                   '@type': Workflow
-                  created: '2026-05-12T21:01:37.689462Z'
+                  created: '2026-05-12T21:05:31.025708Z'
                   debug: true
                   env: {}
                   metadata:
-                    id: 25
+                    id: 158
                     metadata:
                       groups: []
                       routes:
@@ -40414,25 +40795,7 @@ paths:
                         group: null
                         isExecuted: false
                         label: null
-                        name: Configuration -> Resolve Range
-                        sourceStep: /api/3/workflow_steps/<uuid>
-                        targetStep: /api/3/workflow_steps/<uuid>
-                        uuid: <uuid>
-                      - '@id': /api/3/workflow_routes/<uuid>
-                        '@type': WorkflowRoute
-                        group: null
-                        isExecuted: false
-                        label: No, For Ingestion
-                        name: Is data only for mapping -> Copy  of Create Record
-                        sourceStep: /api/3/workflow_steps/<uuid>
-                        targetStep: /api/3/workflow_steps/<uuid>
-                        uuid: <uuid>
-                      - '@id': /api/3/workflow_routes/<uuid>
-                        '@type': WorkflowRoute
-                        group: null
-                        isExecuted: false
-                        label: Yes, For Mapping
-                        name: Is data only for mapping -> Return Sample Data
+                        name: Get SLA Details1 -> Select SLA
                         sourceStep: /api/3/workflow_steps/<uuid>
                         targetStep: /api/3/workflow_steps/<uuid>
                         uuid: <uuid>
@@ -40441,7 +40804,43 @@ paths:
                         group: null
                         isExecuted: false
                         label: null
-                        name: Resolve Range -> Is data only for mapping
+                        name: Get SLA Details MSSP -> Select SLA
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: MSSP
+                        name: Is MSSP -> Get SLA Details
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: Enterprise
+                        name: Is MSSP -> Get SLA Details1
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: Do Nothing
+                        name: Select SLA -> Raise Exception
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: Return SLA
+                        name: Select SLA -> Set Conditions for SLA
                         sourceStep: /api/3/workflow_steps/<uuid>
                         targetStep: /api/3/workflow_steps/<uuid>
                         uuid: <uuid>
@@ -40450,21 +40849,30 @@ paths:
                         group: null
                         isExecuted: false
                         label: null
-                        name: Start -> Configuration
+                        name: Set Conditions for SLA -> SLA Time List
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      - '@id': /api/3/workflow_routes/<uuid>
+                        '@type': WorkflowRoute
+                        group: null
+                        isExecuted: false
+                        label: null
+                        name: Start -> Is MSSP
                         sourceStep: /api/3/workflow_steps/<uuid>
                         targetStep: /api/3/workflow_steps/<uuid>
                         uuid: <uuid>
                       trigger_step_type: /api/3/workflow_step_types/<uuid>
                     template_iri: /api/3/workflows/<uuid>
-                    wf_modified: '2026-01-12T23:36:18Z'
-                  modified: '2026-05-12T21:02:36.211370Z'
-                  name: '> FortiGuard Threat Intelligence > Fetch and Create'
+                    wf_modified: '2026-02-05T13:46:43Z'
+                  modified: '2026-05-12T21:05:32.867084Z'
+                  name: Fetch SLA Details
                   node_name: soar
-                  parent_wf_id: 4784
+                  parent_wf_id: 4832
                   peer_details: null
                   result: {}
                   status: finished
-                  tags: create,dataingestion,fetch,fortinet-fortiguard-threat-intelligence
+                  tags: SLA,Subroutine,system,Subroutine  ,system
                   template_iri: /api/3/workflows/<uuid>
                   user: cyberpgsql
                 hydra:nextPage: null
@@ -40504,7 +40912,7 @@ paths:
           content:
             application/json:
               example:
-                count: 1458
+                count: 1481
       x-verified-live:
       - apikey
       - jwt
@@ -40731,7 +41139,7 @@ paths:
                   title: Fill in Device Information
                   type: InputBased
                   unauthenticated_input: false
-                  workflow: gAAAAABqA5XMAOnCZITJvWx-XDjjff-4HpCB7DSXB04rT09BM5nd6MPxY0YA80QYq6Npddgq71Mu_O_Qn1xz1eJ57eKBdabTpg==
+                  workflow: gAAAAABqA5b0Kvs1b6J28q4GRLZBI9fGCvDba2BfzA1RelqEtU9wfwsn8sCb-4ZGU-GcThQ_A4GwCNzqK58rRhwVDgjlJtaMGg==
                 - agent_id: null
                   assignment_type: none
                   created: '2026-05-09T19:19:33.298567Z'
@@ -40753,7 +41161,7 @@ paths:
                   title: Fill in Device Information
                   type: InputBased
                   unauthenticated_input: false
-                  workflow: gAAAAABqA5XMtT7uV3vaIliaaA94qLx773bgMoQebnde2YNOMNe30TJ9RW9sk5zxoi9Ny06HKjV5WVaX3oiNq5aTrWeBtySs6Q==
+                  workflow: gAAAAABqA5b087-FY4qgWdpnHd0ASXkefattRwXiHGAjqCYaYfwPiNB25FiiyyLNf0mTfTdqIvr7biLreppH1vTIrjMbb-_-tw==
                 hydra:nextPage: null
                 hydra:previousPage: null
                 hydra:totalItems: 2
