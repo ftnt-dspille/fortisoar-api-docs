@@ -1814,6 +1814,8 @@ TAG_DESCRIPTIONS = {
 
 REFERENCE_PROSE = r"""A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST API.
 
+> **Official docs:** [FortiSOAR API Guide on docs.fortinet.com](https://docs.fortinet.com/document/fortisoar/latest/api-guide/846127). This reference is **not** official Fortinet documentation - it's a community project. Consult the official guide for the authoritative surface; use this site for endpoints that the guide doesn't cover or where live-verified shapes are useful.
+
 > **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Operations stamped with **Live-verified** at the top of the page were exercised end-to-end against a real FortiSOAR. Anything without that stamp is documented from the API guide and DB introspection only - request/response shapes are best-effort, not guaranteed to be correct. Always validate against your own appliance before relying on it.
 >
 > **What the Live-verified line tells you.** It looks like: **Live-verified** (`apikey: OK` - `jwt: OK`, YYYY-MM-DD).
