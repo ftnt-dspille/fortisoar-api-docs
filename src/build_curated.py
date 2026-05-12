@@ -408,6 +408,9 @@ PATHS["/api/3/logout"] = {
         "tags": ["Authentication"],
         "summary": "Server-side session invalidation",
         "description": "Invalidates the bearer token server-side, complementing JWT expiry. Optional - JWTs expire on their own.",
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object"}, "example": {},
+        }}},
         "responses": {"204": {"description": "Logged out."}},
     },
 }
@@ -459,6 +462,11 @@ PATHS["/api/3/actors/current"] = {
     "get": {
         "tags": ["Authentication"],
         "summary": "Current actor (user or appliance)",
+        "description": (
+            "Returns the calling principal as a unified Actor record - either a user or an appliance/agent. "
+            "Use this when code needs to work uniformly across both auth modes; for user-only fields, "
+            "prefer `GET /api/3/people/current`."
+        ),
         "responses": {"200": _resp("Actor record.")},
     },
 }
@@ -586,12 +594,16 @@ PATHS["/api/3/{collection}/{uuid}"] = {
 
 # --- Bulk record ops -------------------------------------------------------
 
-for verb, op_method, op_summary, op_desc in [
-    ("insert",     "post", "Bulk insert", "Insert multiple records of the given module type in one call."),
-    ("update",     "put",  "Bulk update", "Update multiple records (each with its `@id`). **Method is PUT**, not POST."),
-    ("delete",     "delete", "Bulk delete", "Delete multiple records by IRI list. **Method is DELETE**, not POST."),
-    ("upsert",     "post", "Upsert by natural key", "Insert-or-update keyed on the module's identifier field."),
-    ("bulkupsert", "post", "Bulk upsert", "Bulk version of upsert. Note: some 7.6.x builds return 500 (server-side TypeError) when the body isn't a strict JSON array - retry with the payload wrapped as an array."),
+for verb, op_method, op_summary, op_desc, body_shape in [
+    ("insert",     "post",   "Bulk insert", "Insert multiple records of the given module type in one call.", "array_obj"),
+    ("update",     "put",    "Bulk update", "Update multiple records (each with its `@id`). **Method is PUT**, not POST.", "array_obj"),
+    ("delete",     "delete", "Bulk delete", "Delete multiple records by IRI list. **Method is DELETE**, not POST.", "array_str"),
+    ("upsert",     "post",   "Upsert by natural key",
+     "Insert-or-update **a single record** keyed on the module's identifier field. Body is a JSON object, "
+     "not an array — use `/api/3/bulkupsert/{moduleType}` for the array variant.", "object"),
+    ("bulkupsert", "post",   "Bulk upsert",
+     "Array-input version of upsert. Body must be a JSON array; some 7.6.x builds return 500 (server-side "
+     "TypeError) when given anything else.", "array_obj"),
 ]:
     op_def = {
         "tags": ["Bulk operations"],
@@ -599,14 +611,13 @@ for verb, op_method, op_summary, op_desc in [
         "description": op_desc,
         "responses": {"200": _resp("Result envelope (per-record status).")},
     }
-    if op_method != "delete":
-        op_def["requestBody"] = {"required": True, "content": {"application/json": {
-            "schema": {"type": "array", "items": {"type": "object"}},
-        }}}
-    else:
-        op_def["requestBody"] = {"required": True, "content": {"application/json": {
-            "schema": {"type": "array", "items": {"type": "string"}},
-        }}}
+    if body_shape == "array_obj":
+        schema = {"type": "array", "items": {"type": "object"}}
+    elif body_shape == "array_str":
+        schema = {"type": "array", "items": {"type": "string"}}
+    else:  # object
+        schema = {"type": "object"}
+    op_def["requestBody"] = {"required": True, "content": {"application/json": {"schema": schema}}}
     PATHS[f"/api/3/{verb}/{{moduleType}}"] = {
         "parameters": [{"name": "moduleType", "in": "path", "required": True, "schema": {"type": "string"}, "example": "alerts"}],
         op_method: op_def,
@@ -762,7 +773,19 @@ PATHS["/api/query/{collection}/{queryId}"] = {
     "post": {
         "tags": ["Query"],
         "summary": "Execute a persisted query",
-        "description": "Runs a saved Query (created via `POST /api/3/query_objects`). Body may override pagination / sort.",
+        "description": (
+            "Runs a saved Query previously created via `POST /api/3/user_queries` "
+            "(persistent store; system-owned queries live under `/api/3/system_queries`). "
+            "Body may override pagination / sort."
+        ),
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {
+                "$limit": {"type": "integer"},
+                "$page": {"type": "integer"},
+                "$orderby": {"type": "string"},
+            }},
+            "example": {"$limit": 30, "$page": 1, "$orderby": "-createDate"},
+        }}},
         "responses": {"200": _resp("Hydra collection.", ref="HydraCollection")},
     },
 }
@@ -867,36 +890,268 @@ PATHS["/api/gateway/audit/operations"] = {
 }
 
 PATHS["/api/gateway/audit/activities/ttl"] = {
-    "get": {"tags": ["Audit"], "summary": "Read TTL / retention setting",
-            "description": "*Heads-up:* this endpoint returns 400 on plain GET on some 7.6.x builds (the gateway expects an `X-User-Authorization` HMAC header that browser clients can't easily produce). Treat as best-effort.",
-            "responses": {"200": _resp("TTL config.")}},
-    "post": {"tags": ["Audit"], "summary": "Set TTL", "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}}, "responses": {"200": _resp("Updated.")}},
-    "delete": {"tags": ["Audit"], "summary": "Disable TTL", "responses": {"200": _resp("Disabled.")}},
+    "delete": {"tags": ["Audit"], "summary": "Disable TTL (stop auto-purge of audit logs)",
+               "description": "Documented Fortinet recipe to **stop automatic purging of audit logs**. `DELETE` with `Authorization: Bearer <token>` returns 200.",
+               "responses": {"200": _resp("Disabled.")}},
 }
 
 
 # --- Workflows / triggers --------------------------------------------------
 
+# Filters and pagination params are shared across recent (`/workflows/`),
+# log_list (`/workflows/log_list/`), and historical (`/historical-workflows/`)
+# views, so define them once and reuse.
+_WF_LIST_PARAMS = [
+    {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
+    {"name": "limit", "in": "query", "schema": {"type": "integer"},
+     "description": "Maximum number of results to return per page."},
+    {"name": "offset", "in": "query", "schema": {"type": "integer"},
+     "description": "Index from which to start returning results."},
+    {"name": "ordering", "in": "query", "schema": {"type": "string"},
+     "description": "Sort field; prefix `-` for descending. Common: `-modified`, `-created`."},
+    {"name": "page", "in": "query", "schema": {"type": "integer"}},
+    {"name": "status", "in": "query", "schema": {"type": "string",
+        "enum": ["incipient", "active", "pending", "running", "failed",
+                 "finished", "awaiting", "skipped", "terminated", "paused"]},
+     "description": "Filter by run state."},
+    {"name": "task_id", "in": "query", "schema": {"type": "string"},
+     "description": "Match the `task_id` returned by a trigger POST. Pair with `parent_wf__isnull=True` to skip sub-playbook children."},
+    {"name": "template_iri", "in": "query", "schema": {"type": "string"},
+     "description": "Filter by playbook IRI (e.g. `/api/3/workflows/<uuid>`). Returns history for that specific playbook."},
+    {"name": "records", "in": "query", "schema": {"type": "string"},
+     "description": "Filter by record IRI (e.g. `/api/3/alerts/<uuid>`). Returns runs that executed against that record."},
+    {"name": "created_after", "in": "query", "schema": {"type": "string", "format": "date"},
+     "description": "Inclusive lower bound on `created` (ISO date, e.g. `2024-11-08`). Pair with `created_before` for a window."},
+    {"name": "created_before", "in": "query", "schema": {"type": "string", "format": "date"},
+     "description": "Inclusive upper bound on `created` (ISO date)."},
+    {"name": "parent_wf__isnull", "in": "query", "schema": {"type": "boolean"},
+     "description": "`True` filters out sub-playbook children (only parent runs returned). On `/historical-workflows/` the equivalent flag is `parent__isnull`."},
+    {"name": "tags_include", "in": "query", "schema": {"type": "string"},
+     "description": "Comma-separated tag allowlist - only runs carrying any of these tags are returned."},
+    {"name": "tags_exclude", "in": "query", "schema": {"type": "string"},
+     "description": "Comma-separated tag denylist - runs carrying any of these tags are filtered out. Combinable with `tags_include`."},
+]
+
+
 PATHS["/api/wf/api/workflows/"] = {
-    "get": {"tags": ["Workflows"], "summary": "List workflows / runs",
-            "responses": {"200": _resp("Collection.")}},
+    "get": {
+        "tags": ["Workflows"],
+        "summary": "List recent playbook runs",
+        "description": (
+            "Hydra-paged list of recent playbook execution logs. **Recent** here means runs that have not "
+            "yet been moved to historical storage by the Playbook Log Movement task (runs every 15 minutes "
+            "for completed playbooks, 60 minutes for failed/terminated; configurable in System Configuration).\n\n"
+            "For runs older than that, use `GET /api/wf/api/historical-workflows/`. To combine both stores in "
+            "a single query, use `POST /api/wf/api/query/workflow_logs/?logs=all`.\n\n"
+            "Common patterns:\n\n"
+            "- `task_id=<uuid>` (with `parent_wf__isnull=True`) — look up the run created by a trigger POST, "
+            "  skipping sub-playbook children.\n"
+            "- `ordering=-modified` + `limit=1` — newest run first.\n"
+            "- `template_iri=/api/3/workflows/<uuid>` — runs of a specific playbook.\n"
+            "- `records=/api/3/alerts/<uuid>` — runs executed against a specific record.\n"
+            "- `status=failed&created_after=2024-11-08&created_before=2024-11-10` — failed runs in a window.\n"
+            "- `tags_include=ingestion,critical&tags_exclude=system` — tag allow/deny lists.\n\n"
+            "Each `hydra:member` entry has `status` (one of `incipient`, `active`, `pending`, `running`, "
+            "`finished`, `failed`, `awaiting`, `skipped`, `terminated`, `paused`) and `@id` — the trailing "
+            "segment is the workflow pk used by the per-run detail GET."
+        ),
+        "parameters": _WF_LIST_PARAMS,
+        "responses": {"200": _resp("Hydra collection of recent runs.")},
+    },
 }
 
-PATHS["/api/wf/api/workflows/count"] = {
+PATHS["/api/wf/api/workflows/{pk}/"] = {
+    "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
+                    "description": "Workflow pk (the trailing segment of the `@id` from a list result). Numeric on this build."}],
+    "get": {
+        "tags": ["Workflows"],
+        "summary": "Recent run detail",
+        "description": (
+            "Full execution record for one recent playbook run. `result` is a dict keyed by step UUID with "
+            "each step's output — this is where playbook return values live. Use after polling the list "
+            "endpoint by `task_id` and seeing a terminal `status`.\n\n"
+            "If the run has been moved to historical storage, this returns 404. Refetch from "
+            "`GET /api/wf/api/historical-workflows/{pk}/` in that case."
+        ),
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
+        "responses": {"200": _resp("Workflow detail with `result`, `name`, `status`, step trace.")},
+    },
+}
+
+PATHS["/api/wf/api/workflows/log_list/"] = {
+    "post": {
+        "tags": ["Workflows"],
+        "summary": "Status lookup by `task_id`",
+        "description": (
+            "Returns the status of one or more executing playbooks identified by `task_id`. The `task_id` "
+            "is what a trigger POST returns (top-level on `/api/triggers/1/{name}`, sometimes nested under "
+            "`data` for legacy triggers).\n\n"
+            "Pagination + sort + filter params are passed in the query string; the request body is empty `{}`. "
+            "Pair `task_id=<uuid>` with `parent_wf__isnull=True` to skip sub-playbook child runs.\n\n"
+            "Example: `POST /api/wf/api/workflows/log_list/?format=json&limit=10&offset=0&ordering=-modified"
+            "&page=1&task_id=c762219d-947a-483e-8818-e2795dbc1b7b&parent_wf__isnull=True`"
+        ),
+        "parameters": _WF_LIST_PARAMS,
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object"}, "example": {},
+        }}},
+        "responses": {"200": _resp("Hydra collection of matching runs.")},
+    },
+}
+
+PATHS["/api/wf/api/historical-workflows/"] = {
+    "get": {
+        "tags": ["Workflows"],
+        "summary": "List historical playbook runs",
+        "description": (
+            "Hydra-paged list of playbook runs that have been moved to historical storage (added in 7.6.1). "
+            "Same filter grammar as `/api/wf/api/workflows/` with one nit: the parent-only filter is named "
+            "`parent__isnull` here (vs `parent_wf__isnull` on the recent endpoint).\n\n"
+            "Use `GET /api/wf/api/workflows/count?logs=all` for a combined count across recent + historical."
+        ),
+        "parameters": _WF_LIST_PARAMS + [
+            {"name": "parent__isnull", "in": "query", "schema": {"type": "boolean"},
+             "description": "Historical-only equivalent of `parent_wf__isnull` — `True` filters out sub-playbook children."},
+        ],
+        "responses": {"200": _resp("Hydra collection of historical runs.")},
+    },
+}
+
+PATHS["/api/wf/api/historical-workflows/{pk}/"] = {
+    "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
+                    "description": "Historical workflow pk (trailing segment of `@id`)."}],
+    "get": {
+        "tags": ["Workflows"],
+        "summary": "Historical run detail",
+        "description": (
+            "Detail view for one historical playbook run. Shape mirrors `/api/wf/api/workflows/{pk}/` — "
+            "`result` per-step output, `template_iri` to the source playbook, `created`/`modified` timestamps, "
+            "`env` snapshot."
+        ),
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
+        "responses": {"200": _resp("Historical run detail.")},
+    },
+}
+
+PATHS["/api/wf/api/query/workflow_logs/"] = {
+    "post": {
+        "tags": ["Workflows"],
+        "summary": "Query playbook logs (recent + historical)",
+        "description": (
+            "POST-body query against the playbook log store. `?logs=all` (default) combines recent and "
+            "historical; `?logs=recent` or `?logs=historical` restrict to one source.\n\n"
+            "If the request body is `{\"query\": {}}` (or any non-empty body), filtering uses the body's "
+            "grammar (`logic`, `filters`, `sort`, `aggregates`) — same shape as `POST /api/query/{collection}`. "
+            "Otherwise URL query params drive the result set.\n\n"
+            "Supported leaf operators for `filters`: `eq`, `neq`, `contains`, `ncontains`, `gte`, `lte`. "
+            "Filterable fields include `status`, `user`, `tags`, `modified`, `name`. `aggregates` supports "
+            "`groupBy` and `count` over `status`, `user`, `name`, `id`. Logic groups (`AND` / `OR`) nest."
+        ),
+        "parameters": [
+            {"name": "logs", "in": "query",
+             "schema": {"type": "string", "enum": ["all", "recent", "historical"], "default": "all"},
+             "description": "Source of the playbook logs to search."},
+        ],
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {
+                "logic": {"type": "string", "enum": ["AND", "OR"]},
+                "limit": {"type": "integer"},
+                "sort": {"type": "array", "items": {"type": "object", "properties": {
+                    "field": {"type": "string"},
+                    "direction": {"type": "string", "enum": ["asc", "desc"]},
+                }}},
+                "filters": {"type": "array", "items": {"type": "object"}},
+                "aggregates": {"type": "array", "items": {"type": "object"}},
+            }},
+            "examples": {
+                "flat": {
+                    "summary": "Flat AND with sort",
+                    "value": {
+                        "logic": "AND",
+                        "limit": 30,
+                        "sort": [{"field": "modified", "direction": "desc"}],
+                        "filters": [
+                            {"field": "status", "operator": "eq", "value": "finished"},
+                        ],
+                    },
+                },
+                "nested": {
+                    "summary": "Nested OR groups",
+                    "value": {
+                        "logic": "OR",
+                        "limit": 30,
+                        "filters": [
+                            {"logic": "OR", "filters": [
+                                {"field": "tags", "operator": "contains", "value": "test"},
+                                {"field": "tags", "operator": "contains", "value": "testing"},
+                            ]},
+                            {"logic": "AND", "filters": [
+                                {"field": "status", "operator": "eq", "value": "finished"},
+                                {"field": "status", "operator": "eq", "value": "failed"},
+                            ]},
+                        ],
+                    },
+                },
+                "aggregate": {
+                    "summary": "Count grouped by status",
+                    "value": {
+                        "logic": "AND",
+                        "filters": [],
+                        "aggregates": [
+                            {"operator": "groupBy", "field": "status"},
+                            {"operator": "count", "field": "id"},
+                        ],
+                    },
+                },
+            },
+        }}},
+        "responses": {"200": _resp("Hydra collection of matching log rows.")},
+    },
+}
+
+PATHS["/api/wf/api/workflows/count/"] = {
     "get": {"tags": ["Workflows"], "summary": "Workflow count",
-            "description": "*Heads-up:* this endpoint is **HMAC-required** (\"Could not validate HMAC fingerprint\" on Bearer or API-KEY). Reachable from server-to-server callers that compute the HMAC; not from a browser-side Test Request panel.",
+            "description": (
+                "Total run count. `?logs=all` (default) combines recent + historical; pass `logs=recent` or "
+                "`logs=historical` to restrict.\n\n"
+                "**Trailing slash matters.** `/api/wf/api/workflows/count` (no slash) hits an HMAC-gated handler "
+                "that returns `403 \"Could not validate HMAC fingerprint\"` under Bearer or API-KEY; the "
+                "slashed form `/api/wf/api/workflows/count/` returns the count under either auth."
+            ),
+            "parameters": [
+                {"name": "logs", "in": "query",
+                 "schema": {"type": "string", "enum": ["all", "recent", "historical"], "default": "all"},
+                 "description": "Source of the count."},
+                {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
+            ],
             "responses": {"200": _resp("Count.", example={"count": 1667})}},
 }
 
+_WF_ACTION_BODIES = {
+    "start": ({"type": "object"}, {}),
+    "resume": ({"type": "object"}, {}),
+    "retry": ({"type": "object"}, {}),
+    "approval": (
+        {"type": "object", "properties": {
+            "decision": {"type": "string", "enum": ["approved", "rejected"]},
+            "comment": {"type": "string"},
+        }},
+        {"decision": "approved", "comment": "looks good"},
+    ),
+}
 for action, desc in [
     ("start", "Manually queue a workflow."),
     ("resume", "Resume a paused workflow (status=`paused`; for `awaiting`, use the manual-input PUT)."),
     ("retry", "Retry a failed workflow from the failed step."),
     ("approval", "Approval-step shortcut. Body shape unverified; expected `{decision, comment}`."),
 ]:
+    _schema, _example = _WF_ACTION_BODIES[action]
     PATHS[f"/api/wf/api/workflows/{{pk}}/{action}/"] = {
         "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"}}],
         "post": {"tags": ["Workflows"], "summary": f"Workflow {action}", "description": desc,
+                 "requestBody": {"required": False, "content": {"application/json": {
+                     "schema": _schema, "example": _example,
+                 }}},
                  "responses": {"200": _resp("Action result.")}},
     }
 
@@ -917,6 +1172,9 @@ PATHS["/api/wf/api/jinja-editor/"] = {
 PATHS["/api/wf/api/manual-wf-input/list_wfinput/"] = {
     "post": {"tags": ["Workflows"], "summary": "List pending manual inputs",
              "description": "GET on this path returns 405 - must be POST.",
+             "requestBody": {"required": False, "content": {"application/json": {
+                 "schema": {"type": "object"}, "example": {},
+             }}},
              "responses": {"200": _resp("Collection of pending inputs.")}},
 }
 
@@ -926,40 +1184,120 @@ PATHS["/api/triggers/1/{name}"] = {
     "post": {
         "tags": ["Triggers"],
         "summary": "Custom playbook trigger",
-        "description": "Fires a playbook by its trigger's arbitrary endpoint name. May allow Basic auth or no-auth depending on trigger config (intentional, for external webhooks).",
+        "description": (
+            "Fires a playbook by its trigger's arbitrary endpoint name. May allow Basic auth or no-auth depending on trigger config (intentional, for external webhooks).\n\n"
+            "Response always carries a `task_id` (sometimes top-level, sometimes nested under `data`). Track the run via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True` and fetch full results from `GET /api/wf/api/workflows/{pk}/`. See [Triggering a playbook with an API key and tracking the task](#description/triggering-a-playbook-with-an-api-key-and-tracking-the-task)."
+        ),
         "requestBody": {"content": {"application/json": {"schema": {"type": "object"}}}},
-        "responses": {"200": _resp("Playbook output.")},
+        "responses": {"200": _resp("Trigger accepted.", example={"task_id": "9c0e8a3a-1b2d-4f56-9a8b-1234567890ab"})},
     },
 }
 
 PATHS["/api/triggers/1/deferred/{name}"] = {
     "parameters": [{"name": "name", "in": "path", "required": True, "schema": {"type": "string"}}],
     "post": {"tags": ["Triggers"], "summary": "Custom trigger (deferred / async)",
+             "description": "Same shape as `POST /api/triggers/1/{name}` but always returns 202 and runs the playbook on a worker.",
+             "requestBody": {"required": False, "content": {"application/json": {
+                 "schema": {"type": "object"}, "example": {},
+             }}},
              "responses": {"202": _resp("Accepted.")}},
 }
 
 PATHS["/api/triggers/1/notrigger/{workflowId}"] = {
     "parameters": [{"name": "workflowId", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
     "post": {"tags": ["Triggers"], "summary": "Run workflow by id without firing trigger conditions",
+             "description": "Direct execution by workflow UUID, bypassing trigger filters. Use for debugging / forced replay.",
+             "requestBody": {"required": False, "content": {"application/json": {
+                 "schema": {"type": "object", "description": "Arbitrary input payload exposed to the workflow."},
+                 "example": {},
+             }}},
              "responses": {"200": _resp("Run result.")}},
 }
 
 
 # --- Integration / connectors ---------------------------------------------
+# Paths are ordered to match the connector lifecycle flow described in the
+# Connectors tag: install -> list -> configure -> execute -> healthcheck ->
+# delete config -> uninstall. The Redoc UI renders ops in dict-insertion
+# order within a tag, so reordering here reorders the rendered docs.
+
+# Step 1: install from .tgz (multipart upload).
+PATHS["/api/3/solutionpacks/install"] = {
+    "post": {
+        "tags": ["Connectors"],
+        "summary": "Install a connector from a .tgz bundle",
+        "description": (
+            "Multipart upload of a connector `.tgz`. The `$type=connector` query parameter is required; "
+            "`$replace=true` re-installs over an existing version. The response carries the full connector "
+            "record including the integer `id` you'll need for subsequent steps."
+        ),
+        "parameters": [
+            {"name": "$type", "in": "query", "required": True, "schema": {"type": "string", "enum": ["connector"]}},
+            {"name": "$replace", "in": "query", "schema": {"type": "boolean"},
+             "description": "Replace an existing install of the same name+version."},
+        ],
+        "requestBody": {"required": True, "content": {"multipart/form-data": {
+            "schema": {"type": "object", "required": ["file"], "properties": {
+                "file": {"type": "string", "format": "binary",
+                         "description": "The connector `.tgz` archive."},
+            }},
+        }}},
+        "responses": {"200": _resp("Installed connector record (with integer `id`).")},
+    },
+}
+
+# Step 2: list installed connectors (also: source-of-truth for the integer id).
+# Pagination uses Django REST style params (`page_size`, `page`), **not** the
+# Hydra `limit`/`offset` you see under `/api/3/`. Reused by the configuration
+# list below.
+_INTEGRATION_LIST_PARAMS = [
+    {"name": "page_size", "in": "query", "schema": {"type": "integer"},
+     "description": "Records per page. Default 30."},
+    {"name": "page", "in": "query", "schema": {"type": "integer"},
+     "description": "1-based page number."},
+    {"name": "name", "in": "query", "schema": {"type": "string"},
+     "description": "Filter by exact connector name (e.g. `hello-world`)."},
+    {"name": "active", "in": "query", "schema": {"type": "boolean"},
+     "description": "Filter to active/inactive records."},
+]
 
 PATHS["/api/integration/connectors/"] = {
     "get": {"tags": ["Connectors"], "summary": "List installed connectors",
-            "responses": {"200": _resp("Collection.")}},
+            "description": "Response envelope is a custom shape (`status`, `totalItems`, `data[]`), **not** a Hydra collection. Each `data[]` entry carries an integer `id`, `name`, `version`, `status` (e.g. `Completed`).",
+            "parameters": _INTEGRATION_LIST_PARAMS,
+            "responses": {"200": _resp("Collection envelope.")}},
 }
 
+# Step 3: list / create configurations.
 PATHS["/api/integration/configuration/"] = {
     "get": {"tags": ["Connectors"], "summary": "List connector configurations",
-            "responses": {"200": _resp("Collection.")}},
+            "description": "Returns the same envelope shape as `/api/integration/connectors/` (`data[]`, not Hydra). Each entry has `id` (int), `config_id` (uuid), `connector` (int connector id), `agent` (self-agent hash when remote), `config` (field map).",
+            "parameters": _INTEGRATION_LIST_PARAMS,
+            "responses": {"200": _resp("Collection envelope.")}},
     "post": {"tags": ["Connectors"], "summary": "Create connector configuration",
-             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
+             "description": (
+                 "Required body fields: `name`, `connector` (integer connector id — not the name), `config` "
+                 "(map of the connector's configuration field values). `default`, `status`, and `teams` "
+                 "are optional.\n\n"
+                 "**`agent` is optional.** Set it only when delegating execution to a **remote agent**; "
+                 "omit it (or leave unset) to run on the appliance's self-agent, which is the default."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "required": ["name", "connector", "config"], "properties": {
+                     "name": {"type": "string"},
+                     "connector": {"type": "integer"},
+                     "config": {"type": "object"},
+                     "agent": {"type": "string",
+                               "description": "Remote agent identifier. Omit for self-agent execution."},
+                     "default": {"type": "boolean"},
+                     "status": {"type": "integer"},
+                     "teams": {"type": "array", "items": {"type": "string"}},
+                 }},
+             }}},
              "responses": {"201": _resp("Created.")}},
 }
 
+# Step 4: execute a connector action.
 PATHS["/api/integration/execute/"] = {
     "post": {
         "tags": ["Connectors"],
@@ -971,9 +1309,57 @@ PATHS["/api/integration/execute/"] = {
     },
 }
 
+# Step 5a: healthcheck — GET form using an existing config (cheap).
+PATHS["/api/integration/connectors/healthcheck/{name}/{version}/"] = {
+    "parameters": [
+        {"name": "name", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector name (e.g. `hello-world`)."},
+        {"name": "version", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector version (e.g. `1.0.4`)."},
+    ],
+    "get": {"tags": ["Connectors"], "summary": "Health-check a connector via existing config",
+            "description": "Lighter-weight check than the POST form: takes the configuration uuid as a query parameter rather than re-sending the full config body.",
+            "parameters": [
+                {"name": "config", "in": "query", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+                 "description": "Configuration uuid (`config_id`)."},
+            ],
+            "responses": {"200": _resp("Health status with `status: Available` on success.")}},
+}
+
+# Step 5b: healthcheck — POST form when re-sending a full config inline.
 PATHS["/api/integration/connectors/healthcheck/"] = {
-    "post": {"tags": ["Connectors"], "summary": "Health-check a connector configuration",
+    "post": {"tags": ["Connectors"], "summary": "Health-check a connector configuration (inline body)",
+             "description": (
+                 "Body must carry a full connector configuration object (connector name/version + config "
+                 "fields). An empty or wrong-shape body returns 404 with a generic message rather than 400. "
+                 "For the cheaper GET form (uses an already-created config), see "
+                 "`/api/integration/connectors/healthcheck/{name}/{version}/`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
              "responses": {"200": _resp("Health status.")}},
+}
+
+# Step 6a: delete the configuration.
+PATHS["/api/integration/configuration/{config_id}/"] = {
+    "parameters": [{"name": "config_id", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+                    "description": "Configuration uuid (the `config_id` field, not the integer `id`)."}],
+    "delete": {"tags": ["Connectors"], "summary": "Delete a connector configuration",
+               "description": (
+                   "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not "
+                   "the integer DB id (which returns 500), and the **trailing slash is mandatory** — "
+                   "without it the request is routed to an HMAC-gated handler that returns the misleading "
+                   "`403 Could not validate HMAC fingerprint`."
+               ),
+               "responses": {"204": {"description": "Deleted."}}},
+}
+
+# Step 6b: uninstall the connector.
+PATHS["/api/integration/connectors/{id}/"] = {
+    "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
+                    "description": "Integer connector id (`data[].id` from `/api/integration/connectors/`)."}],
+    "delete": {"tags": ["Connectors"], "summary": "Uninstall a connector",
+               "description": "Trailing slash is required. Returns 204 on success.",
+               "responses": {"204": {"description": "Uninstalled."}}},
 }
 
 
@@ -987,12 +1373,22 @@ PATHS["/api/3/model_metadatas"] = {
 
 PATHS["/api/3/picklists/{uuid}"] = {
     "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
-    "get": {"tags": ["Metadata"], "summary": "Picklist value", "responses": {"200": _resp("Picklist record.")}},
+    "get": {"tags": ["Metadata"], "summary": "Picklist value",
+            "description": (
+                "Resolves one picklist *value* record by uuid - the leaf entries that record fields point at "
+                "(`severity`, `status`, etc.). The owning picklist taxonomy is `GET /api/3/picklist_names/{uuid}`."
+            ),
+            "responses": {"200": _resp("Picklist record.")}},
 }
 
 PATHS["/api/3/picklist_names/{uuid}"] = {
     "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
-    "get": {"tags": ["Metadata"], "summary": "Picklist taxonomy", "responses": {"200": _resp("Picklist name record.")}},
+    "get": {"tags": ["Metadata"], "summary": "Picklist taxonomy",
+            "description": (
+                "Resolves one picklist *taxonomy* record by uuid - the named list (e.g. `AlertSeverity`) "
+                "whose members are exposed via `GET /api/3/picklists/{uuid}`."
+            ),
+            "responses": {"200": _resp("Picklist name record.")}},
 }
 
 PATHS["/api/3/contexts/{shortName}"] = {
@@ -1036,18 +1432,210 @@ PATHS["/api/3/files"] = {
 
 # --- API keys / RBAC -------------------------------------------------------
 
+# Roles and teams keep the generic list/create shape; API keys gets a richer
+# dedicated section below.
 for path, tag, summary in [
-    ("/api/3/api_keys", "Access management", "API keys"),
     ("/api/3/roles", "Access management", "Roles"),
     ("/api/3/teams", "Access management", "Teams"),
 ]:
     PATHS[path] = {
         "get": {"tags": [tag], "summary": f"List {summary.lower()}", "parameters": COMMON_QPARAMS,
+                "description": (
+                    f"Hydra-paged listing of all {summary.lower()} in the tenant. Same `$`-param grammar "
+                    f"as any other record collection."
+                ),
                 "responses": {"200": _resp("Collection.", ref="HydraCollection")}},
         "post": {"tags": [tag], "summary": f"Create {summary.lower()[:-1]}",
+                 "description": (
+                     f"Creates a new {summary.lower()[:-1]}. Body shape follows the generic record contract "
+                     f"(`name` plus module-specific fields); see `GET /api/3/contexts/{summary[:-1]}` for the "
+                     f"full property list."
+                 ),
                  "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
                  "responses": {"201": _resp("Created.")}},
     }
+
+# API-key lifecycle is a multi-step workflow split across `/api/auth/users`
+# (the user record carrying the key) and `/api/3/api_keys` (the named scope
+# binding the user to roles + teams).
+#
+# Create flow:
+#   1. POST /api/auth/users  with type=9 (API-key user) -> returns uuid + key.
+#   2. POST /api/3/api_keys  with userId=<that uuid> + roles + teams -> binds scope.
+# Lifecycle ops (revoke / activate / deactivate / regenerate / reset_validity)
+# are all PUT /api/auth/users with an `operation` discriminator.
+
+PATHS["/api/3/api_keys"] = {
+    "get": {
+        "tags": ["Access management"],
+        "summary": "List API-key scopes",
+        "description": "Returns one object per scope binding (`name`, `uuid`, `userId`, roles, teams). Use `userId` values as input to `POST /api/auth/query/users` to fetch the actual keys.",
+        "parameters": COMMON_QPARAMS,
+        "responses": {"200": _resp("Hydra collection of scopes.", ref="HydraCollection")},
+    },
+    "post": {
+        "tags": ["Access management"],
+        "summary": "Bind an API-key user to roles and teams (step 2 of create)",
+        "description": "Run **after** `POST /api/auth/users` returns the API-key user's `uuid`. Pass that `uuid` here as `userId`.",
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["name", "userId"], "properties": {
+                "name": {"type": "string"},
+                "roles": {"type": "array", "items": {"type": "string"}, "description": "Role IRIs (`/api/3/roles/<uuid>`)."},
+                "teams": {"type": "array", "items": {"type": "string"}, "description": "Team IRIs (`/api/3/teams/<uuid>`)."},
+                "userId": {"type": "string", "description": "User uuid returned by `POST /api/auth/users`."},
+            }},
+            "example": {
+                "name": "api_key_for_automation",
+                "roles": ["/api/3/roles/<roleId1>", "/api/3/roles/<roleId2>"],
+                "teams": ["/api/3/teams/<teamId1>"],
+                "userId": "<userId>",
+            },
+        }}},
+        "responses": {"201": _resp("Scope created.")},
+    },
+}
+
+PATHS["/api/3/api_keys/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+                    "description": "Scope uuid (from `GET /api/3/api_keys`)."}],
+    "get": {
+        "tags": ["Access management"],
+        "summary": "Get scope of a specific API key",
+        "description": (
+            "Returns the scope binding (`name`, `uuid`, `userId`, roles, teams) for one API key. "
+            "`userId` is the linked API-key user uuid - use it with `/api/auth/users` to manage key material."
+        ),
+        "responses": {"200": _resp("Scope record (`name`, `uuid`, `userId`, roles, teams).")},
+    },
+    "put": {
+        "tags": ["Access management"],
+        "summary": "Update scope (name / roles / teams)",
+        "description": "**Replaces** the listed fields — values not in the payload that were previously set are overwritten with the new payload's values, so resend the full roles/teams lists you want to keep.",
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {
+                "name": {"type": "string"},
+                "roles": {"type": "array", "items": {"type": "string"}},
+                "teams": {"type": "array", "items": {"type": "string"}},
+                "userId": {"type": "string"},
+            }},
+            "example": {
+                "name": "api_key_for_automation",
+                "roles": ["/api/3/roles/<roleId1>", "/api/3/roles/<roleId2>"],
+                "teams": ["/api/3/teams/<teamId1>"],
+                "userId": "<userId>",
+            },
+        }}},
+        "responses": {"200": _resp("Updated scope.")},
+    },
+}
+
+PATHS["/api/auth/users"] = {
+    "get": {
+        "tags": ["Access management"],
+        "summary": "Get a specific API-key user (optionally with the unmasked key)",
+        "description": "Lookup by the API-key user's uuid (the `userId` from `GET /api/3/api_keys`). Default response masks the key; pass `show_api_key=true` to retrieve the plaintext — only works when the key was created with `retrievable_mode` enabled.",
+        "parameters": [
+            {"name": "uuid", "in": "query", "required": True, "schema": {"type": "string"},
+             "description": "API-key user uuid."},
+            {"name": "show_api_key", "in": "query", "schema": {"type": "boolean"},
+             "description": "Return the unmasked key (subject to `retrievable_mode`)."},
+        ],
+        "responses": {"200": _resp("API-key user record.")},
+    },
+    "post": {
+        "tags": ["Access management"],
+        "summary": "Create an API-key user (step 1 of create)",
+        "description": (
+            "Creates the underlying user record that carries the key material. The returned `uuid` "
+            "feeds `POST /api/3/api_keys` to attach roles and teams. `type=9` is the API-key user "
+            "discriminator; `status=1` means active.\n\n"
+            "**All three body fields are integers and required.** The published FortiSOAR API guide "
+            "shows `type` and `status` as quoted strings (`\"9\"`, `\"1\"`); on tested builds, that shape "
+            "is rejected with a generic 400. Use integer literals."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["type", "status", "api_key_validity"], "properties": {
+                "type": {"type": "integer", "enum": [9], "description": "`9` = API-key user."},
+                "status": {"type": "integer", "enum": [1], "description": "`1` = active."},
+                "api_key_validity": {"type": "integer", "minimum": 1, "maximum": 365,
+                                     "description": "Validity in days; must be in 1..365."},
+            }},
+            "example": {"type": 9, "status": 1, "api_key_validity": 1},
+        }}},
+        "responses": {"201": _resp("User created.", example={
+            "uuid": "<user_id_for_api_key>",
+            "api_key": {"key": "<api_key_value>", "retrievable": False},
+        })},
+    },
+    "put": {
+        "tags": ["Access management"],
+        "summary": "API-key lifecycle: revoke / activate / deactivate / regenerate / reset validity",
+        "description": (
+            "Single endpoint for all five lifecycle ops, discriminated by the `operation` field. "
+            "`uuid` here is the API-key user uuid (the `userId` returned by `GET /api/3/api_keys`).\n\n"
+            "- `REVOKE` — permanent deactivation.\n"
+            "- `ACTIVATE` / `DEACTIVATE` — toggle status.\n"
+            "- `REGENERATE` — issue a fresh key; requires `api_key_validity`.\n"
+            "- `RESET_VALIDITY` — extend/shorten validity; requires `api_key_validity`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["uuid", "key_type", "operation"], "properties": {
+                "uuid": {"type": "string"},
+                "key_type": {"type": "string", "enum": ["API_KEY"]},
+                "operation": {"type": "string", "enum": ["REVOKE", "ACTIVATE", "DEACTIVATE", "REGENERATE", "RESET_VALIDITY"]},
+                "api_key_validity": {"type": "integer", "description": "Required for `REGENERATE` and `RESET_VALIDITY`."},
+            }},
+            "example": {"uuid": "<uuid>", "key_type": "API_KEY", "operation": "REVOKE"},
+        }}},
+        "responses": {"200": _resp("Operation applied.")},
+    },
+}
+
+PATHS["/api/auth/query/users"] = {
+    "post": {
+        "tags": ["Access management"],
+        "summary": "Bulk fetch API-key users by id",
+        "description": "Pass a list of API-key user uuids (the `userId` values from `GET /api/3/api_keys`). Keys come back masked by default; `show_api_key=true` returns plaintext for any key whose user was created with `retrievable_mode` enabled.",
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["users"], "properties": {
+                "users": {"type": "array", "items": {"type": "string"}},
+                "show_api_key": {"type": "boolean"},
+            }},
+            "example": {"users": ["<userId_1>", "<userId_2>"], "show_api_key": True},
+        }}},
+        "responses": {"200": _resp("Array of API-key user records.")},
+    },
+}
+
+PATHS["/api/auth/config"] = {
+    "get": {
+        "tags": ["Access management"],
+        "summary": "Read auth config section",
+        "description": "Section-scoped config read. Pass `section=API-KEYS` to inspect API-key settings (including `retrievable_mode`).",
+        "parameters": [
+            {"name": "section", "in": "query", "required": True, "schema": {"type": "string"},
+             "description": "Config section, e.g. `API-KEYS`."},
+        ],
+        "responses": {"200": _resp("Config section payload.")},
+    },
+    "put": {
+        "tags": ["Access management"],
+        "summary": "Update an auth config option",
+        "description": (
+            "Toggle a single option by name/value. The notable API-key option is `retrievable_mode` — when "
+            "**enabled at the time a key is created**, that key stays retrievable for its lifetime even if "
+            "the global flag is flipped off later. Keys created while it was off can never be retrieved."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["option", "value"], "properties": {
+                "option": {"type": "string"},
+                "value": {},
+            }},
+            "example": {"option": "retrievable_mode", "value": True},
+        }}},
+        "responses": {"200": _resp("Updated.")},
+    },
+}
 
 
 # --- Imports / exports ----------------------------------------------------
@@ -1088,6 +1676,19 @@ PATHS["/api/3/import_jobs"] = {
 
 PATHS["/api/3/export_jobs"] = {
     "post": {"tags": ["Import / export"], "summary": "Create an export job",
+             "description": (
+                 "Submits an export job. Body selects which modules and records to include; the resulting "
+                 "job record carries a `file` IRI once the worker finishes packaging."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "properties": {
+                     "name": {"type": "string"},
+                     "type": {"type": "string", "default": "Export Wizard"},
+                     "options": {"type": "object"},
+                 }, "required": ["name"]},
+                 "example": {"name": "weekly-playbooks", "type": "Export Wizard",
+                             "options": {"playbooks": {"include": True}}},
+             }}},
              "responses": {"200": _resp("Export job record.")}},
 }
 
@@ -1096,11 +1697,23 @@ PATHS["/api/3/export_jobs"] = {
 
 PATHS["/api/product/feature-access"] = {
     "get": {"tags": ["System"], "summary": "Feature-flag introspection",
-            "description": "License-tier-aware feature flags.", "responses": {"200": _resp("Flag map.")}},
+            "description": (
+                "License-tier-aware feature-flag map. Each key is a product feature; the boolean indicates "
+                "whether the current license unlocks it. Use to gate UI/automation paths without hard-coding "
+                "tier checks."
+            ),
+            "responses": {"200": _resp("Flag map.")}},
 }
 
 PATHS["/api/3/cache_util"] = {
     "post": {"tags": ["System"], "summary": "Force cache invalidation",
+             "description": (
+                 "Flushes internal server-side caches (metadata, picklists, RBAC). Useful after schema or "
+                 "role changes when stale lookups would otherwise persist until the next worker restart."
+             ),
+             "requestBody": {"required": False, "content": {"application/json": {
+                 "schema": {"type": "object"}, "example": {},
+             }}},
              "responses": {"200": _resp("OK.")}},
 }
 
@@ -1131,10 +1744,26 @@ TAG_DESCRIPTIONS = {
     "Audit": "Audit log query + retention. Slice pagination with no totals - use `/count` separately. Filters are top-level only and accept exactly one value.",
     "Workflows": "Workflow run control, history, and introspection. Lives under `/api/wf/*`.",
     "Triggers": "Fire playbooks - by custom-endpoint name, deferred (async), or by workflow id without firing trigger conditions.",
-    "Connectors": "Connector listing, configuration CRUD, health check, and action execution. Per-operation request shape comes from each connector's `info.json` definition.",
+    "Connectors": (
+        "Full connector lifecycle. Per-action request shape comes from each connector's `info.json`.\n\n"
+        "**Flow — install → configure → execute → uninstall:**\n\n"
+        "1. **Install from `.tgz`** — `POST /api/3/solutionpacks/install?$type=connector&$replace=true` (multipart, field `file` = the binary). Response carries the integer connector `id`.\n"
+        "2. **Create a config** — `POST /api/integration/configuration/` with `name`, `connector` (integer id from step 1), and `config` (the connector's field values). Add `agent` only if you want the connector to run on a **remote agent**; omit it to use the appliance's self-agent. Response carries `config_id` (uuid).\n"
+        "3. **Execute an action** — `POST /api/integration/execute/` with `connector` name, `version`, `operation`, `config` (the uuid from step 2), and `params`.\n"
+        "4. **Health-check** — `GET /api/integration/connectors/healthcheck/{name}/{version}/?config=<uuid>` for the cheap variant (uses an existing config), or the POST form when re-sending a full config inline.\n"
+        "5. **Cleanup** — `DELETE /api/integration/configuration/{config_id}/` (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing slash is mandatory — without it you'll see `403 Could not validate HMAC fingerprint`."
+    ),
     "Metadata": "Module + field schemas, picklist taxonomy, JSON-LD contexts, and the Hydra `ApiDocumentation` (use this to expand the curated surface).",
     "Files": "Attachment upload. Required as the first step of import-job ingestion.",
-    "Access management": "API keys, roles, teams.",
+    "Access management": (
+        "API keys, roles, teams.\n\n"
+        "**Flow — create → bind → use → lifecycle → revoke:**\n\n"
+        "1. **Create the API-key user** — `POST /api/auth/users` with body `{\"type\": 9, \"status\": 1, \"api_key_validity\": <1..365>}`. All three are integers — the published PDF shows quoted strings, which the appliance rejects with 400. Response carries the user `uuid` and the plaintext key.\n"
+        "2. **Bind it to roles and teams** — `POST /api/3/api_keys` with `name`, `roles` (IRIs), `teams` (IRIs), and `userId` (the uuid from step 1). Required to make the key actually usable.\n"
+        "3. **Read the scope** — `GET /api/3/api_keys/{uuid}` for one binding, or `GET /api/3/api_keys` for the full list.\n"
+        "4. **Lifecycle operations** — `PUT /api/auth/users` with `uuid`, `key_type: API_KEY`, and `operation` ∈ `{REVOKE, ACTIVATE, DEACTIVATE, REGENERATE, RESET_VALIDITY}`. `REGENERATE` and `RESET_VALIDITY` also need `api_key_validity`.\n"
+        "5. **Bulk fetch with plaintext** — `POST /api/auth/query/users` with `{users: [<uuid>, ...], show_api_key: true}` (only returns plaintext for keys whose user was created with `retrievable_mode` enabled in `/api/auth/config`)."
+    ),
     "Import / export": "Configuration import/export. Read the `import_jobs` description carefully - the inline-envelope shape is a silent no-op.",
 }
 
@@ -1372,6 +2001,71 @@ Three ways to fire a playbook from outside:
 
 The notifier service has additional fan-out via STOMP-over-WebSocket at `/websocket/` (server pushes workflow updates on `/topic/workflows/`). No REST surface; out of scope here.
 
+### Triggering a playbook with an API key and tracking the task
+
+Worked end-to-end flow against a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it reaches a terminal state, then fetch full execution details. Same pattern works for `deferred/` (async) and `notrigger/<workflowId>` - only the trigger URL changes.
+
+**1. Fire the trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the playbook expects. Auth header is `Authorization: API-KEY <key>` (literal space, not a colon). The response always contains a `task_id` - that is the handle you track, not the workflow IRI.
+
+```python
+import requests
+
+BASE_URL = "https://fortisoar.example.com"
+HEADERS = {
+    "Authorization": f"API-KEY {API_KEY}",
+    "Content-Type": "application/json",
+}
+
+resp = requests.post(
+    f"{BASE_URL}/api/triggers/1/lookup_ip",
+    headers=HEADERS,
+    json={"value": "1.1.1.2"},
+    verify=False,
+)
+resp.raise_for_status()
+task_id = resp.json().get("task_id") or resp.json()["data"]["task_id"]
+```
+
+The `task_id` field sometimes sits at the top level and sometimes inside `data` depending on the trigger flavor - check both. Synchronous triggers return 200; `deferred/` returns 202 with the same envelope.
+
+**2. Poll the workflow log by `task_id`.** The workflows endpoint indexes runs by `task_id` and returns the parent run when filtered with `parent_wf__isnull=True` (skips child sub-workflows). Order by `-modified` and take the first hit.
+
+```python
+url = (
+    f"{BASE_URL}/api/wf/api/workflows/"
+    f"?format=json&limit=1&offset=0&ordering=-modified"
+    f"&task_id={task_id}&parent_wf__isnull=True"
+)
+log = requests.get(url, headers=HEADERS, verify=False).json()["hydra:member"][0]
+status = log["status"]   # pending | running | finished | failed | terminated | skipped
+workflow_id = log["@id"].rstrip("/").split("/")[-1]
+```
+
+Terminal states are **`finished`**, **`failed`**, **`terminated`**, **`skipped`**. Anything else (`pending`, `running`, `awaiting`, ...) means keep polling. An empty `hydra:member` array right after trigger is normal - the log row is written on first executor pickup, not on trigger receipt.
+
+**3. Fetch full execution details.** Once terminal, hit the workflow record directly:
+
+```python
+details = requests.get(
+    f"{BASE_URL}/api/wf/api/workflows/{workflow_id}/?format=json",
+    headers=HEADERS, verify=False,
+).json()
+```
+
+- **`details["result"]`** - the playbook's final output (the output of the last executed step). This is what 90% of callers want.
+- **`details["name"]`** - playbook name.
+- **`details["status"]`** - same terminal status as the log row.
+- **Per-step outputs** - the workflow record also carries a step-execution array (field name varies by FortiSOAR version); each entry has a step name + its output. Useful when you need an intermediate step's value rather than the last one. Inspect `details.keys()` on your appliance to confirm the field name before relying on it.
+
+If the last step produced no output, `result` is `null` even on `status: finished` - that's expected, not an error.
+
+**Gotchas observed in practice:**
+
+- **Poll interval.** 5 s is a sensible floor; the executor batches log writes. Tighter polling just multiplies the request count without buying any latency.
+- **No `task_id` in response.** Usually means the trigger name is wrong (404 was masked by a redirect) or the playbook is inactive. The endpoint returns 200 with an empty body in some edge cases - always check before subscripting.
+- **`parent_wf__isnull=True` is required** for playbooks that fan out via `Execute Sub Playbook`. Without it the first match may be a child run that finishes before the parent.
+- **API-KEY vs Bearer.** API-KEY tokens don't expire, so they're the right choice for long-running tracker scripts; JWTs typically die after ~30 minutes mid-poll.
+
 ## Imports & exports
 
 There are **two import paths** with different semantics; the wrong choice silently fails.
@@ -1470,23 +2164,6 @@ SPEC = {
 # Enrichment - ensure every op has a request example + a response example
 # ---------------------------------------------------------------------------
 
-GENERIC_RECORD = {
-    "@context": "/api/3/contexts/Record",
-    "@id": "/api/3/<collection>/00000000-0000-0000-0000-000000000000",
-    "@type": "Record",
-    "uuid": "00000000-0000-0000-0000-000000000000",
-    "name": "example",
-}
-
-GENERIC_HYDRA = {
-    "@context": "/api/3/contexts/Record",
-    "@id": "/api/3/<collection>",
-    "@type": "hydra:PagedCollection",
-    "hydra:totalItems": 1,
-    "hydra:itemsPerPage": 30,
-    "hydra:member": [GENERIC_RECORD],
-}
-
 GENERIC_ERROR = {
     "@context": "/api/3/contexts/Error",
     "@type": "Error",
@@ -1496,9 +2173,19 @@ GENERIC_ERROR = {
 
 
 def _ensure_examples(spec):
-    """Walk every operation and stamp in request + response examples
-    where they're not already supplied. Keeps human-curated examples;
-    fills gaps with generic shapes.
+    """Walk every operation and stamp in examples where they're missing.
+
+    Policy:
+    - **Request bodies**: synthesize a best-effort example from the schema.
+      A schema'd shape is honest signal; an empty schema yields `{}`.
+    - **2xx responses**: only stamp when we can derive a real shape from a
+      declared `schema` (a `$ref` or inline `properties`). When we have no
+      schema and no curated example, leave the response example unset — we
+      don't fabricate `@context`/Hydra envelopes, because that misleads readers
+      into thinking we've verified the wire shape. Live captures (from
+      `_apply_live_observations`) fill these in later when available.
+    - **4xx/5xx**: stamp the generic Hydra error envelope (the shape is
+      uniform across FortiSOAR error responses).
     """
     for path, item in spec["paths"].items():
         for method, op in item.items():
@@ -1511,16 +2198,13 @@ def _ensure_examples(spec):
                     if "example" not in content and "examples" not in content:
                         if mt == "multipart/form-data":
                             continue
-                        content["example"] = _example_from_schema(content.get("schema"), spec)
+                        example = _example_from_schema(content.get("schema"), spec)
+                        if example is not None:
+                            content["example"] = example
             # responses
             for code, resp in op.get("responses", {}).items():
                 content = resp.get("content")
                 if not content:
-                    # synthesize a JSON envelope so readers always see something
-                    if code.startswith("2"):
-                        resp["content"] = {"application/json": {"example":
-                            GENERIC_HYDRA if method == "get" and "{" not in path.rsplit("/", 1)[-1]
-                            else GENERIC_RECORD}}
                     continue
                 for mt, ct in content.items():
                     if mt != "application/json":
@@ -1528,15 +2212,21 @@ def _ensure_examples(spec):
                     if "example" in ct or "examples" in ct:
                         continue
                     if code.startswith("2"):
-                        ct["example"] = _example_from_schema(ct.get("schema"), spec)
+                        schema = ct.get("schema")
+                        if not schema:
+                            continue
+                        example = _example_from_schema(schema, spec)
+                        if example is not None:
+                            ct["example"] = example
                     elif code.startswith(("4", "5")):
                         ct["example"] = GENERIC_ERROR
 
 
 def _example_from_schema(schema, spec):
-    """Best-effort example from a (possibly $ref'd) schema."""
+    """Best-effort example from a (possibly $ref'd) schema. Returns None
+    when the schema carries no shape signal we can honestly render."""
     if not schema:
-        return GENERIC_RECORD
+        return None
     if "$ref" in schema:
         name = schema["$ref"].rsplit("/", 1)[-1]
         s = spec["components"]["schemas"].get(name, {})
@@ -1547,7 +2237,7 @@ def _example_from_schema(schema, spec):
             ex = _example_from_schema(part, spec)
             if isinstance(ex, dict):
                 merged.update(ex)
-        return merged or GENERIC_HYDRA
+        return merged or None
     t = schema.get("type")
     if "example" in schema:
         return schema["example"]
@@ -1907,7 +2597,8 @@ CROSS_LINKS = {
     "/api/gateway/audit/operations": "[Audit gateway quirks](#description/audit-gateway-quirks)",
     "/api/gateway/audit/activities/ttl": "[Audit gateway quirks](#description/audit-gateway-quirks)",
     # Workflows
-    "/api/wf/api/workflows/": "[Workflows & triggers](#description/workflows-triggers)",
+    "/api/wf/api/workflows/": "[Workflows & triggers](#description/workflows-triggers) (filter by `task_id` to track a triggered run)",
+    "/api/wf/api/workflows/{pk}/": "[Triggering a playbook with an API key and tracking the task](#description/triggering-a-playbook-with-an-api-key-and-tracking-the-task) (per-run detail with `result` map)",
     "/api/wf/api/workflows/count": "[Workflows & triggers](#description/workflows-triggers)",
     "/api/wf/api/workflows/{pk}/start/": "[Workflows & triggers](#description/workflows-triggers)",
     "/api/wf/api/workflows/{pk}/resume/": "[Workflows & triggers](#description/workflows-triggers) (decoy alert: not for `awaiting` runs)",
@@ -2042,18 +2733,27 @@ def _merge_verification(spec):
                 op["x-fsr-verification"] = v["by_auth"]
                 continue
 
-            badges = []
-            for label, d in v["by_auth"].items():
-                ok = 200 <= d["status"] < 300
-                schema_ok = d.get("schema_ok")
-                marker = ("OK" if ok else f"{d['status']}")
-                if ok and schema_ok is False:
-                    marker += " (schema drift)"
-                badges.append(f"`{label}: {marker}`")
-            line = "**Live-verified** (" + " - ".join(badges) + f", {verified_at})\n\n"
-            op["description"] = line + (op.get("description") or "")
-            op["x-fsr-status"] = "verified"
-            op["x-fsr-verification"] = v["by_auth"]
+            # If this op was already touched by `live_test.py` (its description
+            # carries an "Auth coverage:" line and `x-verified-live` is set),
+            # skip the verifier's badge — the live-observations source is
+            # richer (real captured request + response per auth) and we don't
+            # want to duplicate.
+            if "x-verified-live" in op or "**Auth coverage:**" in (op.get("description") or ""):
+                op["x-fsr-status"] = "verified"
+                op["x-fsr-verification"] = v["by_auth"]
+            else:
+                badges = []
+                for label, d in v["by_auth"].items():
+                    ok = 200 <= d["status"] < 300
+                    schema_ok = d.get("schema_ok")
+                    marker = ("OK" if ok else f"{d['status']}")
+                    if ok and schema_ok is False:
+                        marker += " (schema drift)"
+                    badges.append(f"`{label}: {marker}`")
+                line = "**Live-verified** (" + " - ".join(badges) + f", {verified_at})\n\n"
+                op["description"] = line + (op.get("description") or "")
+                op["x-fsr-status"] = "verified"
+                op["x-fsr-verification"] = v["by_auth"]
 
             # Replace the synthesized 2xx response example with the real
             # captured response from whichever auth mode succeeded. The
@@ -2209,11 +2909,101 @@ def _scan_for_leaks(spec) -> list[tuple[str, str, str]]:
     return hits
 
 
+def _apply_live_observations(spec: dict) -> int:
+    """Overlay captured live request/response bodies onto matching ops.
+
+    Reads `build/live_observations.json` (written by `src/live_test.py`).
+    Each op was exercised under every available auth mode; we surface:
+
+    - The example body from a 2xx run (prefer JWT, fall back to API-KEY).
+    - `x-verified-live`: list of auth modes that returned 2xx for this op.
+    - A "**Auth coverage:**" line appended to the description showing the
+      observed status code per auth mode, so docs flag JWT-only / API-KEY-
+      only endpoints.
+    """
+    path = OUT.parent / "live_observations.json"
+    if not path.exists():
+        return 0
+    try:
+        obs = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return 0
+    paths = spec["paths"]
+    applied = 0
+    for key, rec in obs.items():
+        method, template = key.split(" ", 1)
+        if template not in paths:
+            continue
+        op = paths[template].get(method.lower())
+        if not op:
+            continue
+        by_auth = rec.get("by_auth") or {}
+        # Pick the auth run to source examples from: any 2xx, JWT preferred.
+        successful = {m: r for m, r in by_auth.items()
+                      if r.get("response_status") is not None
+                      and 200 <= r["response_status"] < 300}
+        if not successful:
+            # No mode succeeded — still record coverage so docs say so.
+            op["x-verified-live"] = {m: r.get("response_status") for m, r in by_auth.items()}
+            op["description"] = (op.get("description", "") + _auth_coverage_line(by_auth)).strip()
+            applied += 1
+            continue
+        preferred = "jwt" if "jwt" in successful else next(iter(successful))
+        src = successful[preferred]
+        if src.get("request_body") is not None:
+            rb = op.setdefault("requestBody", {})
+            content = rb.setdefault("content", {}).setdefault("application/json", {})
+            content["example"] = src["request_body"]
+        status = str(src.get("response_status", 200))
+        if src.get("response_body") is not None:
+            responses = op.setdefault("responses", {})
+            resp = responses.setdefault(status, {"description": "Live-captured response."})
+            content = resp.setdefault("content", {}).setdefault("application/json", {})
+            content["example"] = src["response_body"]
+        op["x-verified-live"] = sorted(successful.keys())
+        op["description"] = (op.get("description", "") + _auth_coverage_line(by_auth)).strip()
+        applied += 1
+    return applied
+
+
+def _auth_coverage_line(by_auth: dict) -> str:
+    """Format an Auth coverage markdown line summarizing per-mode statuses.
+
+    Three states are surfaced (no emojis — labels only):
+      `<auth>: OK`     — 2xx response observed.
+      `<auth>: NNN`    — request reached the server and was rejected.
+      `<auth>: gated`  — an upstream gate blocked us before this op was
+                         reached; treat as unavailable under that auth.
+    """
+    if not by_auth:
+        return ""
+    parts = []
+    for mode in sorted(by_auth):
+        rec = by_auth[mode]
+        label = {"jwt": "Bearer JWT", "apikey": "API-KEY"}.get(mode, mode)
+        if rec.get("gated_upstream"):
+            parts.append(f"`{label}: gated`")
+            continue
+        code = rec.get("response_status")
+        if code is None:
+            continue
+        marker = "OK" if 200 <= code < 300 else str(code)
+        parts.append(f"`{label}: {marker}`")
+    if not parts:
+        return ""
+    return "\n\n**Auth coverage:** " + " · ".join(parts)
+
+
 def main():
     _ensure_examples(SPEC)
     _apply_curated_examples(SPEC)
     _apply_cross_links(SPEC)
-    _merge_verification(SPEC)
+    # Live observations from `src/live_test.py` are the authoritative source
+    # for verification badges. The older `_merge_verification` (from the
+    # stateless verifier) is intentionally not invoked here — it produced a
+    # parallel "Live-verified" line that duplicated the per-auth coverage
+    # surfaced by `_apply_live_observations`.
+    live_applied = _apply_live_observations(SPEC)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     leaks = _scan_for_leaks(SPEC)
     if leaks:
@@ -2227,7 +3017,8 @@ def main():
         sys.exit("\n".join(msg))
     OUT.write_text(yaml.safe_dump(SPEC, sort_keys=False, default_flow_style=False, width=120))
     op_count = sum(1 for path in PATHS.values() for k in path if k in {"get", "post", "put", "delete", "patch"})
-    print(f"Wrote {OUT} ({op_count} operations across {len(PATHS)} paths)")
+    print(f"Wrote {OUT} ({op_count} operations across {len(PATHS)} paths, "
+          f"{live_applied} live-verified)")
 
 
 if __name__ == "__main__":
