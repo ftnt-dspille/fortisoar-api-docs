@@ -1435,7 +1435,7 @@
         "request_body": null,
         "response_body": {
           "@context": {
-            "@vocab": "https://dspille-soar-testing.fortidemo.fortinet.com:13006/api/3/docs.jsonld#",
+            "@vocab": "https://your-soar.example.com/api/3/docs.jsonld#",
             "ackDate": "Alert/ackDate",
             "ackSLApausedon": "Alert/ackSLApausedon",
             "ackSlaStatus": {
@@ -1719,7 +1719,7 @@
         "request_body": null,
         "response_body": {
           "@context": {
-            "@vocab": "https://dspille-soar-testing.fortidemo.fortinet.com:13006/api/3/docs.jsonld#",
+            "@vocab": "https://your-soar.example.com/api/3/docs.jsonld#",
             "ackDate": "Alert/ackDate",
             "ackSLApausedon": "Alert/ackSLApausedon",
             "ackSlaStatus": {
@@ -2007,7 +2007,7 @@
         "request_body": null,
         "response_body": {
           "@context": {
-            "@vocab": "https://dspille-soar-testing.fortidemo.fortinet.com:13006/api/3/docs.jsonld#",
+            "@vocab": "https://your-soar.example.com/api/3/docs.jsonld#",
             "domain": {
               "@id": "rdfs:domain",
               "@type": "@id"
@@ -39009,7 +39009,7 @@
         "request_body": null,
         "response_body": {
           "@context": {
-            "@vocab": "https://dspille-soar-testing.fortidemo.fortinet.com:13006/api/3/docs.jsonld#",
+            "@vocab": "https://your-soar.example.com/api/3/docs.jsonld#",
             "domain": {
               "@id": "rdfs:domain",
               "@type": "@id"

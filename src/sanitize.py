@@ -60,10 +60,13 @@ OPERATOR_IDENTITY_RE = re.compile(
 IPV4_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 HOSTNAME_PLACEHOLDER = "your-soar.example.com"
 
-# Internal hostnames seen in evidence — extend as needed.
+# Internal hostnames seen in evidence — extend as needed. The trailing
+# `(?::\d+)?` consumes an optional port so we don't leak e.g. `:13006` after
+# the hostname itself is replaced.
 INTERNAL_HOST_RE = re.compile(
-    r"\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:fortinet\.com|fortinetcloud\.com|"
-    r"forticloud\.com|fortisoc\.forticloud\.com|fortisoar\.local)\b",
+    r"\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:fortinet\.com|fortidemo\.fortinet\.com|"
+    r"fortinetcloud\.com|forticloud\.com|fortisoc\.forticloud\.com|"
+    r"fortisoar\.local)(?::\d+)?\b",
     re.IGNORECASE,
 )
 

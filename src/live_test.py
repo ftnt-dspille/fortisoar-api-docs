@@ -47,11 +47,39 @@ _API_KEY_RE = re.compile(r"\b[0-9a-f]{64}\b", re.I)
 _AGENT_HASH_RE = re.compile(r"\b[0-9a-f]{32}\b", re.I)
 _JWT_RE = re.compile(r"eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
 
+# Built at first scrub call from FSR_BASE_URL so we never persist the
+# operator's appliance hostname (incl. :port) in observations. Hydra
+# `@context` / `@id` / `@vocab` strings carry the absolute base URL.
+_BASE_HOST_RE: re.Pattern[str] | None = None
+_HOST_PLACEHOLDER = "https://your-soar.example.com"
+
+
+def _base_host_re() -> re.Pattern[str] | None:
+    global _BASE_HOST_RE
+    if _BASE_HOST_RE is not None:
+        return _BASE_HOST_RE
+    base = os.environ.get("FSR_BASE_URL", "").strip().rstrip("/")
+    if not base:
+        return None
+    # Match the full scheme://host[:port] origin so we replace it wholesale,
+    # leaving the path intact.
+    parsed = urllib.parse.urlsplit(base)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    _BASE_HOST_RE = re.compile(
+        rf"{re.escape(parsed.scheme)}://{re.escape(parsed.netloc)}",
+        re.IGNORECASE,
+    )
+    return _BASE_HOST_RE
+
 
 def _scrub(value: Any) -> Any:
     """Replace per-instance identifiers with stable placeholders for docs."""
     if isinstance(value, str):
         v = value
+        host_re = _base_host_re()
+        if host_re is not None:
+            v = host_re.sub(_HOST_PLACEHOLDER, v)
         v = _JWT_RE.sub("<jwt-token>", v)
         v = _API_KEY_RE.sub("<api-key>", v)
         v = _UUID_RE.sub("<uuid>", v)

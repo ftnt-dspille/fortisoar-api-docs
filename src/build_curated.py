@@ -1302,9 +1302,43 @@ PATHS["/api/integration/execute/"] = {
     "post": {
         "tags": ["Connectors"],
         "summary": "Execute a connector action",
-        "description": "Runs a connector operation. Body shape varies per operation - it is the action's input payload as defined by the connector's `info.json`.",
-        "parameters": [{"name": "name", "in": "query", "schema": {"type": "string"}, "description": "Connector name."}],
-        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "description": (
+            "Runs a connector operation against a configured connector.\n\n"
+            "**Body fields** (verified by probing the live API):\n"
+            "- `connector` (required) — connector `name` (e.g. `hello-world`).\n"
+            "- `operation` (required) — operation key from the connector's `info.json` "
+            "  (e.g. `reverse_text`). Discover available operations via "
+            "  `POST /api/integration/connectors/{id}/` (response `operations[].operation`).\n"
+            "- `config` (required when the operation needs a configuration) — accepts **either** "
+            "  the configuration uuid (`config_id`) **or** the configuration `name`. "
+            "  Stateless operations (e.g. `cyops_utilities` formatters) still accept the field "
+            "  but ignore its value. Omitting or `null` returns `INTEGRATION-12: Could not find a connector "
+            "  configuration matching the given configuration id or name`.\n"
+            "- `version` (optional) — connector version. If omitted, the appliance resolves the "
+            "  installed default version. Provide it explicitly when multiple versions are installed.\n"
+            "- `params` (required when the operation declares required parameters) — the action's "
+            "  input payload as defined by the connector's `info.json`. Discover required params via "
+            "  the same connector-detail endpoint (`operations[].parameters[]` with `required: true`).\n\n"
+            "Errors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*` code in `message`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {
+                "type": "object",
+                "required": ["connector", "operation"],
+                "properties": {
+                    "connector": {"type": "string",
+                                  "description": "Connector name (e.g. `hello-world`)."},
+                    "operation": {"type": "string",
+                                  "description": "Operation key from the connector's `info.json` (e.g. `reverse_text`)."},
+                    "config": {"type": "string",
+                               "description": "Configuration uuid (`config_id`) **or** configuration `name`. Required when the operation needs a configuration."},
+                    "version": {"type": "string",
+                                "description": "Connector version (e.g. `1.0.4`). Optional - server resolves a default when omitted."},
+                    "params": {"type": "object",
+                               "description": "Action input payload. Shape varies per operation; see `operations[].parameters` from the connector detail."},
+                },
+            },
+        }}},
         "responses": {"200": _resp("Action result.")},
     },
 }
@@ -1353,10 +1387,28 @@ PATHS["/api/integration/configuration/{config_id}/"] = {
                "responses": {"204": {"description": "Deleted."}}},
 }
 
-# Step 6b: uninstall the connector.
+# Step 6b: uninstall the connector. POST returns connector detail + operations.
 PATHS["/api/integration/connectors/{id}/"] = {
     "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
                     "description": "Integer connector id (`data[].id` from `/api/integration/connectors/`)."}],
+    "post": {"tags": ["Connectors"],
+             "summary": "Get connector detail (operations + configurations)",
+             "description": (
+                 "Returns the full connector record - including the installed `operations[]` "
+                 "(each with `operation` key, `title`, `description`, `parameters[]`, `output_schema`) "
+                 "and `configuration[]` (each with `config_id`, `name`, `config`, `agent`).\n\n"
+                 "Use this to discover what to pass to `POST /api/integration/execute/`:\n"
+                 "- `operations[].operation` -> the `operation` field.\n"
+                 "- `operations[].parameters[]` (entries with `required: true`) -> the keys to "
+                 "  put under `params`.\n"
+                 "- `configuration[].config_id` or `configuration[].name` -> the `config` field.\n\n"
+                 "**Quirks:** GET returns `Get method for this API is forbidden, Please use POST method`. "
+                 "An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. "
+                 "Trailing slash is required."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object"}, "example": {}}}},
+             "responses": {"200": _resp("Connector detail with operations and configurations.")}},
     "delete": {"tags": ["Connectors"], "summary": "Uninstall a connector",
                "description": "Trailing slash is required. Returns 204 on success.",
                "responses": {"204": {"description": "Uninstalled."}}},

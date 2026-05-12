@@ -16,6 +16,9 @@ Categories surfaced:
                  in the op's `parameters`.
   request      — POST/PUT/PATCH ops with no `requestBody` example
                  (curated or live).
+  empty_schema — POST/PUT/PATCH ops whose requestBody schema is just
+                 `{type: object}` with no `properties` / `$ref` — an
+                 example is captured but callers can't see required fields.
   response     — 2xx response with no `example` and no `schema $ref`.
   description  — empty / one-line / placeholder descriptions.
   schema_drift — captured response has top-level keys outside the declared
@@ -153,6 +156,48 @@ def check_request(spec: dict, obs: dict) -> list[str]:
     return issues
 
 
+def _is_empty_object_schema(content_blob: dict | None) -> bool:
+    """True if the request schema is just `{type: object}` (no properties / $ref / oneOf etc.)."""
+    if not isinstance(content_blob, dict):
+        return False
+    for media in content_blob.values():
+        if not isinstance(media, dict):
+            continue
+        schema = media.get("schema")
+        if not isinstance(schema, dict):
+            continue
+        if any(k in schema for k in ("$ref", "properties", "oneOf", "anyOf", "allOf", "additionalProperties")):
+            return False
+    return True
+
+
+# POST/PUT/PATCH ops where the body genuinely has no fixed shape (free-form
+# payload defined elsewhere). These pass with a generic `{type: object}` schema
+# + an illustrative example, and should NOT be flagged by check_empty_schema.
+_FREE_FORM_BODY_OPS: set[tuple[str, str]] = {
+    # Connector action payloads are per-operation, defined in info.json.
+    # (Top-level execute/ has a fixed envelope - it IS spec'd properly.)
+}
+
+
+def check_empty_schema(spec: dict, obs: dict) -> list[str]:
+    """Flag POST/PUT/PATCH ops whose requestBody schema is generic `{type: object}`
+    with no properties / $ref. Captured examples cover the happy path but don't
+    document required fields - callers can't tell from the spec what to send."""
+    issues = []
+    for path, verb, op in _iter_ops(spec):
+        if verb not in ("post", "put", "patch"):
+            continue
+        rb = op.get("requestBody")
+        if not isinstance(rb, dict):
+            continue
+        if (verb, path) in _FREE_FORM_BODY_OPS:
+            continue
+        if _is_empty_object_schema(rb.get("content")):
+            issues.append(f"{verb.upper()} {path}  (requestBody schema is empty `{{type: object}}` - no properties)")
+    return issues
+
+
 def check_response(spec: dict, obs: dict) -> list[str]:
     issues = []
     for path, verb, op in _iter_ops(spec):
@@ -270,6 +315,7 @@ CHECKS = {
     "auth":         (check_auth,         "Ops verified under only one auth mode"),
     "params":       (check_params,       "Path params used in URL but not declared"),
     "request":      (check_request,      "POST/PUT/PATCH ops missing requestBody example/schema"),
+    "empty_schema": (check_empty_schema, "POST/PUT/PATCH ops with empty `{type:object}` body schema"),
     "response":     (check_response,     "2xx responses missing example/schema"),
     "description":  (check_description,  "Empty or near-empty descriptions"),
     "schema_drift": (check_schema_drift, "Captured response has keys outside declared schema"),

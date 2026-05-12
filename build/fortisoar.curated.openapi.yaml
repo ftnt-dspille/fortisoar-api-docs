@@ -6645,20 +6645,46 @@ paths:
       tags:
       - Connectors
       summary: Execute a connector action
-      description: "Runs a connector operation. Body shape varies per operation - it is the action's input payload as defined\
-        \ by the connector's `info.json`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters:
-      - name: name
-        in: query
-        schema:
-          type: string
-        description: Connector name.
+      description: "Runs a connector operation against a configured connector.\n\n**Body fields** (verified by probing the\
+        \ live API):\n- `connector` (required) \u2014 connector `name` (e.g. `hello-world`).\n- `operation` (required) \u2014\
+        \ operation key from the connector's `info.json`   (e.g. `reverse_text`). Discover available operations via   `POST\
+        \ /api/integration/connectors/{id}/` (response `operations[].operation`).\n- `config` (required when the operation\
+        \ needs a configuration) \u2014 accepts **either**   the configuration uuid (`config_id`) **or** the configuration\
+        \ `name`.   Stateless operations (e.g. `cyops_utilities` formatters) still accept the field   but ignore its value.\
+        \ Omitting or `null` returns `INTEGRATION-12: Could not find a connector   configuration matching the given configuration\
+        \ id or name`.\n- `version` (optional) \u2014 connector version. If omitted, the appliance resolves the   installed\
+        \ default version. Provide it explicitly when multiple versions are installed.\n- `params` (required when the operation\
+        \ declares required parameters) \u2014 the action's   input payload as defined by the connector's `info.json`. Discover\
+        \ required params via   the same connector-detail endpoint (`operations[].parameters[]` with `required: true`).\n\n\
+        Errors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*` code in `message`.\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+              - connector
+              - operation
+              properties:
+                connector:
+                  type: string
+                  description: Connector name (e.g. `hello-world`).
+                operation:
+                  type: string
+                  description: Operation key from the connector's `info.json` (e.g. `reverse_text`).
+                config:
+                  type: string
+                  description: Configuration uuid (`config_id`) **or** configuration `name`. Required when the operation needs
+                    a configuration.
+                version:
+                  type: string
+                  description: Connector version (e.g. `1.0.4`). Optional - server resolves a default when omitted.
+                params:
+                  type: object
+                  description: Action input payload. Shape varies per operation; see `operations[].parameters` from the connector
+                    detail.
             example:
               config: <uuid>
               connector: hello-world
@@ -6783,6 +6809,36 @@ paths:
       schema:
         type: integer
       description: Integer connector id (`data[].id` from `/api/integration/connectors/`).
+    post:
+      tags:
+      - Connectors
+      summary: Get connector detail (operations + configurations)
+      description: 'Returns the full connector record - including the installed `operations[]` (each with `operation` key,
+        `title`, `description`, `parameters[]`, `output_schema`) and `configuration[]` (each with `config_id`, `name`, `config`,
+        `agent`).
+
+
+        Use this to discover what to pass to `POST /api/integration/execute/`:
+
+        - `operations[].operation` -> the `operation` field.
+
+        - `operations[].parameters[]` (entries with `required: true`) -> the keys to   put under `params`.
+
+        - `configuration[].config_id` or `configuration[].name` -> the `config` field.
+
+
+        **Quirks:** GET returns `Get method for this API is forbidden, Please use POST method`. An empty/missing body returns
+        415 `Unsupported media type`; send `{}` instead. Trailing slash is required.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '200':
+          description: Connector detail with operations and configurations.
     delete:
       tags:
       - Connectors
@@ -7094,7 +7150,7 @@ paths:
             application/json:
               example:
                 '@context':
-                  '@vocab': https://dspille-soar-testing.fortidemo.fortinet.com:13006/api/3/docs.jsonld#
+                  '@vocab': https://your-soar.example.com/api/3/docs.jsonld#
                   ackDate: Alert/ackDate
                   ackSLApausedon: Alert/ackSLApausedon
                   ackSlaStatus:
@@ -7348,7 +7404,7 @@ paths:
             application/json:
               example:
                 '@context':
-                  '@vocab': https://dspille-soar-testing.fortidemo.fortinet.com:13006/api/3/docs.jsonld#
+                  '@vocab': https://your-soar.example.com/api/3/docs.jsonld#
                   domain:
                     '@id': rdfs:domain
                     '@type': '@id'
