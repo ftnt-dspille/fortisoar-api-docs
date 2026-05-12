@@ -87717,36 +87717,6 @@
       }
     }
   },
-  "POST /api/integration/connectors/healthcheck/": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-05-12",
-        "request_body": {
-          "config": {
-            "default_greeting": "Hello",
-            "salutation": "Mr."
-          },
-          "connector": "hello-world",
-          "version": "1.0.4"
-        },
-        "response_body": null,
-        "response_status": 404
-      },
-      "jwt": {
-        "captured_at": "2026-05-12",
-        "request_body": {
-          "config": {
-            "default_greeting": "Hello",
-            "salutation": "Mr."
-          },
-          "connector": "hello-world",
-          "version": "1.0.4"
-        },
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
   "POST /api/integration/connectors/{id}/": {
     "by_auth": {
       "apikey": {

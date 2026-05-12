@@ -790,6 +790,45 @@ PATHS["/api/query/{collection}/{queryId}"] = {
     },
 }
 
+PATHS["/api/3/user_queries"] = {
+    "post": {
+        "tags": ["Query"],
+        "summary": "Save a user query",
+        "description": (
+            "Persists a Query body so it can later be executed via "
+            "`POST /api/query/{collection}/{queryId}` without re-shipping the filter grammar. "
+            "Each saved query is scoped to one module (`models` IRI). System-shipped equivalents "
+            "live under `/api/3/system_queries`; ad-hoc one-shots under `/api/3/queries`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {
+                "type": "object",
+                "required": ["name", "models", "query"],
+                "properties": {
+                    "name": {"type": "string", "description": "Display name (unique per user)."},
+                    "models": {"type": "string",
+                               "description": "Model IRI - `/api/3/model_metadatas/<uuid>` for the target module."},
+                    "query": {"type": "object",
+                              "description": "Same body grammar as `POST /api/query/{collection}` (`logic`, `filters`, `limit`, `sort`, ...).",
+                              "properties": {
+                                  "logic": {"type": "string", "enum": ["AND", "OR"]},
+                                  "filters": {"type": "array", "items": {"type": "object"}},
+                                  "limit": {"type": "integer"},
+                                  "sort": {"type": "array", "items": {"type": "object"}},
+                              }},
+                },
+            },
+            "example": {
+                "name": "Open alerts (recent)",
+                "models": "/api/3/model_metadatas/<alert-uuid>",
+                "query": {"logic": "AND", "limit": 5,
+                          "filters": [{"field": "status.itemValue", "operator": "neq", "value": "Closed"}]},
+            },
+        }}},
+        "responses": {"201": _resp("Persisted query record.")},
+    },
+}
+
 PATHS["/api/search"] = {
     "post": {
         "tags": ["Query"],
@@ -1304,6 +1343,10 @@ PATHS["/api/integration/execute/"] = {
         "summary": "Execute a connector action",
         "description": (
             "Runs a connector operation against a configured connector.\n\n"
+            "**Discovering what to send:** the `operation` key, its required `params`, and the "
+            "available `config` values all come from `POST /api/integration/connectors/{id}/` "
+            "(operations + configurations for the installed connector). There is no separate "
+            "`/operations/` route - that POST is the operations-discovery endpoint.\n\n"
             "**Body fields:**\n"
             "- `connector` (required) — connector `name` (e.g. `hello-world`).\n"
             "- `operation` (required) — operation key from the connector's `info.json` "
@@ -1384,19 +1427,26 @@ PATHS["/api/integration/connectors/{id}/"] = {
     "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
                     "description": "Integer connector id (`data[].id` from `/api/integration/connectors/`)."}],
     "post": {"tags": ["Connectors"],
-             "summary": "Get connector detail (operations + configurations)",
+             "summary": "List connector operations (and configurations)",
              "description": (
-                 "Returns the full connector record - including the installed `operations[]` "
-                 "(each with `operation` key, `title`, `description`, `parameters[]`, `output_schema`) "
-                 "and `configuration[]` (each with `config_id`, `name`, `config`, `agent`).\n\n"
-                 "Use this to discover what to pass to `POST /api/integration/execute/`:\n"
-                 "- `operations[].operation` -> the `operation` field.\n"
-                 "- `operations[].parameters[]` (entries with `required: true`) -> the keys to "
-                 "  put under `params`.\n"
-                 "- `configuration[].config_id` or `configuration[].name` -> the `config` field.\n\n"
+                 "**This is the operations-discovery endpoint** - the only way to enumerate "
+                 "the operations installed for a connector. There is no separate "
+                 "`/operations/` route; this POST handler returns the full connector record, "
+                 "including:\n\n"
+                 "- `operations[]` - each with `operation` key, `title`, `description`, "
+                 "  `parameters[]` (with `name`, `type`, `required`, `tooltip`, ...), `output_schema`.\n"
+                 "- `configuration[]` - each with `config_id`, `name`, `config`, `agent`.\n"
+                 "- `config_schema` - the connector's installable config field definitions.\n\n"
+                 "Use the response to build a call to `POST /api/integration/execute/`:\n"
+                 "- `operations[].operation` -> the `operation` body field.\n"
+                 "- `operations[].parameters[]` entries with `required: true` -> the required "
+                 "  keys under `params`.\n"
+                 "- `configuration[].config_id` or `configuration[].name` -> the `config` field "
+                 "  (both forms are accepted).\n\n"
                  "**Quirks:** GET returns `Get method for this API is forbidden, Please use POST method`. "
                  "An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. "
-                 "Trailing slash is required."
+                 "Trailing slash is required. The DELETE verb on this same path uninstalls the "
+                 "connector - don't confuse the two."
              ),
              "requestBody": {"required": True, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {}}}},
@@ -1423,6 +1473,17 @@ PATHS["/api/3/picklists/{uuid}"] = {
                 "(`severity`, `status`, etc.). The owning picklist taxonomy is `GET /api/3/picklist_names/{uuid}`."
             ),
             "responses": {"200": _resp("Picklist record.")}},
+}
+
+PATHS["/api/3/picklist_names"] = {
+    "get": {"tags": ["Metadata"], "summary": "List picklist taxonomies",
+            "description": (
+                "Hydra collection of every picklist *taxonomy* (named list). Each entry's `@id` is the "
+                "IRI you pass as `listName` when fetching values via "
+                "`GET /api/3/picklists?listName=<iri>`. Names are PascalCase "
+                "(e.g. `AlertSeverity`, `AlertStatus`, `Severity`)."
+            ),
+            "responses": {"200": _resp("Hydra collection of picklist taxonomies.")}},
 }
 
 PATHS["/api/3/picklist_names/{uuid}"] = {

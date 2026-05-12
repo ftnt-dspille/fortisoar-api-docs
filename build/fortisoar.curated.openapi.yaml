@@ -4338,6 +4338,141 @@ paths:
       x-verified-live:
         apikey: 404
         jwt: 404
+  /api/3/user_queries:
+    post:
+      tags:
+      - Query
+      summary: Save a user query
+      description: "Persists a Query body so it can later be executed via `POST /api/query/{collection}/{queryId}` without\
+        \ re-shipping the filter grammar. Each saved query is scoped to one module (`models` IRI). System-shipped equivalents\
+        \ live under `/api/3/system_queries`; ad-hoc one-shots under `/api/3/queries`.\n\n**Auth coverage:** `API-KEY: OK`\
+        \ \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - models
+              - query
+              properties:
+                name:
+                  type: string
+                  description: Display name (unique per user).
+                models:
+                  type: string
+                  description: Model IRI - `/api/3/model_metadatas/<uuid>` for the target module.
+                query:
+                  type: object
+                  description: Same body grammar as `POST /api/query/{collection}` (`logic`, `filters`, `limit`, `sort`, ...).
+                  properties:
+                    logic:
+                      type: string
+                      enum:
+                      - AND
+                      - OR
+                    filters:
+                      type: array
+                      items:
+                        type: object
+                    limit:
+                      type: integer
+                    sort:
+                      type: array
+                      items:
+                        type: object
+            example:
+              models: /api/3/model_metadatas/<uuid>
+              name: live-274d08ca-savedq
+              query:
+                filters:
+                - field: status.itemValue
+                  operator: neq
+                  value: Closed
+                limit: 5
+                logic: AND
+      responses:
+        '201':
+          description: Persisted query record.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/UserQuery
+                '@id': /api/3/user_queries/<uuid>
+                '@type': UserQuery
+                advanced: null
+                assignee: /api/3/people/<uuid>
+                models:
+                  '@id': /api/3/model_metadatas/<uuid>
+                  '@type': ModelMetadata
+                  archivable: false
+                  archivalCriteria:
+                    delete_primary_data_after: 60
+                    keep_primary_data_for: 24
+                  archivalFilters: []
+                  defaultSort: []
+                  descriptions:
+                    plural: Alerts
+                    singular: Alert
+                  displayName: '{{ name }}'
+                  enableReplication: true
+                  importedBy:
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.1.0
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.2.1
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.3.0
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.4.0
+                  - apiName: mITREATT&CKEnrichmentFramework
+                    name: MITRE ATT&CK Enrichment Framework
+                    version: 2.2.0
+                  - apiName: sLAManagement
+                    name: SLA Management
+                    version: 1.1.0
+                  indexable: true
+                  module: alerts
+                  ownable: false
+                  parentType: null
+                  partitionBy: modifyDate
+                  paused: false
+                  peerReplicable: true
+                  queueable: true
+                  replicationFilters: []
+                  softDeleteable: false
+                  system: false
+                  tableName: alerts
+                  taggable: true
+                  trackable: true
+                  type: alerts
+                  uniqueConstraint:
+                  - alerts_unique:
+                      columns:
+                      - sourceId
+                      - tenant
+                  userOwnable: false
+                  uuid: <uuid>
+                  writable: true
+                name: live-274d08ca-savedq
+                query:
+                  filters:
+                  - field: status.itemValue
+                    operator: neq
+                    value: Closed
+                  limit: 5
+                  logic: AND
+                resultCacheSeconds: 0
+                uuid: <uuid>
+      x-verified-live:
+      - apikey
+      - jwt
   /api/search:
     post:
       tags:
@@ -40259,18 +40394,21 @@ paths:
       tags:
       - Connectors
       summary: Execute a connector action
-      description: "Runs a connector operation against a configured connector.\n\n**Body fields:**\n- `connector` (required)\
-        \ \u2014 connector `name` (e.g. `hello-world`).\n- `operation` (required) \u2014 operation key from the connector's\
-        \ `info.json`   (e.g. `reverse_text`). Discover available operations via   `POST /api/integration/connectors/{id}/`\
-        \ (response `operations[].operation`).\n- `config` (required when the operation needs a configuration) \u2014 accepts\
-        \ **either**   the configuration uuid (`config_id`) **or** the configuration `name`.   Stateless operations (e.g.\
-        \ `cyops_utilities` formatters) still accept the field   but ignore its value. Omitting or `null` returns `INTEGRATION-12:\
-        \ Could not find a connector   configuration matching the given configuration id or name`.\n- `version` (optional)\
-        \ \u2014 connector version. If omitted, the appliance resolves the   installed default version. Provide it explicitly\
-        \ when multiple versions are installed.\n- `params` (required when the operation declares required parameters) \u2014\
-        \ the action's   input payload as defined by the connector's `info.json`. Discover required params via   the same\
-        \ connector-detail endpoint (`operations[].parameters[]` with `required: true`).\n\nErrors surface as 400 with an\
-        \ `INTEGRATION-*` or `CS-INTEGRATION-*` code in `message`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Runs a connector operation against a configured connector.\n\n**Discovering what to send:** the `operation`\
+        \ key, its required `params`, and the available `config` values all come from `POST /api/integration/connectors/{id}/`\
+        \ (operations + configurations for the installed connector). There is no separate `/operations/` route - that POST\
+        \ is the operations-discovery endpoint.\n\n**Body fields:**\n- `connector` (required) \u2014 connector `name` (e.g.\
+        \ `hello-world`).\n- `operation` (required) \u2014 operation key from the connector's `info.json`   (e.g. `reverse_text`).\
+        \ Discover available operations via   `POST /api/integration/connectors/{id}/` (response `operations[].operation`).\n\
+        - `config` (required when the operation needs a configuration) \u2014 accepts **either**   the configuration uuid\
+        \ (`config_id`) **or** the configuration `name`.   Stateless operations (e.g. `cyops_utilities` formatters) still\
+        \ accept the field   but ignore its value. Omitting or `null` returns `INTEGRATION-12: Could not find a connector\
+        \   configuration matching the given configuration id or name`.\n- `version` (optional) \u2014 connector version.\
+        \ If omitted, the appliance resolves the   installed default version. Provide it explicitly when multiple versions\
+        \ are installed.\n- `params` (required when the operation declares required parameters) \u2014 the action's   input\
+        \ payload as defined by the connector's `info.json`. Discover required params via   the same connector-detail endpoint\
+        \ (`operations[].parameters[]` with `required: true`).\n\nErrors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*`\
+        \ code in `message`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -40396,14 +40534,18 @@ paths:
     post:
       tags:
       - Connectors
-      summary: Get connector detail (operations + configurations)
-      description: "Returns the full connector record - including the installed `operations[]` (each with `operation` key,\
-        \ `title`, `description`, `parameters[]`, `output_schema`) and `configuration[]` (each with `config_id`, `name`, `config`,\
-        \ `agent`).\n\nUse this to discover what to pass to `POST /api/integration/execute/`:\n- `operations[].operation`\
-        \ -> the `operation` field.\n- `operations[].parameters[]` (entries with `required: true`) -> the keys to   put under\
-        \ `params`.\n- `configuration[].config_id` or `configuration[].name` -> the `config` field.\n\n**Quirks:** GET returns\
-        \ `Get method for this API is forbidden, Please use POST method`. An empty/missing body returns 415 `Unsupported media\
-        \ type`; send `{}` instead. Trailing slash is required.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      summary: List connector operations (and configurations)
+      description: "**This is the operations-discovery endpoint** - the only way to enumerate the operations installed for\
+        \ a connector. There is no separate `/operations/` route; this POST handler returns the full connector record, including:\n\
+        \n- `operations[]` - each with `operation` key, `title`, `description`,   `parameters[]` (with `name`, `type`, `required`,\
+        \ `tooltip`, ...), `output_schema`.\n- `configuration[]` - each with `config_id`, `name`, `config`, `agent`.\n- `config_schema`\
+        \ - the connector's installable config field definitions.\n\nUse the response to build a call to `POST /api/integration/execute/`:\n\
+        - `operations[].operation` -> the `operation` body field.\n- `operations[].parameters[]` entries with `required: true`\
+        \ -> the required   keys under `params`.\n- `configuration[].config_id` or `configuration[].name` -> the `config`\
+        \ field   (both forms are accepted).\n\n**Quirks:** GET returns `Get method for this API is forbidden, Please use\
+        \ POST method`. An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. Trailing slash is required.\
+        \ The DELETE verb on this same path uninstalls the connector - don't confuse the two.\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -40824,6 +40966,173 @@ paths:
                 listName: /api/3/picklist_names/<uuid>
                 orderIndex: 1
                 uuid: <uuid>
+      x-verified-live:
+      - apikey
+  /api/3/picklist_names:
+    get:
+      tags:
+      - Metadata
+      summary: List picklist taxonomies
+      description: "Hydra collection of every picklist *taxonomy* (named list). Each entry's `@id` is the IRI you pass as\
+        \ `listName` when fetching values via `GET /api/3/picklists?listName=<iri>`. Names are PascalCase (e.g. `AlertSeverity`,\
+        \ `AlertStatus`, `Severity`).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: gated`"
+      responses:
+        '200':
+          description: Hydra collection of picklist taxonomies.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/PicklistName
+                '@id': /api/3/picklist_names
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/picklist_names/<uuid>
+                  '@type': PicklistName
+                  id: 35
+                  importedBy:
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.1.0
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.2.1
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.3.0
+                  - apiName: sOARFramework
+                    name: SOAR Framework
+                    version: 3.4.0
+                  name: AssetCategory
+                  picklists:
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 231
+                    importedBy: []
+                    itemValue: Printer
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 9
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 232
+                    importedBy: []
+                    itemValue: UPS
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 11
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 233
+                    importedBy: []
+                    itemValue: Server
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 3
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 234
+                    importedBy: []
+                    itemValue: Laptop
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 235
+                    importedBy: []
+                    itemValue: Access Control Device
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 7
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 236
+                    importedBy: []
+                    itemValue: VOIP Phone
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 8
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 237
+                    importedBy: []
+                    itemValue: Other
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 12
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 238
+                    importedBy: []
+                    itemValue: Storage Device
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 10
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 239
+                    importedBy: []
+                    itemValue: Desktop
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 240
+                    importedBy: []
+                    itemValue: Router
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 5
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 241
+                    importedBy: []
+                    itemValue: Switch
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 6
+                    uuid: <uuid>
+                  - '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 242
+                    importedBy: []
+                    itemValue: Mobile Device
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 4
+                    uuid: <uuid>
+                  system: false
+                  uuid: <uuid>
+                hydra:totalItems: 92
+                hydra:view:
+                  '@id': /api/3/picklist_names?%24limit=1&%24page=1
+                  '@type': hydra:PartialCollectionView
+                  hydra:first: /api/3/picklist_names?%24limit=1&%24page=1
+                  hydra:last: /api/3/picklist_names?%24limit=1&%24page=92
+                  hydra:next: /api/3/picklist_names?%24limit=1&%24page=2
       x-verified-live:
       - apikey
   /api/3/picklist_names/{uuid}:
