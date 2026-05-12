@@ -494,10 +494,11 @@ def scenario_smoke(s: Session) -> None:
     print("[smoke] system identity (public + auth-required)")
     s.call("GET", "/api/version", want=200)
     s.call("GET", "/api/auth/cluster/health", want=(200, 403))
-    # License GET returns 400 under JWT on FSR 7.6.x (internal error) but
-    # 200 under API-KEY. Accept both so the per-auth coverage gets recorded
-    # without aborting the rest of the smoke run.
-    s.call("GET", "/api/auth/license", want=(200, 400, 403))
+    # Pass the documented `param=license_details` + `node_id=SELF` so the
+    # JWT call gets a real 200 (the unparameterized form returns 400 on this
+    # build). API-KEY remains 403 - that's a real auth gate, not a bug.
+    s.call("GET", "/api/auth/license", want=(200, 400, 403),
+           params={"param": "license_details", "node_id": "SELF"})
 
     print("[smoke] permissions + actor")
     s.call("GET", "/api/permissions/current", want=200)
@@ -820,6 +821,31 @@ def scenario_alerts_crud(s: Session) -> None:
     r, _ = s.call("DELETE", "/api/3/alerts/{uuid}", want=(200, 204),
                   path_params={"uuid": alert_uuid})
     print(f"  DELETE alert -> {r.status_code}")
+
+
+@scenario("license_checks")
+def scenario_license_checks(s: Session) -> None:
+    """Non-destructive license API coverage.
+
+    Only the read paths are exercised - deploy_license / get_info both
+    require a real license_key and aren't safe to probe blindly against a
+    live appliance.
+    """
+    print("[license] step 1: GET /api/auth/license (param=license_details)")
+    s.call("GET", "/api/auth/license", want=(200, 400, 403),
+           params={"param": "license_details", "node_id": "SELF"})
+
+    print("[license] step 2: POST /api/public/license (action=get_status)")
+    # Unauthenticated endpoint; nodeId is optional - omitting it returns the
+    # cluster-wide deployment status. Drop auth temporarily so the observation
+    # reflects the public nature of the endpoint.
+    saved = s.headers.pop("Authorization", None)
+    try:
+        s.call("POST", "/api/public/license", want=200,
+               json={"action": "get_status"})
+    finally:
+        if saved is not None:
+            s.headers["Authorization"] = saved
 
 
 @scenario("bulk_crud")
