@@ -1,0 +1,1097 @@
+{
+    "Incident": {
+        "type": "object",
+        "description": "An Incident record. Field set derived from `GET /api/3/model_metadatas?$relationships=true`. Unique constraints: `[{'incidents_unique': {'columns': ['sourceId', 'tenant']}}]`. Flags: taggable, queueable.",
+        "properties": {
+            "@id": {
+                "$ref": "#/components/schemas/IRI"
+            },
+            "@type": {
+                "type": "string",
+                "example": "Incident"
+            },
+            "uuid": {
+                "$ref": "#/components/schemas/UUID"
+            },
+            "responseSLAResumeDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "mitretechniques": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/mitre_techniques/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "mitresubtechniques": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/mitre_sub_techniques/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "mitremitigations": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/mitre_mitigations/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "mitregroups": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/mitre_groups/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "mitretactics": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/mitre_tactics/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "mitresoftware": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/mitre_software/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "state": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **AlertState** taxonomy."
+            },
+            "escalated": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **YesNoInput** taxonomy."
+            },
+            "ticketID": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "impactROI": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "wasPersonalDataAffected": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **YesNoInput** taxonomy."
+            },
+            "warrooms": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/warrooms/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "incRemainingRespSLA": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "incRemainingAckSLA": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "respSLApausedon": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "ackSLApausedon": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "volatileData": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "businessImpact": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "comments": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/comments/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "companies": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/companies/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "confirmationDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "senderEmailAddress": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "eradicationDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "filehash": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "identificationDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "impactAssessments": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "incidentLead": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to `/api/3/people/<uuid>`."
+            },
+            "incidentsummary": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "indicators": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/indicators/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "metrics": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "nextsteps": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "persons": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/people/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "phase": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **IncidentPhase** taxonomy."
+            },
+            "incidentphase": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body."
+            },
+            "recoveryDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "resDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "resDueBy": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "receipientEmailAddress": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "recoveryTime": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "resolution": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "resolveddate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "resSla": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **SLAState** taxonomy."
+            },
+            "resPercentSla": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "senderDomain": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "severity": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **Severity** taxonomy."
+            },
+            "sourceId": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "targetAsset": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "tasks": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/tasks/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "category": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **IncidentType** taxonomy."
+            },
+            "ackDueDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "responseDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "otherLogs": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "siemQuery": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "fileName": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "name": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "alerts": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/alerts/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "assets": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/assets/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "campaigns": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/campaigns/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "communications": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/communication/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "mitreattackid": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "MITRE ATT&CK\u00ae Technique ID"
+            },
+            "c2server": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "dLLName": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "processName": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "affectedUser": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "affectedHost": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "pcapFile": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "ackDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "slaState": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **SLAState** taxonomy."
+            },
+            "slaPercentage": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "aftermathDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "assigneddate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "attachments": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/attachments/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "containmentDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "containmentTime": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "dateOfIncident": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "deliveryVector": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **DeliveryVector** taxonomy."
+            },
+            "description": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "destinationIP": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "deviceUID": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "discoveredOn": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "dwellTime": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "source": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "sourcedata": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "sourceIP": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "cVEs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/c_v_es/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "status": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **IncidentStatus** taxonomy."
+            },
+            "vulnerabilities": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/vulnerabilities/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            }
+        }
+    },
+    "Task": {
+        "type": "object",
+        "description": "A Task record. Field set derived from `GET /api/3/model_metadatas?$relationships=true`. Flags: ownable, taggable, queueable.",
+        "properties": {
+            "@id": {
+                "$ref": "#/components/schemas/IRI"
+            },
+            "@type": {
+                "type": "string",
+                "example": "Task"
+            },
+            "uuid": {
+                "$ref": "#/components/schemas/UUID"
+            },
+            "submittedBy": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to `/api/3/people/<uuid>`."
+            },
+            "name": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "description": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "type": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **TaskType** taxonomy."
+            },
+            "dueBy": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "assignedOnDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "startDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "completedOnDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "actualMinutes": {
+                "type": [
+                    "integer",
+                    "null"
+                ],
+                "description": "Actual time spent on the task in minutes"
+            },
+            "priority": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **TaskPriority** taxonomy."
+            },
+            "status": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **TaskStatus** taxonomy."
+            },
+            "assignedToPerson": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to `/api/3/people/<uuid>`."
+            },
+            "companies": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/companies/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "persons": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/people/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "alerts": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/alerts/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "attachments": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/attachments/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "assets": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/assets/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "comments": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/comments/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "incidents": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/incidents/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "indicators": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/indicators/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "warrooms": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/warrooms/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "approvalhost": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "cVEs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/c_v_es/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "vulnerabilities": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/vulnerabilities/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "workflowid": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "readOnly": true
+            },
+            "taskdata": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "tasktype": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "readOnly": true
+            },
+            "hunt": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/hunt/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "stepid": {
+                "type": [
+                    "integer",
+                    "null"
+                ],
+                "readOnly": true
+            },
+            "threatIntelFeeds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/threat_intel_feeds/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "workspaces": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/workspaces/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            }
+        }
+    },
+    "Comment": {
+        "type": "object",
+        "description": "A Comment record. Field set derived from `GET /api/3/model_metadatas?$relationships=true`. Flags: ownable, taggable.",
+        "properties": {
+            "@id": {
+                "$ref": "#/components/schemas/IRI"
+            },
+            "@type": {
+                "type": "string",
+                "example": "Comment"
+            },
+            "uuid": {
+                "$ref": "#/components/schemas/UUID"
+            },
+            "attachments": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/attachments/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "approvals": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/approvals/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "content": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body."
+            },
+            "tasks": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/tasks/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "people": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/people/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "type": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to a `/api/3/picklists/<uuid>` value in the **Comment Type** taxonomy."
+            },
+            "alerts": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/alerts/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "isDeleted": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "assets": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/assets/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "file": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "formType=file"
+            },
+            "file1": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "formType=file"
+            },
+            "campaigns": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/campaigns/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "file2": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "formType=file"
+            },
+            "rawCommentData": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "HTML body (rich-text editor)."
+            },
+            "communication": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/communication/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "file3": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "formType=file"
+            },
+            "events": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/events/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "file4": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "formType=file"
+            },
+            "incidents": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/incidents/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "isImportant": {
+                "type": [
+                    "boolean",
+                    "null"
+                ]
+            },
+            "indicators": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/indicators/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "peopleUpdated": {
+                "type": [
+                    "boolean",
+                    "null"
+                ]
+            },
+            "replyTo": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "IRI to `/api/3/comments/<uuid>`."
+            },
+            "warrooms": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/warrooms/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "devices": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/devices/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "replies": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/comments/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "lastReplyDate": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "description": "Epoch seconds (UTC). May include fractional component."
+            },
+            "managers": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/managers/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "scenario": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/scenario/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "cVEs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/c_v_es/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "scans": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/scans/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "vulnerabilities": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/vulnerabilities/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "hunt": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/hunt/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "threatActors": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/threat_actors/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "threatIntelReports": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/threat_intel_reports/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            },
+            "workspaces": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/IRI"
+                },
+                "description": "Array of IRIs to `/api/3/workspaces/<uuid>`. On GET with `?$relationships=true` each entry is expanded to the full record."
+            }
+        }
+    }
+}
