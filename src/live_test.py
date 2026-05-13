@@ -262,8 +262,34 @@ def sweep(s: Session) -> int:
     removed += _sweep_hello_world_connectors(s)
     removed += _sweep_query_objects(s)
     removed += _sweep_alerts(s)
+    removed += _sweep_named(s, "/api/3/incidents", "incident")
+    removed += _sweep_named(s, "/api/3/tasks", "task")
+    removed += _sweep_live_comments(s)
     removed += _sweep_named(s, "/api/3/roles", "role")
     removed += _sweep_named(s, "/api/3/teams", "team")
+    return removed
+
+
+def _sweep_live_comments(s: Session) -> int:
+    """DELETE comments whose content carries the LIVE_PREFIX marker."""
+    removed = 0
+    r = s.request("GET", "/api/3/comments?$limit=200&$search=" + LIVE_PREFIX)
+    if not r.ok:
+        return 0
+    try:
+        members = r.json().get("hydra:member", [])
+    except ValueError:
+        return 0
+    for m in members:
+        content = m.get("content") or ""
+        if LIVE_PREFIX not in content:
+            continue
+        uuid_ = m.get("uuid") or (m.get("@id", "").rsplit("/", 1)[-1])
+        if not uuid_:
+            continue
+        if s.request("DELETE", f"/api/3/comments/{uuid_}").ok:
+            removed += 1
+            print(f"  swept comment ({uuid_})")
     return removed
 
 
@@ -973,6 +999,140 @@ def scenario_rbac_and_generic_crud(s: Session) -> None:
     # was already captured above).
     if role_uuid:
         s.request("DELETE", f"/api/3/roles/{role_uuid}")
+
+
+def _first_picklist_value(s: Session, list_name: str) -> str | None:
+    """Resolve the IRI of the first picklist value under a given listName."""
+    r = s.request("GET", "/api/3/picklist_names", params={"name": list_name, "$limit": 1})
+    if not r.ok:
+        return None
+    members = (r.json() or {}).get("hydra:member") or []
+    if not members:
+        return None
+    pln_iri = members[0].get("@id")
+    rr = s.request("GET", "/api/3/picklists",
+                   params={"listName": pln_iri, "$limit": 1})
+    if not rr.ok:
+        return None
+    pmem = (rr.json() or {}).get("hydra:member") or []
+    return pmem[0].get("@id") if pmem else None
+
+
+@scenario("incidents_crud")
+def scenario_incidents_crud(s: Session) -> None:
+    """Full incident lifecycle: list, create with picklists, read, update, delete."""
+    print("[incidents] step 1: list")
+    s.call("GET", "/api/3/incidents", want=200, params={"$limit": 2})
+
+    print("[incidents] step 2: resolve severity picklist IRI")
+    sev_iri = _first_picklist_value(s, "Severity")
+    assert sev_iri, "could not resolve Severity picklist"
+
+    print("[incidents] step 3: create")
+    body = {"name": s.live_name("incident"), "source": "live-test", "severity": sev_iri}
+    _, created = s.call("POST", "/api/3/incidents", want=(200, 201), json=body)
+    created = created or {}
+    inc_uuid = created.get("uuid") or (created.get("@id", "").rsplit("/", 1)[-1])
+    assert inc_uuid, f"no uuid in incident create response: {created}"
+    s.track("incident", inc_uuid)
+
+    print("[incidents] step 4: read by uuid")
+    s.call("GET", "/api/3/incidents/{uuid}", want=200, path_params={"uuid": inc_uuid})
+
+    print("[incidents] step 5: update (PUT)")
+    s.call("PUT", "/api/3/incidents/{uuid}", want=200, path_params={"uuid": inc_uuid},
+           json={"description": "updated by live_test"})
+
+    print("[incidents] step 6: delete")
+    r, _ = s.call("DELETE", "/api/3/incidents/{uuid}", want=(200, 204),
+                  path_params={"uuid": inc_uuid})
+    print(f"  DELETE incident -> {r.status_code}")
+
+
+@scenario("tasks_crud")
+def scenario_tasks_crud(s: Session) -> None:
+    """Full task lifecycle: list, create with priority picklist, read, update, delete."""
+    print("[tasks] step 1: list")
+    s.call("GET", "/api/3/tasks", want=200, params={"$limit": 2})
+
+    print("[tasks] step 2: resolve TaskPriority picklist IRI")
+    pri_iri = (_first_picklist_value(s, "TaskPriority")
+               or _first_picklist_value(s, "Priority"))
+    assert pri_iri, "could not resolve Task priority picklist"
+
+    print("[tasks] step 3: create")
+    body = {"name": s.live_name("task"),
+            "description": "live_test task",
+            "priority": pri_iri}
+    _, created = s.call("POST", "/api/3/tasks", want=(200, 201), json=body)
+    created = created or {}
+    task_uuid = created.get("uuid") or (created.get("@id", "").rsplit("/", 1)[-1])
+    assert task_uuid, f"no uuid in task create response: {created}"
+    s.track("task", task_uuid)
+
+    print("[tasks] step 4: read by uuid")
+    s.call("GET", "/api/3/tasks/{uuid}", want=200, path_params={"uuid": task_uuid})
+
+    print("[tasks] step 5: update (PUT)")
+    s.call("PUT", "/api/3/tasks/{uuid}", want=200, path_params={"uuid": task_uuid},
+           json={"description": "updated by live_test"})
+
+    print("[tasks] step 6: delete")
+    r, _ = s.call("DELETE", "/api/3/tasks/{uuid}", want=(200, 204),
+                  path_params={"uuid": task_uuid})
+    print(f"  DELETE task -> {r.status_code}")
+
+
+@scenario("comments_crud")
+def scenario_comments_crud(s: Session) -> None:
+    """Comment surface: both the parent-scoped sub-collection POST and the
+    generic `/api/3/comments` CRUD path.
+
+    Creates a temporary parent incident, posts one comment under
+    `/api/3/incidents/{recordId}/comments`, another via `POST /api/3/comments`,
+    reads each, updates, and deletes.
+    """
+    print("[comments] setup: create parent incident")
+    sev_iri = _first_picklist_value(s, "Severity")
+    assert sev_iri, "could not resolve Severity picklist for parent incident"
+    _, parent = s.call("POST", "/api/3/incidents", want=(200, 201),
+                       json={"name": s.live_name("comment-parent"),
+                             "source": "live-test", "severity": sev_iri})
+    parent = parent or {}
+    parent_uuid = parent.get("uuid") or (parent.get("@id", "").rsplit("/", 1)[-1])
+    assert parent_uuid, "no parent incident uuid"
+    s.track("incident", parent_uuid)
+    parent_iri = f"/api/3/incidents/{parent_uuid}"
+
+    marker = s.live_name("comment")  # ensures the sweeper can find it
+
+    print("[comments] step 1: GET /api/3/{module}/{recordId}/comments (parent-scoped list)")
+    s.call("GET", "/api/3/{module}/{recordId}/comments", want=200,
+           path_params={"module": "incidents", "recordId": parent_uuid},
+           params={"$limit": 5})
+
+    print("[comments] step 2: POST /api/3/comments (linked via incidents IRI)")
+    _, gen = s.call("POST", "/api/3/comments", want=(200, 201),
+                    json={"content": f"<p>{marker} linked to incident</p>",
+                          "incidents": [parent_iri]})
+    gen = gen or {}
+    gen_uuid = gen.get("uuid") or (gen.get("@id", "").rsplit("/", 1)[-1])
+    assert gen_uuid, f"no uuid in comment create response: {gen}"
+    s.track("comment", gen_uuid)
+
+    print("[comments] step 4: GET /api/3/comments/{uuid}")
+    s.call("GET", "/api/3/comments/{uuid}", want=200, path_params={"uuid": gen_uuid})
+
+    print("[comments] step 5: PUT /api/3/comments/{uuid} (mark important)")
+    s.call("PUT", "/api/3/comments/{uuid}", want=200, path_params={"uuid": gen_uuid},
+           json={"isImportant": True})
+
+    print("[comments] step 6: DELETE /api/3/comments/{uuid}")
+    r, _ = s.call("DELETE", "/api/3/comments/{uuid}", want=(200, 204),
+                  path_params={"uuid": gen_uuid})
+    print(f"  DELETE comment -> {r.status_code}")
+
+    s.request("DELETE", f"/api/3/incidents/{parent_uuid}")
 
 
 # --- CLI -----------------------------------------------------------------

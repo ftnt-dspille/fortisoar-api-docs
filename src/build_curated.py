@@ -28,6 +28,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "build" / "fortisoar.curated.openapi.yaml"
 
+# Schemas auto-generated from /api/3/model_metadatas?$relationships=true via
+# src/module_to_schema.py. Re-run that script to refresh.
+_GENERATED_SCHEMAS = json.loads((Path(__file__).parent / "module_schemas.json").read_text())
+
 
 # ---------------------------------------------------------------------------
 # Reusable schema fragments
@@ -194,8 +198,10 @@ SCHEMAS = {
             "dueDate": {"type": ["integer", "null"], "format": "int64"},
             "createUser": {"type": ["object", "string", "null"]},
             "modifyUser": {"type": ["string", "null"]},
-            "createDate": {"type": ["integer", "null"], "format": "int64"},
-            "modifyDate": {"type": ["integer", "null"], "format": "int64"},
+            "createDate": {"type": ["number", "null"],
+                           "description": "Epoch seconds (UTC), may include fractional component."},
+            "modifyDate": {"type": ["number", "null"],
+                           "description": "Epoch seconds (UTC), may include fractional component."},
             "id": {"type": "integer"},
         },
     },
@@ -281,6 +287,11 @@ SCHEMAS = {
         },
     },
 }
+
+# Splice in module schemas generated from model_metadatas (Incident, Task,
+# Comment, ...). These carry the full field list per module with correct
+# cardinality + picklist taxonomy hints; regenerate via src/module_to_schema.py.
+SCHEMAS.update(_GENERATED_SCHEMAS)
 
 
 # Standard query parameters reused across /api/3/*
@@ -571,8 +582,8 @@ PATHS["/api/3/actors/current"] = {
         "summary": "Current actor (user or appliance)",
         "description": (
             "Returns the calling principal as a unified Actor record - either a user or an appliance/agent. "
-            "Use this when code needs to work uniformly across both auth modes; for user-only fields, "
-            "prefer `GET /api/3/people/current`."
+            "Use this when code needs to work uniformly across both auth modes. For user-only fields, look up "
+            "the person record by its uuid via `GET /api/3/people/{uuid}` using the `uuid` from this response."
         ),
         "responses": {"200": _resp("Actor record.")},
     },
@@ -635,6 +646,7 @@ def _record_path_ops(plural, schema_ref, *, tag, singular):
             "get": {
                 "tags": [tag],
                 "summary": f"Get {singular} by uuid",
+                "description": f"Returns a single {singular} record by uuid. Add `?$relationships=true` to inline linked records.",
                 "responses": {"200": _resp(f"{singular} record.", ref=schema_ref), "404": _err(404, "Not found.")},
             },
             "put": {
@@ -647,6 +659,7 @@ def _record_path_ops(plural, schema_ref, *, tag, singular):
             "delete": {
                 "tags": [tag],
                 "summary": f"Delete {singular}",
+                "description": f"Soft-deletes the {singular} (if the module is softDeleteable) or hard-deletes otherwise. Returns 204 on success.",
                 "responses": {"204": {"description": "Deleted."}, "404": _err(404, "Not found.")},
             },
         },
@@ -655,6 +668,38 @@ def _record_path_ops(plural, schema_ref, *, tag, singular):
 
 # Generic CRUD (templated)
 PATHS.update(_record_path_ops("alerts", "Alert", tag="Alerts", singular="alert"))
+PATHS.update(_record_path_ops("incidents", "Incident", tag="Incidents", singular="incident"))
+PATHS.update(_record_path_ops("tasks", "Task", tag="Tasks", singular="task"))
+PATHS.update(_record_path_ops("comments", "Comment", tag="Comments", singular="comment"))
+
+# The parent-scoped sub-collection is GET-only on FSR 7.6.x (POST returns 405
+# `Method Not Allowed (Allow: GET)` - verified live). To create a comment
+# scoped to a parent, POST /api/3/comments with the parent module's
+# relationship array, e.g. {"content": "...", "incidents": ["/api/3/incidents/<uuid>"]}.
+PATHS["/api/3/{module}/{recordId}/comments"] = {
+    "parameters": [
+        {"name": "module", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Plural module name (e.g. `alerts`, `incidents`, `tasks`)."},
+        {"name": "recordId", "in": "path", "required": True,
+         "schema": {"$ref": "#/components/schemas/UUID"},
+         "description": "uuid of the parent record."},
+    ],
+    "get": {
+        "tags": ["Comments"],
+        "summary": "List comments on a record",
+        "description": (
+            "Returns comments linked to the parent record. Equivalent to "
+            "`GET /api/3/comments?<module>.uuid=<recordId>` but cheaper - the "
+            "server scopes the query for you.\n\n"
+            "**Create** is *not* allowed on this path (405). Use "
+            "`POST /api/3/comments` with the parent IRI in the matching "
+            "relationship array (e.g. `{\"content\": \"...\", \"incidents\": "
+            "[\"/api/3/incidents/<uuid>\"]}`)."
+        ),
+        "parameters": COMMON_QPARAMS,
+        "responses": {"200": _resp("Hydra collection of comments.", ref="HydraCollection")},
+    },
+}
 
 # Generic templated record CRUD - documents the pattern
 PATHS["/api/3/{collection}"] = {
@@ -950,24 +995,49 @@ PATHS["/api/search"] = {
         "summary": "Global Elasticsearch search",
         "description": (
             "Cross-module text search backed by Elasticsearch. **Min 3 chars** enforced. "
-            "Team / RBAC scoped automatically. Use this for global-search-bar UX; for "
-            "deterministic per-entity filtering prefer `POST /api/query/<collection>`.\n\n"
-            "*Heads-up:* Some 7.6.x builds return 500 here with a server-side TypeError. "
-            "Verify on your appliance."
+            "Team / RBAC scoped automatically (your accessible team IRIs are appended to "
+            "the ES filter). Use this for global-search-bar UX; for deterministic "
+            "per-entity filtering prefer `POST /api/query/<resourceShortName>`.\n\n"
+            "**Diagnostic gotcha:** this route returns `400 TypeError` when the "
+            "downstream search service is unhealthy, not when the request body is "
+            "wrong. If you see that error with a well-formed body, the search "
+            "subsystem on the appliance needs attention - the API surface itself is "
+            "fine."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "required": ["q", "index"], "properties": {
-                "q": {"type": "string", "minLength": 3},
-                "index": {"type": "array", "items": {"type": "string"}, "minItems": 1, "example": ["alerts", "incidents"]},
-                "size": {"type": "integer", "default": 30},
-                "offset": {"type": "integer", "default": 0},
+                "q": {"type": "string", "minLength": 3,
+                      "description": "Search term. Server enforces a min-3-character rule and rejects shorter strings."},
+                "index": {"type": "array", "items": {"type": "string"}, "minItems": 1,
+                          "example": ["alerts", "incidents"],
+                          "description": "Plural module names to search across. The server intersects this with the caller's accessible types."},
+                "size": {"type": "integer", "default": 30, "description": "Max hits to return."},
+                "offset": {"type": "integer", "default": 0, "description": "0-indexed offset for paging."},
+                "sort": {"type": "string", "default": "_score",
+                         "description": "ES sort spec. Defaults to relevance."},
                 "searchType": {"type": "string", "default": "_default"},
-                "modifyDateGte": {"type": "integer"},
-                "modifyDateLte": {"type": "integer"},
+                "modifyDateGte": {"type": "integer",
+                                  "description": "Lower bound on `modifyDate` (epoch). Omit or 0 for unbounded."},
+                "modifyDateLte": {"type": "integer",
+                                  "description": "Upper bound on `modifyDate` (epoch). Omit or 0 for unbounded."},
             }},
             "example": {"q": "fortinet phishing", "index": ["alerts", "incidents"], "size": 30},
         }}},
-        "responses": {"200": _resp("Hits payload.")},
+        "responses": {"200": {
+            "description": "Search payload.",
+            "content": {"application/json": {"schema": {
+                "type": "object",
+                "properties": {
+                    "totalItems": {"type": "integer",
+                                   "description": "ES `total.value` from the underlying search hit count."},
+                    "results": {"type": "array",
+                                "description": "ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`).",
+                                "items": {"type": "object"}},
+                    "context_code": {"type": "integer",
+                                     "description": "Internal status from the search consumer. `200` on success."},
+                },
+            }}},
+        }},
     },
 }
 
@@ -2174,11 +2244,11 @@ Different beast. Use for "global search bar" UX; for deterministic per-entity fi
 - Multi-index in one call.
 - Team / RBAC scoped automatically (joins `accessibleTeamIris`).
 - 3-character minimum enforced server-side.
-- Some 7.6.x builds return 500 here with a server-side TypeError; verify on your appliance before relying on it.
+- `400 TypeError` from this route means the downstream `cyops-search` MQ consumer is unhealthy, not that the body shape is wrong. Check `systemctl status cyops-search` on the appliance.
 
 ### Persisted queries
 
-Save a body via `POST /api/3/query_objects`, then invoke via `POST /api/query/<resource>/<queryId>`. Useful as a permission-grantable replacement for hand-shipping query bodies in client code. CRUD lives at `/api/3/queries`, `/api/3/system_queries`, `/api/3/user_queries`.
+Persisted queries are stored in `/api/3/queries` (ad-hoc), `/api/3/system_queries` (system-owned), and `/api/3/user_queries` (user-saved). They're *inputs* you copy into the body of `POST /api/query/<resourceShortName>` - there is no separate execute route that takes a query ID. To run a saved query, GET the query record and POST its body to `/api/query/<shortName>`. (`POST /api/query/<shortName>/<id>/<field>` is a related but distinct endpoint - relationship-walk on a record, not query execute.)
 
 ## Audit gateway quirks
 

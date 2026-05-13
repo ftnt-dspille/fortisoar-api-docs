@@ -103,44 +103,47 @@ info:
     ,         // **min 3 chars** enforced\n  \"index\": [\"alerts\", \"incidents\"], // required, non-empty\n  \"size\": 30,\
     \ \"offset\": 0,\n  \"searchType\": \"_default\",\n  \"modifyDateGte\": 0, \"modifyDateLte\": 0\n}\n```\n\n- Multi-index\
     \ in one call.\n- Team / RBAC scoped automatically (joins `accessibleTeamIris`).\n- 3-character minimum enforced server-side.\n\
-    - Some 7.6.x builds return 500 here with a server-side TypeError; verify on your appliance before relying on it.\n\n###\
-    \ Persisted queries\n\nSave a body via `POST /api/3/query_objects`, then invoke via `POST /api/query/<resource>/<queryId>`.\
-    \ Useful as a permission-grantable replacement for hand-shipping query bodies in client code. CRUD lives at `/api/3/queries`,\
-    \ `/api/3/system_queries`, `/api/3/user_queries`.\n\n## Audit gateway quirks\n\n`POST /api/gateway/audit/activities` is\
-    \ the workhorse for SIEM-style log pulls. It has nine traps worth knowing about up-front.\n\n1. **Slice pagination, no\
-    \ totals.** The response has no `totalElements` / `totalPages` / `last` (intentional - the repository skips `COUNT(*)`\
-    \ for performance). Detect end-of-data via empty `content` or `content.length < limit`. For totals, call the sibling `/count`\
-    \ endpoint.\n2. **Default `limit` is 10 if you misname the param.** Conventions like `size`, `pageSize`, `max` are silently\
-    \ dropped and the server applies its default of 10. Only `limit` works.\n3. **`filterParams: { ... }` wrapper is silently\
-    \ ignored.** Filters must be at the top level of the body; anything nested under `filterParams` is dropped.\n4. **Arrays\
-    \ don't work for any filter.** `{\"operation\": [\"Login Success\"]}` (single-element array) silently no-ops. `{\"operation\"\
-    : [\"A\", \"B\"]}` returns 400. To get multiple ops server-side, make multiple calls and merge.\n5. **`user` is not filterable,\
-    \ only `userId`.** `{\"user\": \"Jane Doe\"}` is silently ignored. `{\"userId\": \"jdoe\"}` works.\n6. **`search` is brittle.**\
-    \ `{\"search\": \"Login\"}` returned 0 hits even with many \"Login\" titles in the data. Probably searches a specific\
-    \ subset of fields with prefix-only matching. Don't rely on it.\n7. **No server-side sort control.** Records arrive `id\
-    \ DESC` (newest first). No `sort` param honored. Sort client-side if you need anything else.\n8. **`displayName` arrives\
-    \ dirty.** Some records have extra whitespace, embedded UUIDs, even unrelated text from other fields. Sanitize on read.\n\
-    9. **JWT lifetime is short.** Default ~30 min; long-running syncs need to re-auth on 401 or use a service-account token\
-    \ with extended TTL.\n\nThe 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynamically from `GET\
-    \ /api/gateway/audit/operations`.\n\n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints below\
-    \ cover the most common control flows; less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`)\
-    \ are tracked as a future expansion.\n\n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/`\
-    \ - resume a `paused` run. **Not for `awaiting`** - that uses manual-input PUT.\n- `POST /api/wf/api/workflows/{pk}/retry/`\
-    \ - retry a failed run from the failed step.\n- `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.\n\
-    \n**Decoy alert:** `POST /api/wf/api/workflows/{pk}/wfinput_resume/` exists and looks canonical, but the actual resume\
-    \ path for `awaiting` runs is **`PUT /api/wf/api/manual-wf-input/{pk}/`** with body `{workflow: <int_pk>, input: <dict>,\
-    \ type, step_id}`. Don't use `wfinput_resume`.\n\n### Triggers\n\nThree ways to fire a playbook from outside:\n\n- **`POST\
-    \ /api/triggers/1/{name}`** - hits a Custom API Endpoint trigger (named via the trigger config). Allows alternate auth\
-    \ (Basic / no-auth) for external webhooks, by design - keeps the core API token-locked while letting webhook senders use\
-    \ simpler auth.\n- **`POST /api/triggers/1/deferred/{name}`** - same as above but async (returns 202).\n- **`POST /api/triggers/1/notrigger/{workflowId}`**\
-    \ - direct execution of a workflow by UUID, bypassing trigger conditions. Useful for testing.\n\nThe notifier service\
-    \ has additional fan-out via STOMP-over-WebSocket at `/websocket/` (server pushes workflow updates on `/topic/workflows/`).\
-    \ No REST surface; out of scope here.\n\n### Triggering a playbook with an API key and tracking the task\n\nWorked end-to-end\
-    \ flow against a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it\
-    \ reaches a terminal state, then fetch full execution details. Same pattern works for `deferred/` (async) and `notrigger/<workflowId>`\
-    \ - only the trigger URL changes.\n\n**1. Fire the trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the\
-    \ playbook expects. Auth header is `Authorization: API-KEY <key>` (literal space, not a colon). The response always contains\
-    \ a `task_id` - that is the handle you track, not the workflow IRI.\n\n```python\nimport requests\n\nBASE_URL = \"https://fortisoar.example.com\"\
+    - `400 TypeError` from this route means the downstream `cyops-search` MQ consumer is unhealthy, not that the body shape\
+    \ is wrong. Check `systemctl status cyops-search` on the appliance.\n\n### Persisted queries\n\nPersisted queries are\
+    \ stored in `/api/3/queries` (ad-hoc), `/api/3/system_queries` (system-owned), and `/api/3/user_queries` (user-saved).\
+    \ They're *inputs* you copy into the body of `POST /api/query/<resourceShortName>` - there is no separate execute route\
+    \ that takes a query ID. To run a saved query, GET the query record and POST its body to `/api/query/<shortName>`. (`POST\
+    \ /api/query/<shortName>/<id>/<field>` is a related but distinct endpoint - relationship-walk on a record, not query execute.)\n\
+    \n## Audit gateway quirks\n\n`POST /api/gateway/audit/activities` is the workhorse for SIEM-style log pulls. It has nine\
+    \ traps worth knowing about up-front.\n\n1. **Slice pagination, no totals.** The response has no `totalElements` / `totalPages`\
+    \ / `last` (intentional - the repository skips `COUNT(*)` for performance). Detect end-of-data via empty `content` or\
+    \ `content.length < limit`. For totals, call the sibling `/count` endpoint.\n2. **Default `limit` is 10 if you misname\
+    \ the param.** Conventions like `size`, `pageSize`, `max` are silently dropped and the server applies its default of 10.\
+    \ Only `limit` works.\n3. **`filterParams: { ... }` wrapper is silently ignored.** Filters must be at the top level of\
+    \ the body; anything nested under `filterParams` is dropped.\n4. **Arrays don't work for any filter.** `{\"operation\"\
+    : [\"Login Success\"]}` (single-element array) silently no-ops. `{\"operation\": [\"A\", \"B\"]}` returns 400. To get\
+    \ multiple ops server-side, make multiple calls and merge.\n5. **`user` is not filterable, only `userId`.** `{\"user\"\
+    : \"Jane Doe\"}` is silently ignored. `{\"userId\": \"jdoe\"}` works.\n6. **`search` is brittle.** `{\"search\": \"Login\"\
+    }` returned 0 hits even with many \"Login\" titles in the data. Probably searches a specific subset of fields with prefix-only\
+    \ matching. Don't rely on it.\n7. **No server-side sort control.** Records arrive `id DESC` (newest first). No `sort`\
+    \ param honored. Sort client-side if you need anything else.\n8. **`displayName` arrives dirty.** Some records have extra\
+    \ whitespace, embedded UUIDs, even unrelated text from other fields. Sanitize on read.\n9. **JWT lifetime is short.**\
+    \ Default ~30 min; long-running syncs need to re-auth on 401 or use a service-account token with extended TTL.\n\nThe\
+    \ 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynamically from `GET /api/gateway/audit/operations`.\n\
+    \n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints below cover the most common control flows;\
+    \ less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`) are tracked as a future expansion.\n\
+    \n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/` - resume a\
+    \ `paused` run. **Not for `awaiting`** - that uses manual-input PUT.\n- `POST /api/wf/api/workflows/{pk}/retry/` - retry\
+    \ a failed run from the failed step.\n- `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.\n\n**Decoy\
+    \ alert:** `POST /api/wf/api/workflows/{pk}/wfinput_resume/` exists and looks canonical, but the actual resume path for\
+    \ `awaiting` runs is **`PUT /api/wf/api/manual-wf-input/{pk}/`** with body `{workflow: <int_pk>, input: <dict>, type,\
+    \ step_id}`. Don't use `wfinput_resume`.\n\n### Triggers\n\nThree ways to fire a playbook from outside:\n\n- **`POST /api/triggers/1/{name}`**\
+    \ - hits a Custom API Endpoint trigger (named via the trigger config). Allows alternate auth (Basic / no-auth) for external\
+    \ webhooks, by design - keeps the core API token-locked while letting webhook senders use simpler auth.\n- **`POST /api/triggers/1/deferred/{name}`**\
+    \ - same as above but async (returns 202).\n- **`POST /api/triggers/1/notrigger/{workflowId}`** - direct execution of\
+    \ a workflow by UUID, bypassing trigger conditions. Useful for testing.\n\nThe notifier service has additional fan-out\
+    \ via STOMP-over-WebSocket at `/websocket/` (server pushes workflow updates on `/topic/workflows/`). No REST surface;\
+    \ out of scope here.\n\n### Triggering a playbook with an API key and tracking the task\n\nWorked end-to-end flow against\
+    \ a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it reaches a terminal\
+    \ state, then fetch full execution details. Same pattern works for `deferred/` (async) and `notrigger/<workflowId>` -\
+    \ only the trigger URL changes.\n\n**1. Fire the trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the playbook\
+    \ expects. Auth header is `Authorization: API-KEY <key>` (literal space, not a colon). The response always contains a\
+    \ `task_id` - that is the handle you track, not the workflow IRI.\n\n```python\nimport requests\n\nBASE_URL = \"https://fortisoar.example.com\"\
     \nHEADERS = {\n    \"Authorization\": f\"API-KEY {API_KEY}\",\n    \"Content-Type\": \"application/json\",\n}\n\nresp\
     \ = requests.post(\n    f\"{BASE_URL}/api/triggers/1/lookup_ip\",\n    headers=HEADERS,\n    json={\"value\": \"1.1.1.2\"\
     },\n    verify=False,\n)\nresp.raise_for_status()\ntask_id = resp.json().get(\"task_id\") or resp.json()[\"data\"][\"\
@@ -1283,8 +1286,9 @@ paths:
       - Authentication
       summary: Current actor (user or appliance)
       description: "Returns the calling principal as a unified Actor record - either a user or an appliance/agent. Use this\
-        \ when code needs to work uniformly across both auth modes; for user-only fields, prefer `GET /api/3/people/current`.\n\
-        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ when code needs to work uniformly across both auth modes. For user-only fields, look up the person record by its\
+        \ uuid via `GET /api/3/people/{uuid}` using the `uuid` from this response.\n\n**Auth coverage:** `API-KEY: OK` \xB7\
+        \ `Bearer JWT: OK`"
       responses:
         '200':
           description: Actor record.
@@ -1910,67 +1914,78 @@ paths:
           `uuid,name,severity,status,createDate`.'
         schema:
           type: string
-      - name: name
+      - &id010
+        name: name
         in: query
         description: Exact-match filter on the record's name.
         schema:
           type: string
         example: Phishing email - finance
-      - name: name$like
+      - &id011
+        name: name$like
         in: query
         description: Case-insensitive LIKE filter on name. Use `%` and `_` wildcards.
         schema:
           type: string
         example: '%phish%'
-      - name: severity.itemValue
+      - &id012
+        name: severity.itemValue
         in: query
         description: Filter by the picklist value's display label (e.g. `High`, `Critical`).
         schema:
           type: string
         example: High
-      - name: severity.itemValue$in
+      - &id013
+        name: severity.itemValue$in
         in: query
         description: Multi-value filter, pipe-delimited.
         schema:
           type: string
         example: High|Critical
-      - name: status.itemValue
+      - &id014
+        name: status.itemValue
         in: query
         description: Filter by status picklist label.
         schema:
           type: string
         example: Open
-      - name: status.itemValue$neq
+      - &id015
+        name: status.itemValue$neq
         in: query
         description: Exclude records with this status.
         schema:
           type: string
         example: Closed
-      - name: assignedTo
+      - &id016
+        name: assignedTo
         in: query
         description: Filter by assignee IRI (`/api/3/people/<uuid>`).
         schema:
           type: string
-      - name: createDate$gte
+      - &id017
+        name: createDate$gte
         in: query
         description: Created on or after this epoch (seconds). Pair with `createDate$lte` for windows.
         schema:
           type: integer
           format: int64
         example: 1736380800
-      - name: createDate$lte
+      - &id018
+        name: createDate$lte
         in: query
         description: Created on or before this epoch (seconds).
         schema:
           type: integer
           format: int64
-      - name: modifyDate$gte
+      - &id019
+        name: modifyDate$gte
         in: query
         description: Modified on or after this epoch. Useful for incremental sync.
         schema:
           type: integer
           format: int64
-      - name: tags.itemValue
+      - &id020
+        name: tags.itemValue
         in: query
         description: Filter by tag label.
         schema:
@@ -2780,6 +2795,8 @@ paths:
       tags:
       - Alerts
       summary: Get alert by uuid
+      description: "**See:** [Concepts](#description/concepts)\n\nReturns a single alert record by uuid. Add `?$relationships=true`\
+        \ to inline linked records.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: alert record.
@@ -3042,7 +3059,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
       - apikey
       - jwt
@@ -3322,6 +3338,8 @@ paths:
       tags:
       - Alerts
       summary: Delete alert
+      description: "**See:** [Concepts](#description/concepts)\n\nSoft-deletes the alert (if the module is softDeleteable)\
+        \ or hard-deletes otherwise. Returns 204 on success.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '204':
           description: Deleted.
@@ -3332,7 +3350,2540 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/incidents:
+    get:
+      tags:
+      - Incidents
+      summary: List incidents
+      description: "Returns a Hydra paged collection of incidents. Filter via `?<field>$<operator>=<value>` (URL-param grammar\
+        \ - see Query API). Reserved `$`-params apply: `$limit`, `$page`, `$orderby`, `$relationships`, `$search`.\n\n**Auth\
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      parameters:
+      - *id002
+      - *id003
+      - *id004
+      - *id005
+      - *id006
+      - *id007
+      - *id008
+      - *id009
+      - *id010
+      - *id011
+      - *id012
+      - *id013
+      - *id014
+      - *id015
+      - *id016
+      - *id017
+      - *id018
+      - *id019
+      - *id020
+      responses:
+        '200':
+          description: Hydra collection of incidents.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/HydraCollection'
+                - type: object
+                  properties:
+                    hydra:member:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Incident'
+              example:
+                '@context': /api/3/contexts/Incident
+                '@id': /api/3/incidents
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/incidents/<uuid>
+                  '@type': Incident
+                  ackDate: null
+                  ackDueDate: null
+                  ackSLApausedon: null
+                  affectedHost: null
+                  affectedUser: null
+                  aftermathDate: null
+                  assigneddate: null
+                  businessImpact: null
+                  c2server: null
+                  category:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 374
+                    importedBy: []
+                    itemValue: Malware
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 8
+                    uuid: <uuid>
+                  confirmationDate: null
+                  conflict: false
+                  containmentDate: null
+                  containmentTime: null
+                  createDate: 1778353985.874259
+                  createUser:
+                    '@id': /api/3/api_keys/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': ApiKey
+                    avatar: null
+                    createDate: 1778353734.090001
+                    createUser: /api/3/people/<uuid>
+                    id: 7
+                    modifyDate: 1778353734.090001
+                    modifyUser: /api/3/people/<uuid>
+                    name: test2
+                    recordTags: []
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  dLLName: null
+                  dateOfIncident: null
+                  deliveryVector: null
+                  description: "Pattern-of-life work points to a producer using the alias 'Heisenberg.' Possibly tied to the\
+                    \ Tuco Salamanca network. Linking the inbound alert as evidence \u2014 see related records."
+                  destinationIP: null
+                  deviceUID: null
+                  discoveredOn: null
+                  dwellTime: null
+                  eradicationDate: null
+                  escalated:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#e31b1d'
+                    icon: null
+                    id: 456
+                    importedBy: []
+                    itemValue: 'No'
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  fileName: null
+                  filehash: null
+                  fsrQueue: null
+                  id: 1
+                  identificationDate: null
+                  impactAssessments: null
+                  impactROI: null
+                  incRemainingAckSLA: null
+                  incRemainingRespSLA: null
+                  incidentLead: null
+                  incidentphase: null
+                  incidentsummary: null
+                  metrics: null
+                  mitreattackid: null
+                  modifyDate: 1778353988.693813
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1734423156.392058
+                    createUser: null
+                    id: 1
+                    modifyDate: 1734423156.392058
+                    modifyUser: null
+                    name: Playbook
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: 'DEA case: Heisenberg'
+                  nextsteps: null
+                  otherLogs: null
+                  pcapFile: null
+                  phase:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 354
+                    importedBy: []
+                    itemValue: Detection
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  processName: null
+                  receipientEmailAddress: null
+                  recordTags: []
+                  recoveryDate: null
+                  recoveryTime: null
+                  resDate: null
+                  resDueBy: null
+                  resPercentSla: null
+                  resSla:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#808080'
+                    icon: null
+                    id: 436
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  resolution: null
+                  resolveddate: null
+                  respSLApausedon: null
+                  responseDate: null
+                  responseSLAResumeDate: null
+                  senderDomain: null
+                  senderEmailAddress: null
+                  severity: null
+                  siemQuery: null
+                  slaPercentage: null
+                  slaState:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#808080'
+                    icon: null
+                    id: 436
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  source: DEA Albuquerque Field Division
+                  sourceIP: null
+                  sourceId: null
+                  sourcedata: null
+                  state:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 190
+                    importedBy: []
+                    itemValue: Indicator Extracted
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  status:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 361
+                    importedBy: []
+                    itemValue: Open
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  targetAsset: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 1
+                  ticketID: null
+                  uuid: <uuid>
+                  volatileData: null
+                  wasPersonalDataAffected: null
+                hydra:totalItems: 1
+                hydra:view:
+                  '@id': /api/3/incidents?%24limit=2
+                  '@type': hydra:PartialCollectionView
+        '401':
+          description: Missing or invalid auth.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+    post:
+      tags:
+      - Incidents
+      summary: Create incident
+      description: "Inserts a new incident record. Picklist fields must be IRIs to existing `/api/3/picklists/<uuid>` values\
+        \ - bare strings are rejected from 7.5.0 onwards.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Incident'
+            example:
+              name: live-9781a0c4-comment-parent
+              severity: /api/3/picklists/<uuid>
+              source: live-test
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+              example:
+                '@context': /api/3/contexts/Incident
+                '@id': /api/3/incidents/<uuid>
+                '@type': Incident
+                ackDate: null
+                ackDueDate: null
+                ackSLApausedon: null
+                affectedHost: null
+                affectedUser: null
+                aftermathDate: null
+                alerts: []
+                assets: []
+                assigneddate: null
+                attachments: []
+                businessImpact: null
+                c2server: null
+                cVEs: []
+                campaigns: []
+                category:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 374
+                  importedBy: []
+                  itemValue: Malware
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 8
+                  uuid: <uuid>
+                comments: []
+                communications: []
+                companies: []
+                confirmationDate: null
+                conflict: false
+                containmentDate: null
+                containmentTime: null
+                createDate: 1778622258.9686
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                dLLName: null
+                dateOfIncident: null
+                deliveryVector: null
+                description: null
+                destinationIP: null
+                deviceUID: null
+                discoveredOn: null
+                dwellTime: null
+                eradicationDate: null
+                escalated:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#e31b1d'
+                  icon: null
+                  id: 456
+                  importedBy: []
+                  itemValue: 'No'
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                fileName: null
+                filehash: null
+                fsrQueue: null
+                id: 6
+                identificationDate: null
+                impactAssessments: null
+                impactROI: null
+                incRemainingAckSLA: null
+                incRemainingRespSLA: null
+                incidentLead: null
+                incidentphase: null
+                incidentsummary: null
+                indicators: []
+                metrics: null
+                mitreattackid: null
+                mitregroups: []
+                mitremitigations: []
+                mitresoftware: []
+                mitresubtechniques: []
+                mitretactics: []
+                mitretechniques: []
+                modifyDate: 1778622258.9686
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-9781a0c4-comment-parent
+                nextsteps: null
+                otherLogs: null
+                pcapFile: null
+                persons: []
+                phase:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 354
+                  importedBy: []
+                  itemValue: Detection
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                processName: null
+                receipientEmailAddress: null
+                recordTags: []
+                recoveryDate: null
+                recoveryTime: null
+                resDate: null
+                resDueBy: null
+                resPercentSla: null
+                resSla:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                resolution: null
+                resolveddate: null
+                respSLApausedon: null
+                responseDate: null
+                responseSLAResumeDate: null
+                senderDomain: null
+                senderEmailAddress: null
+                severity:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#157DD9'
+                  icon: null
+                  id: 438
+                  importedBy: []
+                  itemValue: Minimal
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                siemQuery: null
+                slaPercentage: null
+                slaState:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                source: live-test
+                sourceIP: null
+                sourceId: null
+                sourcedata: null
+                state:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 193
+                  importedBy: []
+                  itemValue: New
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                status:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 361
+                  importedBy: []
+                  itemValue: Open
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                targetAsset: null
+                tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 6
+                ticketID: null
+                uuid: <uuid>
+                volatileData: null
+                vulnerabilities: []
+                warrooms: []
+                wasPersonalDataAffected: null
+        '400':
+          description: Validation error (e.g. invalid picklist value, missing required field).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/incidents/{uuid}:
+    parameters:
+    - name: uuid
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+    get:
+      tags:
+      - Incidents
+      summary: Get incident by uuid
+      description: "Returns a single incident record by uuid. Add `?$relationships=true` to inline linked records.\n\n**Auth\
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      responses:
+        '200':
+          description: incident record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+              example:
+                '@context': /api/3/contexts/Incident
+                '@id': /api/3/incidents/<uuid>
+                '@type': Incident
+                ackDate: null
+                ackDueDate: null
+                ackSLApausedon: null
+                affectedHost: null
+                affectedUser: null
+                aftermathDate: null
+                assigneddate: null
+                businessImpact: null
+                c2server: null
+                category:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 374
+                  importedBy: []
+                  itemValue: Malware
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 8
+                  uuid: <uuid>
+                confirmationDate: null
+                conflict: false
+                containmentDate: null
+                containmentTime: null
+                createDate: 1778622167.881139
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                dLLName: null
+                dateOfIncident: null
+                deliveryVector: null
+                description: null
+                destinationIP: null
+                deviceUID: null
+                discoveredOn: null
+                dwellTime: null
+                eradicationDate: null
+                escalated:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#e31b1d'
+                  icon: null
+                  id: 456
+                  importedBy: []
+                  itemValue: 'No'
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                fileName: null
+                filehash: null
+                fsrQueue: null
+                id: 2
+                identificationDate: null
+                impactAssessments: null
+                impactROI: null
+                incRemainingAckSLA: null
+                incRemainingRespSLA: null
+                incidentLead: null
+                incidentphase: null
+                incidentsummary: null
+                metrics: null
+                mitreattackid: null
+                modifyDate: 1778622167.881139
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-5a1b2710-incident
+                nextsteps: null
+                otherLogs: null
+                pcapFile: null
+                phase:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 354
+                  importedBy: []
+                  itemValue: Detection
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                processName: null
+                receipientEmailAddress: null
+                recordTags: []
+                recoveryDate: null
+                recoveryTime: null
+                resDate: null
+                resDueBy: null
+                resPercentSla: null
+                resSla:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                resolution: null
+                resolveddate: null
+                respSLApausedon: null
+                responseDate: null
+                responseSLAResumeDate: null
+                senderDomain: null
+                senderEmailAddress: null
+                severity:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#157DD9'
+                  icon: null
+                  id: 438
+                  importedBy: []
+                  itemValue: Minimal
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                siemQuery: null
+                slaPercentage: null
+                slaState:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                source: live-test
+                sourceIP: null
+                sourceId: null
+                sourcedata: null
+                state:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 193
+                  importedBy: []
+                  itemValue: New
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                status:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 361
+                  importedBy: []
+                  itemValue: Open
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                targetAsset: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 2
+                ticketID: null
+                uuid: <uuid>
+                volatileData: null
+                wasPersonalDataAffected: null
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+    put:
+      tags:
+      - Incidents
+      summary: Update incident
+      description: "Full or partial update. The body must include `@id` matching the path.\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Incident'
+            example:
+              description: updated by live_test
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+              example:
+                '@context': /api/3/contexts/Incident
+                '@id': /api/3/incidents/<uuid>
+                '@type': Incident
+                ackDate: null
+                ackDueDate: null
+                ackSLApausedon: null
+                affectedHost: null
+                affectedUser: null
+                aftermathDate: null
+                assigneddate: null
+                businessImpact: null
+                c2server: null
+                category:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 374
+                  importedBy: []
+                  itemValue: Malware
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 8
+                  uuid: <uuid>
+                confirmationDate: null
+                conflict: false
+                containmentDate: null
+                containmentTime: null
+                createDate: 1778622167.881139
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                dLLName: null
+                dateOfIncident: null
+                deliveryVector: null
+                description: updated by live_test
+                destinationIP: null
+                deviceUID: null
+                discoveredOn: null
+                dwellTime: null
+                eradicationDate: null
+                escalated:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#e31b1d'
+                  icon: null
+                  id: 456
+                  importedBy: []
+                  itemValue: 'No'
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                fileName: null
+                filehash: null
+                fsrQueue: null
+                id: 2
+                identificationDate: null
+                impactAssessments: null
+                impactROI: null
+                incRemainingAckSLA: null
+                incRemainingRespSLA: null
+                incidentLead: null
+                incidentphase: null
+                incidentsummary: null
+                metrics: null
+                mitreattackid: null
+                modifyDate: 1778622169.279816
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-5a1b2710-incident
+                nextsteps: null
+                otherLogs: null
+                pcapFile: null
+                phase:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 354
+                  importedBy: []
+                  itemValue: Detection
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                processName: null
+                receipientEmailAddress: null
+                recordTags: []
+                recoveryDate: null
+                recoveryTime: null
+                resDate: null
+                resDueBy: null
+                resPercentSla: null
+                resSla:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                resolution: null
+                resolveddate: null
+                respSLApausedon: null
+                responseDate: null
+                responseSLAResumeDate: null
+                senderDomain: null
+                senderEmailAddress: null
+                severity:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#157DD9'
+                  icon: null
+                  id: 438
+                  importedBy: []
+                  itemValue: Minimal
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                siemQuery: null
+                slaPercentage: null
+                slaState:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#808080'
+                  icon: null
+                  id: 436
+                  importedBy: []
+                  itemValue: Awaiting Action
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 2
+                  uuid: <uuid>
+                source: live-test
+                sourceIP: null
+                sourceId: null
+                sourcedata: null
+                state:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 193
+                  importedBy: []
+                  itemValue: New
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                status:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 361
+                  importedBy: []
+                  itemValue: Open
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                targetAsset: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 2
+                ticketID: null
+                uuid: <uuid>
+                volatileData: null
+                wasPersonalDataAffected: null
+      x-verified-live:
+      - apikey
+      - jwt
+    delete:
+      tags:
+      - Incidents
+      summary: Delete incident
+      description: "Soft-deletes the incident (if the module is softDeleteable) or hard-deletes otherwise. Returns 204 on\
+        \ success.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/tasks:
+    get:
+      tags:
+      - Tasks
+      summary: List tasks
+      description: "Returns a Hydra paged collection of tasks. Filter via `?<field>$<operator>=<value>` (URL-param grammar\
+        \ - see Query API). Reserved `$`-params apply: `$limit`, `$page`, `$orderby`, `$relationships`, `$search`.\n\n**Auth\
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      parameters:
+      - *id002
+      - *id003
+      - *id004
+      - *id005
+      - *id006
+      - *id007
+      - *id008
+      - *id009
+      - *id010
+      - *id011
+      - *id012
+      - *id013
+      - *id014
+      - *id015
+      - *id016
+      - *id017
+      - *id018
+      - *id019
+      - *id020
+      responses:
+        '200':
+          description: Hydra collection of tasks.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/HydraCollection'
+                - type: object
+                  properties:
+                    hydra:member:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Task'
+              example:
+                '@context': /api/3/contexts/Task
+                '@id': /api/3/tasks
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/tasks/<uuid>
+                  '@type': Task
+                  actualMinutes: null
+                  approvalhost: null
+                  assignedOnDate: null
+                  assignedToPerson: null
+                  assignee: ''
+                  completedOnDate: null
+                  conflict: false
+                  createDate: 1778353989.788106
+                  createUser:
+                    '@id': /api/3/api_keys/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': ApiKey
+                    avatar: null
+                    createDate: 1778353734.090001
+                    createUser: /api/3/people/<uuid>
+                    id: 7
+                    modifyDate: 1778353734.090001
+                    modifyUser: /api/3/people/<uuid>
+                    name: test2
+                    recordTags: []
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: "Stake out Lavander\xEDa Brillante. Confirmed front for Heisenberg's super-lab. Photograph\
+                    \ all vehicles entering the back lot between 22:00 and 04:00."
+                  dueBy: null
+                  fsrQueue: null
+                  id: 2
+                  modifyDate: 1778354459.711782
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1734423156.396393
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1734423156.396393
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: demo-name
+                  priority: null
+                  recordTags: []
+                  startDate: null
+                  status:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#928f8f'
+                    icon: null
+                    id: 461
+                    importedBy: []
+                    itemValue: Open
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 3
+                    uuid: <uuid>
+                  stepid: null
+                  submittedBy: null
+                  taskdata: null
+                  tasktype: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 2
+                  type: null
+                  uuid: <uuid>
+                  workflowid: null
+                - '@id': /api/3/tasks/<uuid>
+                  '@type': Task
+                  actualMinutes: null
+                  approvalhost: null
+                  assignedOnDate: null
+                  assignedToPerson: null
+                  assignee: ''
+                  completedOnDate: null
+                  conflict: false
+                  createDate: 1748444634.344757
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1734423156.396393
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1734423156.396393
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: null
+                  dueBy: null
+                  fsrQueue: null
+                  id: 1
+                  modifyDate: 1748444634.344757
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1734423156.396393
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1734423156.396393
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: test
+                  priority: null
+                  recordTags: []
+                  startDate: null
+                  status:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#928f8f'
+                    icon: null
+                    id: 461
+                    importedBy: []
+                    itemValue: Open
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 3
+                    uuid: <uuid>
+                  stepid: null
+                  submittedBy: null
+                  taskdata: null
+                  tasktype: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 1
+                  type: null
+                  uuid: <uuid>
+                  workflowid: null
+                hydra:totalItems: 6
+                hydra:view:
+                  '@id': /api/3/tasks?%24limit=2&%24page=1
+                  '@type': hydra:PartialCollectionView
+                  hydra:first: /api/3/tasks?%24limit=2&%24page=1
+                  hydra:last: /api/3/tasks?%24limit=2&%24page=3
+                  hydra:next: /api/3/tasks?%24limit=2&%24page=2
+        '401':
+          description: Missing or invalid auth.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+    post:
+      tags:
+      - Tasks
+      summary: Create task
+      description: "Inserts a new task record. Picklist fields must be IRIs to existing `/api/3/picklists/<uuid>` values -\
+        \ bare strings are rejected from 7.5.0 onwards.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+            example:
+              description: live_test task
+              name: live-5a1b2710-task
+              priority: /api/3/picklists/<uuid>
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                '@context': /api/3/contexts/Task
+                '@id': /api/3/tasks/<uuid>
+                '@type': Task
+                actualMinutes: null
+                alerts: []
+                approvalhost: null
+                assets: []
+                assignedOnDate: null
+                assignedToPerson: null
+                assignee: ''
+                attachments: []
+                cVEs: []
+                comments: []
+                companies: []
+                completedOnDate: null
+                conflict: false
+                createDate: 1778622183.432207
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: live_test task
+                dueBy: null
+                fsrQueue: null
+                hunt: []
+                id: 9
+                incidents: []
+                indicators: []
+                modifyDate: 1778622183.432207
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-5a1b2710-task
+                owners:
+                - /api/3/teams/<uuid>
+                persons: []
+                priority:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#ab0e0e'
+                  icon: null
+                  id: 38
+                  importedBy: []
+                  itemValue: Urgent
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                recordTags: []
+                startDate: null
+                status: null
+                stepid: null
+                submittedBy: null
+                taskdata: null
+                tasktype: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 9
+                threatIntelFeeds: []
+                type: null
+                userOwners: []
+                uuid: <uuid>
+                vulnerabilities: []
+                warrooms: []
+                workflowid: null
+                workspaces: []
+        '400':
+          description: Validation error (e.g. invalid picklist value, missing required field).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/tasks/{uuid}:
+    parameters:
+    - name: uuid
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+    get:
+      tags:
+      - Tasks
+      summary: Get task by uuid
+      description: "Returns a single task record by uuid. Add `?$relationships=true` to inline linked records.\n\n**Auth coverage:**\
+        \ `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      responses:
+        '200':
+          description: task record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                '@context': /api/3/contexts/Task
+                '@id': /api/3/tasks/<uuid>
+                '@type': Task
+                actualMinutes: null
+                approvalhost: null
+                assignedOnDate: null
+                assignedToPerson: null
+                assignee: ''
+                completedOnDate: null
+                conflict: false
+                createDate: 1778622183.432207
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: live_test task
+                dueBy: null
+                fsrQueue: null
+                id: 9
+                modifyDate: 1778622183.432207
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-5a1b2710-task
+                priority:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#ab0e0e'
+                  icon: null
+                  id: 38
+                  importedBy: []
+                  itemValue: Urgent
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                recordTags: []
+                startDate: null
+                status: null
+                stepid: null
+                submittedBy: null
+                taskdata: null
+                tasktype: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 9
+                type: null
+                uuid: <uuid>
+                workflowid: null
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+    put:
+      tags:
+      - Tasks
+      summary: Update task
+      description: "Full or partial update. The body must include `@id` matching the path.\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+            example:
+              description: updated by live_test
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                '@context': /api/3/contexts/Task
+                '@id': /api/3/tasks/<uuid>
+                '@type': Task
+                actualMinutes: null
+                approvalhost: null
+                assignedOnDate: null
+                assignedToPerson: null
+                assignee: ''
+                completedOnDate: null
+                conflict: false
+                createDate: 1778622183.432207
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: updated by live_test
+                dueBy: null
+                fsrQueue: null
+                id: 9
+                modifyDate: 1778622184.414424
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-5a1b2710-task
+                priority:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#ab0e0e'
+                  icon: null
+                  id: 38
+                  importedBy: []
+                  itemValue: Urgent
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                recordTags: []
+                startDate: null
+                status: null
+                stepid: null
+                submittedBy: null
+                taskdata: null
+                tasktype: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 9
+                type: null
+                uuid: <uuid>
+                workflowid: null
+      x-verified-live:
+      - apikey
+      - jwt
+    delete:
+      tags:
+      - Tasks
+      summary: Delete task
+      description: "Soft-deletes the task (if the module is softDeleteable) or hard-deletes otherwise. Returns 204 on success.\n\
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/comments:
+    get:
+      tags:
+      - Comments
+      summary: List comments
+      description: 'Returns a Hydra paged collection of comments. Filter via `?<field>$<operator>=<value>` (URL-param grammar
+        - see Query API). Reserved `$`-params apply: `$limit`, `$page`, `$orderby`, `$relationships`, `$search`.'
+      parameters:
+      - *id002
+      - *id003
+      - *id004
+      - *id005
+      - *id006
+      - *id007
+      - *id008
+      - *id009
+      - *id010
+      - *id011
+      - *id012
+      - *id013
+      - *id014
+      - *id015
+      - *id016
+      - *id017
+      - *id018
+      - *id019
+      - *id020
+      responses:
+        '200':
+          description: Hydra collection of comments.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/HydraCollection'
+                - type: object
+                  properties:
+                    hydra:member:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Comment'
+              example:
+                '@context': /api/3/contexts/Alert
+                '@id': /api/3/alerts
+                '@type': hydra:PagedCollection
+                hydra:totalItems: 1
+                hydra:itemsPerPage: 30
+                hydra:nextPage: /api/3/alerts?%24page=2
+                hydra:firstPage: example
+                hydra:lastPage: example
+                hydra:member: []
+                hydra:search: {}
+        '401':
+          description: Missing or invalid auth.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+    post:
+      tags:
+      - Comments
+      summary: Create comment
+      description: "Inserts a new comment record. Picklist fields must be IRIs to existing `/api/3/picklists/<uuid>` values\
+        \ - bare strings are rejected from 7.5.0 onwards.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+            example:
+              content: <p>live-9781a0c4-comment linked to incident</p>
+              incidents:
+              - /api/3/incidents/<uuid>
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+              example:
+                '@context': /api/3/contexts/Comment
+                '@id': /api/3/comments/<uuid>
+                '@type': Comment
+                alerts: []
+                approvals: []
+                assets: []
+                attachments: []
+                cVEs: []
+                campaigns: []
+                communication: []
+                conflict: false
+                content: <p>live-9781a0c4-comment linked to incident</p>
+                createDate: 1778622260.162544
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                devices: []
+                events: []
+                file: null
+                file1: null
+                file2: null
+                file3: null
+                file4: null
+                hunt: []
+                id: 299
+                incidents:
+                - /api/3/incidents/<uuid>
+                indicators: []
+                isDeleted: null
+                isImportant: null
+                lastReplyDate: 1778622260.162508
+                managers: []
+                modifyDate: 1778622260.162544
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                owners:
+                - /api/3/teams/<uuid>
+                people: []
+                peopleUpdated: null
+                rawCommentData: null
+                recordTags: []
+                replies: []
+                replyTo: null
+                scans: []
+                scenario: []
+                tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 299
+                threatActors: []
+                threatIntelReports: []
+                type:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 98
+                  importedBy: []
+                  itemValue: Comment
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                uuid: <uuid>
+                vulnerabilities: []
+                warrooms: []
+                workspaces: []
+        '400':
+          description: Validation error (e.g. invalid picklist value, missing required field).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/comments/{uuid}:
+    parameters:
+    - name: uuid
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+    get:
+      tags:
+      - Comments
+      summary: Get comment by uuid
+      description: "Returns a single comment record by uuid. Add `?$relationships=true` to inline linked records.\n\n**Auth\
+        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      responses:
+        '200':
+          description: comment record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+              example:
+                '@context': /api/3/contexts/Comment
+                '@id': /api/3/comments/<uuid>
+                '@type': Comment
+                conflict: false
+                content: <p>live-9781a0c4-comment linked to incident</p>
+                createDate: 1778622260.162544
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                file: null
+                file1: null
+                file2: null
+                file3: null
+                file4: null
+                id: 299
+                isDeleted: null
+                isImportant: null
+                lastReplyDate: 1778622260.162508
+                modifyDate: 1778622260.162544
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                peopleUpdated: null
+                rawCommentData: null
+                recordTags: []
+                replyTo: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 299
+                type:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 98
+                  importedBy: []
+                  itemValue: Comment
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                uuid: <uuid>
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+      x-verified-live:
+      - apikey
+      - jwt
+    put:
+      tags:
+      - Comments
+      summary: Update comment
+      description: "Full or partial update. The body must include `@id` matching the path.\n\n**Auth coverage:** `API-KEY:\
+        \ OK` \xB7 `Bearer JWT: OK`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+            example:
+              isImportant: true
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+              example:
+                '@context': /api/3/contexts/Comment
+                '@id': /api/3/comments/<uuid>
+                '@type': Comment
+                alerts: []
+                approvals: []
+                assets: []
+                attachments: []
+                cVEs: []
+                campaigns: []
+                communication: []
+                conflict: false
+                content: <p>live-9781a0c4-comment linked to incident</p>
+                createDate: 1778622260.162544
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                devices: []
+                events: []
+                file: null
+                file1: null
+                file2: null
+                file3: null
+                file4: null
+                hunt: []
+                id: 299
+                incidents:
+                - /api/3/incidents/<uuid>
+                indicators: []
+                isDeleted: null
+                isImportant: true
+                lastReplyDate: 1778622260.162508
+                managers: []
+                modifyDate: 1778622261.269199
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                owners:
+                - /api/3/teams/<uuid>
+                people: []
+                peopleUpdated: null
+                rawCommentData: null
+                recordTags: []
+                replies: []
+                replyTo: null
+                scans: []
+                scenario: []
+                tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 299
+                threatActors: []
+                threatIntelReports: []
+                type:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 98
+                  importedBy: []
+                  itemValue: Comment
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                uuid: <uuid>
+                vulnerabilities: []
+                warrooms: []
+                workspaces: []
+      x-verified-live:
+      - apikey
+      - jwt
+    delete:
+      tags:
+      - Comments
+      summary: Delete comment
+      description: "Soft-deletes the comment (if the module is softDeleteable) or hard-deletes otherwise. Returns 204 on success.\n\
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: *id001
+        '200':
+          description: Live-captured response.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/Comment
+                '@id': /api/3/comments/<uuid>
+                '@type': Comment
+                alerts: []
+                approvals: []
+                assets: []
+                attachments: []
+                cVEs: []
+                campaigns: []
+                communication: []
+                conflict: false
+                content: <p>live-9781a0c4-comment linked to incident</p>
+                createDate: 1778622260.162544
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                devices: []
+                events: []
+                file: null
+                file1: null
+                file2: null
+                file3: null
+                file4: null
+                hunt: []
+                id: 299
+                incidents:
+                - /api/3/incidents/<uuid>
+                indicators: []
+                isDeleted: true
+                isImportant: true
+                lastReplyDate: 1778622260.162508
+                managers: []
+                modifyDate: 1778622261.874369
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1734423156.396393
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1734423156.396393
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                owners:
+                - /api/3/teams/<uuid>
+                people: []
+                peopleUpdated: null
+                rawCommentData: null
+                recordTags: []
+                replies: []
+                replyTo: null
+                scans: []
+                scenario: []
+                tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 299
+                threatActors: []
+                threatIntelReports: []
+                type:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 98
+                  importedBy: []
+                  itemValue: Comment
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                uuid: <uuid>
+                vulnerabilities: []
+                warrooms: []
+                workspaces: []
+      x-verified-live:
+      - apikey
+      - jwt
+  /api/3/{module}/{recordId}/comments:
+    parameters:
+    - name: module
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Plural module name (e.g. `alerts`, `incidents`, `tasks`).
+    - name: recordId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: uuid of the parent record.
+    get:
+      tags:
+      - Comments
+      summary: List comments on a record
+      description: "Returns comments linked to the parent record. Equivalent to `GET /api/3/comments?<module>.uuid=<recordId>`\
+        \ but cheaper - the server scopes the query for you.\n\n**Create** is *not* allowed on this path (405). Use `POST\
+        \ /api/3/comments` with the parent IRI in the matching relationship array (e.g. `{\"content\": \"...\", \"incidents\"\
+        : [\"/api/3/incidents/<uuid>\"]}`).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      parameters: &id021
+      - *id002
+      - *id003
+      - *id004
+      - *id005
+      - *id006
+      - *id007
+      - *id008
+      - *id009
+      responses:
+        '200':
+          description: Hydra collection of comments.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HydraCollection'
+              example:
+                '@context': /api/3/contexts/Comment
+                '@id': /api/3/comments
+                '@type': hydra:Collection
+                hydra:member: []
+                hydra:totalItems: 0
+                hydra:view:
+                  '@id': /api/3/incidents/<uuid>/comments?%24limit=5
+                  '@type': hydra:PartialCollectionView
       x-verified-live:
       - apikey
       - jwt
@@ -3355,15 +5906,7 @@ paths:
         \ `attachments`, `picklists`, `picklist_names`, `model_metadatas`, `attribute_metadatas`, `dashboard`, `reporting`,\
         \ `tenants`, `agents`, `routers`, `solutionpacks`, `widgets`, `workflow_collections`, `query_objects`, `import_jobs`,\
         \ `export_jobs`, `preprocessing_rules`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: &id027
-      - *id002
-      - *id003
-      - *id004
-      - *id005
-      - *id006
-      - *id007
-      - *id008
-      - *id009
+      parameters: *id021
       responses:
         '200':
           description: Hydra collection.
@@ -5204,10 +7747,12 @@ paths:
       - Query
       summary: Global Elasticsearch search
       description: "**See:** [Query reference](#description/query-reference) (`/api/search` section)\n\nCross-module text\
-        \ search backed by Elasticsearch. **Min 3 chars** enforced. Team / RBAC scoped automatically. Use this for global-search-bar\
-        \ UX; for deterministic per-entity filtering prefer `POST /api/query/<collection>`.\n\n*Heads-up:* Some 7.6.x builds\
-        \ return 500 here with a server-side TypeError. Verify on your appliance.\n\n**Auth coverage:** `API-KEY: 400` \xB7\
-        \ `Bearer JWT: 400`"
+        \ search backed by Elasticsearch. **Min 3 chars** enforced. Team / RBAC scoped automatically (your accessible team\
+        \ IRIs are appended to the ES filter). Use this for global-search-bar UX; for deterministic per-entity filtering prefer\
+        \ `POST /api/query/<resourceShortName>`.\n\n**Diagnostic gotcha:** this route returns `400 TypeError` when the downstream\
+        \ search service is unhealthy, not when the request body is wrong. If you see that error with a well-formed body,\
+        \ the search subsystem on the appliance needs attention - the API surface itself is fine.\n\n**Auth coverage:** `API-KEY:\
+        \ 400` \xB7 `Bearer JWT: 400`"
       requestBody:
         required: true
         content:
@@ -5221,6 +7766,7 @@ paths:
                 q:
                   type: string
                   minLength: 3
+                  description: Search term. Server enforces a min-3-character rule and rejects shorter strings.
                 index:
                   type: array
                   items:
@@ -5229,19 +7775,29 @@ paths:
                   example:
                   - alerts
                   - incidents
+                  description: Plural module names to search across. The server intersects this with the caller's accessible
+                    types.
                 size:
                   type: integer
                   default: 30
+                  description: Max hits to return.
                 offset:
                   type: integer
                   default: 0
+                  description: 0-indexed offset for paging.
+                sort:
+                  type: string
+                  default: _score
+                  description: ES sort spec. Defaults to relevance.
                 searchType:
                   type: string
                   default: _default
                 modifyDateGte:
                   type: integer
+                  description: Lower bound on `modifyDate` (epoch). Omit or 0 for unbounded.
                 modifyDateLte:
                   type: integer
+                  description: Upper bound on `modifyDate` (epoch). Omit or 0 for unbounded.
             example:
               q: fortinet phishing
               index:
@@ -5250,9 +7806,23 @@ paths:
               size: 30
       responses:
         '200':
-          description: Hits payload.
+          description: Search payload.
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    description: ES `total.value` from the underlying search hit count.
+                  results:
+                    type: array
+                    description: ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`).
+                    items:
+                      type: object
+                  context_code:
+                    type: integer
+                    description: Internal status from the search consumer. `200` on success.
               example:
                 took: 142
                 timed_out: false
@@ -5291,7 +7861,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: &id010
+            schema: &id022
               type: object
               required:
               - startDate
@@ -5430,7 +8000,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: *id010
+            schema: *id022
             example:
               filters: []
               logic: AND
@@ -5604,37 +8174,37 @@ paths:
         \ \u2014 tag allow/deny lists.\n\nEach `hydra:member` entry has `status` (one of `incipient`, `active`, `pending`,\
         \ `running`, `finished`, `failed`, `awaiting`, `skipped`, `terminated`, `paused`) and `@id` \u2014 the trailing segment\
         \ is the workflow pk used by the per-run detail GET.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: &id011
-      - &id012
+      parameters: &id023
+      - &id024
         name: format
         in: query
         schema:
           type: string
           default: json
-      - &id013
+      - &id025
         name: limit
         in: query
         schema:
           type: integer
         description: Maximum number of results to return per page.
-      - &id014
+      - &id026
         name: offset
         in: query
         schema:
           type: integer
         description: Index from which to start returning results.
-      - &id015
+      - &id027
         name: ordering
         in: query
         schema:
           type: string
         description: 'Sort field; prefix `-` for descending. Common: `-modified`, `-created`.'
-      - &id016
+      - &id028
         name: page
         in: query
         schema:
           type: integer
-      - &id017
+      - &id029
         name: status
         in: query
         schema:
@@ -5651,53 +8221,53 @@ paths:
           - terminated
           - paused
         description: Filter by run state.
-      - &id018
+      - &id030
         name: task_id
         in: query
         schema:
           type: string
         description: Match the `task_id` returned by a trigger POST. Pair with `parent_wf__isnull=True` to skip sub-playbook
           children.
-      - &id019
+      - &id031
         name: template_iri
         in: query
         schema:
           type: string
         description: Filter by playbook IRI (e.g. `/api/3/workflows/<uuid>`). Returns history for that specific playbook.
-      - &id020
+      - &id032
         name: records
         in: query
         schema:
           type: string
         description: Filter by record IRI (e.g. `/api/3/alerts/<uuid>`). Returns runs that executed against that record.
-      - &id021
+      - &id033
         name: created_after
         in: query
         schema:
           type: string
           format: date
         description: Inclusive lower bound on `created` (ISO date, e.g. `2024-11-08`). Pair with `created_before` for a window.
-      - &id022
+      - &id034
         name: created_before
         in: query
         schema:
           type: string
           format: date
         description: Inclusive upper bound on `created` (ISO date).
-      - &id023
+      - &id035
         name: parent_wf__isnull
         in: query
         schema:
           type: boolean
         description: '`True` filters out sub-playbook children (only parent runs returned). On `/historical-workflows/` the
           equivalent flag is `parent__isnull`.'
-      - &id024
+      - &id036
         name: tags_include
         in: query
         schema:
           type: string
         description: Comma-separated tag allowlist - only runs carrying any of these tags are returned.
-      - &id025
+      - &id037
         name: tags_exclude
         in: query
         schema:
@@ -6342,7 +8912,7 @@ paths:
         \nPagination + sort + filter params are passed in the query string; the request body is empty `{}`. Pair `task_id=<uuid>`\
         \ with `parent_wf__isnull=True` to skip sub-playbook child runs.\n\nExample: `POST /api/wf/api/workflows/log_list/?format=json&limit=10&offset=0&ordering=-modified&page=1&task_id=c762219d-947a-483e-8818-e2795dbc1b7b&parent_wf__isnull=True`\n\
         \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: *id011
+      parameters: *id023
       requestBody:
         required: false
         content:
@@ -6397,20 +8967,20 @@ paths:
         \ on the recent endpoint).\n\nUse `GET /api/wf/api/workflows/count?logs=all` for a combined count across recent +\
         \ historical.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
-      - *id012
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id017
-      - *id018
-      - *id019
-      - *id020
-      - *id021
-      - *id022
-      - *id023
       - *id024
       - *id025
+      - *id026
+      - *id027
+      - *id028
+      - *id029
+      - *id030
+      - *id031
+      - *id032
+      - *id033
+      - *id034
+      - *id035
+      - *id036
+      - *id037
       - name: parent__isnull
         in: query
         schema:
@@ -41382,7 +43952,7 @@ paths:
       description: "Response envelope is a custom shape (`status`, `totalItems`, `data[]`), **not** a Hydra collection. Each\
         \ `data[]` entry carries an integer `id`, `name`, `version`, `status` (e.g. `Completed`).\n\n**Auth coverage:** `API-KEY:\
         \ OK` \xB7 `Bearer JWT: OK`"
-      parameters: &id026
+      parameters: &id038
       - name: page_size
         in: query
         schema:
@@ -41459,7 +44029,7 @@ paths:
       description: "Returns the same envelope shape as `/api/integration/connectors/` (`data[]`, not Hydra). Each entry has\
         \ `id` (int), `config_id` (uuid), `connector` (int connector id), `agent` (self-agent hash when remote), `config`\
         \ (field map).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: *id026
+      parameters: *id038
       responses:
         '200':
           description: Collection envelope.
@@ -70840,7 +73410,7 @@ paths:
       tags:
       - Access management
       summary: List roles
-      parameters: *id027
+      parameters: *id021
       description: "Hydra-paged listing of all roles in the tenant. Same `$`-param grammar as any other record collection.\n\
         \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
@@ -70918,7 +73488,7 @@ paths:
       tags:
       - Access management
       summary: List teams
-      parameters: *id027
+      parameters: *id021
       description: "Hydra-paged listing of all teams in the tenant. Same `$`-param grammar as any other record collection.\n\
         \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
@@ -70999,7 +73569,7 @@ paths:
       description: "Returns one object per scope binding (`name`, `uuid`, `userId`, roles, teams). Use `userId` values as\
         \ input to `POST /api/auth/query/users` to fetch the actual keys.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer\
         \ JWT: OK`"
-      parameters: *id027
+      parameters: *id021
       responses:
         '200':
           description: Hydra collection of scopes.
@@ -72132,14 +74702,14 @@ components:
           - 'null'
         createDate:
           type:
-          - integer
+          - number
           - 'null'
-          format: int64
+          description: Epoch seconds (UTC), may include fractional component.
         modifyDate:
           type:
-          - integer
+          - number
           - 'null'
-          format: int64
+          description: Epoch seconds (UTC), may include fractional component.
         id:
           type: integer
     RecordLog:
@@ -72293,3 +74863,832 @@ components:
         token:
           type: string
           description: 'JWT - pass as `Authorization: Bearer <token>` on subsequent requests. Default TTL ~30 min.'
+    Incident:
+      type: object
+      description: 'An Incident record. Field set derived from `GET /api/3/model_metadatas?$relationships=true`. Unique constraints:
+        `[{''incidents_unique'': {''columns'': [''sourceId'', ''tenant'']}}]`. Flags: taggable, queueable.'
+      properties:
+        '@id':
+          $ref: '#/components/schemas/IRI'
+        '@type':
+          type: string
+          example: Incident
+        uuid:
+          $ref: '#/components/schemas/UUID'
+        responseSLAResumeDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        mitretechniques:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/mitre_techniques/<uuid>`. On GET with `?$relationships=true` each entry is
+            expanded to the full record.
+        mitresubtechniques:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/mitre_sub_techniques/<uuid>`. On GET with `?$relationships=true` each entry
+            is expanded to the full record.
+        mitremitigations:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/mitre_mitigations/<uuid>`. On GET with `?$relationships=true` each entry is
+            expanded to the full record.
+        mitregroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/mitre_groups/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        mitretactics:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/mitre_tactics/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        mitresoftware:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/mitre_software/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        state:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **AlertState** taxonomy.
+        escalated:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **YesNoInput** taxonomy.
+        ticketID:
+          type:
+          - string
+          - 'null'
+        impactROI:
+          type:
+          - integer
+          - 'null'
+        wasPersonalDataAffected:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **YesNoInput** taxonomy.
+        warrooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/warrooms/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        incRemainingRespSLA:
+          type:
+          - integer
+          - 'null'
+        incRemainingAckSLA:
+          type:
+          - integer
+          - 'null'
+        respSLApausedon:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        ackSLApausedon:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        volatileData:
+          type:
+          - string
+          - 'null'
+        businessImpact:
+          type:
+          - string
+          - 'null'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/comments/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/companies/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        confirmationDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        senderEmailAddress:
+          type:
+          - string
+          - 'null'
+        eradicationDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        filehash:
+          type:
+          - string
+          - 'null'
+        identificationDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        impactAssessments:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        incidentLead:
+          type:
+          - string
+          - 'null'
+          description: IRI to `/api/3/people/<uuid>`.
+        incidentsummary:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        indicators:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/indicators/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        metrics:
+          type:
+          - string
+          - 'null'
+        nextsteps:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        persons:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/people/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        phase:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **IncidentPhase** taxonomy.
+        incidentphase:
+          type:
+          - string
+          - 'null'
+          description: HTML body.
+        recoveryDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        resDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        resDueBy:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        receipientEmailAddress:
+          type:
+          - string
+          - 'null'
+        recoveryTime:
+          type:
+          - integer
+          - 'null'
+        resolution:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        resolveddate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        resSla:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **SLAState** taxonomy.
+        resPercentSla:
+          type:
+          - integer
+          - 'null'
+        senderDomain:
+          type:
+          - string
+          - 'null'
+        severity:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **Severity** taxonomy.
+        sourceId:
+          type:
+          - string
+          - 'null'
+        targetAsset:
+          type:
+          - string
+          - 'null'
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/tasks/<uuid>`. On GET with `?$relationships=true` each entry is expanded to
+            the full record.
+        category:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **IncidentType** taxonomy.
+        ackDueDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        responseDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        otherLogs:
+          type:
+          - string
+          - 'null'
+        siemQuery:
+          type:
+          - string
+          - 'null'
+        fileName:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/alerts/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/assets/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        campaigns:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/campaigns/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        communications:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/communication/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        mitreattackid:
+          type:
+          - string
+          - 'null'
+          description: "MITRE ATT&CK\xAE Technique ID"
+        c2server:
+          type:
+          - string
+          - 'null'
+        dLLName:
+          type:
+          - string
+          - 'null'
+        processName:
+          type:
+          - string
+          - 'null'
+        affectedUser:
+          type:
+          - string
+          - 'null'
+        affectedHost:
+          type:
+          - string
+          - 'null'
+        pcapFile:
+          type:
+          - string
+          - 'null'
+        ackDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        slaState:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **SLAState** taxonomy.
+        slaPercentage:
+          type:
+          - integer
+          - 'null'
+        aftermathDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        assigneddate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/attachments/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        containmentDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        containmentTime:
+          type:
+          - integer
+          - 'null'
+        dateOfIncident:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        deliveryVector:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **DeliveryVector** taxonomy.
+        description:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        destinationIP:
+          type:
+          - string
+          - 'null'
+        deviceUID:
+          type:
+          - string
+          - 'null'
+        discoveredOn:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        dwellTime:
+          type:
+          - integer
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        sourcedata:
+          type:
+          - string
+          - 'null'
+        sourceIP:
+          type:
+          - string
+          - 'null'
+        cVEs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/c_v_es/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        status:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **IncidentStatus** taxonomy.
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/vulnerabilities/<uuid>`. On GET with `?$relationships=true` each entry is
+            expanded to the full record.
+    Task:
+      type: object
+      description: 'A Task record. Field set derived from `GET /api/3/model_metadatas?$relationships=true`. Flags: ownable,
+        taggable, queueable.'
+      properties:
+        '@id':
+          $ref: '#/components/schemas/IRI'
+        '@type':
+          type: string
+          example: Task
+        uuid:
+          $ref: '#/components/schemas/UUID'
+        submittedBy:
+          type:
+          - string
+          - 'null'
+          description: IRI to `/api/3/people/<uuid>`.
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        type:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **TaskType** taxonomy.
+        dueBy:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        assignedOnDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        startDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        completedOnDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        actualMinutes:
+          type:
+          - integer
+          - 'null'
+          description: Actual time spent on the task in minutes
+        priority:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **TaskPriority** taxonomy.
+        status:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **TaskStatus** taxonomy.
+        assignedToPerson:
+          type:
+          - string
+          - 'null'
+          description: IRI to `/api/3/people/<uuid>`.
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/companies/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        persons:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/people/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/alerts/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/attachments/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/assets/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/comments/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        incidents:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/incidents/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        indicators:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/indicators/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        warrooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/warrooms/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        approvalhost:
+          type:
+          - string
+          - 'null'
+        cVEs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/c_v_es/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/vulnerabilities/<uuid>`. On GET with `?$relationships=true` each entry is
+            expanded to the full record.
+        workflowid:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        taskdata:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        tasktype:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        hunt:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/hunt/<uuid>`. On GET with `?$relationships=true` each entry is expanded to
+            the full record.
+        stepid:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        threatIntelFeeds:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/threat_intel_feeds/<uuid>`. On GET with `?$relationships=true` each entry
+            is expanded to the full record.
+        workspaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/workspaces/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+    Comment:
+      type: object
+      description: 'A Comment record. Field set derived from `GET /api/3/model_metadatas?$relationships=true`. Flags: ownable,
+        taggable.'
+      properties:
+        '@id':
+          $ref: '#/components/schemas/IRI'
+        '@type':
+          type: string
+          example: Comment
+        uuid:
+          $ref: '#/components/schemas/UUID'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/attachments/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        approvals:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/approvals/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        content:
+          type:
+          - string
+          - 'null'
+          description: HTML body.
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/tasks/<uuid>`. On GET with `?$relationships=true` each entry is expanded to
+            the full record.
+        people:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/people/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        type:
+          type:
+          - string
+          - 'null'
+          description: IRI to a `/api/3/picklists/<uuid>` value in the **Comment Type** taxonomy.
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/alerts/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        isDeleted:
+          type:
+          - string
+          - 'null'
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/assets/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        file:
+          type:
+          - string
+          - 'null'
+          description: formType=file
+        file1:
+          type:
+          - string
+          - 'null'
+          description: formType=file
+        campaigns:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/campaigns/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        file2:
+          type:
+          - string
+          - 'null'
+          description: formType=file
+        rawCommentData:
+          type:
+          - string
+          - 'null'
+          description: HTML body (rich-text editor).
+        communication:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/communication/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        file3:
+          type:
+          - string
+          - 'null'
+          description: formType=file
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/events/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        file4:
+          type:
+          - string
+          - 'null'
+          description: formType=file
+        incidents:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/incidents/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        isImportant:
+          type:
+          - boolean
+          - 'null'
+        indicators:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/indicators/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        peopleUpdated:
+          type:
+          - boolean
+          - 'null'
+        replyTo:
+          type:
+          - string
+          - 'null'
+          description: IRI to `/api/3/comments/<uuid>`.
+        warrooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/warrooms/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/devices/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/comments/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        lastReplyDate:
+          type:
+          - number
+          - 'null'
+          description: Epoch seconds (UTC). May include fractional component.
+        managers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/managers/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        scenario:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/scenario/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        cVEs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/c_v_es/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        scans:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/scans/<uuid>`. On GET with `?$relationships=true` each entry is expanded to
+            the full record.
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/vulnerabilities/<uuid>`. On GET with `?$relationships=true` each entry is
+            expanded to the full record.
+        hunt:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/hunt/<uuid>`. On GET with `?$relationships=true` each entry is expanded to
+            the full record.
+        threatActors:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/threat_actors/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
+        threatIntelReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/threat_intel_reports/<uuid>`. On GET with `?$relationships=true` each entry
+            is expanded to the full record.
+        workspaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/IRI'
+          description: Array of IRIs to `/api/3/workspaces/<uuid>`. On GET with `?$relationships=true` each entry is expanded
+            to the full record.
