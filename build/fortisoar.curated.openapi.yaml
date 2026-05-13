@@ -46,13 +46,16 @@ info:
     }\n```\n\n`hydra:member` is the array. The rest is navigation/metadata.\n\n### Reserved query parameters\n\n| Param |\
     \ Default | Notes |\n|---|---|---|\n| `$limit` | 30 | Max **5000** (server-enforced cap). |\n| `$page` | 1 | 1-indexed.\
     \ |\n| `$orderby` | - | `field` or `-field` for desc. Body `sort[]` is the equivalent on `/api/query`. |\n| `$relationships`\
-    \ | `false` | When `true`, FK fields are inlined (e.g. `severity` becomes the picklist record dict instead of an IRI string).\
-    \ |\n| `$export` | `false` | Strips identity fields so the result re-imports cleanly. Used by export UI. |\n| `$partial`\
-    \ | `false` | When `true`, `hydra:totalItems` is omitted (skips `COUNT(*)`). Useful when paging blindly. |\n| `$search`\
-    \ | - | See [Query reference](#description/query-reference) - top-level token, distinct from the per-field `search` operator.\
-    \ |\n| `$fields` | - | **Power user** - `?$fields=uuid,name,steps` returns only those columns. Big response-size win on\
-    \ bulk pulls. |\n\n### Power-user URL filtering\n\nThese work on every `/api/3/<plural>` endpoint and cover ~90% of what\
-    \ `/api/query/*` does without a body:\n\n- **Nested dot notation** traverses relationships at any depth: `?triggerStep.stepType.name=cybersponse.post_create&triggerStep.arguments.resources$exists=alerts&isActive=true`.\
+    \ | `false` | When `true`, FK fields are inlined as full record dicts (e.g. `severity` becomes the picklist record instead\
+    \ of an IRI string) **and** M2M collections (e.g. `alerts`, `tasks`, `indicators`) are populated. When `false`, FKs return\
+    \ as IRI strings and M2M collections are **omitted from the payload entirely** - not returned as empty arrays. Set `true`\
+    \ whenever you need related records in one round-trip. |\n| `$export` | `false` | Strips identity fields so the result\
+    \ re-imports cleanly. Used by export UI. |\n| `$partial` | `false` | When `true`, `hydra:totalItems` is omitted (skips\
+    \ `COUNT(*)`). Useful when paging blindly. |\n| `$search` | - | See [Query reference](#description/query-reference) -\
+    \ top-level token, distinct from the per-field `search` operator. |\n| `$fields` | - | **Power user** - `?$fields=uuid,name,steps`\
+    \ returns only those columns. Big response-size win on bulk pulls. |\n\n### Power-user URL filtering\n\nThese work on\
+    \ every `/api/3/<plural>` endpoint and cover ~90% of what `/api/query/*` does without a body:\n\n- **Nested dot notation**\
+    \ traverses relationships at any depth: `?triggerStep.stepType.name=cybersponse.post_create&triggerStep.arguments.resources$exists=alerts&isActive=true`.\
     \ Either `.` or `__` works (`steps__stepType__name` \u2261 `steps.stepType.name`).\n- **Operators** are appended with\
     \ `$`: `?eventCount$gte=10&eventCount$lt=20`, `?status__itemValue$in=Open|Resolved|InProgress`. Default operator (no `$op`\
     \ suffix) is `eq`.\n- **Existence on collections**: `<rel>.<arrayField>$exists=value` - \"find playbooks whose trigger\
@@ -1882,7 +1885,9 @@ paths:
       - &id005
         name: $relationships
         in: query
-        description: Inline related records instead of returning IRI refs.
+        description: 'When `true`, related records are included in the response: FK fields are inlined as full record dicts
+          (instead of IRI strings) and M2M collections are populated. When `false` (default), FK fields return as IRI strings
+          and M2M collections are omitted entirely from the payload.'
         schema:
           type: boolean
           default: false
@@ -2796,7 +2801,8 @@ paths:
       - Alerts
       summary: Get alert by uuid
       description: "**See:** [Concepts](#description/concepts)\n\nReturns a single alert record by uuid. Add `?$relationships=true`\
-        \ to inline linked records.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ to inline FK records and include M2M collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7\
+        \ `Bearer JWT: OK`"
       responses:
         '200':
           description: alert record.
@@ -3906,8 +3912,8 @@ paths:
       tags:
       - Incidents
       summary: Get incident by uuid
-      description: "Returns a single incident record by uuid. Add `?$relationships=true` to inline linked records.\n\n**Auth\
-        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Returns a single incident record by uuid. Add `?$relationships=true` to inline FK records and include\
+        \ M2M collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: incident record.
@@ -4880,8 +4886,8 @@ paths:
       tags:
       - Tasks
       summary: Get task by uuid
-      description: "Returns a single task record by uuid. Add `?$relationships=true` to inline linked records.\n\n**Auth coverage:**\
-        \ `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Returns a single task record by uuid. Add `?$relationships=true` to inline FK records and include M2M\
+        \ collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: task record.
@@ -5401,8 +5407,8 @@ paths:
       tags:
       - Comments
       summary: Get comment by uuid
-      description: "Returns a single comment record by uuid. Add `?$relationships=true` to inline linked records.\n\n**Auth\
-        \ coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Returns a single comment record by uuid. Add `?$relationships=true` to inline FK records and include M2M\
+        \ collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: comment record.
