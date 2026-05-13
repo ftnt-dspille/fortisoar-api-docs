@@ -18,60 +18,60 @@ info:
     \ for you either.\n> - Trailing date - when the verifier last hit this op.\n> - No Live-verified line at all - never executed\
     \ by the verifier. Treat as documentation-only.\n\nSchemas (`Alert`, `RecordLog`, ...) are validated against captured\
     \ responses where present. Run `python src/verify_curated.py` against your FortiSOAR (creds in `.env`) to refresh the\
-    \ verification report.\n\n## Concepts\n\nThe entire API is **JSON-LD + Hydra**. Every record carries `@id` (its IRI),\
-    \ `@type` (entity name), and `@context` (model URL). Collections wrap records in a `hydra:Collection` envelope (see [Pagination\
-    \ & response shape](#description/pagination-response-shape)).\n\n- **IRI** (Internationalized Resource Identifier) - relative\
-    \ URL like `/api/3/alerts/<uuid>`. Used as a foreign-key reference everywhere FK references appear in JSON. Server *generates*\
-    \ `@id` on insert; clients should not send it.\n- **UUID** - 36-character hex w/ hyphens. Optional on POST: send your\
-    \ own to retain it for cross-system reference, or omit and read it back from the response IRI.\n- **CamelCase** - every\
-    \ key is camelCase (`sourceId`, `dueDate`, `hydra:variableRepresentation`). Use the same convention for any custom modules.\n\
-    - **Picklist values are IRIs from 7.5.0+.** Posting `\"severity\": \"High\"` is rejected; you must post `\"severity\"\
-    : \"/api/3/picklists/<value-uuid>\"`. Fetch the value's IRI from `GET /api/3/picklists?listName.name=AlertSeverity&itemValue=High`.\
-    \ Bulk-feed paths are an exception (no validation).\n- **Trigger-bypass semantics.** `POST /api/ingest-feeds/*` and `POST\
-    \ /api/insert-feeds/*` skip on-create playbook triggers (intentional, for high-volume feeds). `POST /api/3/insert/*` (with\
-    \ optional `__bulk: true` for batching) does **not** skip triggers.\n\n## Authentication\n\nThree documented methods;\
-    \ only two are recommended.\n\n| Method | Header | When to use |\n|---|---|---|\n| **API key** (recommended) | `Authorization:\
-    \ API-KEY <key>` (note literal space) | Appliances, scheduled jobs, long-lived integrations. Mint via Settings -> Security\
-    \ Management -> Access Keys. |\n| **Bearer JWT** | `Authorization: Bearer <jwt>` | Short-lived / interactive use. Obtain\
-    \ from `POST /auth/authenticate`. Default TTL ~30 min; re-auth on 401. |\n| HMAC | (legacy) | Documented in the public\
-    \ PDF for completeness. Out of scope here - most clients should use API key. |\n\nSome endpoints accept only one method.\
-    \ The **`Live-verified`** badge on each op shows per-auth status; `apikey: 403` next to `jwt: 200` means that endpoint\
-    \ is JWT-only on the box we tested. Examples observed: `/api/auth/cluster/health` requires JWT; `/api/auth/license` is\
-    \ JWT-only; most CRUD works with both.\n\nThe `/api/version` and `/api/public/license` endpoints are **public** (no auth\
-    \ required).\n\n## Pagination & response shape\n\nEvery `GET /api/3/<plural>` returns a Hydra paged collection:\n\n```json\n\
-    {\n  \"@context\": \"/api/3/contexts/Alert\",\n  \"@id\": \"/api/3/alerts\",\n  \"@type\": \"hydra:PagedCollection\",\n\
-    \  \"hydra:totalItems\": 1247,\n  \"hydra:itemsPerPage\": 30,\n  \"hydra:firstPage\": \"/api/3/alerts\",\n  \"hydra:nextPage\"\
-    :  \"/api/3/alerts?$page=2\",\n  \"hydra:lastPage\":  \"/api/3/alerts?$page=42\",\n  \"hydra:member\": [ ... ],\n  \"\
-    hydra:search\":  { \"@type\": \"hydra:IriTemplate\", \"hydra:template\": \"/api/3/alerts{?}\", \"hydra:mapping\": [] }\n\
-    }\n```\n\n`hydra:member` is the array. The rest is navigation/metadata.\n\n### Reserved query parameters\n\n| Param |\
-    \ Default | Notes |\n|---|---|---|\n| `$limit` | 30 | Max **5000** (server-enforced cap). |\n| `$page` | 1 | 1-indexed.\
-    \ |\n| `$orderby` | - | `field` or `-field` for desc. Body `sort[]` is the equivalent on `/api/query`. |\n| `$relationships`\
-    \ | `false` | When `true`, FK fields are inlined as full record dicts (e.g. `severity` becomes the picklist record instead\
-    \ of an IRI string) **and** M2M collections (e.g. `alerts`, `tasks`, `indicators`) are populated. When `false`, FKs return\
-    \ as IRI strings and M2M collections are **omitted from the payload entirely** - not returned as empty arrays. Set `true`\
-    \ whenever you need related records in one round-trip. |\n| `$export` | `false` | Strips identity fields so the result\
-    \ re-imports cleanly. Used by export UI. |\n| `$partial` | `false` | When `true`, `hydra:totalItems` is omitted (skips\
-    \ `COUNT(*)`). Useful when paging blindly. |\n| `$search` | - | See [Query reference](#description/query-reference) -\
-    \ top-level token, distinct from the per-field `search` operator. |\n| `$fields` | - | **Power user** - `?$fields=uuid,name,steps`\
-    \ returns only those columns. Big response-size win on bulk pulls. |\n\n### Power-user URL filtering\n\nThese work on\
-    \ every `/api/3/<plural>` endpoint and cover ~90% of what `/api/query/*` does without a body:\n\n- **Nested dot notation**\
-    \ traverses relationships at any depth: `?triggerStep.stepType.name=cybersponse.post_create&triggerStep.arguments.resources$exists=alerts&isActive=true`.\
+    \ verification report.\n\n## Concepts\n\nResponses follow the **JSON-LD + Hydra** convention. In practice that means every\
+    \ record has an `@id` URL you can copy and reuse as a reference, plus an `@type` (the module name) and `@context` (model\
+    \ URL). List endpoints wrap their results in a `hydra:member` envelope \u2014 see [Pagination & response shape](#description/pagination-response-shape).\n\
+    \n- **IRI** \u2014 a relative URL like `/api/3/alerts/<uuid>`. Treat it as a foreign-key pointer: wherever JSON references\
+    \ another record, that's what you'll see. The server generates `@id` on insert; clients should not send it.\n- **UUID**\
+    \ - 36-character hex w/ hyphens. Optional on POST: send your own to retain it for cross-system reference, or omit and\
+    \ read it back from the response IRI.\n- **CamelCase** - every key is camelCase (`sourceId`, `dueDate`, `hydra:variableRepresentation`).\
+    \ Use the same convention for any custom modules.\n- **Picklist values are IRIs from 7.5.0+.** Posting `\"severity\":\
+    \ \"High\"` is rejected; you must post `\"severity\": \"/api/3/picklists/<value-uuid>\"`. Fetch the value's IRI from `GET\
+    \ /api/3/picklists?listName.name=AlertSeverity&itemValue=High`. Bulk-feed paths are an exception (no validation).\n- **Trigger-bypass\
+    \ semantics.** `POST /api/ingest-feeds/*` and `POST /api/insert-feeds/*` skip on-create playbook triggers (intentional,\
+    \ for high-volume feeds). `POST /api/3/insert/*` (with optional `__bulk: true` for batching) does **not** skip triggers.\n\
+    \n## Authentication\n\nThree documented methods; only two are recommended.\n\n| Method | Header | When to use |\n|---|---|---|\n\
+    | **API key** (recommended) | `Authorization: API-KEY <key>` (note literal space) | Appliances, scheduled jobs, long-lived\
+    \ integrations. Mint via Settings -> Security Management -> Access Keys. |\n| **Bearer JWT** | `Authorization: Bearer\
+    \ <jwt>` | Short-lived / interactive use. Obtain from `POST /auth/authenticate`. Default TTL ~30 min; re-auth on 401.\
+    \ |\n| HMAC | (legacy) | Documented in the public PDF for completeness. Out of scope here - most clients should use API\
+    \ key. |\n\nSome endpoints accept only one method. The **`Live-verified`** badge on each op shows per-auth status; `apikey:\
+    \ 403` next to `jwt: 200` means that endpoint is JWT-only on the box we tested. Examples observed: `/api/auth/cluster/health`\
+    \ requires JWT; `/api/auth/license` is JWT-only; most CRUD works with both.\n\nThe `/api/version` and `/api/public/license`\
+    \ endpoints are **public** (no auth required).\n\n## Pagination & response shape\n\nEvery `GET /api/3/<plural>` returns\
+    \ a Hydra paged collection:\n\n```json\n{\n  \"@context\": \"/api/3/contexts/Alert\",\n  \"@id\": \"/api/3/alerts\",\n\
+    \  \"@type\": \"hydra:PagedCollection\",\n  \"hydra:totalItems\": 1247,\n  \"hydra:itemsPerPage\": 30,\n  \"hydra:firstPage\"\
+    : \"/api/3/alerts\",\n  \"hydra:nextPage\":  \"/api/3/alerts?$page=2\",\n  \"hydra:lastPage\":  \"/api/3/alerts?$page=42\"\
+    ,\n  \"hydra:member\": [ ... ],\n  \"hydra:search\":  { \"@type\": \"hydra:IriTemplate\", \"hydra:template\": \"/api/3/alerts{?}\"\
+    , \"hydra:mapping\": [] }\n}\n```\n\n`hydra:member` is the array. The rest is navigation/metadata.\n\n### Reserved query\
+    \ parameters\n\n| Param | Default | Notes |\n|---|---|---|\n| `$limit` | 30 | Max **5000** (server-enforced cap). |\n\
+    | `$page` | 1 | 1-indexed. |\n| `$orderby` | - | `field` or `-field` for desc. Body `sort[]` is the equivalent on `/api/query`.\
+    \ |\n| `$relationships` | `false` | Controls whether linked modules appear in the response. When `true`, related collections\
+    \ (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false`, those collections are **left out entirely**\
+    \ \u2014 not returned as empty arrays. Single-value links (`severity`, `status`, `createUser`, etc.) are always returned\
+    \ as full record objects regardless of this flag. |\n| `$export` | `false` | Strips identity fields so the result re-imports\
+    \ cleanly. Used by export UI. |\n| `$partial` | `false` | When `true`, `hydra:totalItems` is omitted (skips `COUNT(*)`).\
+    \ Useful when paging blindly. |\n| `$search` | - | See [Query reference](#description/query-reference) - top-level token,\
+    \ distinct from the per-field `search` operator. |\n| `$fields` | - | **Power user** - `?$fields=uuid,name,steps` returns\
+    \ only those columns. Big response-size win on bulk pulls. |\n\n### Power-user URL filtering\n\nThese work on every `/api/3/<plural>`\
+    \ endpoint and cover ~90% of what `/api/query/*` does without a body:\n\n- **Nested dot notation** traverses relationships\
+    \ at any depth: `?triggerStep.stepType.name=cybersponse.post_create&triggerStep.arguments.resources$exists=alerts&isActive=true`.\
     \ Either `.` or `__` works (`steps__stepType__name` \u2261 `steps.stepType.name`).\n- **Operators** are appended with\
     \ `$`: `?eventCount$gte=10&eventCount$lt=20`, `?status__itemValue$in=Open|Resolved|InProgress`. Default operator (no `$op`\
     \ suffix) is `eq`.\n- **Existence on collections**: `<rel>.<arrayField>$exists=value` - \"find playbooks whose trigger\
     \ covers this module\". Example: `triggerStep.arguments.resources$exists=alerts`.\n- **Multiple parts are ANDed.** No\
     \ way to OR via URL params - repeating a key (`?field=A&field=B`) returns `400 Bad Request`. Use the body endpoint for\
     \ OR.\n\n## Query reference\n\nThree distinct query surfaces - pick by use case:\n\n| Surface | Endpoint | Filter | Aggregations\
-    \ | Best for |\n|---|---|---|---|---|\n| URL-param | `GET /api/3/<resource>?...` | AND of leaf ops | none | Single-condition\
-    \ AND; simple lookups |\n| Body | `POST /api/query/<resource>` | full AND/OR tree | yes | Anything non-trivial; complex\
-    \ filters; counts |\n| Global | `POST /api/search` | keyword `q` | none | Cross-module text search (Elasticsearch) |\n\
-    \n### Body grammar for the query endpoint\n\n```jsonc\n{\n  \"logic\": \"AND\" | \"OR\",\n  \"filters\": [\n    { \"field\"\
-    : \"<path>\", \"operator\": \"<op>\", \"value\": <val>, \"type\": \"<type>\"? },   // leaf\n    { \"logic\": \"AND\" |\
-    \ \"OR\", \"filters\": [ ... ] }                                    // nested group\n  ],\n  \"sort\":       [ { \"field\"\
-    : \"<path>\", \"direction\": \"asc\" | \"desc\" } ],\n  \"aggregates\": [ { \"operator\": \"<op>\", \"field\": \"<path>\"\
-    , \"alias\": \"<name>\" } ]\n}\n```\n\nPagination + `$search` ride on the **query string** (`?$limit=30&$page=2&$search=fortinet`);\
-    \ body fields named `page`/`pageSize`/`limit` are silently ignored.\n\n### Leaf operators\n\n| Operator | Behavior | Notes\
-    \ |\n|---|---|---|\n| `eq` | exact equality | Default if `operator` omitted. For association IRIs, the UUID is extracted\
+    \ | Best for |\n|---|---|---|---|---|\n| URL-param | `GET /api/3/<resource>?...` | single AND chain | none | Simple lookups;\
+    \ everything ANDs together |\n| Body | `POST /api/query/<resource>` | nested AND/OR groups | yes | Anything non-trivial;\
+    \ complex filters; counts |\n| Global | `POST /api/search` | keyword `q` | none | Cross-module text search (Elasticsearch)\
+    \ |\n\n### Request body shape\n\n```jsonc\n{\n  \"logic\": \"AND\" | \"OR\",\n  \"filters\": [\n    { \"field\": \"<path>\"\
+    , \"operator\": \"<op>\", \"value\": <val>, \"type\": \"<type>\"? },   // leaf\n    { \"logic\": \"AND\" | \"OR\", \"\
+    filters\": [ ... ] }                                    // nested group\n  ],\n  \"sort\":       [ { \"field\": \"<path>\"\
+    , \"direction\": \"asc\" | \"desc\" } ],\n  \"aggregates\": [ { \"operator\": \"<op>\", \"field\": \"<path>\", \"alias\"\
+    : \"<name>\" } ]\n}\n```\n\nPagination + `$search` ride on the **query string** (`?$limit=30&$page=2&$search=fortinet`);\
+    \ body fields named `page`/`pageSize`/`limit` are silently ignored.\n\n### Field operators\n\n| Operator | Behavior |\
+    \ Notes |\n|---|---|---|\n| `eq` | exact equality | Default if `operator` omitted. For association IRIs, the UUID is extracted\
     \ before comparison. |\n| `neq` | exact inequality | |\n| `lt`, `lte`, `gt`, `gte` | numeric / date comparisons | With\
     \ `type: \"datetime\"` + a numeric value, the value is treated as epoch. |\n| `in` | match any of N | Accepts `[...]`\
     \ array or a `\\|`-delimited string. **Lowercases** string values. Association IRIs -> UUIDs. |\n| `nin` | NOT IN | Generated\
@@ -209,13 +209,15 @@ security:
 - bearerJwt: []
 tags:
 - name: Authentication
-  description: Token issuance, logout, and current-user / current-actor introspection.
+  description: Sign in, sign out, and look up the current user / actor.
 - name: System
   description: Build version, license info, HA cluster health, feature flags, and cache invalidation. The version + public-license
     endpoints are unauthenticated; the rest require auth.
 - name: Records (generic)
-  description: Every record-bearing entity is exposed at `/api/3/<plural>` with the same Hydra-paged contract. These two operations
-    document the shared shape; the **Alerts** tag is a worked example.
+  description: "Every module that stores records is available at `/api/3/<plural>` with the same list + create / get / update\
+    \ / delete shape (list responses are wrapped in a `hydra:member` envelope \u2014 see [Pagination & response shape](#description/pagination-response-shape)).\
+    \ The operations below \u2014 list / create on `/api/3/{collection}` and get / update / delete on `/api/3/{collection}/{uuid}`\
+    \ \u2014 document that shared shape. The **Alerts** endpoints are a worked example."
 - name: Alerts
   description: Concrete CRUD on the `alerts` collection - representative of every record module (`incidents`, `indicators`,
     `tasks`, `assets`, `people`, ...).
@@ -226,8 +228,8 @@ tags:
   description: 'Three search surfaces: URL-param (AND only), POST `/api/query/*` body grammar (full AND/OR + aggregates),
     and global Elasticsearch (`/api/search`). See operation descriptions for when to use which.'
 - name: Audit
-  description: Audit log query + retention. Slice pagination with no totals - use `/count` separately. Filters are top-level
-    only and accept exactly one value.
+  description: "Audit log search + retention. Returns one page at a time with no total count \u2014 call `/count` separately\
+    \ if you need it. Filters are top-level only and accept exactly one value."
 - name: Workflows
   description: Workflow run control, history, and introspection. Lives under `/api/wf/*`.
 - name: Triggers
@@ -245,8 +247,8 @@ tags:
     \ (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing\
     \ slash is mandatory \u2014 without it you'll see `403 Could not validate HMAC fingerprint`."
 - name: Metadata
-  description: Module + field schemas, picklist taxonomy, JSON-LD contexts, and the Hydra `ApiDocumentation` (use this to
-    expand the curated surface).
+  description: Module and field definitions, picklist values, type contexts, and the auto-generated full API listing (handy
+    for discovering endpoints not documented here).
 - name: Files
   description: Attachment upload. Required as the first step of import-job ingestion.
 - name: Access management
@@ -1885,9 +1887,10 @@ paths:
       - &id005
         name: $relationships
         in: query
-        description: 'When `true`, related records are included in the response: FK fields are inlined as full record dicts
-          (instead of IRI strings) and M2M collections are populated. When `false` (default), FK fields return as IRI strings
-          and M2M collections are omitted entirely from the payload.'
+        description: "Controls whether linked modules are included in the response. When `true`, related collections (e.g.\
+          \ an alert's `tasks`, `indicators`, `assets`) are populated. When `false` (default), those collections are left\
+          \ out of the response entirely \u2014 not returned as empty arrays. Single-value links like `severity`, `status`,\
+          \ `createUser` are always returned as full record objects regardless of this flag."
         schema:
           type: boolean
           default: false
@@ -2801,8 +2804,8 @@ paths:
       - Alerts
       summary: Get alert by uuid
       description: "**See:** [Concepts](#description/concepts)\n\nReturns a single alert record by uuid. Add `?$relationships=true`\
-        \ to inline FK records and include M2M collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7\
-        \ `Bearer JWT: OK`"
+        \ to include the record's linked modules (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
+        \ OK`"
       responses:
         '200':
           description: alert record.
@@ -3912,8 +3915,8 @@ paths:
       tags:
       - Incidents
       summary: Get incident by uuid
-      description: "Returns a single incident record by uuid. Add `?$relationships=true` to inline FK records and include\
-        \ M2M collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Returns a single incident record by uuid. Add `?$relationships=true` to include the record's linked modules\
+        \ (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: incident record.
@@ -4886,8 +4889,8 @@ paths:
       tags:
       - Tasks
       summary: Get task by uuid
-      description: "Returns a single task record by uuid. Add `?$relationships=true` to inline FK records and include M2M\
-        \ collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Returns a single task record by uuid. Add `?$relationships=true` to include the record's linked modules\
+        \ (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: task record.
@@ -5407,8 +5410,8 @@ paths:
       tags:
       - Comments
       summary: Get comment by uuid
-      description: "Returns a single comment record by uuid. Add `?$relationships=true` to inline FK records and include M2M\
-        \ collections (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "Returns a single comment record by uuid. Add `?$relationships=true` to include the record's linked modules\
+        \ (omitted by default).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: comment record.

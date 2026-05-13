@@ -302,7 +302,7 @@ COMMON_QPARAMS = [
      "schema": {"type": "integer", "default": 1, "minimum": 1}},
     {"name": "$orderby", "in": "query", "description": "Sort field; prefix `-` for descending. Example: `-createDate`.",
      "schema": {"type": "string", "example": "-createDate"}},
-    {"name": "$relationships", "in": "query", "description": "When `true`, related records are included in the response: FK fields are inlined as full record dicts (instead of IRI strings) and M2M collections are populated. When `false` (default), FK fields return as IRI strings and M2M collections are omitted entirely from the payload.",
+    {"name": "$relationships", "in": "query", "description": "Controls whether linked modules are included in the response. When `true`, related collections (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false` (default), those collections are left out of the response entirely — not returned as empty arrays. Single-value links like `severity`, `status`, `createUser` are always returned as full record objects regardless of this flag.",
      "schema": {"type": "boolean", "default": False}},
     {"name": "$export", "in": "query", "description": "Strip identity fields so the result re-imports cleanly.",
      "schema": {"type": "boolean", "default": False}},
@@ -646,7 +646,7 @@ def _record_path_ops(plural, schema_ref, *, tag, singular):
             "get": {
                 "tags": [tag],
                 "summary": f"Get {singular} by uuid",
-                "description": f"Returns a single {singular} record by uuid. Add `?$relationships=true` to inline FK records and include M2M collections (omitted by default).",
+                "description": f"Returns a single {singular} record by uuid. Add `?$relationships=true` to include the record's linked modules (omitted by default).",
                 "responses": {"200": _resp(f"{singular} record.", ref=schema_ref), "404": _err(404, "Not found.")},
             },
             "put": {
@@ -2016,16 +2016,19 @@ TAG_GROUPS = [
 ]
 
 TAG_DESCRIPTIONS = {
-    "Authentication": "Token issuance, logout, and current-user / current-actor introspection.",
+    "Authentication": "Sign in, sign out, and look up the current user / actor.",
     "System": "Build version, license info, HA cluster health, feature flags, and cache invalidation. The version + public-license endpoints are unauthenticated; the rest require auth.",
     "Records (generic)": (
-        "Every record-bearing entity is exposed at `/api/3/<plural>` with the same Hydra-paged contract. "
-        "These two operations document the shared shape; the **Alerts** tag is a worked example."
+        "Every module that stores records is available at `/api/3/<plural>` with the same list + create / get / "
+        "update / delete shape (list responses are wrapped in a `hydra:member` envelope — see "
+        "[Pagination & response shape](#description/pagination-response-shape)). The operations below — list / create "
+        "on `/api/3/{collection}` and get / update / delete on `/api/3/{collection}/{uuid}` — document that shared "
+        "shape. The **Alerts** endpoints are a worked example."
     ),
     "Alerts": "Concrete CRUD on the `alerts` collection - representative of every record module (`incidents`, `indicators`, `tasks`, `assets`, `people`, ...).",
     "Bulk operations": "High-throughput insert/update/delete/upsert and feed-ingest paths. Note: `/api/ingest-feeds/*` and `/api/insert-feeds/*` skip on-create playbook triggers; `POST /api/3/insert/*` does not.",
     "Query": "Three search surfaces: URL-param (AND only), POST `/api/query/*` body grammar (full AND/OR + aggregates), and global Elasticsearch (`/api/search`). See operation descriptions for when to use which.",
-    "Audit": "Audit log query + retention. Slice pagination with no totals - use `/count` separately. Filters are top-level only and accept exactly one value.",
+    "Audit": "Audit log search + retention. Returns one page at a time with no total count — call `/count` separately if you need it. Filters are top-level only and accept exactly one value.",
     "Workflows": "Workflow run control, history, and introspection. Lives under `/api/wf/*`.",
     "Triggers": "Fire playbooks - by custom-endpoint name, deferred (async), or by workflow id without firing trigger conditions.",
     "Connectors": (
@@ -2037,7 +2040,7 @@ TAG_DESCRIPTIONS = {
         "4. **Health-check** — `GET /api/integration/connectors/healthcheck/{name}/{version}/?config=<uuid>` for the cheap variant (uses an existing config), or the POST form when re-sending a full config inline.\n"
         "5. **Cleanup** — `DELETE /api/integration/configuration/{config_id}/` (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing slash is mandatory — without it you'll see `403 Could not validate HMAC fingerprint`."
     ),
-    "Metadata": "Module + field schemas, picklist taxonomy, JSON-LD contexts, and the Hydra `ApiDocumentation` (use this to expand the curated surface).",
+    "Metadata": "Module and field definitions, picklist values, type contexts, and the auto-generated full API listing (handy for discovering endpoints not documented here).",
     "Files": "Attachment upload. Required as the first step of import-job ingestion.",
     "Access management": (
         "API keys, roles, teams.\n\n"
@@ -2069,9 +2072,9 @@ Schemas (`Alert`, `RecordLog`, ...) are validated against captured responses whe
 
 ## Concepts
 
-The entire API is **JSON-LD + Hydra**. Every record carries `@id` (its IRI), `@type` (entity name), and `@context` (model URL). Collections wrap records in a `hydra:Collection` envelope (see [Pagination & response shape](#description/pagination-response-shape)).
+Responses follow the **JSON-LD + Hydra** convention. In practice that means every record has an `@id` URL you can copy and reuse as a reference, plus an `@type` (the module name) and `@context` (model URL). List endpoints wrap their results in a `hydra:member` envelope — see [Pagination & response shape](#description/pagination-response-shape).
 
-- **IRI** (Internationalized Resource Identifier) - relative URL like `/api/3/alerts/<uuid>`. Used as a foreign-key reference everywhere FK references appear in JSON. Server *generates* `@id` on insert; clients should not send it.
+- **IRI** — a relative URL like `/api/3/alerts/<uuid>`. Treat it as a foreign-key pointer: wherever JSON references another record, that's what you'll see. The server generates `@id` on insert; clients should not send it.
 - **UUID** - 36-character hex w/ hyphens. Optional on POST: send your own to retain it for cross-system reference, or omit and read it back from the response IRI.
 - **CamelCase** - every key is camelCase (`sourceId`, `dueDate`, `hydra:variableRepresentation`). Use the same convention for any custom modules.
 - **Picklist values are IRIs from 7.5.0+.** Posting `"severity": "High"` is rejected; you must post `"severity": "/api/3/picklists/<value-uuid>"`. Fetch the value's IRI from `GET /api/3/picklists?listName.name=AlertSeverity&itemValue=High`. Bulk-feed paths are an exception (no validation).
@@ -2119,7 +2122,7 @@ Every `GET /api/3/<plural>` returns a Hydra paged collection:
 | `$limit` | 30 | Max **5000** (server-enforced cap). |
 | `$page` | 1 | 1-indexed. |
 | `$orderby` | - | `field` or `-field` for desc. Body `sort[]` is the equivalent on `/api/query`. |
-| `$relationships` | `false` | When `true`, FK fields are inlined as full record dicts (e.g. `severity` becomes the picklist record instead of an IRI string) **and** M2M collections (e.g. `alerts`, `tasks`, `indicators`) are populated. When `false`, FKs return as IRI strings and M2M collections are **omitted from the payload entirely** - not returned as empty arrays. Set `true` whenever you need related records in one round-trip. |
+| `$relationships` | `false` | Controls whether linked modules appear in the response. When `true`, related collections (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false`, those collections are **left out entirely** — not returned as empty arrays. Single-value links (`severity`, `status`, `createUser`, etc.) are always returned as full record objects regardless of this flag. |
 | `$export` | `false` | Strips identity fields so the result re-imports cleanly. Used by export UI. |
 | `$partial` | `false` | When `true`, `hydra:totalItems` is omitted (skips `COUNT(*)`). Useful when paging blindly. |
 | `$search` | - | See [Query reference](#description/query-reference) - top-level token, distinct from the per-field `search` operator. |
@@ -2140,11 +2143,11 @@ Three distinct query surfaces - pick by use case:
 
 | Surface | Endpoint | Filter | Aggregations | Best for |
 |---|---|---|---|---|
-| URL-param | `GET /api/3/<resource>?...` | AND of leaf ops | none | Single-condition AND; simple lookups |
-| Body | `POST /api/query/<resource>` | full AND/OR tree | yes | Anything non-trivial; complex filters; counts |
+| URL-param | `GET /api/3/<resource>?...` | single AND chain | none | Simple lookups; everything ANDs together |
+| Body | `POST /api/query/<resource>` | nested AND/OR groups | yes | Anything non-trivial; complex filters; counts |
 | Global | `POST /api/search` | keyword `q` | none | Cross-module text search (Elasticsearch) |
 
-### Body grammar for the query endpoint
+### Request body shape
 
 ```jsonc
 {
@@ -2160,7 +2163,7 @@ Three distinct query surfaces - pick by use case:
 
 Pagination + `$search` ride on the **query string** (`?$limit=30&$page=2&$search=fortinet`); body fields named `page`/`pageSize`/`limit` are silently ignored.
 
-### Leaf operators
+### Field operators
 
 | Operator | Behavior | Notes |
 |---|---|---|
