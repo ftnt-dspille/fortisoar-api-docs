@@ -302,7 +302,7 @@ COMMON_QPARAMS = [
      "schema": {"type": "integer", "default": 1, "minimum": 1}},
     {"name": "$orderby", "in": "query", "description": "Sort field; prefix `-` for descending. Example: `-createDate`.",
      "schema": {"type": "string", "example": "-createDate"}},
-    {"name": "$relationships", "in": "query", "description": "Inline related records instead of returning IRI refs.",
+    {"name": "$relationships", "in": "query", "description": "When `true`, related records are included in the response: FK fields are inlined as full record dicts (instead of IRI strings) and M2M collections are populated. When `false` (default), FK fields return as IRI strings and M2M collections are omitted entirely from the payload.",
      "schema": {"type": "boolean", "default": False}},
     {"name": "$export", "in": "query", "description": "Strip identity fields so the result re-imports cleanly.",
      "schema": {"type": "boolean", "default": False}},
@@ -646,7 +646,7 @@ def _record_path_ops(plural, schema_ref, *, tag, singular):
             "get": {
                 "tags": [tag],
                 "summary": f"Get {singular} by uuid",
-                "description": f"Returns a single {singular} record by uuid. Add `?$relationships=true` to inline linked records.",
+                "description": f"Returns a single {singular} record by uuid. Add `?$relationships=true` to inline FK records and include M2M collections (omitted by default).",
                 "responses": {"200": _resp(f"{singular} record.", ref=schema_ref), "404": _err(404, "Not found.")},
             },
             "put": {
@@ -2119,7 +2119,7 @@ Every `GET /api/3/<plural>` returns a Hydra paged collection:
 | `$limit` | 30 | Max **5000** (server-enforced cap). |
 | `$page` | 1 | 1-indexed. |
 | `$orderby` | - | `field` or `-field` for desc. Body `sort[]` is the equivalent on `/api/query`. |
-| `$relationships` | `false` | When `true`, FK fields are inlined (e.g. `severity` becomes the picklist record dict instead of an IRI string). |
+| `$relationships` | `false` | When `true`, FK fields are inlined as full record dicts (e.g. `severity` becomes the picklist record instead of an IRI string) **and** M2M collections (e.g. `alerts`, `tasks`, `indicators`) are populated. When `false`, FKs return as IRI strings and M2M collections are **omitted from the payload entirely** - not returned as empty arrays. Set `true` whenever you need related records in one round-trip. |
 | `$export` | `false` | Strips identity fields so the result re-imports cleanly. Used by export UI. |
 | `$partial` | `false` | When `true`, `hydra:totalItems` is omitted (skips `COUNT(*)`). Useful when paging blindly. |
 | `$search` | - | See [Query reference](#description/query-reference) - top-level token, distinct from the per-field `search` operator. |
