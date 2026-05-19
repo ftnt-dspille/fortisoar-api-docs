@@ -84084,6 +84084,18 @@
   },
   "GET /api/taxii/1/": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": null,
+        "response_body": {
+          "max_content_length": 1000000,
+          "title": "TAXII feeds",
+          "versions": [
+            "application/taxii+json;version=2.1"
+          ]
+        },
+        "response_status": 200
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": null,
@@ -84100,6 +84112,92 @@
   },
   "GET /api/taxii/1/collections/": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": null,
+        "response_body": {
+          "collections": [
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "FortiGuard Outbreak Threat Feeds",
+              "title": "FortiGuard Outbreak Threat Feeds",
+              "uuid": "<uuid>"
+            },
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "Phishing Threat Feeds",
+              "title": "Phishing Threat Feeds",
+              "uuid": "<uuid>"
+            },
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "FortiGuard Threat Intel Feeds",
+              "title": "FortiGuard Threat Intel Feeds",
+              "uuid": "<uuid>"
+            },
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "Block List (Domain)",
+              "title": "Block List (Domain)",
+              "uuid": "<uuid>"
+            },
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "Block List (URL)",
+              "title": "Block List (URL)",
+              "uuid": "<uuid>"
+            },
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "Block List (IP Address)",
+              "title": "Block List (IP Address)",
+              "uuid": "<uuid>"
+            },
+            {
+              "can_read": true,
+              "can_write": false,
+              "id": "<uuid>",
+              "media_types": [
+                "application/stix+json;version=2.1"
+              ],
+              "name": "Custom",
+              "title": "Custom",
+              "uuid": "<uuid>"
+            }
+          ]
+        },
+        "response_status": 200
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": null,
@@ -84190,6 +84288,22 @@
   },
   "GET /api/taxii/1/collections/{uuid}/": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": null,
+        "response_body": {
+          "can_read": true,
+          "can_write": false,
+          "id": "<uuid>",
+          "media_types": [
+            "application/stix+json;version=2.1"
+          ],
+          "name": "Custom",
+          "title": "Custom",
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": null,
@@ -84200,8 +84314,8 @@
           "media_types": [
             "application/stix+json;version=2.1"
           ],
-          "name": "FortiGuard Outbreak Threat Feeds",
-          "title": "FortiGuard Outbreak Threat Feeds",
+          "name": "Custom",
+          "title": "Custom",
           "uuid": "<uuid>"
         },
         "response_status": 200
@@ -84210,12 +84324,185 @@
   },
   "GET /api/taxii/1/collections/{uuid}/manifest/": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": null,
+        "response_body": {
+          "more": true,
+          "next": "2",
+          "objects": [
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": 100,
+              "created": null,
+              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--2023060612951",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "<api-key>",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [
+                "evil corp",
+                "gold drake",
+                "indrik spider",
+                "information stealer",
+                "malvertising campaign",
+                "malware",
+                "silence group"
+              ],
+              "reputation": "Malicious",
+              "source": "FortiRecon ACI Report",
+              "sourceData": {
+                "ioc": "<api-key>",
+                "ioc_type": "hash",
+                "report_id": "2023060612951",
+                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
+              },
+              "sourceId": "2023060612951",
+              "specVersion": "2.1",
+              "tLP": "Green",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": "FileHash",
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
+            }
+          ],
+          "totalItems": 8
+        },
+        "response_status": 200
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": null,
         "response_body": {
-          "objects": [],
-          "totalItems": 0
+          "more": true,
+          "next": "2",
+          "objects": [
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": 100,
+              "created": null,
+              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--2023060612951",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "<api-key>",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [
+                "evil corp",
+                "gold drake",
+                "indrik spider",
+                "information stealer",
+                "malvertising campaign",
+                "malware",
+                "silence group"
+              ],
+              "reputation": "Malicious",
+              "source": "FortiRecon ACI Report",
+              "sourceData": {
+                "ioc": "<api-key>",
+                "ioc_type": "hash",
+                "report_id": "2023060612951",
+                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
+              },
+              "sourceId": "2023060612951",
+              "specVersion": "2.1",
+              "tLP": "Green",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": "FileHash",
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
+            }
+          ],
+          "totalItems": 8
         },
         "response_status": 200
       }
@@ -84223,12 +84510,185 @@
   },
   "GET /api/taxii/1/collections/{uuid}/objects/": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": null,
+        "response_body": {
+          "more": true,
+          "next": "2",
+          "objects": [
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": 100,
+              "created": null,
+              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--2023060612951",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "<api-key>",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [
+                "evil corp",
+                "gold drake",
+                "indrik spider",
+                "information stealer",
+                "malvertising campaign",
+                "malware",
+                "silence group"
+              ],
+              "reputation": "Malicious",
+              "source": "FortiRecon ACI Report",
+              "sourceData": {
+                "ioc": "<api-key>",
+                "ioc_type": "hash",
+                "report_id": "2023060612951",
+                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
+              },
+              "sourceId": "2023060612951",
+              "specVersion": "2.1",
+              "tLP": "Green",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": "FileHash",
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
+            }
+          ],
+          "totalItems": 8
+        },
+        "response_status": 200
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": null,
         "response_body": {
-          "objects": [],
-          "totalItems": 0
+          "more": true,
+          "next": "2",
+          "objects": [
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": 100,
+              "created": null,
+              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--2023060612951",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "<api-key>",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [
+                "evil corp",
+                "gold drake",
+                "indrik spider",
+                "information stealer",
+                "malvertising campaign",
+                "malware",
+                "silence group"
+              ],
+              "reputation": "Malicious",
+              "source": "FortiRecon ACI Report",
+              "sourceData": {
+                "ioc": "<api-key>",
+                "ioc_type": "hash",
+                "report_id": "2023060612951",
+                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
+              },
+              "sourceId": "2023060612951",
+              "specVersion": "2.1",
+              "tLP": "Green",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": "FileHash",
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
+            }
+          ],
+          "totalItems": 8
         },
         "response_status": 200
       }
@@ -84236,6 +84696,15 @@
   },
   "GET /api/taxii/1/collections/{uuid}/objects/{stixId}/": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": null,
+        "response_body": {
+          "objects": [],
+          "totalItems": 0
+        },
+        "response_status": 200
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": null,
@@ -177352,6 +177821,18 @@
   },
   "POST /api/ingest-feeds/observables": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": [
+          {
+            "source": "live-test",
+            "type": "IP Address",
+            "value": "198.51.100.10"
+          }
+        ],
+        "response_body": null,
+        "response_status": 400
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": [
@@ -177368,6 +177849,19 @@
   },
   "POST /api/ingest-feeds/reputation": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": [
+          {
+            "reputation": "Suspicious",
+            "source": "live-test",
+            "type": "IP Address",
+            "value": "198.51.100.30"
+          }
+        ],
+        "response_body": null,
+        "response_status": 400
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": [
@@ -177385,6 +177879,27 @@
   },
   "POST /api/ingest-feeds/stix-bundle": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": {
+          "id": "bundle--<uuid>",
+          "objects": [
+            {
+              "created": "2025-01-01T00:00:00.000Z",
+              "id": "indicator--<uuid>",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "pattern": "[ipv4-addr:value = '198.51.100.20']",
+              "pattern_type": "stix",
+              "spec_version": "2.1",
+              "type": "indicator",
+              "valid_from": "2025-01-01T00:00:00Z"
+            }
+          ],
+          "type": "bundle"
+        },
+        "response_body": null,
+        "response_status": 400
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": {
@@ -177410,11 +177925,22 @@
   },
   "POST /api/ingest-feeds/threatintel": {
     "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-19",
+        "request_body": [
+          {
+            "name": "live-8a41a9de-ti-record",
+            "source": "live-test"
+          }
+        ],
+        "response_body": null,
+        "response_status": 400
+      },
       "jwt": {
         "captured_at": "2026-05-19",
         "request_body": [
           {
-            "name": "live-8bb6c162-ti-record",
+            "name": "live-8a41a9de-ti-record",
             "source": "live-test"
           }
         ],

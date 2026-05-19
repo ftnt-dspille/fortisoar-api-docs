@@ -1153,10 +1153,49 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
     _, cols = s.call("GET", "/api/taxii/1/collections/", want=200)
     collections = (cols or {}).get("collections") or []
     assert collections, "no TAXII collections returned"
-    cid = collections[0].get("uuid") or collections[0].get("id")
-    assert cid, "no uuid on first TAXII collection"
 
-    print(f"[taxii] single collection {cid}")
+    def _pick_nonempty(colls):
+        for c in colls:
+            uid = c.get("uuid") or c.get("id")
+            if not uid:
+                continue
+            # Use raw `request` so this probe doesn't overwrite the recorded
+            # observation for the {uuid} objects op.
+            r = s.request("GET", f"/api/taxii/1/collections/{uid}/objects/",
+                          params={"limit": 1})
+            if r.status_code != 200:
+                continue
+            try:
+                body = r.json()
+            except ValueError:
+                continue
+            total = (body or {}).get("totalItems")
+            objs = (body or {}).get("objects") or []
+            if (isinstance(total, int) and total > 0) or objs:
+                return uid, total if isinstance(total, int) else len(objs)
+        return None, 0
+
+    cid, count = _pick_nonempty(collections)
+    if not cid:
+        # Every collection is empty -- seed one indicator via the ingest-feeds
+        # API and re-list so the TAXII reads exercise a non-empty corpus.
+        print("[taxii] all collections empty; seeding via /api/ingest-feeds/indicators")
+        s.request("POST", "/api/ingest-feeds/indicators",
+                  json=[{"value": "198.51.100.42", "type": "IP Address",
+                         "source": "live-test", "reputation": "Suspicious"}])
+        r = s.request("GET", "/api/taxii/1/collections/")
+        try:
+            cols2 = r.json() if r.status_code == 200 else {}
+        except ValueError:
+            cols2 = {}
+        cid, count = _pick_nonempty((cols2 or {}).get("collections") or [])
+    if not cid:
+        # Still nothing -- fall back to the first collection so the rest of the
+        # scenario still records coverage, even if objects/ comes back empty.
+        cid = collections[0].get("uuid") or collections[0].get("id")
+        count = 0
+    assert cid, "no uuid on any TAXII collection"
+    print(f"[taxii] using collection {cid} ({count} objects)")
     s.call("GET", "/api/taxii/1/collections/{uuid}/", want=200,
            path_params={"uuid": cid})
 
