@@ -7109,7 +7109,8 @@ paths:
       summary: Observables bulk ingest
       description: "Bulk-insert observables (the lower-level \"anything that can be seen on the wire\" record type that sits\
         \ below indicators). Same trigger-bypass behavior as `/api/ingest-feeds/indicators`. Payload field names follow the\
-        \ `observables` module schema \u2014 see `GET /api/3/contexts/Observable`.\n\n**Auth coverage:** `Bearer JWT: 400`"
+        \ `observables` module schema \u2014 see `GET /api/3/contexts/Observable`.\n\n**Auth coverage:** `API-KEY: 400` \xB7\
+        \ `Bearer JWT: 400`"
       requestBody:
         required: true
         content:
@@ -7124,22 +7125,18 @@ paths:
         '200':
           description: Ingest result.
       x-verified-live:
+        apikey: 400
         jwt: 400
   /api/ingest-feeds/stix-bundle:
     post:
       tags:
       - Bulk operations
       summary: STIX bundle ingest
-      description: 'Accepts a STIX 2.x bundle and fans it out into FortiSOAR''s threat-intel record types (indicators, threat
-        actors, campaigns, malware, attack patterns, etc.) according to each STIX object''s `type`. Bypasses on-create playbook
-        triggers like the rest of the `/api/ingest-feeds/*` family.
-
-
-        For pull-based STIX/TAXII ingest, consume FortiSOAR''s own TAXII server at `/api/taxii/1/` (see the **Threat intel
-        (TAXII)** tag).
-
-
-        **Auth coverage:** `Bearer JWT: 400`'
+      description: "Accepts a STIX 2.x bundle and fans it out into FortiSOAR's threat-intel record types (indicators, threat\
+        \ actors, campaigns, malware, attack patterns, etc.) according to each STIX object's `type`. Bypasses on-create playbook\
+        \ triggers like the rest of the `/api/ingest-feeds/*` family.\n\nFor pull-based STIX/TAXII ingest, consume FortiSOAR's\
+        \ own TAXII server at `/api/taxii/1/` (see the **Threat intel (TAXII)** tag).\n\n**Auth coverage:** `API-KEY: 400`\
+        \ \xB7 `Bearer JWT: 400`"
       requestBody:
         required: true
         content:
@@ -7151,6 +7148,7 @@ paths:
         '200':
           description: Ingest result.
       x-verified-live:
+        apikey: 400
         jwt: 400
   /api/ingest-feeds/threatintel:
     post:
@@ -7159,7 +7157,7 @@ paths:
       summary: Threat-intel records bulk ingest
       description: "Bulk-insert records into the `threat_intel` module \u2014 the top-level container that links indicators,\
         \ campaigns, threat actors, and reports together. Field names match the `threat_intel` module schema (see `GET /api/3/contexts/ThreatIntel`).\
-        \ Trigger-bypass applies.\n\n**Auth coverage:** `Bearer JWT: 400`"
+        \ Trigger-bypass applies.\n\n**Auth coverage:** `API-KEY: 400` \xB7 `Bearer JWT: 400`"
       requestBody:
         required: true
         content:
@@ -7174,6 +7172,7 @@ paths:
         '200':
           description: Ingest result.
       x-verified-live:
+        apikey: 400
         jwt: 400
   /api/ingest-feeds/reputation:
     post:
@@ -7182,8 +7181,8 @@ paths:
       summary: Reputation scores bulk ingest
       description: "Bulk-upsert reputation scores for indicators / observables. Used by enrichment pipelines that score IOCs\
         \ from multiple sources and need to write the result back without firing playbook triggers. Field names match the\
-        \ reputation record type \u2014 see `GET /api/3/contexts/Reputation` for the schema.\n\n**Auth coverage:** `Bearer\
-        \ JWT: 400`"
+        \ reputation record type \u2014 see `GET /api/3/contexts/Reputation` for the schema.\n\n**Auth coverage:** `API-KEY:\
+        \ 400` \xB7 `Bearer JWT: 400`"
       requestBody:
         required: true
         content:
@@ -7198,6 +7197,7 @@ paths:
         '200':
           description: Ingest result.
       x-verified-live:
+        apikey: 400
         jwt: 400
   /api/insert-feeds/{recordType}:
     parameters:
@@ -7242,7 +7242,7 @@ paths:
       summary: TAXII server info
       description: "Returns the server descriptor: title, supported TAXII versions, and the maximum content length the server\
         \ accepts for client uploads. This is the TAXII entry point \u2014 clients typically call this first to confirm protocol\
-        \ compatibility.\n\n**Auth coverage:** `Bearer JWT: OK`"
+        \ compatibility.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: TAXII server descriptor.
@@ -7254,6 +7254,7 @@ paths:
                 versions:
                 - application/taxii+json;version=2.1
       x-verified-live:
+      - apikey
       - jwt
   /api/taxii/1/collections/:
     get:
@@ -7263,7 +7264,8 @@ paths:
       description: "Lists every TAXII collection the caller is allowed to see. Each entry carries `can_read` / `can_write`\
         \ permissions and the media types the collection accepts.\n\nThe seven default collections shipped with FortiSOAR\
         \ \u2014 FortiGuard Outbreak / Phishing / Threat Intel feeds, Block List (Domain / URL / IP), and **Custom** \u2014\
-        \ are all read-only. Writable collections need to be provisioned explicitly.\n\n**Auth coverage:** `Bearer JWT: OK`"
+        \ are all read-only. Writable collections need to be provisioned explicitly.\n\n**Auth coverage:** `API-KEY: OK` \xB7\
+        \ `Bearer JWT: OK`"
       responses:
         '200':
           description: Collections list.
@@ -7328,6 +7330,7 @@ paths:
                   title: Custom
                   uuid: <uuid>
       x-verified-live:
+      - apikey
       - jwt
   /api/taxii/1/collections/{uuid}/:
     parameters:
@@ -7343,7 +7346,7 @@ paths:
       - Threat intel (TAXII)
       summary: Get one TAXII collection
       description: "Returns metadata for a single TAXII collection \u2014 name, title, read/write permissions, supported media\
-        \ types.\n\n**Auth coverage:** `Bearer JWT: OK`"
+        \ types.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Collection descriptor.
@@ -7355,10 +7358,11 @@ paths:
                 id: <uuid>
                 media_types:
                 - application/stix+json;version=2.1
-                name: FortiGuard Outbreak Threat Feeds
-                title: FortiGuard Outbreak Threat Feeds
+                name: Custom
+                title: Custom
                 uuid: <uuid>
       x-verified-live:
+      - apikey
       - jwt
   /api/taxii/1/collections/{uuid}/objects/:
     parameters:
@@ -7369,7 +7373,7 @@ paths:
       summary: Fetch STIX objects from a collection
       description: "Returns STIX 2.1 objects from the collection. The response envelope is `{totalItems, objects: []}` \u2014\
         \ a FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next` cursor. Use `limit` + `added_after` to paginate.\n\
-        \n**Auth coverage:** `Bearer JWT: OK`"
+        \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: limit
         in: query
@@ -7388,9 +7392,87 @@ paths:
           content:
             application/json:
               example:
-                objects: []
-                totalItems: 0
+                more: true
+                next: '2'
+                objects:
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: 100
+                  created: null
+                  description: <p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
+                    Evil Corp group to collect information on compromised systems</p>
+                  expiresOn: null
+                  feedType: indicator
+                  id: indicator--2023060612951
+                  indicatorTypes: null
+                  killChainPhases: []
+                  label: null
+                  lastSeen: null
+                  modified: null
+                  name: <api-key>
+                  pattern: null
+                  patternType: STIX
+                  patternVersion: '2.1'
+                  recordTags:
+                  - evil corp
+                  - gold drake
+                  - indrik spider
+                  - information stealer
+                  - malvertising campaign
+                  - malware
+                  - silence group
+                  reputation: Malicious
+                  source: FortiRecon ACI Report
+                  sourceData:
+                    ioc: <api-key>
+                    ioc_type: hash
+                    report_id: '2023060612951'
+                    report_title: Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
+                      Evil Corp group to collect information on compromised systems
+                  sourceId: '2023060612951'
+                  specVersion: '2.1'
+                  tLP: Green
+                  threatTypes: []
+                  type: indicator
+                  typeOfFeed: FileHash
+                  uuid: <uuid>
+                  validFrom: null
+                  validUntil: null
+                  value: <api-key>
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: null
+                  created: null
+                  description: null
+                  expiresOn: null
+                  feedType: indicator
+                  id: indicator--
+                  indicatorTypes: null
+                  killChainPhases: []
+                  label: null
+                  lastSeen: null
+                  modified: null
+                  name: demo-value
+                  pattern: null
+                  patternType: STIX
+                  patternVersion: '2.1'
+                  recordTags: []
+                  reputation: null
+                  source: null
+                  sourceData: null
+                  sourceId: null
+                  specVersion: '2.1'
+                  tLP: null
+                  threatTypes: []
+                  type: indicator
+                  typeOfFeed: null
+                  uuid: <uuid>
+                  validFrom: null
+                  validUntil: null
+                  value: demo-value
+                totalItems: 8
       x-verified-live:
+      - apikey
       - jwt
   /api/taxii/1/collections/{uuid}/objects/{stixId}/:
     parameters:
@@ -7405,11 +7487,8 @@ paths:
       tags:
       - Threat intel (TAXII)
       summary: Fetch one STIX object
-      description: 'Returns the same `{totalItems, objects: []}` envelope as the collection-level `objects/` endpoint, filtered
-        to the single object whose STIX id matches.
-
-
-        **Auth coverage:** `Bearer JWT: OK`'
+      description: "Returns the same `{totalItems, objects: []}` envelope as the collection-level `objects/` endpoint, filtered\
+        \ to the single object whose STIX id matches.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Single-object envelope.
@@ -7419,6 +7498,7 @@ paths:
                 objects: []
                 totalItems: 0
       x-verified-live:
+      - apikey
       - jwt
   /api/taxii/1/collections/{uuid}/manifest/:
     parameters:
@@ -7429,7 +7509,7 @@ paths:
       summary: Fetch the collection manifest
       description: "Returns one entry per object in the collection \u2014 id, date added, version, media type \u2014 without\
         \ the object bodies. Useful for cheap \"what's new since X\" polls before pulling full STIX content.\n\n**Auth coverage:**\
-        \ `Bearer JWT: OK`"
+        \ `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: limit
         in: query
@@ -7446,9 +7526,87 @@ paths:
           content:
             application/json:
               example:
-                objects: []
-                totalItems: 0
+                more: true
+                next: '2'
+                objects:
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: 100
+                  created: null
+                  description: <p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
+                    Evil Corp group to collect information on compromised systems</p>
+                  expiresOn: null
+                  feedType: indicator
+                  id: indicator--2023060612951
+                  indicatorTypes: null
+                  killChainPhases: []
+                  label: null
+                  lastSeen: null
+                  modified: null
+                  name: <api-key>
+                  pattern: null
+                  patternType: STIX
+                  patternVersion: '2.1'
+                  recordTags:
+                  - evil corp
+                  - gold drake
+                  - indrik spider
+                  - information stealer
+                  - malvertising campaign
+                  - malware
+                  - silence group
+                  reputation: Malicious
+                  source: FortiRecon ACI Report
+                  sourceData:
+                    ioc: <api-key>
+                    ioc_type: hash
+                    report_id: '2023060612951'
+                    report_title: Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
+                      Evil Corp group to collect information on compromised systems
+                  sourceId: '2023060612951'
+                  specVersion: '2.1'
+                  tLP: Green
+                  threatTypes: []
+                  type: indicator
+                  typeOfFeed: FileHash
+                  uuid: <uuid>
+                  validFrom: null
+                  validUntil: null
+                  value: <api-key>
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: null
+                  created: null
+                  description: null
+                  expiresOn: null
+                  feedType: indicator
+                  id: indicator--
+                  indicatorTypes: null
+                  killChainPhases: []
+                  label: null
+                  lastSeen: null
+                  modified: null
+                  name: demo-value
+                  pattern: null
+                  patternType: STIX
+                  patternVersion: '2.1'
+                  recordTags: []
+                  reputation: null
+                  source: null
+                  sourceData: null
+                  sourceId: null
+                  specVersion: '2.1'
+                  tLP: null
+                  threatTypes: []
+                  type: indicator
+                  typeOfFeed: null
+                  uuid: <uuid>
+                  validFrom: null
+                  validUntil: null
+                  value: demo-value
+                totalItems: 8
       x-verified-live:
+      - apikey
       - jwt
   /api/query/{collection}:
     parameters:
