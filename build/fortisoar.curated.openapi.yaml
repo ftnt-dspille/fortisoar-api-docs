@@ -265,6 +265,14 @@ tags:
 - name: Import / export
   description: Configuration import/export. Read the `import_jobs` description carefully - the inline-envelope shape is a
     silent no-op.
+- name: Threat intel (TAXII)
+  description: "TAXII 2.1 server exposing FortiSOAR threat-intel collections (FortiGuard feeds, block lists, and any custom\
+    \ collections you create). Discovery lives at `/api/taxii/1/`; collections, objects, and manifest endpoints follow.\n\n\
+    The server is **read-only**: every default collection advertises `can_write: false` and `POST` to `objects/` is not routed.\
+    \ To push STIX into FortiSOAR, use `POST /api/ingest-feeds/stix-bundle` instead.\n\nResponse envelope for `objects/` and\
+    \ `manifest/` is `{totalItems, objects: []}` \u2014 a FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next`\
+    \ cursor. Paginate with `?limit=` and `?added_after=<ISO-8601>`.\n\nAll responses use `Content-Type: application/taxii+json;version=2.1`;\
+    \ collection `media_types` advertise `application/stix+json;version=2.1`."
 x-tagGroups:
 - name: Auth & system
   tags:
@@ -287,6 +295,9 @@ x-tagGroups:
   - Workflows
   - Triggers
   - Connectors
+- name: Threat intel
+  tags:
+  - Threat intel (TAXII)
 - name: Reference
   tags:
   - Metadata
@@ -7091,6 +7102,103 @@ paths:
                 successCount: 2
                 failureCount: 0
                 skipTriggers: true
+  /api/ingest-feeds/observables:
+    post:
+      tags:
+      - Bulk operations
+      summary: Observables bulk ingest
+      description: "Bulk-insert observables (the lower-level \"anything that can be seen on the wire\" record type that sits\
+        \ below indicators). Same trigger-bypass behavior as `/api/ingest-feeds/indicators`. Payload field names follow the\
+        \ `observables` module schema \u2014 see `GET /api/3/contexts/Observable`.\n\n**Auth coverage:** `Bearer JWT: 400`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+            example:
+            - {}
+      responses:
+        '200':
+          description: Ingest result.
+      x-verified-live:
+        jwt: 400
+  /api/ingest-feeds/stix-bundle:
+    post:
+      tags:
+      - Bulk operations
+      summary: STIX bundle ingest
+      description: 'Accepts a STIX 2.x bundle and fans it out into FortiSOAR''s threat-intel record types (indicators, threat
+        actors, campaigns, malware, attack patterns, etc.) according to each STIX object''s `type`. Bypasses on-create playbook
+        triggers like the rest of the `/api/ingest-feeds/*` family.
+
+
+        For pull-based STIX/TAXII ingest, consume FortiSOAR''s own TAXII server at `/api/taxii/1/` (see the **Threat intel
+        (TAXII)** tag).
+
+
+        **Auth coverage:** `Bearer JWT: 400`'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '200':
+          description: Ingest result.
+      x-verified-live:
+        jwt: 400
+  /api/ingest-feeds/threatintel:
+    post:
+      tags:
+      - Bulk operations
+      summary: Threat-intel records bulk ingest
+      description: "Bulk-insert records into the `threat_intel` module \u2014 the top-level container that links indicators,\
+        \ campaigns, threat actors, and reports together. Field names match the `threat_intel` module schema (see `GET /api/3/contexts/ThreatIntel`).\
+        \ Trigger-bypass applies.\n\n**Auth coverage:** `Bearer JWT: 400`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+            example:
+            - {}
+      responses:
+        '200':
+          description: Ingest result.
+      x-verified-live:
+        jwt: 400
+  /api/ingest-feeds/reputation:
+    post:
+      tags:
+      - Bulk operations
+      summary: Reputation scores bulk ingest
+      description: "Bulk-upsert reputation scores for indicators / observables. Used by enrichment pipelines that score IOCs\
+        \ from multiple sources and need to write the result back without firing playbook triggers. Field names match the\
+        \ reputation record type \u2014 see `GET /api/3/contexts/Reputation` for the schema.\n\n**Auth coverage:** `Bearer\
+        \ JWT: 400`"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+            example:
+            - {}
+      responses:
+        '200':
+          description: Ingest result.
+      x-verified-live:
+        jwt: 400
   /api/insert-feeds/{recordType}:
     parameters:
     - name: recordType
@@ -7127,6 +7235,221 @@ paths:
                 successCount: 1
                 failureCount: 0
                 skipTriggers: true
+  /api/taxii/1/:
+    get:
+      tags:
+      - Threat intel (TAXII)
+      summary: TAXII server info
+      description: "Returns the server descriptor: title, supported TAXII versions, and the maximum content length the server\
+        \ accepts for client uploads. This is the TAXII entry point \u2014 clients typically call this first to confirm protocol\
+        \ compatibility.\n\n**Auth coverage:** `Bearer JWT: OK`"
+      responses:
+        '200':
+          description: TAXII server descriptor.
+          content:
+            application/json:
+              example:
+                max_content_length: 1000000
+                title: TAXII feeds
+                versions:
+                - application/taxii+json;version=2.1
+      x-verified-live:
+      - jwt
+  /api/taxii/1/collections/:
+    get:
+      tags:
+      - Threat intel (TAXII)
+      summary: List TAXII collections
+      description: "Lists every TAXII collection the caller is allowed to see. Each entry carries `can_read` / `can_write`\
+        \ permissions and the media types the collection accepts.\n\nThe seven default collections shipped with FortiSOAR\
+        \ \u2014 FortiGuard Outbreak / Phishing / Threat Intel feeds, Block List (Domain / URL / IP), and **Custom** \u2014\
+        \ are all read-only. Writable collections need to be provisioned explicitly.\n\n**Auth coverage:** `Bearer JWT: OK`"
+      responses:
+        '200':
+          description: Collections list.
+          content:
+            application/json:
+              example:
+                collections:
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: FortiGuard Outbreak Threat Feeds
+                  title: FortiGuard Outbreak Threat Feeds
+                  uuid: <uuid>
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: Phishing Threat Feeds
+                  title: Phishing Threat Feeds
+                  uuid: <uuid>
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: FortiGuard Threat Intel Feeds
+                  title: FortiGuard Threat Intel Feeds
+                  uuid: <uuid>
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: Block List (Domain)
+                  title: Block List (Domain)
+                  uuid: <uuid>
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: Block List (URL)
+                  title: Block List (URL)
+                  uuid: <uuid>
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: Block List (IP Address)
+                  title: Block List (IP Address)
+                  uuid: <uuid>
+                - can_read: true
+                  can_write: false
+                  id: <uuid>
+                  media_types:
+                  - application/stix+json;version=2.1
+                  name: Custom
+                  title: Custom
+                  uuid: <uuid>
+      x-verified-live:
+      - jwt
+  /api/taxii/1/collections/{uuid}/:
+    parameters:
+    - &id022
+      name: uuid
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      tags:
+      - Threat intel (TAXII)
+      summary: Get one TAXII collection
+      description: "Returns metadata for a single TAXII collection \u2014 name, title, read/write permissions, supported media\
+        \ types.\n\n**Auth coverage:** `Bearer JWT: OK`"
+      responses:
+        '200':
+          description: Collection descriptor.
+          content:
+            application/json:
+              example:
+                can_read: true
+                can_write: false
+                id: <uuid>
+                media_types:
+                - application/stix+json;version=2.1
+                name: FortiGuard Outbreak Threat Feeds
+                title: FortiGuard Outbreak Threat Feeds
+                uuid: <uuid>
+      x-verified-live:
+      - jwt
+  /api/taxii/1/collections/{uuid}/objects/:
+    parameters:
+    - *id022
+    get:
+      tags:
+      - Threat intel (TAXII)
+      summary: Fetch STIX objects from a collection
+      description: "Returns STIX 2.1 objects from the collection. The response envelope is `{totalItems, objects: []}` \u2014\
+        \ a FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next` cursor. Use `limit` + `added_after` to paginate.\n\
+        \n**Auth coverage:** `Bearer JWT: OK`"
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+        description: Maximum number of objects to return.
+      - name: added_after
+        in: query
+        schema:
+          type: string
+          format: date-time
+        description: Only return objects added to the collection after this ISO-8601 timestamp.
+      responses:
+        '200':
+          description: Objects envelope.
+          content:
+            application/json:
+              example:
+                objects: []
+                totalItems: 0
+      x-verified-live:
+      - jwt
+  /api/taxii/1/collections/{uuid}/objects/{stixId}/:
+    parameters:
+    - *id022
+    - name: stixId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: STIX object id (e.g. `indicator--<uuid>`).
+    get:
+      tags:
+      - Threat intel (TAXII)
+      summary: Fetch one STIX object
+      description: 'Returns the same `{totalItems, objects: []}` envelope as the collection-level `objects/` endpoint, filtered
+        to the single object whose STIX id matches.
+
+
+        **Auth coverage:** `Bearer JWT: OK`'
+      responses:
+        '200':
+          description: Single-object envelope.
+          content:
+            application/json:
+              example:
+                objects: []
+                totalItems: 0
+      x-verified-live:
+      - jwt
+  /api/taxii/1/collections/{uuid}/manifest/:
+    parameters:
+    - *id022
+    get:
+      tags:
+      - Threat intel (TAXII)
+      summary: Fetch the collection manifest
+      description: "Returns one entry per object in the collection \u2014 id, date added, version, media type \u2014 without\
+        \ the object bodies. Useful for cheap \"what's new since X\" polls before pulling full STIX content.\n\n**Auth coverage:**\
+        \ `Bearer JWT: OK`"
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: added_after
+        in: query
+        schema:
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: Manifest envelope.
+          content:
+            application/json:
+              example:
+                objects: []
+                totalItems: 0
+      x-verified-live:
+      - jwt
   /api/query/{collection}:
     parameters:
     - name: collection
@@ -7870,7 +8193,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: &id022
+            schema: &id023
               type: object
               required:
               - startDate
@@ -8009,7 +8332,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: *id022
+            schema: *id023
             example:
               filters: []
               logic: AND
@@ -8183,37 +8506,37 @@ paths:
         \ \u2014 tag allow/deny lists.\n\nEach `hydra:member` entry has `status` (one of `incipient`, `active`, `pending`,\
         \ `running`, `finished`, `failed`, `awaiting`, `skipped`, `terminated`, `paused`) and `@id` \u2014 the trailing segment\
         \ is the workflow pk used by the per-run detail GET.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: &id023
-      - &id024
+      parameters: &id024
+      - &id025
         name: format
         in: query
         schema:
           type: string
           default: json
-      - &id025
+      - &id026
         name: limit
         in: query
         schema:
           type: integer
         description: Maximum number of results to return per page.
-      - &id026
+      - &id027
         name: offset
         in: query
         schema:
           type: integer
         description: Index from which to start returning results.
-      - &id027
+      - &id028
         name: ordering
         in: query
         schema:
           type: string
         description: 'Sort field; prefix `-` for descending. Common: `-modified`, `-created`.'
-      - &id028
+      - &id029
         name: page
         in: query
         schema:
           type: integer
-      - &id029
+      - &id030
         name: status
         in: query
         schema:
@@ -8230,53 +8553,53 @@ paths:
           - terminated
           - paused
         description: Filter by run state.
-      - &id030
+      - &id031
         name: task_id
         in: query
         schema:
           type: string
         description: Match the `task_id` returned by a trigger POST. Pair with `parent_wf__isnull=True` to skip sub-playbook
           children.
-      - &id031
+      - &id032
         name: template_iri
         in: query
         schema:
           type: string
         description: Filter by playbook IRI (e.g. `/api/3/workflows/<uuid>`). Returns history for that specific playbook.
-      - &id032
+      - &id033
         name: records
         in: query
         schema:
           type: string
         description: Filter by record IRI (e.g. `/api/3/alerts/<uuid>`). Returns runs that executed against that record.
-      - &id033
+      - &id034
         name: created_after
         in: query
         schema:
           type: string
           format: date
         description: Inclusive lower bound on `created` (ISO date, e.g. `2024-11-08`). Pair with `created_before` for a window.
-      - &id034
+      - &id035
         name: created_before
         in: query
         schema:
           type: string
           format: date
         description: Inclusive upper bound on `created` (ISO date).
-      - &id035
+      - &id036
         name: parent_wf__isnull
         in: query
         schema:
           type: boolean
         description: '`True` filters out sub-playbook children (only parent runs returned). On `/historical-workflows/` the
           equivalent flag is `parent__isnull`.'
-      - &id036
+      - &id037
         name: tags_include
         in: query
         schema:
           type: string
         description: Comma-separated tag allowlist - only runs carrying any of these tags are returned.
-      - &id037
+      - &id038
         name: tags_exclude
         in: query
         schema:
@@ -8921,7 +9244,7 @@ paths:
         \nPagination + sort + filter params are passed in the query string; the request body is empty `{}`. Pair `task_id=<uuid>`\
         \ with `parent_wf__isnull=True` to skip sub-playbook child runs.\n\nExample: `POST /api/wf/api/workflows/log_list/?format=json&limit=10&offset=0&ordering=-modified&page=1&task_id=c762219d-947a-483e-8818-e2795dbc1b7b&parent_wf__isnull=True`\n\
         \n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: *id023
+      parameters: *id024
       requestBody:
         required: false
         content:
@@ -8976,7 +9299,6 @@ paths:
         \ on the recent endpoint).\n\nUse `GET /api/wf/api/workflows/count?logs=all` for a combined count across recent +\
         \ historical.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
-      - *id024
       - *id025
       - *id026
       - *id027
@@ -8990,6 +9312,7 @@ paths:
       - *id035
       - *id036
       - *id037
+      - *id038
       - name: parent__isnull
         in: query
         schema:
@@ -43961,7 +44284,7 @@ paths:
       description: "Response envelope is a custom shape (`status`, `totalItems`, `data[]`), **not** a Hydra collection. Each\
         \ `data[]` entry carries an integer `id`, `name`, `version`, `status` (e.g. `Completed`).\n\n**Auth coverage:** `API-KEY:\
         \ OK` \xB7 `Bearer JWT: OK`"
-      parameters: &id038
+      parameters: &id039
       - name: page_size
         in: query
         schema:
@@ -44038,7 +44361,7 @@ paths:
       description: "Returns the same envelope shape as `/api/integration/connectors/` (`data[]`, not Hydra). Each entry has\
         \ `id` (int), `config_id` (uuid), `connector` (int connector id), `agent` (self-agent hash when remote), `config`\
         \ (field map).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
-      parameters: *id038
+      parameters: *id039
       responses:
         '200':
           description: Collection envelope.

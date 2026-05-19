@@ -796,6 +796,66 @@ PATHS["/api/ingest-feeds/indicators"] = {
     },
 }
 
+PATHS["/api/ingest-feeds/observables"] = {
+    "post": {
+        "tags": ["Bulk operations"],
+        "summary": "Observables bulk ingest",
+        "description": (
+            "Bulk-insert observables (the lower-level \"anything that can be seen on the wire\" record type "
+            "that sits below indicators). Same trigger-bypass behavior as `/api/ingest-feeds/indicators`. "
+            "Payload field names follow the `observables` module schema — see `GET /api/3/contexts/Observable`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
+        "responses": {"200": _resp("Ingest result.")},
+    },
+}
+
+PATHS["/api/ingest-feeds/stix-bundle"] = {
+    "post": {
+        "tags": ["Bulk operations"],
+        "summary": "STIX bundle ingest",
+        "description": (
+            "Accepts a STIX 2.x bundle and fans it out into FortiSOAR's threat-intel record types "
+            "(indicators, threat actors, campaigns, malware, attack patterns, etc.) according to each "
+            "STIX object's `type`. Bypasses on-create playbook triggers like the rest of the "
+            "`/api/ingest-feeds/*` family.\n\n"
+            "For pull-based STIX/TAXII ingest, consume FortiSOAR's own TAXII server at `/api/taxii/1/` "
+            "(see the **Threat intel (TAXII)** tag)."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {"200": _resp("Ingest result.")},
+    },
+}
+
+PATHS["/api/ingest-feeds/threatintel"] = {
+    "post": {
+        "tags": ["Bulk operations"],
+        "summary": "Threat-intel records bulk ingest",
+        "description": (
+            "Bulk-insert records into the `threat_intel` module — the top-level container that links "
+            "indicators, campaigns, threat actors, and reports together. Field names match the "
+            "`threat_intel` module schema (see `GET /api/3/contexts/ThreatIntel`). Trigger-bypass applies."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
+        "responses": {"200": _resp("Ingest result.")},
+    },
+}
+
+PATHS["/api/ingest-feeds/reputation"] = {
+    "post": {
+        "tags": ["Bulk operations"],
+        "summary": "Reputation scores bulk ingest",
+        "description": (
+            "Bulk-upsert reputation scores for indicators / observables. Used by enrichment pipelines "
+            "that score IOCs from multiple sources and need to write the result back without firing "
+            "playbook triggers. Field names match the reputation record type — see "
+            "`GET /api/3/contexts/Reputation` for the schema."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
+        "responses": {"200": _resp("Ingest result.")},
+    },
+}
+
 PATHS["/api/insert-feeds/{recordType}"] = {
     "parameters": [{"name": "recordType", "in": "path", "required": True, "schema": {"type": "string"}}],
     "post": {
@@ -804,6 +864,113 @@ PATHS["/api/insert-feeds/{recordType}"] = {
         "description": "Generalization of `/api/ingest-feeds/indicators` for any record type. Same trigger-skipping behavior.",
         "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
         "responses": {"200": _resp("Ingest result.")},
+    },
+}
+
+# --- TAXII 2.1 server (read-only) -----------------------------------------
+# FortiSOAR exposes a non-standard TAXII layout: api-root is `/api/taxii/1/`
+# (no separate discovery / api-root / status endpoints), and the objects /
+# manifest envelope is `{totalItems, objects: []}` rather than the standard
+# `more` / `next` cursor. POST to `objects/` is not routed on tested builds.
+
+_TAXII_COLLECTION_UUID_PARAM = {
+    "name": "uuid", "in": "path", "required": True,
+    "schema": {"type": "string", "format": "uuid"},
+}
+
+PATHS["/api/taxii/1/"] = {
+    "get": {
+        "tags": ["Threat intel (TAXII)"],
+        "summary": "TAXII server info",
+        "description": (
+            "Returns the server descriptor: title, supported TAXII versions, and the maximum content "
+            "length the server accepts for client uploads. This is the TAXII entry point — clients "
+            "typically call this first to confirm protocol compatibility."
+        ),
+        "responses": {"200": _resp("TAXII server descriptor.")},
+    },
+}
+
+PATHS["/api/taxii/1/collections/"] = {
+    "get": {
+        "tags": ["Threat intel (TAXII)"],
+        "summary": "List TAXII collections",
+        "description": (
+            "Lists every TAXII collection the caller is allowed to see. Each entry carries `can_read` / "
+            "`can_write` permissions and the media types the collection accepts.\n\n"
+            "The seven default collections shipped with FortiSOAR — FortiGuard Outbreak / Phishing / "
+            "Threat Intel feeds, Block List (Domain / URL / IP), and **Custom** — are all read-only. "
+            "Writable collections need to be provisioned explicitly."
+        ),
+        "responses": {"200": _resp("Collections list.")},
+    },
+}
+
+PATHS["/api/taxii/1/collections/{uuid}/"] = {
+    "parameters": [_TAXII_COLLECTION_UUID_PARAM],
+    "get": {
+        "tags": ["Threat intel (TAXII)"],
+        "summary": "Get one TAXII collection",
+        "description": (
+            "Returns metadata for a single TAXII collection — name, title, read/write permissions, "
+            "supported media types."
+        ),
+        "responses": {"200": _resp("Collection descriptor.")},
+    },
+}
+
+PATHS["/api/taxii/1/collections/{uuid}/objects/"] = {
+    "parameters": [_TAXII_COLLECTION_UUID_PARAM],
+    "get": {
+        "tags": ["Threat intel (TAXII)"],
+        "summary": "Fetch STIX objects from a collection",
+        "description": (
+            "Returns STIX 2.1 objects from the collection. The response envelope is "
+            "`{totalItems, objects: []}` — a FortiSOAR-specific shape, not the standard TAXII 2.1 "
+            "`more` / `next` cursor. Use `limit` + `added_after` to paginate."
+        ),
+        "parameters": [
+            {"name": "limit", "in": "query", "schema": {"type": "integer"},
+             "description": "Maximum number of objects to return."},
+            {"name": "added_after", "in": "query", "schema": {"type": "string", "format": "date-time"},
+             "description": "Only return objects added to the collection after this ISO-8601 timestamp."},
+        ],
+        "responses": {"200": _resp("Objects envelope.")},
+    },
+}
+
+PATHS["/api/taxii/1/collections/{uuid}/objects/{stixId}/"] = {
+    "parameters": [
+        _TAXII_COLLECTION_UUID_PARAM,
+        {"name": "stixId", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "STIX object id (e.g. `indicator--<uuid>`)."},
+    ],
+    "get": {
+        "tags": ["Threat intel (TAXII)"],
+        "summary": "Fetch one STIX object",
+        "description": (
+            "Returns the same `{totalItems, objects: []}` envelope as the collection-level `objects/` "
+            "endpoint, filtered to the single object whose STIX id matches."
+        ),
+        "responses": {"200": _resp("Single-object envelope.")},
+    },
+}
+
+PATHS["/api/taxii/1/collections/{uuid}/manifest/"] = {
+    "parameters": [_TAXII_COLLECTION_UUID_PARAM],
+    "get": {
+        "tags": ["Threat intel (TAXII)"],
+        "summary": "Fetch the collection manifest",
+        "description": (
+            "Returns one entry per object in the collection — id, date added, version, media type — "
+            "without the object bodies. Useful for cheap \"what's new since X\" polls before pulling "
+            "full STIX content."
+        ),
+        "parameters": [
+            {"name": "limit", "in": "query", "schema": {"type": "integer"}},
+            {"name": "added_after", "in": "query", "schema": {"type": "string", "format": "date-time"}},
+        ],
+        "responses": {"200": _resp("Manifest envelope.")},
     },
 }
 
@@ -2012,6 +2179,7 @@ TAG_GROUPS = [
     {"name": "Query", "tags": ["Query"]},
     {"name": "Audit", "tags": ["Audit"]},
     {"name": "Automation", "tags": ["Workflows", "Triggers", "Connectors"]},
+    {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
     {"name": "Reference", "tags": ["Metadata", "Files", "Import / export"]},
 ]
 
@@ -2052,6 +2220,19 @@ TAG_DESCRIPTIONS = {
         "5. **Bulk fetch with plaintext** — `POST /api/auth/query/users` with `{users: [<uuid>, ...], show_api_key: true}` (only returns plaintext for keys whose user was created with `retrievable_mode` enabled in `/api/auth/config`)."
     ),
     "Import / export": "Configuration import/export. Read the `import_jobs` description carefully - the inline-envelope shape is a silent no-op.",
+    "Threat intel (TAXII)": (
+        "TAXII 2.1 server exposing FortiSOAR threat-intel collections (FortiGuard feeds, block lists, "
+        "and any custom collections you create). Discovery lives at `/api/taxii/1/`; collections, "
+        "objects, and manifest endpoints follow.\n\n"
+        "The server is **read-only**: every default collection advertises `can_write: false` and "
+        "`POST` to `objects/` is not routed. To push STIX into FortiSOAR, use "
+        "`POST /api/ingest-feeds/stix-bundle` instead.\n\n"
+        "Response envelope for `objects/` and `manifest/` is `{totalItems, objects: []}` — a "
+        "FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next` cursor. Paginate with "
+        "`?limit=` and `?added_after=<ISO-8601>`.\n\n"
+        "All responses use `Content-Type: application/taxii+json;version=2.1`; collection "
+        "`media_types` advertise `application/stix+json;version=2.1`."
+    ),
 }
 
 
