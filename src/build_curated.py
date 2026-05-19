@@ -950,7 +950,12 @@ PATHS["/api/taxii/1/collections/{uuid}/objects/{stixId}/"] = {
         "summary": "Fetch one STIX object",
         "description": (
             "Returns the same `{totalItems, objects: []}` envelope as the collection-level `objects/` "
-            "endpoint, filtered to the single object whose STIX id matches."
+            "endpoint, filtered to the single object whose STIX id matches.\n\n"
+            "**Known issue (FSR 7.6.5):** this route returns an empty envelope "
+            "(`{totalItems: 0, objects: []}`) for every form of `stixId` we tested — bare record "
+            "uuid, `indicator--<uuid>`, the listing's own `id` field, with or without `?stix=2.1`. "
+            "The collection-level `objects/` endpoint works; use it and filter client-side until "
+            "this is fixed upstream."
         ),
         "responses": {"200": _resp("Single-object envelope.")},
     },
