@@ -1135,6 +1135,73 @@ def scenario_comments_crud(s: Session) -> None:
     s.request("DELETE", f"/api/3/incidents/{parent_uuid}")
 
 
+@scenario("taxii_and_feed_ingest")
+def scenario_taxii_and_feed_ingest(s: Session) -> None:
+    """TAXII 2.1 server reads + the `/api/ingest-feeds/*` POST family.
+
+    TAXII calls walk: root -> collections -> single collection -> objects ->
+    one-object -> manifest. UUIDs come from the live collections list so the
+    scenario survives appliance-to-appliance differences.
+
+    The ingest-feeds POSTs accept either 200 (real ingest) or 400 (schema
+    rejection on the safe stub payload). Both outcomes record per-auth
+    coverage; failure bodies are intentionally not persisted (see `_scrub`'s
+    contract -- only <400 bodies are kept).
+    """
+    print("[taxii] root + collections")
+    s.call("GET", "/api/taxii/1/", want=200)
+    _, cols = s.call("GET", "/api/taxii/1/collections/", want=200)
+    collections = (cols or {}).get("collections") or []
+    assert collections, "no TAXII collections returned"
+    cid = collections[0].get("uuid") or collections[0].get("id")
+    assert cid, "no uuid on first TAXII collection"
+
+    print(f"[taxii] single collection {cid}")
+    s.call("GET", "/api/taxii/1/collections/{uuid}/", want=200,
+           path_params={"uuid": cid})
+
+    print("[taxii] objects + manifest")
+    s.call("GET", "/api/taxii/1/collections/{uuid}/objects/", want=200,
+           path_params={"uuid": cid}, params={"limit": 2})
+    # Use a synthetic STIX id; an empty `{totalItems, objects: []}` envelope
+    # is the expected shape whether or not the id matches.
+    stix_id = "indicator--11111111-1111-1111-1111-111111111111"
+    s.call("GET", "/api/taxii/1/collections/{uuid}/objects/{stixId}/", want=200,
+           path_params={"uuid": cid, "stixId": stix_id})
+    s.call("GET", "/api/taxii/1/collections/{uuid}/manifest/", want=200,
+           path_params={"uuid": cid}, params={"limit": 2})
+
+    # FortiSOAR's TAXII server is read-only on this build: POST returns 404
+    # (no route), not 405 — so we don't claim a POST operation in the spec.
+
+    print("[feed-ingest] sibling POSTs (observables / stix-bundle / threatintel / reputation)")
+    # The existing `/api/ingest-feeds/indicators` is exercised elsewhere; the
+    # four siblings below have undocumented payload schemas, so we accept 400
+    # alongside 200 to record per-auth coverage without false-failing the run.
+    s.call("POST", "/api/ingest-feeds/observables", want=(200, 400),
+           json=[{"value": "198.51.100.10", "type": "IP Address",
+                  "source": "live-test"}])
+    s.call("POST", "/api/ingest-feeds/stix-bundle", want=(200, 400),
+           json={
+               "type": "bundle",
+               "id": "bundle--00000000-0000-0000-0000-000000000001",
+               "objects": [{
+                   "type": "indicator", "spec_version": "2.1",
+                   "id": "indicator--33333333-3333-3333-3333-333333333333",
+                   "created": "2025-01-01T00:00:00.000Z",
+                   "modified": "2025-01-01T00:00:00.000Z",
+                   "pattern": "[ipv4-addr:value = '198.51.100.20']",
+                   "pattern_type": "stix",
+                   "valid_from": "2025-01-01T00:00:00Z",
+               }],
+           })
+    s.call("POST", "/api/ingest-feeds/threatintel", want=(200, 400),
+           json=[{"name": s.live_name("ti-record"), "source": "live-test"}])
+    s.call("POST", "/api/ingest-feeds/reputation", want=(200, 400),
+           json=[{"value": "198.51.100.30", "type": "IP Address",
+                  "reputation": "Suspicious", "source": "live-test"}])
+
+
 # --- CLI -----------------------------------------------------------------
 
 def main() -> int:
