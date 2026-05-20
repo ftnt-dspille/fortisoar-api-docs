@@ -121,6 +121,10 @@ class Session:
     #   {"METHOD path_template": {"by_auth": {"jwt": {...}, "apikey": {...}}}}
     # The build step uses these to populate the spec's examples per auth mode.
     observations: dict[str, dict] = field(default_factory=dict)
+    # (method, url, status, location) for any response that was a 3xx before
+    # we followed it. Surfaced at the end of the run so we can flag routes
+    # whose curl examples need `-L`.
+    redirects: list[tuple[str, str, int, str]] = field(default_factory=list)
 
     def set_auth(self, mode: str) -> None:
         if mode not in self.auth_modes:
@@ -130,8 +134,14 @@ class Session:
 
     def request(self, method: str, path: str, **kw) -> requests.Response:
         url = f"{self.base}{path}"
+        kw.setdefault("allow_redirects", False)
         r = requests.request(method, url, headers=self.headers, verify=self.verify,
                              timeout=self.timeout, **kw)
+        if 300 <= r.status_code < 400 and r.headers.get("Location"):
+            self.redirects.append((method.upper(), url, r.status_code, r.headers["Location"]))
+            kw["allow_redirects"] = True
+            r = requests.request(method, url, headers=self.headers, verify=self.verify,
+                                 timeout=self.timeout, **kw)
         return r
 
     def call(
@@ -161,9 +171,15 @@ class Session:
             # right boundary. Don't mutate self.headers — copy.
             hdrs = {k: v for k, v in self.headers.items() if k.lower() != "content-type"}
             timeout = kw.pop("timeout", self.timeout)
-            r = requests.request(method, f"{self.base}{path}",
-                                 headers=hdrs, verify=self.verify, timeout=timeout,
-                                 files=files, **kw)
+            url = f"{self.base}{path}"
+            kw.setdefault("allow_redirects", False)
+            r = requests.request(method, url, headers=hdrs, verify=self.verify,
+                                 timeout=timeout, files=files, **kw)
+            if 300 <= r.status_code < 400 and r.headers.get("Location"):
+                self.redirects.append((method.upper(), url, r.status_code, r.headers["Location"]))
+                kw["allow_redirects"] = True
+                r = requests.request(method, url, headers=hdrs, verify=self.verify,
+                                     timeout=timeout, files=files, **kw)
             captured_req: Any = {f: "<binary>" for f in files}
         else:
             r = self.request(method, path, **kw)
@@ -1150,7 +1166,7 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
     """
     print("[taxii] root + collections")
     s.call("GET", "/api/taxii/1/", want=200)
-    _, cols = s.call("GET", "/api/taxii/1/collections/", want=200)
+    _, cols = s.call("GET", "/api/taxii/1/collections", want=200)
     collections = (cols or {}).get("collections") or []
     assert collections, "no TAXII collections returned"
 
@@ -1161,7 +1177,7 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
                 continue
             # Use raw `request` so this probe doesn't overwrite the recorded
             # observation for the {uuid} objects op.
-            r = s.request("GET", f"/api/taxii/1/collections/{uid}/objects/",
+            r = s.request("GET", f"/api/taxii/1/collections/{uid}/objects",
                           params={"limit": 1})
             if r.status_code != 200:
                 continue
@@ -1183,7 +1199,7 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
         s.request("POST", "/api/ingest-feeds/indicators",
                   json=[{"value": "198.51.100.42", "type": "IP Address",
                          "source": "live-test", "reputation": "Suspicious"}])
-        r = s.request("GET", "/api/taxii/1/collections/")
+        r = s.request("GET", "/api/taxii/1/collections")
         try:
             cols2 = r.json() if r.status_code == 200 else {}
         except ValueError:
@@ -1196,18 +1212,21 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
         count = 0
     assert cid, "no uuid on any TAXII collection"
     print(f"[taxii] using collection {cid} ({count} objects)")
-    s.call("GET", "/api/taxii/1/collections/{uuid}/", want=200,
+    s.call("GET", "/api/taxii/1/collections/{uuid}", want=200,
            path_params={"uuid": cid})
 
     print("[taxii] objects + manifest")
-    s.call("GET", "/api/taxii/1/collections/{uuid}/objects/", want=200,
-           path_params={"uuid": cid}, params={"limit": 2})
-    # Use a synthetic STIX id; an empty `{totalItems, objects: []}` envelope
-    # is the expected shape whether or not the id matches.
-    stix_id = "indicator--11111111-1111-1111-1111-111111111111"
-    s.call("GET", "/api/taxii/1/collections/{uuid}/objects/{stixId}/", want=200,
+    _, objs_body = s.call("GET", "/api/taxii/1/collections/{uuid}/objects",
+                          want=200, path_params={"uuid": cid},
+                          params={"limit": 2})
+    # Pull a real STIX id from the listing so the single-object fetch returns
+    # a populated bundle instead of an empty `{totalItems: 0, objects: []}`.
+    listed = (objs_body or {}).get("objects") or []
+    stix_id = next((o.get("id") for o in listed if o.get("id")),
+                   "indicator--11111111-1111-1111-1111-111111111111")
+    s.call("GET", "/api/taxii/1/collections/{uuid}/objects/{stixId}", want=200,
            path_params={"uuid": cid, "stixId": stix_id})
-    s.call("GET", "/api/taxii/1/collections/{uuid}/manifest/", want=200,
+    s.call("GET", "/api/taxii/1/collections/{uuid}/manifest", want=200,
            path_params={"uuid": cid}, params={"limit": 2})
 
     # FortiSOAR's TAXII server is read-only on this build: POST returns 404
@@ -1321,6 +1340,22 @@ def main() -> int:
         OBSERVATIONS_PATH.write_text(json.dumps(prior, indent=2, sort_keys=True))
         print(f"--- observations: wrote {len(s.observations)} op(s) "
               f"(total {len(prior)}) to {OBSERVATIONS_PATH.relative_to(ROOT)} ---")
+
+    if s.redirects:
+        # Dedupe on (method, url-path-only, status, location) so a route hit
+        # under both auth modes shows once. Strip the base URL for readability.
+        seen: set[tuple[str, str, int, str]] = set()
+        rows: list[tuple[str, str, int, str]] = []
+        for method, url, status, location in s.redirects:
+            path = url[len(s.base):] if url.startswith(s.base) else url
+            key = (method, path, status, location)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(key)
+        print(f"\n--- redirects observed ({len(rows)} unique) ---")
+        for method, path, status, location in rows:
+            print(f"  {status} {method} {path}  ->  {location}")
 
     if failed:
         print(f"\n{len(failed)} scenario(s) failed: {', '.join(failed)}", file=sys.stderr)
