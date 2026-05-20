@@ -891,7 +891,7 @@ PATHS["/api/taxii/1/"] = {
     },
 }
 
-PATHS["/api/taxii/1/collections/"] = {
+PATHS["/api/taxii/1/collections"] = {
     "get": {
         "tags": ["Threat intel (TAXII)"],
         "summary": "List TAXII collections",
@@ -906,7 +906,7 @@ PATHS["/api/taxii/1/collections/"] = {
     },
 }
 
-PATHS["/api/taxii/1/collections/{uuid}/"] = {
+PATHS["/api/taxii/1/collections/{uuid}"] = {
     "parameters": [_TAXII_COLLECTION_UUID_PARAM],
     "get": {
         "tags": ["Threat intel (TAXII)"],
@@ -919,7 +919,7 @@ PATHS["/api/taxii/1/collections/{uuid}/"] = {
     },
 }
 
-PATHS["/api/taxii/1/collections/{uuid}/objects/"] = {
+PATHS["/api/taxii/1/collections/{uuid}/objects"] = {
     "parameters": [_TAXII_COLLECTION_UUID_PARAM],
     "get": {
         "tags": ["Threat intel (TAXII)"],
@@ -939,7 +939,7 @@ PATHS["/api/taxii/1/collections/{uuid}/objects/"] = {
     },
 }
 
-PATHS["/api/taxii/1/collections/{uuid}/objects/{stixId}/"] = {
+PATHS["/api/taxii/1/collections/{uuid}/objects/{stixId}"] = {
     "parameters": [
         _TAXII_COLLECTION_UUID_PARAM,
         {"name": "stixId", "in": "path", "required": True, "schema": {"type": "string"},
@@ -961,7 +961,7 @@ PATHS["/api/taxii/1/collections/{uuid}/objects/{stixId}/"] = {
     },
 }
 
-PATHS["/api/taxii/1/collections/{uuid}/manifest/"] = {
+PATHS["/api/taxii/1/collections/{uuid}/manifest"] = {
     "parameters": [_TAXII_COLLECTION_UUID_PARAM],
     "get": {
         "tags": ["Threat intel (TAXII)"],
