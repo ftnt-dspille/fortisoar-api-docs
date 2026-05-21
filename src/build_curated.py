@@ -1820,6 +1820,244 @@ PATHS["/api/integration/configuration/{config_id}/"] = {
 # operations-discovery block above (placed before /execute/ in the spec
 # so the discovery endpoint reads first in the lifecycle).
 
+# --- Connector lifecycle on a remote agent ---------------------------------
+#
+# These three routes target connectors that live on a **remote agent** rather
+# than the appliance's self-agent. They sit alongside `/api/integration/*` and
+# are tagged Connectors so they group with the rest of the lifecycle.
+
+PATHS["/api/integration/install-connector/"] = {
+    "post": {"tags": ["Connectors"],
+             "summary": "Install a connector on an agent",
+             "description": (
+                 "Installs (or re-installs) a connector on a specific remote agent. The "
+                 "appliance proxies the install to the named agent over SME; the response is "
+                 "the same envelope shape as the rest of `/api/integration/*` (`status`, "
+                 "`data`).\n\n"
+                 "**Body fields:**\n"
+                 "- `name` (required) - connector name (e.g. `hello-world`).\n"
+                 "- `version` (required) - connector version (e.g. `1.0.4`).\n"
+                 "- `agent_id` (required for remote install) - the agent's hash identifier "
+                 "  (the `agent` value from `GET /api/integration/configuration/?agent=...`, "
+                 "  not the agent record uuid). Omit to target the self-agent.\n\n"
+                 "Use `PUT` on the same path to upgrade an installed connector to a different "
+                 "version, and `DELETE` to uninstall it from the agent."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "required": ["name", "version"], "properties": {
+                     "name": {"type": "string"},
+                     "version": {"type": "string"},
+                     "agent_id": {"type": "string",
+                                  "description": "Agent hash identifier. Omit to install on the appliance's self-agent."},
+                 }},
+             }}},
+             "responses": {"200": _resp("Install accepted.")}},
+    "put": {"tags": ["Connectors"],
+            "summary": "Upgrade a connector on an agent",
+            "description": (
+                "Upgrades an installed connector on a remote agent to the version supplied in "
+                "the body. Same body shape as `POST`."
+            ),
+            "requestBody": {"required": True, "content": {"application/json": {
+                "schema": {"type": "object", "required": ["name", "version"], "properties": {
+                    "name": {"type": "string"},
+                    "version": {"type": "string"},
+                    "agent_id": {"type": "string"},
+                }},
+            }}},
+            "responses": {"200": _resp("Upgrade accepted.")}},
+    "delete": {"tags": ["Connectors"],
+               "summary": "Uninstall a connector from an agent",
+               "description": (
+                   "Uninstalls the named connector from the supplied agent. Distinct from "
+                   "`DELETE /api/integration/connectors/{id}/`, which uninstalls from the "
+                   "appliance's self-agent by integer id."
+               ),
+               "requestBody": {"required": True, "content": {"application/json": {
+                   "schema": {"type": "object", "required": ["name", "version"], "properties": {
+                       "name": {"type": "string"},
+                       "version": {"type": "string"},
+                       "agent_id": {"type": "string"},
+                   }},
+               }}},
+               "responses": {"200": _resp("Uninstall accepted.")}},
+}
+
+PATHS["/api/integration/connectors/agents/{name}/{version}/"] = {
+    "parameters": [
+        {"name": "name", "in": "path", "required": True,
+         "schema": {"type": "string"},
+         "description": "Connector name (e.g. `hello-world`)."},
+        {"name": "version", "in": "path", "required": True,
+         "schema": {"type": "string"},
+         "description": "Connector version (e.g. `1.0.4`)."},
+    ],
+    "get": {"tags": ["Connectors"],
+            "summary": "List agents that have this connector installed",
+            "description": (
+                "Returns the set of agents on which the named `{name}/{version}` connector is "
+                "installed, alongside per-agent install status. Use this to discover which "
+                "remote agents already have a given connector before issuing "
+                "`POST /api/integration/install-connector/` or "
+                "`POST /api/integration/configuration/` with an `agent` value."
+            ),
+            "responses": {"200": _resp("Per-agent install records.")}},
+}
+
+PATHS["/api/integration/agent-heartbeat/{agent}/"] = {
+    "parameters": [
+        {"name": "agent", "in": "path", "required": True,
+         "schema": {"type": "string"},
+         "description": (
+             "Agent hash identifier (the `agent` field returned in `GET /api/integration/configuration/`, "
+             "not the agent record uuid)."
+         )},
+    ],
+    "get": {"tags": ["Connectors"],
+            "summary": "Agent heartbeat probe",
+            "description": (
+                "Round-trips a heartbeat message to the named remote agent over SME and "
+                "returns its liveness response. Independent of the agent record's "
+                "`configurationHealth.itemValue` field, which is updated asynchronously: this "
+                "probe surfaces the current state of the SME bus to the agent."
+            ),
+            "responses": {"200": _resp("Heartbeat reply.")}},
+}
+
+
+# --- Agents / SME router ---------------------------------------------------
+#
+# Agent records are exposed through the generic `/api/3/{collection}` template,
+# but creation returns a one-shot payload (encryption key, rabbit password,
+# vhost, username) that the installer needs and that no other module returns.
+# Documenting agents explicitly keeps that contract visible.
+
+_AGENT_CREATE_PROPS = {
+    "name": {"type": "string",
+             "description": "Display name shown in the FortiSOAR UI."},
+    "router": {"type": "string",
+               "description": "IRI of the SME router (`@id` from `GET /api/3/routers`)."},
+    "installerType": {"type": "string",
+                      "description": (
+                          "Picklist IRI selecting the installer flavour. The two values are stable across "
+                          "installs: `/api/3/picklists/a8181039-30a0-4807-b470-50de69d37561` (bash) and "
+                          "`/api/3/picklists/d9f874be-3068-4282-9aed-100eba51e61b` (docker)."
+                      )},
+    "description": {"type": "string",
+                    "description": "Free-text. Useful for tagging records owned by automation."},
+}
+
+PATHS["/api/3/agents"] = {
+    "get": {"tags": ["Agents"], "summary": "List agents",
+            "description": (
+                "Hydra collection of agent records. The appliance's **Self agent** is included with "
+                "`role: self` and is hardcoded at uuid `973c17df-bb4b-41e5-b59c-a408666fdf27` on every "
+                "install; its `agentId` (the runtime `masterId` used in agent config) varies per "
+                "appliance and must be read from the response. Health is reported under "
+                "`configurationHealth.itemValue` - typical values are `Awaiting Remote Node Connection`, "
+                "`Remote Node Connected`, `Remote Node Unreachable`, and `Configuration In Progress`."
+            ),
+            "responses": {"200": _resp("Hydra collection of Agent.")}},
+    "post": {"tags": ["Agents"], "summary": "Create an agent record",
+             "description": (
+                 "Creates a remote-agent record on the FortiSOAR master and returns the one-shot "
+                 "credentials the installer needs.\n\n"
+                 "**Response carries (alongside the usual `uuid`, `@id`, `agentId`):**\n"
+                 "- `encryptionKey` - the peerwise key the installer bakes into the agent VM's keystore.\n"
+                 "- `username`, `password`, `vhost` - the messaging credentials the agent uses to dial SME.\n\n"
+                 "These secrets are returned **only once**; if the response is lost the record must be "
+                 "deleted and re-created. The newly-created record starts in `Awaiting Remote Node "
+                 "Connection`; it transitions to `Remote Node Connected` after the installer runs on "
+                 "the target VM.\n\n"
+                 "**Prerequisite:** the appliance must have an SME router configured "
+                 "(`GET /api/3/routers` non-empty). If it doesn't, run "
+                 "`sudo csadm secure-message-exchange enable` on the master first."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object",
+                            "required": ["name", "router", "installerType"],
+                            "properties": _AGENT_CREATE_PROPS},
+             }}},
+             "responses": {"201": _resp(
+                 "Agent record with one-shot installer credentials "
+                 "(`encryptionKey`, `username`, `password`, `vhost`).")}},
+}
+
+PATHS["/api/3/agents/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True,
+                    "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "get": {"tags": ["Agents"], "summary": "Get an agent record",
+            "description": (
+                "Returns the full agent record including `agentId`, `role`, `configurationHealth`, and "
+                "`router`. Polling this endpoint is how callers wait for `configurationHealth.itemValue` "
+                "to reach `Remote Node Connected` after running the installer.\n\n"
+                "**Self-agent lookup:** `GET /api/3/agents/973c17df-bb4b-41e5-b59c-a408666fdf27` returns "
+                "this appliance's Self agent on every install - use it to learn the appliance's "
+                "`agentId` (the runtime `masterId`)."
+            ),
+            "responses": {"200": _resp("Agent record.")}},
+    "delete": {"tags": ["Agents"], "summary": "Delete an agent record",
+               "description": (
+                   "Returns 204. Deleting the FSR-side record does **not** uninstall the agent on the "
+                   "remote VM - that requires SSH-level cleanup. After delete the record's `agentId` is "
+                   "released and a fresh `POST /api/3/agents` will mint a new one."
+               ),
+               "responses": {"204": {"description": "Deleted."}}},
+}
+
+PATHS["/api/3/routers"] = {
+    "get": {"tags": ["Agents"], "summary": "List SME routers",
+            "description": (
+                "Hydra collection of Secure Message Exchange (SME) router records. The "
+                "agent-creation flow reads the first member to populate the `router` IRI on "
+                "`POST /api/3/agents`. Per-item fields of interest:\n\n"
+                "- `@id` - the IRI passed as `router` when creating an agent.\n"
+                "- `address` - hostname the agent dials; **must match the router's TLS cert CN** "
+                "  (the agent VM typically needs an `/etc/hosts` entry mapping this to the appliance IP).\n"
+                "- `sni` - SNI value used in the TLS handshake (usually equals `address`).\n"
+                "- `certificate` - server CA in PEM, written to the agent VM as `ca_cert.pem`.\n\n"
+                "**Empty collection means SME isn't enabled.** Run "
+                "`sudo csadm secure-message-exchange enable` on the master before creating agents."
+            ),
+            "responses": {"200": _resp("Hydra collection of Router.")}},
+}
+
+PATHS["/api/integration/agent-installer/"] = {
+    "post": {"tags": ["Agents"], "summary": "Download the agent installer",
+             "description": (
+                 "Returns the per-agent installer binary (bash `.bin` or docker bundle, depending on "
+                 "the agent record's `installerType`).\n\n"
+                 "**Body fields:**\n"
+                 "- `agent` (required) - the `agentId` (not the uuid) returned by `POST /api/3/agents`.\n"
+                 "- `connectors` (optional) - list of connector IRIs to pre-bundle. Empty = base installer.\n"
+                 "- `include_last_known_configurations` (optional, boolean) - bake existing connector "
+                 "  configurations into the installer. Defaults to `false`.\n\n"
+                 "**Response is binary**, served as `application/octet-stream` (the `?format=json` query "
+                 "parameter only changes the envelope of error responses, not success). Successful "
+                 "payloads are several megabytes; anything under ~1 KB indicates a server-side error "
+                 "that returned HTTP 200 with a JSON error body.\n\n"
+                 "The bash installer ships with an unset `s_user_input=\"\"` placeholder near the top; "
+                 "automated installs patch that line with the agent's `encryptionKey` before running."
+             ),
+             "parameters": [
+                 {"name": "format", "in": "query", "required": False,
+                  "schema": {"type": "string", "enum": ["json"]},
+                  "description": "Forces JSON error envelopes; has no effect on the binary success body."},
+             ],
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "required": ["agent"], "properties": {
+                     "agent": {"type": "string",
+                               "description": "Agent `agentId` (from `POST /api/3/agents` response)."},
+                     "connectors": {"type": "array", "items": {"type": "string"},
+                                    "description": "Optional connector IRIs to pre-bundle."},
+                     "include_last_known_configurations": {"type": "boolean", "default": False},
+                 }},
+             }}},
+             "responses": {"200": {
+                 "description": "Installer binary.",
+                 "content": {"application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}}},
+}
+
 
 # --- Modules / metadata ----------------------------------------------------
 
@@ -2183,7 +2421,7 @@ TAG_GROUPS = [
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Query", "tags": ["Query"]},
     {"name": "Audit", "tags": ["Audit"]},
-    {"name": "Automation", "tags": ["Workflows", "Triggers", "Connectors"]},
+    {"name": "Automation", "tags": ["Workflows", "Triggers", "Connectors", "Agents"]},
     {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
     {"name": "Reference", "tags": ["Metadata", "Files", "Import / export"]},
 ]
@@ -2211,7 +2449,33 @@ TAG_DESCRIPTIONS = {
         "2. **Create a config** — `POST /api/integration/configuration/` with `name`, `connector` (integer id from step 1), and `config` (the connector's field values). Add `agent` only if you want the connector to run on a **remote agent**; omit it to use the appliance's self-agent. Response carries `config_id` (uuid).\n"
         "3. **Execute an action** — `POST /api/integration/execute/` with `connector` name, `version`, `operation`, `config` (the uuid from step 2), and `params`.\n"
         "4. **Health-check** — `GET /api/integration/connectors/healthcheck/{name}/{version}/?config=<uuid>` for the cheap variant (uses an existing config), or the POST form when re-sending a full config inline.\n"
-        "5. **Cleanup** — `DELETE /api/integration/configuration/{config_id}/` (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing slash is mandatory — without it you'll see `403 Could not validate HMAC fingerprint`."
+        "5. **Cleanup** — `DELETE /api/integration/configuration/{config_id}/` (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing slash is mandatory — without it you'll see `403 Could not validate HMAC fingerprint`.\n\n"
+        "**Targeting a remote agent:** to run a connector on a remote agent instead of the self-agent, "
+        "either include `agent` in the `POST /api/integration/configuration/` body (existing config on a "
+        "remote agent), or use the dedicated remote-install routes: "
+        "`POST /api/integration/install-connector/` with `name`, `version`, `agent_id` to push the "
+        "connector to a specific agent; `PUT` to upgrade and `DELETE` to uninstall on the same path. "
+        "`GET /api/integration/connectors/agents/{name}/{version}/` lists which agents already have the "
+        "connector installed, and `GET /api/integration/agent-heartbeat/{agent}/` probes the SME bus to "
+        "that agent."
+    ),
+    "Agents": (
+        "Remote-agent records, SME router discovery, and the per-agent installer download.\n\n"
+        "**Flow — discover router → create agent → download installer → verify:**\n\n"
+        "1. **Find the router** — `GET /api/3/routers` and read the first member's `@id` (router IRI) "
+        "and `certificate` (CA PEM for the agent VM). Empty collection means SME is not enabled on "
+        "the master; run `sudo csadm secure-message-exchange enable` first.\n"
+        "2. **Create the record** — `POST /api/3/agents` with `name`, `router` (IRI from step 1), and "
+        "`installerType` (bash or docker picklist IRI). Response carries `uuid`, `agentId`, "
+        "`encryptionKey`, `username`, `password`, `vhost` — **the secrets are returned only once**.\n"
+        "3. **Download the installer** — `POST /api/integration/agent-installer/` with the `agentId` "
+        "from step 2. Response is a binary installer (`application/octet-stream`).\n"
+        "4. **Verify** — poll `GET /api/3/agents/{uuid}` until `configurationHealth.itemValue` reaches "
+        "`Remote Node Connected`. New records start in `Awaiting Remote Node Connection`.\n\n"
+        "**Self-agent constants:** the appliance's own Self agent record is hardcoded at uuid "
+        "`973c17df-bb4b-41e5-b59c-a408666fdf27` on every install (the parent tenant uuid is "
+        "`b3a700f7-00be-4ef9-90c6-3c8fe6e1be63`). Its `agentId` — the runtime `masterId` — varies "
+        "per appliance; read it from `GET /api/3/agents/{self-uuid}`."
     ),
     "Metadata": "Module and field definitions, picklist values, type contexts, and the auto-generated full API listing (handy for discovering endpoints not documented here).",
     "Files": "Attachment upload. Required as the first step of import-job ingestion.",
