@@ -2146,7 +2146,7 @@ paths:
                 accessType: Named
                 avatar: null
                 companyId: null
-                createDate: 1745942906
+                createDate: 1700000000
                 createUser: /api/3/people/<uuid>
                 csActive: true
                 department: null
@@ -2155,7 +2155,7 @@ paths:
                 firstname: CS
                 id: 3
                 lastname: Admin
-                modifyDate: 1774897545.132071
+                modifyDate: 1700000000
                 modifyUser: /api/3/people/<uuid>
                 phoneFax: null
                 phoneHome: null
@@ -2373,15 +2373,15 @@ paths:
                     uuid: <uuid>
                   commandLine: null
                   computerName: null
-                  createDate: 1752785765.589662
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -2397,7 +2397,7 @@ paths:
                   deviceType: null
                   deviceUID: null
                   domain: null
-                  dueBy: 1752786365.589662
+                  dueBy: 1700000000
                   emailBody: '
 
 
@@ -2548,15 +2548,15 @@ paths:
                   metrics: null
                   mitreTechnique: null
                   mitreattackid: null
-                  modifyDate: 1778205572.788151
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -2668,7 +2668,7 @@ paths:
                   resolvedAutomatedly: true
                   resolveddate: 1777486697
                   respDate: 1777486699
-                  respDueDate: 1752786965.589662
+                  respDueDate: 1700000000
                   respSLApausedon: 1777818479
                   respSlaStatus:
                     '@id': /api/3/picklists/<uuid>
@@ -2940,7 +2940,7 @@ paths:
                   closureReason: null
                   commandLine: null
                   computerName: null
-                  createDate: 1752850786.054493
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -2948,7 +2948,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -2957,7 +2957,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -3129,7 +3129,7 @@ paths:
                   metrics: null
                   mitreTechnique: null
                   mitreattackid: null
-                  modifyDate: 1754750411.216091
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -3137,7 +3137,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -3146,7 +3146,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -3539,7 +3539,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Alert'
             example:
-              name: live-53c88433-alert
+              name: live-<run>-alert
               severity: /api/3/picklists/<uuid>
               source: live-test
               status: /api/3/picklists/<uuid>
@@ -3597,7 +3597,7 @@ paths:
                 communications: []
                 companies: []
                 computerName: null
-                createDate: 1779301675.808831
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -3605,7 +3605,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -3614,7 +3614,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -3680,7 +3680,7 @@ paths:
                 mitremitigations: []
                 mitresoftware: []
                 mitretactics: []
-                modifyDate: 1779301675.808831
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -3688,7 +3688,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -3697,7 +3697,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -3708,7 +3708,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-alert
+                name: live-<run>-alert
                 owners:
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
@@ -3890,7 +3890,7 @@ paths:
                 closureReason: null
                 commandLine: null
                 computerName: null
-                createDate: 1779301675.808831
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -3898,7 +3898,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -3907,7 +3907,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -3963,7 +3963,7 @@ paths:
                 metrics: null
                 mitreTechnique: null
                 mitreattackid: null
-                modifyDate: 1779301675.808831
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -3971,7 +3971,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -3980,7 +3980,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -3991,7 +3991,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-alert
+                name: live-<run>-alert
                 parentProcessCmdLine: null
                 parentProcessName: null
                 parentProcessPid: null
@@ -4161,7 +4161,7 @@ paths:
                 closureReason: null
                 commandLine: null
                 computerName: null
-                createDate: 1779301675.808831
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -4169,7 +4169,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -4178,7 +4178,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -4234,7 +4234,7 @@ paths:
                 metrics: null
                 mitreTechnique: null
                 mitreattackid: null
-                modifyDate: 1779301678.022731
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -4242,7 +4242,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -4251,7 +4251,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -4262,7 +4262,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-alert
+                name: live-<run>-alert
                 parentProcessCmdLine: null
                 parentProcessName: null
                 parentProcessPid: null
@@ -4456,15 +4456,15 @@ paths:
                   confirmationDate: null
                   containmentDate: null
                   containmentTime: null
-                  createDate: 1754924000.003215
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -4504,15 +4504,15 @@ paths:
                   incidentsummary: null
                   metrics: null
                   mitreattackid: null
-                  modifyDate: 1754924002.32695
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -4630,15 +4630,15 @@ paths:
                   confirmationDate: null
                   containmentDate: null
                   containmentTime: null
-                  createDate: 1755090129.199109
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -4678,15 +4678,15 @@ paths:
                   incidentsummary: null
                   metrics: null
                   mitreattackid: null
-                  modifyDate: 1755090132.261376
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -4814,7 +4814,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Incident'
             example:
-              name: live-53c88433-comment-parent
+              name: live-<run>-comment-parent
               severity: /api/3/picklists/<uuid>
               source: live-test
       responses:
@@ -4859,7 +4859,7 @@ paths:
                 confirmationDate: null
                 containmentDate: null
                 containmentTime: null
-                createDate: 1779301855.791165
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -4867,7 +4867,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -4876,7 +4876,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -4928,7 +4928,7 @@ paths:
                 mitresubtechniques: []
                 mitretactics: []
                 mitretechniques: []
-                modifyDate: 1779301855.791165
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -4936,7 +4936,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -4945,7 +4945,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -4956,7 +4956,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-comment-parent
+                name: live-<run>-comment-parent
                 nextsteps: null
                 otherLogs: null
                 pcapFile: null
@@ -5113,7 +5113,7 @@ paths:
                 confirmationDate: null
                 containmentDate: null
                 containmentTime: null
-                createDate: 1779301814.909329
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5121,7 +5121,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5130,7 +5130,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5175,7 +5175,7 @@ paths:
                 incidentsummary: null
                 metrics: null
                 mitreattackid: null
-                modifyDate: 1779301814.909329
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5183,7 +5183,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5192,7 +5192,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5203,7 +5203,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-incident
+                name: live-<run>-incident
                 nextsteps: null
                 otherLogs: null
                 pcapFile: null
@@ -5357,7 +5357,7 @@ paths:
                 confirmationDate: null
                 containmentDate: null
                 containmentTime: null
-                createDate: 1779301814.909329
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5365,7 +5365,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5374,7 +5374,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5419,7 +5419,7 @@ paths:
                 incidentsummary: null
                 metrics: null
                 mitreattackid: null
-                modifyDate: 1779301817.060404
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5427,7 +5427,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5436,7 +5436,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5447,7 +5447,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-incident
+                name: live-<run>-incident
                 nextsteps: null
                 otherLogs: null
                 pcapFile: null
@@ -5620,15 +5620,15 @@ paths:
                   assignedToPerson: null
                   assignee: ''
                   completedOnDate: null
-                  createDate: 1760563726.496709
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -5638,15 +5638,15 @@ paths:
                   dueBy: null
                   fsrQueue: null
                   id: 4
-                  modifyDate: 1760563726.496709
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -5672,15 +5672,15 @@ paths:
                   assignedToPerson: null
                   assignee: ''
                   completedOnDate: null
-                  createDate: 1763855603.064022
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -5690,15 +5690,15 @@ paths:
                   dueBy: null
                   fsrQueue: null
                   id: 35
-                  modifyDate: 1763855603.064022
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/appliances/<uuid>
                     '@type': Appliance
                     avatar: null
-                    createDate: 1745942906.078369
+                    createDate: 1700000000
                     createUser: null
                     id: 1
-                    modifyDate: 1745942906.078369
+                    modifyDate: 1700000000
                     modifyUser: null
                     name: Playbook
                     userId: <uuid>
@@ -5747,7 +5747,7 @@ paths:
               $ref: '#/components/schemas/Task'
             example:
               description: live_test task
-              name: live-53c88433-task
+              name: live-<run>-task
               priority: /api/3/picklists/<uuid>
       responses:
         '201':
@@ -5772,7 +5772,7 @@ paths:
                 comments: []
                 companies: []
                 completedOnDate: null
-                createDate: 1779301836.018438
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5780,7 +5780,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5789,7 +5789,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5807,7 +5807,7 @@ paths:
                 id: 57
                 incidents: []
                 indicators: []
-                modifyDate: 1779301836.018438
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5815,7 +5815,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5824,7 +5824,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5835,7 +5835,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-task
+                name: live-<run>-task
                 owners:
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
@@ -5910,7 +5910,7 @@ paths:
                 assignedToPerson: null
                 assignee: ''
                 completedOnDate: null
-                createDate: 1779301836.018438
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5918,7 +5918,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5927,7 +5927,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5942,7 +5942,7 @@ paths:
                 dueBy: null
                 fsrQueue: null
                 id: 57
-                modifyDate: 1779301836.018438
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -5950,7 +5950,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -5959,7 +5959,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -5970,7 +5970,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-task
+                name: live-<run>-task
                 priority:
                   '@id': /api/3/picklists/<uuid>
                   '@type': Picklist
@@ -6033,7 +6033,7 @@ paths:
                 assignedToPerson: null
                 assignee: ''
                 completedOnDate: null
-                createDate: 1779301836.018438
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6041,7 +6041,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6050,7 +6050,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6065,7 +6065,7 @@ paths:
                 dueBy: null
                 fsrQueue: null
                 id: 57
-                modifyDate: 1779301837.576832
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6073,7 +6073,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6082,7 +6082,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6093,7 +6093,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-task
+                name: live-<run>-task
                 priority:
                   '@id': /api/3/picklists/<uuid>
                   '@type': Picklist
@@ -6209,7 +6209,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Comment'
             example:
-              content: <p>live-53c88433-comment linked to incident</p>
+              content: <p>live-<run>-comment linked to incident</p>
               incidents:
               - /api/3/incidents/<uuid>
       responses:
@@ -6230,8 +6230,8 @@ paths:
                 cVEs: []
                 campaigns: []
                 communication: []
-                content: <p>live-53c88433-comment linked to incident</p>
-                createDate: 1779301857.167461
+                content: <p>live-<run>-comment linked to incident</p>
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6239,7 +6239,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6248,7 +6248,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6273,9 +6273,9 @@ paths:
                 indicators: []
                 isDeleted: null
                 isImportant: null
-                lastReplyDate: 1779301857.164819
+                lastReplyDate: 1700000000
                 managers: []
-                modifyDate: 1779301857.167461
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6283,7 +6283,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6292,7 +6292,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6373,8 +6373,8 @@ paths:
                 '@context': /api/3/contexts/Comment
                 '@id': /api/3/comments/<uuid>
                 '@type': Comment
-                content: <p>live-53c88433-comment linked to incident</p>
-                createDate: 1779301857.167461
+                content: <p>live-<run>-comment linked to incident</p>
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6382,7 +6382,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6391,7 +6391,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6410,8 +6410,8 @@ paths:
                 id: 28265
                 isDeleted: null
                 isImportant: null
-                lastReplyDate: 1779301857.164819
-                modifyDate: 1779301857.167461
+                lastReplyDate: 1700000000
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6419,7 +6419,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6428,7 +6428,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6497,8 +6497,8 @@ paths:
                 cVEs: []
                 campaigns: []
                 communication: []
-                content: <p>live-53c88433-comment linked to incident</p>
-                createDate: 1779301857.167461
+                content: <p>live-<run>-comment linked to incident</p>
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6506,7 +6506,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6515,7 +6515,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6540,9 +6540,9 @@ paths:
                 indicators: []
                 isDeleted: null
                 isImportant: true
-                lastReplyDate: 1779301857.164819
+                lastReplyDate: 1700000000
                 managers: []
-                modifyDate: 1779301858.850256
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6550,7 +6550,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6559,7 +6559,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6640,8 +6640,8 @@ paths:
                 cVEs: []
                 campaigns: []
                 communication: []
-                content: <p>live-53c88433-comment linked to incident</p>
-                createDate: 1779301857.167461
+                content: <p>live-<run>-comment linked to incident</p>
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6649,7 +6649,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6658,7 +6658,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6683,9 +6683,9 @@ paths:
                 indicators: []
                 isDeleted: true
                 isImportant: true
-                lastReplyDate: 1779301857.164819
+                lastReplyDate: 1700000000
                 managers: []
-                modifyDate: 1779301859.769034
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -6693,7 +6693,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -6702,7 +6702,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -6862,7 +6862,7 @@ paths:
               type: object
             example:
               description: live_test team
-              name: live-53c88433-team
+              name: live-<run>-team
       responses:
         '201':
           description: Created.
@@ -6876,7 +6876,7 @@ paths:
                 children: []
                 description: live_test team
                 importedBy: []
-                name: live-53c88433-team
+                name: live-<run>-team
                 parents: []
                 siblings: []
                 uuid: <uuid>
@@ -6945,15 +6945,15 @@ paths:
                   uuid: <uuid>
                 commandLine: null
                 computerName: null
-                createDate: 1752785765.589662
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/appliances/<uuid>
                   '@type': Appliance
                   avatar: null
-                  createDate: 1745942906.078369
+                  createDate: 1700000000
                   createUser: null
                   id: 1
-                  modifyDate: 1745942906.078369
+                  modifyDate: 1700000000
                   modifyUser: null
                   name: Playbook
                   userId: <uuid>
@@ -6969,7 +6969,7 @@ paths:
                 deviceType: null
                 deviceUID: null
                 domain: null
-                dueBy: 1752786365.589662
+                dueBy: 1700000000
                 emailBody: '
 
 
@@ -7119,15 +7119,15 @@ paths:
                 metrics: null
                 mitreTechnique: null
                 mitreattackid: null
-                modifyDate: 1778205572.788151
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/appliances/<uuid>
                   '@type': Appliance
                   avatar: null
-                  createDate: 1745942906.078369
+                  createDate: 1700000000
                   createUser: null
                   id: 1
-                  modifyDate: 1745942906.078369
+                  modifyDate: 1700000000
                   modifyUser: null
                   name: Playbook
                   userId: <uuid>
@@ -7238,7 +7238,7 @@ paths:
                 resolvedAutomatedly: true
                 resolveddate: 1777486697
                 respDate: 1777486699
-                respDueDate: 1752786965.589662
+                respDueDate: 1700000000
                 respSLApausedon: 1777818479
                 respSlaStatus:
                   '@id': /api/3/picklists/<uuid>
@@ -7514,7 +7514,7 @@ paths:
                 '@type': Team
                 description: renamed by live_test
                 importedBy: []
-                name: live-53c88433-team
+                name: live-<run>-team
                 uuid: <uuid>
       description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -7737,7 +7737,7 @@ paths:
                 communications: []
                 companies: []
                 computerName: null
-                createDate: 1779301714.931252
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -7745,7 +7745,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -7754,7 +7754,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -7820,7 +7820,7 @@ paths:
                 mitremitigations: []
                 mitresoftware: []
                 mitretactics: []
-                modifyDate: 1779301714.931252
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -7828,7 +7828,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -7837,7 +7837,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -7848,7 +7848,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-upsert
+                name: live-<run>-upsert
                 owners:
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
@@ -7967,7 +7967,7 @@ paths:
             schema:
               type: object
             example:
-              name: live-53c88433-upsert
+              name: live-<run>-upsert
               severity: /api/3/picklists/<uuid>
               source: live_test
               status: /api/3/picklists/<uuid>
@@ -8056,7 +8056,7 @@ paths:
                   communications: []
                   companies: []
                   computerName: null
-                  createDate: 1779301716.220039
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -8064,7 +8064,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -8073,7 +8073,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -8139,7 +8139,7 @@ paths:
                   mitremitigations: []
                   mitresoftware: []
                   mitretactics: []
-                  modifyDate: 1779301716.220039
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -8147,7 +8147,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -8156,7 +8156,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -8167,7 +8167,7 @@ paths:
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
-                  name: live-53c88433-bulkupsert
+                  name: live-<run>-bulkupsert
                   owners:
                   - /api/3/teams/<uuid>
                   - /api/3/teams/<uuid>
@@ -8289,7 +8289,7 @@ paths:
               items:
                 type: object
             example:
-            - name: live-53c88433-bulkupsert
+            - name: live-<run>-bulkupsert
               severity: /api/3/picklists/<uuid>
               source: live_test
               status: /api/3/picklists/<uuid>
@@ -9095,7 +9095,7 @@ paths:
                   closureReason: null
                   commandLine: null
                   computerName: null
-                  createDate: 1778775115.113726
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -9103,7 +9103,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -9112,7 +9112,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -9179,7 +9179,7 @@ paths:
                   deviceType: null
                   deviceUID: null
                   domain: null
-                  dueBy: 1778774909.82647
+                  dueBy: 1700000000
                   emailBody: ''
                   emailClassification: null
                   emailFrom: null
@@ -9214,7 +9214,7 @@ paths:
                   metrics: null
                   mitreTechnique: null
                   mitreattackid: null
-                  modifyDate: 1778775115.113726
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -9222,7 +9222,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -9231,7 +9231,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -9262,7 +9262,7 @@ paths:
                   resolvedAutomatedly: null
                   resolveddate: null
                   respDate: null
-                  respDueDate: 1778775509.82647
+                  respDueDate: 1700000000
                   respSLApausedon: null
                   respSlaStatus:
                     '@id': /api/3/picklists/<uuid>
@@ -9463,7 +9463,7 @@ paths:
                         type: object
             example:
               models: /api/3/model_metadatas/<uuid>
-              name: live-53c88433-savedq
+              name: live-<run>-savedq
               query:
                 filters:
                 - field: status.itemValue
@@ -9533,7 +9533,7 @@ paths:
                   userOwnable: false
                   uuid: <uuid>
                   writable: true
-                name: live-53c88433-savedq
+                name: live-<run>-savedq
                 query:
                   filters:
                   - field: status.itemValue
@@ -9733,7 +9733,7 @@ paths:
                     Created On: 05-20-2026 18:28 PM UTC
                     Escalated: 'No'
                     Id: 1182
-                    Name: live-53c88433-upsert
+                    Name: live-<run>-upsert
                     Priority Weight: 1
                     Response SLA: Awaiting Action
                     Severity: Minimal
@@ -9743,7 +9743,7 @@ paths:
                     Type: Other / Unknown
                     UUID: <uuid>
                     recordTags: []
-                  displayName: live-53c88433-upsert
+                  displayName: live-<run>-upsert
                   entitySingularName: Alert
                   entityType: alerts
                   entityUuid: <uuid>
@@ -9753,7 +9753,7 @@ paths:
                   subComponent: EntityRecord
                   teamIris:
                   - /api/3/teams/<uuid>
-                  title: Alert [live-53c88433-upsert] Deleted
+                  title: Alert [live-<run>-upsert] Deleted
                   transactionDate: 1779301731853
                   user: WEBHOOK
                   userId: <uuid>
@@ -9861,7 +9861,7 @@ paths:
                   Created On: 05-20-2026 18:28 PM UTC
                   Escalated: 'No'
                   Id: 1182
-                  Name: live-53c88433-upsert
+                  Name: live-<run>-upsert
                   Priority Weight: 1
                   Response SLA: Awaiting Action
                   Severity: Minimal
@@ -9871,7 +9871,7 @@ paths:
                   Type: Other / Unknown
                   UUID: <uuid>
                   recordTags: []
-                displayName: live-53c88433-upsert
+                displayName: live-<run>-upsert
                 entitySingularName: Alert
                 entityType: alerts
                 entityUuid: <uuid>
@@ -9881,7 +9881,7 @@ paths:
                 subComponent: EntityRecord
                 teamIris:
                 - /api/3/teams/<uuid>
-                title: Alert [live-53c88433-upsert] Deleted
+                title: Alert [live-<run>-upsert] Deleted
                 transactionDate: 1779301731853
                 user: WEBHOOK
                 userId: <uuid>
@@ -11570,7 +11570,7 @@ paths:
                 salutation: Mr.
               connector: 225
               default: false
-              name: live-53c88433-hwcfg
+              name: live-<run>-hwcfg
               status: 1
               teams: []
       responses:
@@ -11590,7 +11590,7 @@ paths:
                 default: false
                 health_status: {}
                 id: 197
-                name: live-53c88433-hwcfg
+                name: live-<run>-hwcfg
                 remote_status: {}
                 status:
                   message: Connector hello-world version 1.0.4 as been configured successfully
@@ -45389,7 +45389,7 @@ paths:
                 mimeType: text/plain
                 size: 17
                 thumbnail: null
-                uploadDate: 1779301777.169886
+                uploadDate: 1700000000
                 uuid: <uuid>
       x-verified-live:
       - apikey
@@ -45454,7 +45454,7 @@ paths:
               type: object
             example:
               description: live_test role
-              name: live-53c88433-role
+              name: live-<run>-role
       responses:
         '201':
           description: Created.
@@ -45467,7 +45467,7 @@ paths:
                 description: live_test role
                 importedBy: []
                 modulePermissions: []
-                name: live-53c88433-role
+                name: live-<run>-role
                 uuid: <uuid>
       x-verified-live:
       - apikey
@@ -45529,7 +45529,7 @@ paths:
               type: object
             example:
               description: live_test team (typed)
-              name: live-53c88433-team2
+              name: live-<run>-team2
       responses:
         '201':
           description: Created.
@@ -45543,7 +45543,7 @@ paths:
                 children: []
                 description: live_test team (typed)
                 importedBy: []
-                name: live-53c88433-team2
+                name: live-<run>-team2
                 parents: []
                 siblings: []
                 uuid: <uuid>
@@ -45575,7 +45575,7 @@ paths:
                   '@settings': /api/3/user_settings/<uuid>
                   '@type': ApiKey
                   avatar: null
-                  createDate: 1768234924.175795
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -45583,7 +45583,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -45592,7 +45592,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -45604,7 +45604,7 @@ paths:
                     userType: null
                     uuid: <uuid>
                   id: 5
-                  modifyDate: 1774716402.757912
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -45612,7 +45612,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -45621,7 +45621,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -45641,7 +45641,7 @@ paths:
                   '@settings': /api/3/user_settings/<uuid>
                   '@type': ApiKey
                   avatar: null
-                  createDate: 1768848485.953577
+                  createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -45649,7 +45649,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -45658,7 +45658,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -45670,7 +45670,7 @@ paths:
                     userType: null
                     uuid: <uuid>
                   id: 9
-                  modifyDate: 1768848485.953577
+                  modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
                     '@settings': /api/3/user_settings/<uuid>
@@ -45678,7 +45678,7 @@ paths:
                     accessType: Named
                     avatar: null
                     companyId: null
-                    createDate: 1745942906
+                    createDate: 1700000000
                     createUser: /api/3/people/<uuid>
                     csActive: true
                     department: null
@@ -45687,7 +45687,7 @@ paths:
                     firstname: CS
                     id: 3
                     lastname: Admin
-                    modifyDate: 1774897545.132071
+                    modifyDate: 1700000000
                     modifyUser: /api/3/people/<uuid>
                     phoneFax: null
                     phoneHome: null
@@ -45742,7 +45742,7 @@ paths:
                   type: string
                   description: User uuid returned by `POST /api/auth/users`.
             example:
-              name: live-53c88433-apikey
+              name: live-<run>-apikey
               roles: []
               teams: []
               userId: <uuid>
@@ -45757,7 +45757,7 @@ paths:
                 '@settings': /api/3/user_settings/<uuid>
                 '@type': ApiKey
                 avatar: null
-                createDate: 1779301551.416144
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -45765,7 +45765,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -45774,7 +45774,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -45786,7 +45786,7 @@ paths:
                   userType: null
                   uuid: <uuid>
                 id: 16
-                modifyDate: 1779301551.416144
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -45794,7 +45794,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -45803,7 +45803,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -45814,7 +45814,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-apikey
+                name: live-<run>-apikey
                 recordTags: []
                 roles: []
                 teams: []
@@ -45849,7 +45849,7 @@ paths:
                 '@settings': /api/3/user_settings/<uuid>
                 '@type': ApiKey
                 avatar: null
-                createDate: 1779301551.416144
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -45857,7 +45857,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -45866,7 +45866,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -45878,7 +45878,7 @@ paths:
                   userType: null
                   uuid: <uuid>
                 id: 16
-                modifyDate: 1779301551.416144
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -45886,7 +45886,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -45895,7 +45895,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -45906,7 +45906,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-apikey
+                name: live-<run>-apikey
                 recordTags: []
                 userId: <uuid>
                 userType: null
@@ -45940,7 +45940,7 @@ paths:
                 userId:
                   type: string
             example:
-              name: live-53c88433-apikey-renamed
+              name: live-<run>-apikey-renamed
               roles: []
               teams: []
               userId: <uuid>
@@ -45955,7 +45955,7 @@ paths:
                 '@settings': /api/3/user_settings/<uuid>
                 '@type': ApiKey
                 avatar: null
-                createDate: 1779301551.416144
+                createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -45963,7 +45963,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -45972,7 +45972,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -45984,7 +45984,7 @@ paths:
                   userType: null
                   uuid: <uuid>
                 id: 16
-                modifyDate: 1779301552.743622
+                modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
                   '@settings': /api/3/user_settings/<uuid>
@@ -45992,7 +45992,7 @@ paths:
                   accessType: Named
                   avatar: null
                   companyId: null
-                  createDate: 1745942906
+                  createDate: 1700000000
                   createUser: /api/3/people/<uuid>
                   csActive: true
                   department: null
@@ -46001,7 +46001,7 @@ paths:
                   firstname: CS
                   id: 3
                   lastname: Admin
-                  modifyDate: 1774897545.132071
+                  modifyDate: 1700000000
                   modifyUser: /api/3/people/<uuid>
                   phoneFax: null
                   phoneHome: null
@@ -46012,7 +46012,7 @@ paths:
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-53c88433-apikey-renamed
+                name: live-<run>-apikey-renamed
                 recordTags: []
                 roles: []
                 teams: []
