@@ -124,6 +124,12 @@ _OPAQUE_DICT_KEYS = frozenset((
     "metadata",     # workflow metadata blob (graph + per-step data)
     "config",       # connector configuration field map
     "globalVariables",  # picklist + global vars referenced by a workflow
+    "args",         # workflow step input args (varies per step type)
+    "input",        # workflow step input payload (per step type)
+    "output",       # workflow step output payload (per step type)
+    "params",       # operation params (varies per connector op)
+    "mock_result",  # mock step output (free-form)
+    "request",      # workflow trigger request envelope (free-form)
 ))
 
 
@@ -144,13 +150,13 @@ def _same_shape(a: Any, b: Any, parent_key: str = "") -> bool:
     lets us freeze examples whose content drifts but whose schema is
     stable, while still surfacing genuinely new fields.
     """
-    # Polymorphic-by-design buckets: any dict-or-None pair is shape-equal here.
+    # Polymorphic-by-design buckets: shape-equal regardless of inner contents.
+    # These keys carry free-form payloads whose schema is the calling
+    # connector / playbook step's contract, not the FortiSOAR API's. Treat
+    # any pair (dict, list, str, null, ...) as equivalent so swapping the
+    # underlying step type doesn't churn the captured example.
     if parent_key in _OPAQUE_DICT_KEYS:
-        if a is None and b is None:
-            return True
-        if isinstance(a, dict) and isinstance(b, dict):
-            return True
-        # Type flips (dict <-> list etc) are still a real shape change.
+        return True
     if isinstance(a, dict) and isinstance(b, dict):
         if set(a) != set(b):
             return False
