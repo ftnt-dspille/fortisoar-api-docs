@@ -46,6 +46,23 @@ _UUID_RE = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 _API_KEY_RE = re.compile(r"\b[0-9a-f]{64}\b", re.I)
 _AGENT_HASH_RE = re.compile(r"\b[0-9a-f]{32}\b", re.I)
 _JWT_RE = re.compile(r"eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
+# `live-<run_id>-<slug>` shows up wherever a scenario-created record's `name`
+# is echoed in a response. The 8-hex run_id changes every run and is pure
+# diff churn — strip it so only the stable `live-<run>-<slug>` shape persists.
+_LIVE_RUN_RE = re.compile(r"\blive-[0-9a-f]{8}-", re.I)
+
+# Server-side timestamps that vary record-by-record and run-by-run. Normalized
+# to a fixed epoch in `_scrub` so observation files diff only when shape /
+# content changes, not when the appliance has had time pass since the last
+# capture. Placeholder is 2023-11-14T22:13:20Z — recognisably epoch-seconds,
+# stable forever. The per-observation `captured_at` field carries the real
+# date the op was validated; that one is intentionally preserved.
+_TIMESTAMP_PLACEHOLDER = 1700000000
+_TIMESTAMP_KEYS = frozenset((
+    "createDate", "modifyDate", "lastReplyDate",
+    "respDueDate", "dueBy", "uploadDate", "expiryDate",
+    "lastModified", "lastTriggered",
+))
 
 # Built at first scrub call from FSR_BASE_URL so we never persist the
 # operator's appliance hostname (incl. :port) in observations. Hydra
@@ -84,9 +101,13 @@ def _scrub(value: Any) -> Any:
         v = _API_KEY_RE.sub("<api-key>", v)
         v = _UUID_RE.sub("<uuid>", v)
         v = _AGENT_HASH_RE.sub("<self-agent>", v)
+        v = _LIVE_RUN_RE.sub("live-<run>-", v)
         return v
     if isinstance(value, dict):
-        return {k: _scrub(v) for k, v in value.items()}
+        return {k: (_TIMESTAMP_PLACEHOLDER
+                    if k in _TIMESTAMP_KEYS and isinstance(v, (int, float))
+                    else _scrub(v))
+                for k, v in value.items()}
     if isinstance(value, list):
         return [_scrub(v) for v in value]
     return value
