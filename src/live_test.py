@@ -112,7 +112,22 @@ def _scrub(value: Any) -> Any:
         return [_scrub(v) for v in value]
     return value
 
-def _same_shape(a: Any, b: Any) -> bool:
+# Dict keys whose VALUES are runtime-polymorphic — their inner shape depends on
+# which playbook step ran, which audit row was returned, etc. Treated as shape-
+# equal whenever both sides are dicts (or both are not), so the freeze logic
+# doesn't refresh the whole captured body every time the appliance happens to
+# have a different "latest" record at the top of the list.
+_OPAQUE_DICT_KEYS = frozenset((
+    "result",       # workflow step output / response builder payload
+    "env",          # workflow step-local environment bag
+    "data",         # audit-activities row payload + various wrappers
+    "metadata",     # workflow metadata blob (graph + per-step data)
+    "config",       # connector configuration field map
+    "globalVariables",  # picklist + global vars referenced by a workflow
+))
+
+
+def _same_shape(a: Any, b: Any, parent_key: str = "") -> bool:
     """Structural equality check used by the freeze-on-shape-match merge.
 
     Two values have the same shape when:
@@ -129,10 +144,17 @@ def _same_shape(a: Any, b: Any) -> bool:
     lets us freeze examples whose content drifts but whose schema is
     stable, while still surfacing genuinely new fields.
     """
+    # Polymorphic-by-design buckets: any dict-or-None pair is shape-equal here.
+    if parent_key in _OPAQUE_DICT_KEYS:
+        if a is None and b is None:
+            return True
+        if isinstance(a, dict) and isinstance(b, dict):
+            return True
+        # Type flips (dict <-> list etc) are still a real shape change.
     if isinstance(a, dict) and isinstance(b, dict):
         if set(a) != set(b):
             return False
-        return all(_same_shape(a[k], b[k]) for k in a)
+        return all(_same_shape(a[k], b[k], parent_key=k) for k in a)
     if isinstance(a, list) and isinstance(b, list):
         if not a and not b:
             return True
@@ -141,24 +163,38 @@ def _same_shape(a: Any, b: Any) -> bool:
             # side has a homogeneous shape we can confirm against. Empty
             # list -> assume same as non-empty's element shape.
             return True
-        # Reduce each side to representative shapes; sets are unhashable so
-        # use a list and dedupe pairwise.
-        def _shapes(lst):
-            out = []
-            for x in lst:
-                if not any(_same_shape(x, s) for s in out):
-                    out.append(x)
-            return out
-        sa = _shapes(a)
-        sb = _shapes(b)
-        if len(sa) != len(sb):
+        # Heterogeneous lists (e.g. audit-activities returns different audit
+        # event types interleaved) get a union-based shape check: collapse
+        # every dict element on each side into "the union of all keys seen,
+        # mapped to one representative value", then compare those merged
+        # shapes. This lets the captured mix vary without registering as a
+        # schema change, while still catching a genuinely new field type.
+        def _merge(lst):
+            if all(isinstance(x, dict) for x in lst):
+                merged: dict = {}
+                for elt in lst:
+                    for k, v in elt.items():
+                        if k not in merged or merged[k] is None:
+                            merged[k] = v
+                return [merged]
+            return lst
+        ma = _merge(a)
+        mb = _merge(b)
+        if len(ma) != len(mb):
             return False
-        return all(any(_same_shape(x, y) for y in sb) for x in sa)
+        return all(_same_shape(x, y, parent_key=parent_key) for x, y in zip(ma, mb))
     if isinstance(a, bool) or isinstance(b, bool):
         return type(a) is type(b)
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
         return True
-    return type(a) is type(b) or (a is None and b is None)
+    # `None` on one side and a primitive on the other is the common "nullable
+    # field" pattern (parent_wf_id is null for root workflows, int for child
+    # runs; closureNotes null until set). Treat as shape-compatible — a real
+    # schema change shows up as a type *flip* between two non-None types, or
+    # as a key set difference one level up.
+    if a is None or b is None:
+        return True
+    return type(a) is type(b)
 
 
 SCENARIOS: dict[str, Callable[["Session"], None]] = {}
@@ -1420,6 +1456,10 @@ def main() -> int:
     ap.add_argument("--sweep-only", action="store_true", help="Clean up leftover live-* records and exit.")
     ap.add_argument("--scenario", action="append", help="Run only the named scenario(s). Defaults to all.")
     ap.add_argument("--no-presweep", action="store_true", help="Skip the startup sweep.")
+    ap.add_argument("--parallel", type=int, default=1, metavar="N",
+                    help="Run up to N scenario/auth jobs concurrently (default 1, sequential). "
+                         "Each job runs in its own cloned Session; observations/redirects are "
+                         "merged back into the main session after each completes.")
     args = ap.parse_args()
 
     s = open_session()
@@ -1437,6 +1477,9 @@ def main() -> int:
     targets = args.scenario or list(SCENARIOS.keys())
     failed: list[str] = []
     print(f"auth modes: {list(s.auth_modes)}")
+
+    # Build the job list: cartesian product of selected scenarios × auth modes.
+    jobs: list[tuple[str, Callable, str]] = []
     for name in targets:
         fn = SCENARIOS.get(name)
         if not fn:
@@ -1444,6 +1487,12 @@ def main() -> int:
             failed.append(name)
             continue
         for mode in list(s.auth_modes):
+            jobs.append((name, fn, mode))
+
+    if args.parallel <= 1 or len(jobs) <= 1:
+        # Sequential path — preserves the inter-job sweep that catches any
+        # records a crashed scenario left behind before the next one starts.
+        for name, fn, mode in jobs:
             s.set_auth(mode)
             print(f"--- scenario: {name} (auth={mode}) ---")
             t0 = time.time()
@@ -1453,8 +1502,47 @@ def main() -> int:
             except Exception as exc:
                 print(f"  FAILED ({mode}): {exc}", file=sys.stderr)
                 failed.append(f"{name}[{mode}]")
-            # Sweep between auth runs so the next run starts clean.
             sweep(s)
+    else:
+        # Parallel path — each job gets its own cloned Session so the auth
+        # header / observations / created-records list don't race. Results
+        # merge back into `s` on the main thread via `as_completed`, so no
+        # locking is needed around the shared dicts.
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def _worker(job_name: str, fn: Callable, mode: str) -> tuple[str, str, dict, list, list, str | None, float]:
+            sess = Session(
+                base=s.base, verify=s.verify, timeout=s.timeout,
+                headers={**s.headers, "Authorization": s.auth_modes[mode]},
+                run_id=s.run_id, host=s.host, tenant=s.tenant,
+                auth_modes=s.auth_modes, current_auth=mode,
+            )
+            t0 = time.time()
+            err: str | None = None
+            try:
+                fn(sess)
+            except Exception as exc:
+                err = str(exc)
+            return (job_name, mode, sess.observations, sess.created,
+                    sess.redirects, err, (time.time() - t0) * 1000)
+
+        workers = min(args.parallel, len(jobs))
+        print(f"--- parallel run: {workers} worker(s), {len(jobs)} job(s) ---")
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futures = [ex.submit(_worker, n, fn, m) for (n, fn, m) in jobs]
+            for fut in as_completed(futures):
+                name, mode, obs, created, redirects, err, ms = fut.result()
+                if err is None:
+                    print(f"--- {name} ({mode}) ok ({ms:.0f} ms)")
+                else:
+                    print(f"--- {name} ({mode}) FAILED: {err}", file=sys.stderr)
+                    failed.append(f"{name}[{mode}]")
+                # Merge per-worker observations into the main session.
+                for op_key, op_rec in obs.items():
+                    existing = s.observations.setdefault(op_key, {"by_auth": {}})
+                    existing.setdefault("by_auth", {}).update(op_rec.get("by_auth", {}))
+                s.created.extend(created)
+                s.redirects.extend(redirects)
 
     print("--- post-sweep ---")
     n = sweep(s)
