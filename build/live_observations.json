@@ -2,13 +2,13 @@
   "DELETE /api/3/alerts/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -18,7 +18,7 @@
   "DELETE /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -120,7 +120,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -255,13 +255,13 @@
   "DELETE /api/3/incidents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -271,13 +271,13 @@
   "DELETE /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -287,13 +287,13 @@
   "DELETE /api/3/{collection}/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -303,13 +303,13 @@
   "DELETE /api/integration/configuration/{config_id}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -319,13 +319,13 @@
   "DELETE /api/integration/connectors/{id}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -335,7 +335,7 @@
   "GET /api/3/actors/current": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
@@ -1502,7 +1502,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Person",
@@ -2459,10 +2459,1972 @@
       }
     }
   },
+  "GET /api/3/agents": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-21",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Agent",
+          "@id": "/api/3/agents",
+          "@type": "hydra:Collection",
+          "hydra:member": [
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#D22F18",
+                "icon": null,
+                "id": 109,
+                "importedBy": [],
+                "itemValue": "Remote Node Unreachable",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 6,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": "lab-managed:session=student-test-002:host=10.99.248.76:created=1779374558",
+              "encryptionKey": "PElTLvCAT.0x6a0f19e1.z3vBJXus228WHR7EjSIEt2X48JyQh0Qo6wAjHZww+kisXATjRL3AwxE4XGSoYaHARv0sLMPBufYQBNetzz29IEiHuP66D2XpE64Itobm",
+              "healthCheckLastSync": 1779374580,
+              "id": 47,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-student-test-002",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_affe30bf5e4444ea1b0cc20e58c964e0",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_affe30bf5e4444ea1b0cc20e58c964e0"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#FEB80C",
+                "icon": null,
+                "id": 105,
+                "importedBy": [],
+                "itemValue": "Awaiting Remote Node Connection",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEWWLUMyq.0x6a0f087b.GqqaRW3MxeA32iYgKrF0EYbWTXAchm20dQP//7htFREwx/MluHftEsUBbi0SDv6+0iQ3ATAyfp1O5BCWZym438TAoRCYrcXZgSEzCTGs",
+              "healthCheckLastSync": null,
+              "id": 45,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-B1-1779370099",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_4ceb58cf6cfe3c79469d0286286e99cc",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_4ceb58cf6cfe3c79469d0286286e99cc"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#D22F18",
+                "icon": null,
+                "id": 109,
+                "importedBy": [],
+                "itemValue": "Remote Node Unreachable",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 6,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEqO5lSei.0x6a0f0348.R4YbBYdf6lmGq0dbb4WIIBZNompi76wODi0YPVVvS8AN0RPjT72KslqVOnpu25AELAYELl65W076rK09zDCC1wnIN4G2KhY91zDPpAHX",
+              "healthCheckLastSync": 1779370481,
+              "id": 44,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 1,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Playbook",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-A1-1779368773",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_05ca680df04b2c5075af8535e069e271",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_05ca680df04b2c5075af8535e069e271"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#D22F18",
+                "icon": null,
+                "id": 109,
+                "importedBy": [],
+                "itemValue": "Remote Node Unreachable",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 6,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEGMohgyO.0x6a0f0aa8.5488TAUaVH979yXWt2Q5tU4ODLCiN0I8QwjsdFmsefcBHqBKnOZhhOOXwbTFVDG+mWYR+g2toDWS6dWRBnVHxL0fxj6S5EDZooZiM02H",
+              "healthCheckLastSync": 1779372445,
+              "id": 46,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-B1-1779370654",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_690519ff9232839341a16c461469708e",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_690519ff9232839341a16c461469708e"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 6,
+                "importedBy": [],
+                "itemValue": "Configuration In Progress",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 3,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#FEB80C",
+                "icon": null,
+                "id": 104,
+                "importedBy": [],
+                "itemValue": "Configuration In Progress",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/api_keys/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "ApiKey",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "id": 5,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "name": "WEBHOOK",
+                "recordTags": [],
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": "lab-managed:host=apikey-probe:created=1779381363",
+              "encryptionKey": "PEQKqhb08.0x6a0f3473.oAa7EoEJDxpPgNeQmAYVmYPIOaZWCo+9UtO6oeYEzk04prs5RmXm0EixkGs/6Sfn8BdyQcUi8Id8DSOYvkElMHs5lHZgQhZbCs0dCQpZ",
+              "healthCheckLastSync": null,
+              "id": 48,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/api_keys/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "ApiKey",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "id": 5,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "name": "WEBHOOK",
+                "recordTags": [],
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "apikey-probe-23458",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_981f15fae441f92990ade1d5b7d35a5f",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_981f15fae441f92990ade1d5b7d35a5f"
+            }
+          ],
+          "hydra:totalItems": 7,
+          "hydra:view": {
+            "@id": "/api/3/agents?%24limit=5&%24page=1",
+            "@type": "hydra:PartialCollectionView",
+            "hydra:first": "/api/3/agents?%24limit=5&%24page=1",
+            "hydra:last": "/api/3/agents?%24limit=5&%24page=2",
+            "hydra:next": "/api/3/agents?%24limit=5&%24page=2"
+          }
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-05-21",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Agent",
+          "@id": "/api/3/agents",
+          "@type": "hydra:Collection",
+          "hydra:member": [
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#D22F18",
+                "icon": null,
+                "id": 109,
+                "importedBy": [],
+                "itemValue": "Remote Node Unreachable",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 6,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": "lab-managed:session=student-test-002:host=10.99.248.76:created=1779374558",
+              "encryptionKey": "PElTLvCAT.0x6a0f19e1.z3vBJXus228WHR7EjSIEt2X48JyQh0Qo6wAjHZww+kisXATjRL3AwxE4XGSoYaHARv0sLMPBufYQBNetzz29IEiHuP66D2XpE64Itobm",
+              "healthCheckLastSync": 1779374580,
+              "id": 47,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-student-test-002",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_affe30bf5e4444ea1b0cc20e58c964e0",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_affe30bf5e4444ea1b0cc20e58c964e0"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#FEB80C",
+                "icon": null,
+                "id": 105,
+                "importedBy": [],
+                "itemValue": "Awaiting Remote Node Connection",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEWWLUMyq.0x6a0f087b.GqqaRW3MxeA32iYgKrF0EYbWTXAchm20dQP//7htFREwx/MluHftEsUBbi0SDv6+0iQ3ATAyfp1O5BCWZym438TAoRCYrcXZgSEzCTGs",
+              "healthCheckLastSync": null,
+              "id": 45,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-B1-1779370099",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_4ceb58cf6cfe3c79469d0286286e99cc",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_4ceb58cf6cfe3c79469d0286286e99cc"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#FEB80C",
+                "icon": null,
+                "id": 105,
+                "importedBy": [],
+                "itemValue": "Awaiting Remote Node Connection",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEqj30W7e.0x6a0eee4a.AUayD2EOQNx5bcbCdBRp2JV4HXtDfW9RwBszwrTAQEzA9Etmz2U0OzDfMEBhzSdUo38CwARDwr/bqotJAnQOpLuI54kuVjLRQ6r14MIN",
+              "healthCheckLastSync": null,
+              "id": 9,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "test",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_4f93000c085ae86341538b10f08be6ad",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_4f93000c085ae86341538b10f08be6ad"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#D22F18",
+                "icon": null,
+                "id": 109,
+                "importedBy": [],
+                "itemValue": "Remote Node Unreachable",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 6,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEqO5lSei.0x6a0f0348.R4YbBYdf6lmGq0dbb4WIIBZNompi76wODi0YPVVvS8AN0RPjT72KslqVOnpu25AELAYELl65W076rK09zDCC1wnIN4G2KhY91zDPpAHX",
+              "healthCheckLastSync": 1779370481,
+              "id": 44,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 1,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Playbook",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-A1-1779368773",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_05ca680df04b2c5075af8535e069e271",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_05ca680df04b2c5075af8535e069e271"
+            },
+            {
+              "@id": "/api/3/agents/<uuid>",
+              "@type": "Agent",
+              "active": true,
+              "agentId": "<self-agent>",
+              "agentType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 103,
+                "importedBy": [],
+                "itemValue": "FSR Agent",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "allowRemoteConnectorOperation": true,
+              "appLogs": null,
+              "authType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 121,
+                "importedBy": [],
+                "itemValue": "Basic Auth",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 1,
+                "uuid": "<uuid>"
+              },
+              "clientCert": null,
+              "clientCertExpiry": null,
+              "clientKey": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 12,
+                "importedBy": [],
+                "itemValue": "Connection Verified",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 5,
+                "uuid": "<uuid>"
+              },
+              "configurationHealth": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": "#D22F18",
+                "icon": null,
+                "id": 109,
+                "importedBy": [],
+                "itemValue": "Remote Node Unreachable",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 6,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "description": null,
+              "encryptionKey": "PEGMohgyO.0x6a0f0aa8.5488TAUaVH979yXWt2Q5tU4ODLCiN0I8QwjsdFmsefcBHqBKnOZhhOOXwbTFVDG+mWYR+g2toDWS6dWRBnVHxL0fxj6S5EDZooZiM02H",
+              "healthCheckLastSync": 1779372445,
+              "id": 46,
+              "installerType": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 648,
+                "importedBy": null,
+                "itemValue": "Bash Script",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "isLocal": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "lab-B1-1779370654",
+              "role": "tenant",
+              "router": {
+                "@id": "/api/3/routers/<uuid>",
+                "@type": "Router",
+                "address": "fsr-1",
+                "apiPort": 15671,
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+                "clientCert": null,
+                "clientKey": null,
+                "configMessage": null,
+                "configstatus": "/api/3/picklists/<uuid>",
+                "createDate": 1700000000,
+                "createUser": "/api/3/appliances/<uuid>",
+                "health": {
+                  "fsr-1": {
+                    "configMessage": "Configuration successful",
+                    "configStatus": "/api/3/picklists/<uuid>"
+                  }
+                },
+                "id": 2,
+                "intraTCPPort": 5672,
+                "mTLS": false,
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/appliances/<uuid>",
+                "name": "Default (Embedded)",
+                "sni": null,
+                "tcpPort": 5671,
+                "type": "/api/3/picklists/<uuid>",
+                "username": "admin",
+                "uuid": "<uuid>"
+              },
+              "ssl": true,
+              "upgradeMessage": null,
+              "upgradeState": null,
+              "username": "user_690519ff9232839341a16c461469708e",
+              "uuid": "<uuid>",
+              "version": "7.6.5",
+              "vhost": "vhost_690519ff9232839341a16c461469708e"
+            }
+          ],
+          "hydra:totalItems": 9,
+          "hydra:view": {
+            "@id": "/api/3/agents?%24limit=5&%24page=1",
+            "@type": "hydra:PartialCollectionView",
+            "hydra:first": "/api/3/agents?%24limit=5&%24page=1",
+            "hydra:last": "/api/3/agents?%24limit=5&%24page=2",
+            "hydra:next": "/api/3/agents?%24limit=5&%24page=2"
+          }
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/3/agents/{uuid}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-21",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Agent",
+          "@id": "/api/3/agents/<uuid>",
+          "@type": "Agent",
+          "active": true,
+          "agentId": "<self-agent>",
+          "agentType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 103,
+            "importedBy": [],
+            "itemValue": "FSR Agent",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "allowRemoteConnectorOperation": true,
+          "appLogs": null,
+          "authType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 121,
+            "importedBy": [],
+            "itemValue": "Basic Auth",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "clientCert": null,
+          "clientCertExpiry": null,
+          "clientKey": null,
+          "configstatus": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 6,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 3,
+            "uuid": "<uuid>"
+          },
+          "configurationHealth": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#FEB80C",
+            "icon": null,
+            "id": 104,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
+            "avatar": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 5,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "WEBHOOK",
+            "recordTags": [],
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "description": "live-lab-agent probe",
+          "encryptionKey": "PEIv5hAzC.0x6a0f814b.rkRL3EKCCtPYDK94gakRNhPHBnaHaBevJ/YO9+oBoHbfTRU3wLB+wP/m5rGnmLZuPCTTlHnCTOl7jBngwUITtdxUMkA85zYXtIrPS1gr",
+          "healthCheckLastSync": null,
+          "id": 53,
+          "installerType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 648,
+            "importedBy": null,
+            "itemValue": "Bash Script",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "isLocal": false,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
+            "avatar": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 5,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "WEBHOOK",
+            "recordTags": [],
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "name": "live-<run>-agent",
+          "role": "tenant",
+          "router": {
+            "@id": "/api/3/routers/<uuid>",
+            "@type": "Router",
+            "address": "fsr-1",
+            "apiPort": 15671,
+            "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+            "clientCert": null,
+            "clientKey": null,
+            "configMessage": null,
+            "configstatus": "/api/3/picklists/<uuid>",
+            "createDate": 1700000000,
+            "createUser": "/api/3/appliances/<uuid>",
+            "health": {
+              "fsr-1": {
+                "configMessage": "Configuration successful",
+                "configStatus": "/api/3/picklists/<uuid>"
+              }
+            },
+            "id": 2,
+            "intraTCPPort": 5672,
+            "mTLS": false,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/appliances/<uuid>",
+            "name": "Default (Embedded)",
+            "sni": null,
+            "tcpPort": 5671,
+            "type": "/api/3/picklists/<uuid>",
+            "username": "admin",
+            "uuid": "<uuid>"
+          },
+          "ssl": true,
+          "upgradeMessage": null,
+          "upgradeState": null,
+          "username": "user_6f80282ce61994435d23a9dead942f04",
+          "uuid": "<uuid>",
+          "version": "7.6.5",
+          "vhost": "vhost_6f80282ce61994435d23a9dead942f04"
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-05-21",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Agent",
+          "@id": "/api/3/agents/<uuid>",
+          "@type": "Agent",
+          "active": true,
+          "agentId": "<self-agent>",
+          "agentType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 103,
+            "importedBy": [],
+            "itemValue": "FSR Agent",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "allowRemoteConnectorOperation": true,
+          "appLogs": null,
+          "authType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 121,
+            "importedBy": [],
+            "itemValue": "Basic Auth",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "clientCert": null,
+          "clientCertExpiry": null,
+          "clientKey": null,
+          "configstatus": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 6,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 3,
+            "uuid": "<uuid>"
+          },
+          "configurationHealth": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#FEB80C",
+            "icon": null,
+            "id": 104,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "description": "live-lab-agent probe",
+          "encryptionKey": "PEhsEMsik.0x6a0f813a.96qoMJ5CjlO6uXUCkJvPcs9sNCJzIyNL864+9GPh6LIXUsif6UduTi00l7j5FbkxHjMRbF92NvzmsCuvPbaRgCFjiixZIvDaeb3lNcm6",
+          "healthCheckLastSync": null,
+          "id": 52,
+          "installerType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 648,
+            "importedBy": null,
+            "itemValue": "Bash Script",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "isLocal": false,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "name": "live-<run>-agent",
+          "role": "tenant",
+          "router": {
+            "@id": "/api/3/routers/<uuid>",
+            "@type": "Router",
+            "address": "fsr-1",
+            "apiPort": 15671,
+            "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+            "clientCert": null,
+            "clientKey": null,
+            "configMessage": null,
+            "configstatus": "/api/3/picklists/<uuid>",
+            "createDate": 1700000000,
+            "createUser": "/api/3/appliances/<uuid>",
+            "health": {
+              "fsr-1": {
+                "configMessage": "Configuration successful",
+                "configStatus": "/api/3/picklists/<uuid>"
+              }
+            },
+            "id": 2,
+            "intraTCPPort": 5672,
+            "mTLS": false,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/appliances/<uuid>",
+            "name": "Default (Embedded)",
+            "sni": null,
+            "tcpPort": 5671,
+            "type": "/api/3/picklists/<uuid>",
+            "username": "admin",
+            "uuid": "<uuid>"
+          },
+          "ssl": true,
+          "upgradeMessage": null,
+          "upgradeState": null,
+          "username": "user_aa73fb4b2b00ab2249689b43a8a6b98e",
+          "uuid": "<uuid>",
+          "version": "7.6.5",
+          "vhost": "vhost_aa73fb4b2b00ab2249689b43a8a6b98e"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/3/alerts": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -2969,7 +4931,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -3480,7 +5442,7 @@
   "GET /api/3/alerts/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -3701,7 +5663,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -3950,13 +5912,83 @@
   "GET /api/3/api_keys": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
           "@id": "/api/3/api_keys",
           "@type": "hydra:Collection",
           "hydra:member": [
+            {
+              "@id": "/api/3/api_keys/<uuid>",
+              "@settings": "/api/3/user_settings/<uuid>",
+              "@type": "ApiKey",
+              "avatar": null,
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "id": 62,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "test",
+              "recordTags": [],
+              "userId": "<uuid>",
+              "userType": null,
+              "uuid": "<uuid>"
+            },
             {
               "@id": "/api/3/api_keys/<uuid>",
               "@settings": "/api/3/user_settings/<uuid>",
@@ -4026,94 +6058,97 @@
               "userId": "<uuid>",
               "userType": null,
               "uuid": "<uuid>"
-            },
-            {
-              "@id": "/api/3/api_keys/<uuid>",
-              "@settings": "/api/3/user_settings/<uuid>",
-              "@type": "ApiKey",
-              "avatar": null,
-              "createDate": 1700000000,
-              "createUser": {
-                "@id": "/api/3/people/<uuid>",
-                "@settings": "/api/3/user_settings/<uuid>",
-                "@type": "Person",
-                "accessType": "Named",
-                "avatar": null,
-                "companyId": null,
-                "createDate": 1700000000,
-                "createUser": "/api/3/people/<uuid>",
-                "csActive": true,
-                "department": null,
-                "description": null,
-                "email": "admin@example.com",
-                "firstname": "CS",
-                "id": 3,
-                "lastname": "Admin",
-                "modifyDate": 1700000000,
-                "modifyUser": "/api/3/people/<uuid>",
-                "phoneFax": null,
-                "phoneHome": null,
-                "phoneMobile": null,
-                "phoneWork": "+16462759691",
-                "title": "Admin",
-                "type": null,
-                "userId": "<uuid>",
-                "userType": null,
-                "uuid": "<uuid>"
-              },
-              "id": 9,
-              "modifyDate": 1700000000,
-              "modifyUser": {
-                "@id": "/api/3/people/<uuid>",
-                "@settings": "/api/3/user_settings/<uuid>",
-                "@type": "Person",
-                "accessType": "Named",
-                "avatar": null,
-                "companyId": null,
-                "createDate": 1700000000,
-                "createUser": "/api/3/people/<uuid>",
-                "csActive": true,
-                "department": null,
-                "description": null,
-                "email": "admin@example.com",
-                "firstname": "CS",
-                "id": 3,
-                "lastname": "Admin",
-                "modifyDate": 1700000000,
-                "modifyUser": "/api/3/people/<uuid>",
-                "phoneFax": null,
-                "phoneHome": null,
-                "phoneMobile": null,
-                "phoneWork": "+16462759691",
-                "title": "Admin",
-                "type": null,
-                "userId": "<uuid>",
-                "userType": null,
-                "uuid": "<uuid>"
-              },
-              "name": "taxi",
-              "recordTags": [],
-              "userId": "<uuid>",
-              "userType": null,
-              "uuid": "<uuid>"
             }
           ],
-          "hydra:totalItems": 2,
+          "hydra:totalItems": 3,
           "hydra:view": {
-            "@id": "/api/3/api_keys?%24limit=2",
-            "@type": "hydra:PartialCollectionView"
+            "@id": "/api/3/api_keys?%24limit=2&%24page=1",
+            "@type": "hydra:PartialCollectionView",
+            "hydra:first": "/api/3/api_keys?%24limit=2&%24page=1",
+            "hydra:last": "/api/3/api_keys?%24limit=2&%24page=2",
+            "hydra:next": "/api/3/api_keys?%24limit=2&%24page=2"
           }
         },
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
           "@id": "/api/3/api_keys",
           "@type": "hydra:Collection",
           "hydra:member": [
+            {
+              "@id": "/api/3/api_keys/<uuid>",
+              "@settings": "/api/3/user_settings/<uuid>",
+              "@type": "ApiKey",
+              "avatar": null,
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "id": 62,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "test",
+              "recordTags": [],
+              "userId": "<uuid>",
+              "userType": null,
+              "uuid": "<uuid>"
+            },
             {
               "@id": "/api/3/api_keys/<uuid>",
               "@settings": "/api/3/user_settings/<uuid>",
@@ -4183,82 +6218,15 @@
               "userId": "<uuid>",
               "userType": null,
               "uuid": "<uuid>"
-            },
-            {
-              "@id": "/api/3/api_keys/<uuid>",
-              "@settings": "/api/3/user_settings/<uuid>",
-              "@type": "ApiKey",
-              "avatar": null,
-              "createDate": 1700000000,
-              "createUser": {
-                "@id": "/api/3/people/<uuid>",
-                "@settings": "/api/3/user_settings/<uuid>",
-                "@type": "Person",
-                "accessType": "Named",
-                "avatar": null,
-                "companyId": null,
-                "createDate": 1700000000,
-                "createUser": "/api/3/people/<uuid>",
-                "csActive": true,
-                "department": null,
-                "description": null,
-                "email": "admin@example.com",
-                "firstname": "CS",
-                "id": 3,
-                "lastname": "Admin",
-                "modifyDate": 1700000000,
-                "modifyUser": "/api/3/people/<uuid>",
-                "phoneFax": null,
-                "phoneHome": null,
-                "phoneMobile": null,
-                "phoneWork": "+16462759691",
-                "title": "Admin",
-                "type": null,
-                "userId": "<uuid>",
-                "userType": null,
-                "uuid": "<uuid>"
-              },
-              "id": 9,
-              "modifyDate": 1700000000,
-              "modifyUser": {
-                "@id": "/api/3/people/<uuid>",
-                "@settings": "/api/3/user_settings/<uuid>",
-                "@type": "Person",
-                "accessType": "Named",
-                "avatar": null,
-                "companyId": null,
-                "createDate": 1700000000,
-                "createUser": "/api/3/people/<uuid>",
-                "csActive": true,
-                "department": null,
-                "description": null,
-                "email": "admin@example.com",
-                "firstname": "CS",
-                "id": 3,
-                "lastname": "Admin",
-                "modifyDate": 1700000000,
-                "modifyUser": "/api/3/people/<uuid>",
-                "phoneFax": null,
-                "phoneHome": null,
-                "phoneMobile": null,
-                "phoneWork": "+16462759691",
-                "title": "Admin",
-                "type": null,
-                "userId": "<uuid>",
-                "userType": null,
-                "uuid": "<uuid>"
-              },
-              "name": "taxi",
-              "recordTags": [],
-              "userId": "<uuid>",
-              "userType": null,
-              "uuid": "<uuid>"
             }
           ],
-          "hydra:totalItems": 2,
+          "hydra:totalItems": 3,
           "hydra:view": {
-            "@id": "/api/3/api_keys?%24limit=2",
-            "@type": "hydra:PartialCollectionView"
+            "@id": "/api/3/api_keys?%24limit=2&%24page=1",
+            "@type": "hydra:PartialCollectionView",
+            "hydra:first": "/api/3/api_keys?%24limit=2&%24page=1",
+            "hydra:last": "/api/3/api_keys?%24limit=2&%24page=2",
+            "hydra:next": "/api/3/api_keys?%24limit=2&%24page=2"
           }
         },
         "response_status": 200
@@ -4268,12 +6236,12 @@
   "GET /api/3/api_keys/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
@@ -4353,7 +6321,7 @@
   "GET /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -4424,7 +6392,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -4523,7 +6491,7 @@
   "GET /api/3/contexts/{shortName}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -4810,7 +6778,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -5101,7 +7069,7 @@
   "GET /api/3/docs.jsonld": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -47682,7 +49650,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -90267,7 +92235,7 @@
   "GET /api/3/incidents": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -90655,7 +92623,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -91047,7 +93015,7 @@
   "GET /api/3/incidents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -91252,7 +93220,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -91485,7 +93453,7 @@
   "GET /api/3/model_metadatas": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ModelMetadata",
@@ -91767,7 +93735,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ModelMetadata",
@@ -92053,7 +94021,7 @@
   "GET /api/3/picklist_names": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -92239,7 +94207,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -92429,7 +94397,7 @@
   "GET /api/3/picklist_names/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -92601,7 +94569,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -92777,7 +94745,7 @@
   "GET /api/3/picklists/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Picklist",
@@ -92795,7 +94763,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Picklist",
@@ -92817,7 +94785,7 @@
   "GET /api/3/roles": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Role",
@@ -92859,7 +94827,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Role",
@@ -92902,10 +94870,204 @@
       }
     }
   },
+  "GET /api/3/routers": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-21",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Router",
+          "@id": "/api/3/routers",
+          "@type": "hydra:Collection",
+          "hydra:member": [
+            {
+              "@id": "/api/3/routers/<uuid>",
+              "@type": "Router",
+              "address": "fsr-1",
+              "apiPort": 15671,
+              "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+              "clientCert": null,
+              "clientKey": null,
+              "configMessage": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 91,
+                "importedBy": [],
+                "itemValue": "Configured",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 4,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 1,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Playbook",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "health": {
+                "fsr-1": {
+                  "configMessage": "Configuration successful",
+                  "configStatus": "/api/3/picklists/<uuid>"
+                }
+              },
+              "id": 2,
+              "intraTCPPort": 5672,
+              "mTLS": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "Default (Embedded)",
+              "sni": null,
+              "tcpPort": 5671,
+              "type": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 117,
+                "importedBy": [],
+                "itemValue": "Embedded",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "username": "admin",
+              "uuid": "<uuid>"
+            }
+          ],
+          "hydra:totalItems": 1,
+          "hydra:view": {
+            "@id": "/api/3/routers?%24limit=1",
+            "@type": "hydra:PartialCollectionView"
+          }
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-05-21",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Router",
+          "@id": "/api/3/routers",
+          "@type": "hydra:Collection",
+          "hydra:member": [
+            {
+              "@id": "/api/3/routers/<uuid>",
+              "@type": "Router",
+              "address": "fsr-1",
+              "apiPort": 15671,
+              "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+              "clientCert": null,
+              "clientKey": null,
+              "configMessage": null,
+              "configstatus": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 91,
+                "importedBy": [],
+                "itemValue": "Configured",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 4,
+                "uuid": "<uuid>"
+              },
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 1,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Playbook",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "health": {
+                "fsr-1": {
+                  "configMessage": "Configuration successful",
+                  "configStatus": "/api/3/picklists/<uuid>"
+                }
+              },
+              "id": 2,
+              "intraTCPPort": 5672,
+              "mTLS": false,
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
+                "avatar": null,
+                "createDate": 1700000000,
+                "createUser": null,
+                "id": 2,
+                "modifyDate": 1700000000,
+                "modifyUser": null,
+                "name": "Agent",
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "name": "Default (Embedded)",
+              "sni": null,
+              "tcpPort": 5671,
+              "type": {
+                "@id": "/api/3/picklists/<uuid>",
+                "@type": "Picklist",
+                "color": null,
+                "icon": null,
+                "id": 117,
+                "importedBy": [],
+                "itemValue": "Embedded",
+                "listName": "/api/3/picklist_names/<uuid>",
+                "orderIndex": 0,
+                "uuid": "<uuid>"
+              },
+              "username": "admin",
+              "uuid": "<uuid>"
+            }
+          ],
+          "hydra:totalItems": 1,
+          "hydra:view": {
+            "@id": "/api/3/routers?%24limit=1",
+            "@type": "hydra:PartialCollectionView"
+          }
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/3/tasks": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -93093,7 +95255,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -93229,7 +95391,7 @@
   "GET /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -93306,7 +95468,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -93411,7 +95573,7 @@
   "GET /api/3/teams": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -93447,7 +95609,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -93487,7 +95649,7 @@
   "GET /api/3/{collection}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -93515,7 +95677,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -93547,7 +95709,7 @@
   "GET /api/3/{collection}/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -93788,7 +95950,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -94033,7 +96195,7 @@
   "GET /api/3/{module}/{recordId}/comments": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -94049,7 +96211,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -94069,13 +96231,13 @@
   "GET /api/auth/cluster/health": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": [
           {
@@ -94307,13 +96469,13 @@
   "GET /api/auth/config": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "hydra:member": [
@@ -94348,13 +96510,13 @@
   "GET /api/auth/license": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": null,
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "details": {
@@ -94449,12 +96611,12 @@
   "GET /api/auth/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "usersresp": [
@@ -94486,49 +96648,38 @@
   "GET /api/gateway/audit/activities/{auditId}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
-          "component": "crudhub",
+          "component": "sealab",
           "data": {
-            "@id": "/api/3/alerts/<uuid>",
-            "Ack SLA": "Awaiting Action",
-            "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
-            "Created By": "WEBHOOK",
-            "Created On": "05-20-2026 18:28 PM UTC",
-            "Escalated": "No",
-            "Id": 1182,
-            "Name": "live-<run>-upsert",
-            "Priority Weight": 1,
-            "Response SLA": "Awaiting Action",
-            "Severity": "Minimal",
-            "Source": "live_test",
-            "State": "New",
-            "Status": "Active",
-            "Type": "Other / Unknown",
-            "UUID": "<uuid>",
-            "recordTags": []
+            "completed_time": "2026-05-21 22:00:00",
+            "message": "Squeeze query is executed successfully.",
+            "retry": 0,
+            "start_time": "2026-05-21 22:00:00",
+            "status": "success",
+            "success": true,
+            "table": "workflow_step",
+            "table_size_after": 2424832,
+            "table_size_before": 36626432
           },
-          "displayName": "live-<run>-upsert",
-          "entitySingularName": "Alert",
-          "entityType": "alerts",
-          "entityUuid": "<uuid>",
-          "id": 622975,
+          "entitySingularName": "Logs",
+          "entityType": "Logs",
+          "id": 632030,
           "operation": "Delete",
-          "source": "10.100.4.154",
-          "subComponent": "EntityRecord",
+          "source": "Schedule",
           "teamIris": [
-            "/api/3/teams/<uuid>"
+            "cs-non-ownable"
           ],
-          "title": "Alert [live-<run>-upsert] Deleted",
-          "transactionDate": 1779301731853,
-          "user": "WEBHOOK",
-          "userId": "<uuid>",
+          "title": "Storage Optimisation job has completed (PG Squeeze)",
+          "transactionDate": 1779400800579,
+          "user": "SYSTEM",
+          "userId": "SYSTEM",
           "userOwnerIris": []
         },
         "response_status": 200
@@ -94538,7 +96689,7 @@
   "GET /api/gateway/audit/operations": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": [
           "Create",
@@ -94590,7 +96741,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": [
           "Create",
@@ -94646,7 +96797,7 @@
   "GET /api/integration/configuration/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "data": [
@@ -94681,7 +96832,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "data": [
@@ -94720,7 +96871,7 @@
   "GET /api/integration/connectors/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "data": [
@@ -94771,7 +96922,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "data": [
@@ -94826,7 +96977,7 @@
   "GET /api/integration/connectors/healthcheck/{name}/{version}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "_status": true,
@@ -94840,7 +96991,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "_status": true,
@@ -94858,7 +97009,7 @@
   "GET /api/permissions/current": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "activities": {
@@ -95868,7 +98019,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "activities": {
@@ -96519,7 +98670,7 @@
   "GET /api/product/feature-access": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "productType": "FortiSOAR Enterprise",
@@ -96529,7 +98680,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "productType": "FortiSOAR Enterprise",
@@ -96543,7 +98694,7 @@
   "GET /api/taxii/1/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "max_content_length": 1000000,
@@ -96555,7 +98706,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "max_content_length": 1000000,
@@ -96571,7 +98722,7 @@
   "GET /api/taxii/1/collections": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "collections": [
@@ -96657,7 +98808,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "collections": [
@@ -96923,7 +99074,7 @@
   "GET /api/taxii/1/collections/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "can_read": true,
@@ -96939,7 +99090,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "can_read": true,
@@ -96995,7 +99146,7 @@
   "GET /api/taxii/1/collections/{uuid}/manifest": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -97099,7 +99250,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -97419,7 +99570,7 @@
   "GET /api/taxii/1/collections/{uuid}/objects": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -97523,7 +99674,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -97843,7 +99994,7 @@
   "GET /api/taxii/1/collections/{uuid}/objects/{stixId}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "objects": [],
@@ -97852,7 +100003,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "objects": [],
@@ -97887,7 +100038,7 @@
   "GET /api/version": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "version": "7.6.5-5662"
@@ -97895,7 +100046,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "version": "7.6.5-5662"
@@ -97907,7 +100058,7 @@
   "GET /api/wf/api/historical-workflows/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/historical-workflows/context/",
@@ -98107,7 +100258,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/historical-workflows/context/",
@@ -98311,7 +100462,7 @@
   "GET /api/wf/api/historical-workflows/{pk}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@id": "/wf/api/historical-workflows/681008/",
@@ -98500,7 +100651,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@id": "/wf/api/historical-workflows/681008/",
@@ -98693,7 +100844,7 @@
   "GET /api/wf/api/workflows/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/workflows/context/",
@@ -98721,7 +100872,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/workflows/context/",
@@ -98753,7 +100904,7 @@
   "GET /api/wf/api/workflows/count/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "count": 3482
@@ -98761,7 +100912,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
           "count": 3482
@@ -98773,56 +100924,35 @@
   "GET /api/wf/api/workflows/{pk}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
-          "@id": "/wf/api/workflows/681013/",
+          "@id": "/wf/api/workflows/681189/",
           "@type": "Workflow",
-          "created": "2026-05-20T18:12:55.255419Z",
+          "created": "2026-05-21T21:00:00.264380Z",
           "debug": true,
           "env": {
             "auth_info": {
               "auth_method": "CS HMAC"
             },
-            "currentUser": "/api/3/people/<uuid>",
+            "child_step_id": null,
             "debug": true,
-            "final_label": "score-42-final",
-            "final_status": "complete",
             "globalMock": false,
             "input": {
-              "params": {
-                "score": 42
-              },
+              "params": {},
               "records": []
             },
-            "label_seed": "score-42",
-            "last_run_at": null,
+            "last_run_at": "2026-05-21T21:00:00.019359Z",
             "mockPlaybookId": null,
-            "request": {
-              "baseUri": "https://your-soar.example.com",
-              "currentUser": "/api/3/people/<uuid>",
-              "headers": {
-                "accept": "*/*",
-                "accept-encoding": "gzip, deflate",
-                "authorization": "*******",
-                "connection": "keep-alive",
-                "content-length": "96",
-                "content-type": "application/json",
-                "host": "10.99.249.205",
-                "proxy": "",
-                "user-agent": "python-requests/2.33.1",
-                "x-php-ob-level": "1"
-              },
-              "method": "POST",
-              "uri": "https://your-soar.example.com/api/triggers/1/notrigger/<uuid>"
-            },
+            "module_exists": 1,
+            "request": {},
             "resources": {},
-            "score_int": 42,
+            "step_id": 5696363,
             "task_id": "<uuid>",
-            "useMockOutput": false
+            "wf_id": 681189
           },
           "metadata": {
-            "id": 1171,
+            "id": 5,
             "metadata": {
               "groups": [],
               "routes": [
@@ -98832,7 +100962,7 @@
                   "group": null,
                   "isExecuted": false,
                   "label": null,
-                  "name": "Pull from input -> Final",
+                  "name": "Fetch Threat Intel Feed Modules details -> Delete Expired Feeds",
                   "sourceStep": "/api/3/workflow_steps/<uuid>",
                   "targetStep": "/api/3/workflow_steps/<uuid>",
                   "uuid": "<uuid>"
@@ -98843,7 +100973,7 @@
                   "group": null,
                   "isExecuted": false,
                   "label": null,
-                  "name": "Run -> Pull from input",
+                  "name": "Start -> Check if feeds module enabled",
                   "sourceStep": "/api/3/workflow_steps/<uuid>",
                   "targetStep": "/api/3/workflow_steps/<uuid>",
                   "uuid": "<uuid>"
@@ -98852,166 +100982,147 @@
               "trigger_step_type": "/api/3/workflow_step_types/<uuid>"
             },
             "template_iri": "/api/3/workflows/<uuid>",
-            "wf_modified": "2026-05-16T11:49:34Z"
+            "wf_modified": "2022-07-18T06:29:11Z"
           },
-          "modified": "2026-05-20T18:12:55.585691Z",
-          "name": "E2E - Compute Severity",
+          "modified": "2026-05-21T21:00:01.345714Z",
+          "name": "Purge Expired Feeds",
           "node_name": "fsr-1",
           "parent_wf": null,
           "peer_details": {},
           "result": {
-            "debug": true,
-            "final_label": "score-42-final",
-            "final_status": "complete",
-            "task_id": "<uuid>"
+            "data": {
+              "total_records_deleted": 0
+            },
+            "message": "",
+            "operation": null,
+            "status": "Success"
           },
           "status": "finished",
           "steps": [
             {
-              "@id": "/wf/api/steps/5694957/",
+              "@id": "/wf/api/steps/5696363/",
               "@type": "Step",
-              "completed": "2026-05-20T18:12:55.538442Z",
-              "func": "set_multiple",
+              "completed": "2026-05-21T21:00:01.303852Z",
+              "func": "connector",
               "metadata": {
-                "id": 7298,
+                "id": 29,
                 "metadata": {
                   "globalMockUsed": false,
                   "group": null,
                   "ignore_errors": false,
-                  "left": "200",
+                  "left": "125",
                   "mockOutputUsed": false,
                   "stepType": {
-                    "background": "#f7ac20",
-                    "displayName": "Set Variable",
-                    "icon": "icon icon-set-variables"
+                    "background": "#ff7600",
+                    "displayName": "Utilities",
+                    "icon": "icon icon-utilities"
                   },
-                  "top": "320",
+                  "top": "300",
                   "uuid": "<uuid>",
                   "when": true
                 },
                 "template_iri": "/api/3/workflow_steps/<uuid>",
-                "wf_metadata": 1171
+                "wf_metadata": 5
               },
-              "name": "Final",
-              "started": "2026-05-20T18:12:55.519617Z",
+              "name": "Delete Expired Feeds",
+              "started": "2026-05-21T21:00:00.922537Z",
               "status": "finished"
             },
             {
-              "@id": "/wf/api/steps/5694958/",
+              "@id": "/wf/api/steps/5696364/",
               "@type": "Step",
-              "completed": "2026-05-20T18:12:55.498456Z",
-              "func": "set_multiple",
+              "completed": "2026-05-21T21:00:00.890484Z",
+              "func": "connector",
               "metadata": {
-                "id": 7299,
+                "id": 30,
                 "metadata": {
                   "globalMockUsed": false,
                   "group": null,
                   "ignore_errors": false,
-                  "left": "200",
+                  "left": "125",
                   "mockOutputUsed": false,
                   "stepType": {
-                    "background": "#f7ac20",
-                    "displayName": "Set Variable",
-                    "icon": "icon icon-set-variables"
+                    "background": "#ff7600",
+                    "displayName": "Utilities",
+                    "icon": "icon icon-utilities"
                   },
-                  "top": "220",
+                  "top": "165",
                   "uuid": "<uuid>",
                   "when": true
                 },
                 "template_iri": "/api/3/workflow_steps/<uuid>",
-                "wf_metadata": 1171
+                "wf_metadata": 5
               },
-              "name": "Pull from input",
-              "started": "2026-05-20T18:12:55.477921Z",
+              "name": "Fetch Threat Intel Feed Modules details",
+              "started": "2026-05-21T21:00:00.559208Z",
               "status": "finished"
             },
             {
-              "@id": "/wf/api/steps/5694959/",
+              "@id": "/wf/api/steps/5696365/",
               "@type": "Step",
-              "completed": "2026-05-20T18:12:55.456032Z",
+              "completed": "2026-05-21T21:00:00.530589Z",
               "func": "set_multiple",
               "metadata": {
-                "id": 7300,
+                "id": 31,
                 "metadata": {
                   "globalMockUsed": false,
                   "group": null,
                   "ignore_errors": false,
-                  "left": "200",
+                  "left": "125",
                   "mockOutputUsed": false,
                   "stepType": {
                     "background": null,
                     "displayName": "Referenced",
                     "icon": "icon icon-referenced"
                   },
-                  "top": "120",
+                  "top": "30",
                   "uuid": "<uuid>",
                   "when": true
                 },
                 "template_iri": "/api/3/workflow_steps/<uuid>",
-                "wf_metadata": 1171
+                "wf_metadata": 5
               },
-              "name": "Run",
-              "started": "2026-05-20T18:12:55.440097Z",
+              "name": "Start",
+              "started": "2026-05-21T21:00:00.511734Z",
               "status": "finished"
             }
           ],
-          "tags": "",
+          "tags": "system",
           "template_iri": "/api/3/workflows/<uuid>",
-          "user": "/api/3/people/<uuid>"
+          "user": ""
         },
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
-          "@id": "/wf/api/workflows/681013/",
+          "@id": "/wf/api/workflows/681189/",
           "@type": "Workflow",
-          "created": "2026-05-20T18:12:55.255419Z",
+          "created": "2026-05-21T21:00:00.264380Z",
           "debug": true,
           "env": {
             "auth_info": {
               "auth_method": "CS HMAC"
             },
-            "currentUser": "/api/3/people/<uuid>",
+            "child_step_id": null,
             "debug": true,
-            "final_label": "score-42-final",
-            "final_status": "complete",
             "globalMock": false,
             "input": {
-              "params": {
-                "score": 42
-              },
+              "params": {},
               "records": []
             },
-            "label_seed": "score-42",
-            "last_run_at": null,
+            "last_run_at": "2026-05-21T21:00:00.019359Z",
             "mockPlaybookId": null,
-            "request": {
-              "baseUri": "https://your-soar.example.com",
-              "currentUser": "/api/3/people/<uuid>",
-              "headers": {
-                "accept": "*/*",
-                "accept-encoding": "gzip, deflate",
-                "authorization": "*******",
-                "connection": "keep-alive",
-                "content-length": "96",
-                "content-type": "application/json",
-                "host": "10.99.249.205",
-                "proxy": "",
-                "user-agent": "python-requests/2.33.1",
-                "x-php-ob-level": "1"
-              },
-              "method": "POST",
-              "uri": "https://your-soar.example.com/api/triggers/1/notrigger/<uuid>"
-            },
+            "module_exists": 1,
+            "request": {},
             "resources": {},
-            "score_int": 42,
+            "step_id": 5696363,
             "task_id": "<uuid>",
-            "useMockOutput": false
+            "wf_id": 681189
           },
           "metadata": {
-            "id": 1171,
+            "id": 5,
             "metadata": {
               "groups": [],
               "routes": [
@@ -99021,7 +101132,7 @@
                   "group": null,
                   "isExecuted": false,
                   "label": null,
-                  "name": "Pull from input -> Final",
+                  "name": "Fetch Threat Intel Feed Modules details -> Delete Expired Feeds",
                   "sourceStep": "/api/3/workflow_steps/<uuid>",
                   "targetStep": "/api/3/workflow_steps/<uuid>",
                   "uuid": "<uuid>"
@@ -99032,7 +101143,7 @@
                   "group": null,
                   "isExecuted": false,
                   "label": null,
-                  "name": "Run -> Pull from input",
+                  "name": "Start -> Check if feeds module enabled",
                   "sourceStep": "/api/3/workflow_steps/<uuid>",
                   "targetStep": "/api/3/workflow_steps/<uuid>",
                   "uuid": "<uuid>"
@@ -99041,121 +101152,490 @@
               "trigger_step_type": "/api/3/workflow_step_types/<uuid>"
             },
             "template_iri": "/api/3/workflows/<uuid>",
-            "wf_modified": "2026-05-16T11:49:34Z"
+            "wf_modified": "2022-07-18T06:29:11Z"
           },
-          "modified": "2026-05-20T18:12:55.585691Z",
-          "name": "E2E - Compute Severity",
+          "modified": "2026-05-21T21:00:01.345714Z",
+          "name": "Purge Expired Feeds",
           "node_name": "fsr-1",
           "parent_wf": null,
           "peer_details": {},
           "result": {
-            "debug": true,
-            "final_label": "score-42-final",
-            "final_status": "complete",
-            "task_id": "<uuid>"
+            "data": {
+              "total_records_deleted": 0
+            },
+            "message": "",
+            "operation": null,
+            "status": "Success"
           },
           "status": "finished",
           "steps": [
             {
-              "@id": "/wf/api/steps/5694957/",
+              "@id": "/wf/api/steps/5696363/",
               "@type": "Step",
-              "completed": "2026-05-20T18:12:55.538442Z",
-              "func": "set_multiple",
+              "completed": "2026-05-21T21:00:01.303852Z",
+              "func": "connector",
               "metadata": {
-                "id": 7298,
+                "id": 29,
                 "metadata": {
                   "globalMockUsed": false,
                   "group": null,
                   "ignore_errors": false,
-                  "left": "200",
+                  "left": "125",
                   "mockOutputUsed": false,
                   "stepType": {
-                    "background": "#f7ac20",
-                    "displayName": "Set Variable",
-                    "icon": "icon icon-set-variables"
+                    "background": "#ff7600",
+                    "displayName": "Utilities",
+                    "icon": "icon icon-utilities"
                   },
-                  "top": "320",
+                  "top": "300",
                   "uuid": "<uuid>",
                   "when": true
                 },
                 "template_iri": "/api/3/workflow_steps/<uuid>",
-                "wf_metadata": 1171
+                "wf_metadata": 5
               },
-              "name": "Final",
-              "started": "2026-05-20T18:12:55.519617Z",
+              "name": "Delete Expired Feeds",
+              "started": "2026-05-21T21:00:00.922537Z",
               "status": "finished"
             },
             {
-              "@id": "/wf/api/steps/5694958/",
+              "@id": "/wf/api/steps/5696364/",
               "@type": "Step",
-              "completed": "2026-05-20T18:12:55.498456Z",
-              "func": "set_multiple",
+              "completed": "2026-05-21T21:00:00.890484Z",
+              "func": "connector",
               "metadata": {
-                "id": 7299,
+                "id": 30,
                 "metadata": {
                   "globalMockUsed": false,
                   "group": null,
                   "ignore_errors": false,
-                  "left": "200",
+                  "left": "125",
                   "mockOutputUsed": false,
                   "stepType": {
-                    "background": "#f7ac20",
-                    "displayName": "Set Variable",
-                    "icon": "icon icon-set-variables"
+                    "background": "#ff7600",
+                    "displayName": "Utilities",
+                    "icon": "icon icon-utilities"
                   },
-                  "top": "220",
+                  "top": "165",
                   "uuid": "<uuid>",
                   "when": true
                 },
                 "template_iri": "/api/3/workflow_steps/<uuid>",
-                "wf_metadata": 1171
+                "wf_metadata": 5
               },
-              "name": "Pull from input",
-              "started": "2026-05-20T18:12:55.477921Z",
+              "name": "Fetch Threat Intel Feed Modules details",
+              "started": "2026-05-21T21:00:00.559208Z",
               "status": "finished"
             },
             {
-              "@id": "/wf/api/steps/5694959/",
+              "@id": "/wf/api/steps/5696365/",
               "@type": "Step",
-              "completed": "2026-05-20T18:12:55.456032Z",
+              "completed": "2026-05-21T21:00:00.530589Z",
               "func": "set_multiple",
               "metadata": {
-                "id": 7300,
+                "id": 31,
                 "metadata": {
                   "globalMockUsed": false,
                   "group": null,
                   "ignore_errors": false,
-                  "left": "200",
+                  "left": "125",
                   "mockOutputUsed": false,
                   "stepType": {
                     "background": null,
                     "displayName": "Referenced",
                     "icon": "icon icon-referenced"
                   },
-                  "top": "120",
+                  "top": "30",
                   "uuid": "<uuid>",
                   "when": true
                 },
                 "template_iri": "/api/3/workflow_steps/<uuid>",
-                "wf_metadata": 1171
+                "wf_metadata": 5
               },
-              "name": "Run",
-              "started": "2026-05-20T18:12:55.440097Z",
+              "name": "Start",
+              "started": "2026-05-21T21:00:00.511734Z",
               "status": "finished"
             }
           ],
-          "tags": "",
+          "tags": "system",
           "template_iri": "/api/3/workflows/<uuid>",
-          "user": "/api/3/people/<uuid>"
+          "user": ""
         },
         "response_status": 200
+      }
+    }
+  },
+  "POST /api/3/agents": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-05-21",
+        "request_body": {
+          "description": "live-lab-agent probe",
+          "installerType": "/api/3/picklists/<uuid>",
+          "name": "live-<run>-agent",
+          "router": "/api/3/routers/<uuid>"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Agent",
+          "@id": "/api/3/agents/<uuid>",
+          "@type": "Agent",
+          "active": true,
+          "agentId": "<self-agent>",
+          "agentType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 103,
+            "importedBy": [],
+            "itemValue": "FSR Agent",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "allowRemoteConnectorOperation": true,
+          "appLogs": null,
+          "authType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 121,
+            "importedBy": [],
+            "itemValue": "Basic Auth",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "clientCert": null,
+          "clientCertExpiry": null,
+          "clientKey": null,
+          "configstatus": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 6,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 3,
+            "uuid": "<uuid>"
+          },
+          "configurationHealth": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#FEB80C",
+            "icon": null,
+            "id": 104,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
+            "avatar": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 5,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "WEBHOOK",
+            "recordTags": [],
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "description": "live-lab-agent probe",
+          "encryptionKey": "PEIv5hAzC.0x6a0f814b.rkRL3EKCCtPYDK94gakRNhPHBnaHaBevJ/YO9+oBoHbfTRU3wLB+wP/m5rGnmLZuPCTTlHnCTOl7jBngwUITtdxUMkA85zYXtIrPS1gr",
+          "healthCheckLastSync": null,
+          "id": 53,
+          "installerType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 648,
+            "importedBy": null,
+            "itemValue": "Bash Script",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "isLocal": false,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
+            "avatar": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 5,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "WEBHOOK",
+            "recordTags": [],
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "name": "live-<run>-agent",
+          "owners": [
+            "/api/3/teams/<uuid>"
+          ],
+          "password": "<self-agent>",
+          "role": "tenant",
+          "router": {
+            "@id": "/api/3/routers/<uuid>",
+            "@type": "Router",
+            "address": "fsr-1",
+            "apiPort": 15671,
+            "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+            "clientCert": null,
+            "clientKey": null,
+            "configMessage": null,
+            "configstatus": "/api/3/picklists/<uuid>",
+            "createDate": 1700000000,
+            "createUser": "/api/3/appliances/<uuid>",
+            "health": {
+              "fsr-1": {
+                "configMessage": "Configuration successful",
+                "configStatus": "/api/3/picklists/<uuid>"
+              }
+            },
+            "id": 2,
+            "intraTCPPort": 5672,
+            "mTLS": false,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/appliances/<uuid>",
+            "name": "Default (Embedded)",
+            "sni": null,
+            "tcpPort": 5671,
+            "type": "/api/3/picklists/<uuid>",
+            "username": "admin",
+            "uuid": "<uuid>"
+          },
+          "ssl": true,
+          "tenants": [
+            "/api/3/tenants/<uuid>"
+          ],
+          "upgradeMessage": null,
+          "upgradeState": null,
+          "username": "user_6f80282ce61994435d23a9dead942f04",
+          "uuid": "<uuid>",
+          "version": "7.6.5",
+          "vhost": "vhost_6f80282ce61994435d23a9dead942f04"
+        },
+        "response_status": 201
+      },
+      "jwt": {
+        "captured_at": "2026-05-21",
+        "request_body": {
+          "description": "live-lab-agent probe",
+          "installerType": "/api/3/picklists/<uuid>",
+          "name": "live-<run>-agent",
+          "router": "/api/3/routers/<uuid>"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Agent",
+          "@id": "/api/3/agents/<uuid>",
+          "@type": "Agent",
+          "active": true,
+          "agentId": "<self-agent>",
+          "agentType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 103,
+            "importedBy": [],
+            "itemValue": "FSR Agent",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "allowRemoteConnectorOperation": true,
+          "appLogs": null,
+          "authType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 121,
+            "importedBy": [],
+            "itemValue": "Basic Auth",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "clientCert": null,
+          "clientCertExpiry": null,
+          "clientKey": null,
+          "configstatus": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 6,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 3,
+            "uuid": "<uuid>"
+          },
+          "configurationHealth": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#FEB80C",
+            "icon": null,
+            "id": 104,
+            "importedBy": [],
+            "itemValue": "Configuration In Progress",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "description": "live-lab-agent probe",
+          "encryptionKey": "PEhsEMsik.0x6a0f813a.96qoMJ5CjlO6uXUCkJvPcs9sNCJzIyNL864+9GPh6LIXUsif6UduTi00l7j5FbkxHjMRbF92NvzmsCuvPbaRgCFjiixZIvDaeb3lNcm6",
+          "healthCheckLastSync": null,
+          "id": 52,
+          "installerType": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 648,
+            "importedBy": null,
+            "itemValue": "Bash Script",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "isLocal": false,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "name": "live-<run>-agent",
+          "owners": [
+            "/api/3/teams/<uuid>",
+            "/api/3/teams/<uuid>",
+            "/api/3/teams/<uuid>",
+            "/api/3/teams/<uuid>",
+            "/api/3/teams/<uuid>",
+            "/api/3/teams/<uuid>"
+          ],
+          "password": "<self-agent>",
+          "role": "tenant",
+          "router": {
+            "@id": "/api/3/routers/<uuid>",
+            "@type": "Router",
+            "address": "fsr-1",
+            "apiPort": 15671,
+            "certificate": "-----BEGIN CERTIFICATE-----\nMIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4\nMDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV\nSl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5\n13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa\nvMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8\nhivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR\n8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM\nBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp\nozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK\n+Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS\nLiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW\nLSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE\nA8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b\n06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=\n-----END CERTIFICATE-----",
+            "clientCert": null,
+            "clientKey": null,
+            "configMessage": null,
+            "configstatus": "/api/3/picklists/<uuid>",
+            "createDate": 1700000000,
+            "createUser": "/api/3/appliances/<uuid>",
+            "health": {
+              "fsr-1": {
+                "configMessage": "Configuration successful",
+                "configStatus": "/api/3/picklists/<uuid>"
+              }
+            },
+            "id": 2,
+            "intraTCPPort": 5672,
+            "mTLS": false,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/appliances/<uuid>",
+            "name": "Default (Embedded)",
+            "sni": null,
+            "tcpPort": 5671,
+            "type": "/api/3/picklists/<uuid>",
+            "username": "admin",
+            "uuid": "<uuid>"
+          },
+          "ssl": true,
+          "tenants": [
+            "/api/3/tenants/<uuid>"
+          ],
+          "upgradeMessage": null,
+          "upgradeState": null,
+          "username": "user_aa73fb4b2b00ab2249689b43a8a6b98e",
+          "uuid": "<uuid>",
+          "version": "7.6.5",
+          "vhost": "vhost_aa73fb4b2b00ab2249689b43a8a6b98e"
+        },
+        "response_status": 201
       }
     }
   },
   "POST /api/3/alerts": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-alert",
           "severity": "/api/3/picklists/<uuid>",
@@ -99407,7 +101887,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-alert",
           "severity": "/api/3/picklists/<uuid>",
@@ -99692,12 +102172,12 @@
   "POST /api/3/api_keys": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-apikey",
           "roles": [],
@@ -99784,7 +102264,7 @@
   "POST /api/3/bulkupsert/{moduleType}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "name": "live-<run>-bulkupsert",
@@ -99797,7 +102277,7 @@
         "response_status": 500
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "name": "live-<run>-bulkupsert",
@@ -100090,7 +102570,7 @@
   "POST /api/3/comments": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "content": "<p>live-<run>-comment linked to incident</p>",
           "incidents": [
@@ -100197,7 +102677,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "content": "<p>live-<run>-comment linked to incident</p>",
           "incidents": [
@@ -100337,7 +102817,7 @@
   "POST /api/3/files": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "file": "<binary>"
         },
@@ -100358,7 +102838,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "file": "<binary>"
         },
@@ -100383,7 +102863,7 @@
   "POST /api/3/incidents": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-comment-parent",
           "severity": "/api/3/picklists/<uuid>",
@@ -100611,7 +103091,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-comment-parent",
           "severity": "/api/3/picklists/<uuid>",
@@ -100867,7 +103347,7 @@
   "POST /api/3/roles": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test role",
           "name": "live-<run>-role"
@@ -100885,7 +103365,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test role",
           "name": "live-<run>-role"
@@ -100907,7 +103387,7 @@
   "POST /api/3/solutionpacks/install": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "file": "<binary>"
         },
@@ -100973,7 +103453,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "file": "<binary>"
         },
@@ -101043,7 +103523,7 @@
   "POST /api/3/tasks": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test task",
           "name": "live-<run>-task",
@@ -101142,7 +103622,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test task",
           "name": "live-<run>-task",
@@ -101274,7 +103754,7 @@
   "POST /api/3/teams": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test team (typed)",
           "name": "live-<run>-team2"
@@ -101295,7 +103775,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test team (typed)",
           "name": "live-<run>-team2"
@@ -101320,7 +103800,7 @@
   "POST /api/3/upsert/{moduleType}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-upsert",
           "severity": "/api/3/picklists/<uuid>",
@@ -101572,7 +104052,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-upsert",
           "severity": "/api/3/picklists/<uuid>",
@@ -101857,7 +104337,7 @@
   "POST /api/3/user_queries": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "models": "/api/3/model_metadatas/<uuid>",
           "name": "live-<run>-savedq",
@@ -101968,7 +104448,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "models": "/api/3/model_metadatas/<uuid>",
           "name": "live-<run>-savedq",
@@ -102083,7 +104563,7 @@
   "POST /api/3/{collection}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test team",
           "name": "live-<run>-team"
@@ -102104,7 +104584,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "live_test team",
           "name": "live-<run>-team"
@@ -102149,12 +104629,12 @@
   "POST /api/auth/query/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "show_api_key": false,
           "users": [
@@ -102191,7 +104671,7 @@
   "POST /api/auth/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "api_key_validity": 1,
           "status": 1,
@@ -102201,7 +104681,7 @@
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "api_key_validity": 1,
           "status": 1,
@@ -102221,7 +104701,7 @@
   "POST /api/gateway/audit/activities": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [],
           "limit": 2,
@@ -102230,49 +104710,51 @@
         "response_body": {
           "content": [
             {
-              "component": "crudhub",
-              "data": [],
-              "displayName": "demo-name",
-              "entitySingularName": "Router",
-              "entityType": "routers",
-              "entityUuid": "<uuid>",
-              "id": 622979,
-              "operation": "Update",
-              "source": "127.0.0.1",
-              "subComponent": "EntityRecord",
+              "component": "sealab",
+              "data": {
+                "completed_time": "2026-05-21 22:00:00",
+                "message": "Squeeze query is executed successfully.",
+                "retry": 0,
+                "start_time": "2026-05-21 22:00:00",
+                "status": "success",
+                "success": true,
+                "table": "workflow_step",
+                "table_size_after": 2424832,
+                "table_size_before": 36626432
+              },
+              "entitySingularName": "Logs",
+              "entityType": "Logs",
+              "id": 632030,
+              "operation": "Delete",
+              "source": "Schedule",
               "teamIris": [
                 "cs-non-ownable"
               ],
-              "title": "Attribute(s) [] Updated in Router [demo-name]",
-              "transactionDate": 1779301747279,
-              "user": "Agent",
-              "userId": "<uuid>",
+              "title": "Storage Optimisation job has completed (PG Squeeze)",
+              "transactionDate": 1779400800579,
+              "user": "SYSTEM",
+              "userId": "SYSTEM",
               "userOwnerIris": []
             },
             {
-              "component": "das",
-              "displayName": "CS Admin",
-              "entitySingularName": "Person",
-              "entityType": "people",
-              "entityUuid": "<uuid>",
-              "id": 622978,
-              "operation": "Login Success",
-              "source": "10.100.4.154",
+              "component": "sealab",
+              "data": {
+                "start_time": "2026-05-21 22:00:00",
+                "table": "workflow_step"
+              },
+              "entitySingularName": "Logs",
+              "entityType": "Logs",
+              "id": 632029,
+              "operation": "Delete",
+              "source": "Schedule",
               "teamIris": [
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>"
+                "cs-non-ownable"
               ],
-              "title": "DB login success for user [csadmin]",
-              "transactionDate": 1779301745526,
-              "user": "CS Admin",
-              "userId": "<uuid>",
-              "userOwnerIris": [
-                "/api/3/people/<uuid>"
-              ]
+              "title": "Storage Optimisation job has triggered (PG Squeeze)",
+              "transactionDate": 1779400800343,
+              "user": "SYSTEM",
+              "userId": "SYSTEM",
+              "userOwnerIris": []
             }
           ],
           "first": true,
@@ -102281,7 +104763,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [],
           "limit": 2,
@@ -102290,67 +104772,51 @@
         "response_body": {
           "content": [
             {
-              "component": "crudhub",
+              "component": "sealab",
               "data": {
-                "@id": "/api/3/alerts/<uuid>",
-                "Ack SLA": "Awaiting Action",
-                "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
-                "Created By": "WEBHOOK",
-                "Created On": "05-20-2026 18:28 PM UTC",
-                "Escalated": "No",
-                "Id": 1182,
-                "Name": "live-<run>-upsert",
-                "Priority Weight": 1,
-                "Response SLA": "Awaiting Action",
-                "Severity": "Minimal",
-                "Source": "live_test",
-                "State": "New",
-                "Status": "Active",
-                "Type": "Other / Unknown",
-                "UUID": "<uuid>",
-                "recordTags": []
+                "completed_time": "2026-05-21 22:00:00",
+                "message": "Squeeze query is executed successfully.",
+                "retry": 0,
+                "start_time": "2026-05-21 22:00:00",
+                "status": "success",
+                "success": true,
+                "table": "workflow_step",
+                "table_size_after": 2424832,
+                "table_size_before": 36626432
               },
-              "displayName": "live-<run>-upsert",
-              "entitySingularName": "Alert",
-              "entityType": "alerts",
-              "entityUuid": "<uuid>",
-              "id": 622975,
+              "entitySingularName": "Logs",
+              "entityType": "Logs",
+              "id": 632030,
               "operation": "Delete",
-              "source": "10.100.4.154",
-              "subComponent": "EntityRecord",
+              "source": "Schedule",
               "teamIris": [
-                "/api/3/teams/<uuid>"
+                "cs-non-ownable"
               ],
-              "title": "Alert [live-<run>-upsert] Deleted",
-              "transactionDate": 1779301731853,
-              "user": "WEBHOOK",
-              "userId": "<uuid>",
+              "title": "Storage Optimisation job has completed (PG Squeeze)",
+              "transactionDate": 1779400800579,
+              "user": "SYSTEM",
+              "userId": "SYSTEM",
               "userOwnerIris": []
             },
             {
-              "component": "das",
-              "displayName": "CS Admin",
-              "entitySingularName": "Person",
-              "entityType": "people",
-              "entityUuid": "<uuid>",
-              "id": 622974,
-              "operation": "Login Success",
-              "source": "10.100.4.154",
+              "component": "sealab",
+              "data": {
+                "start_time": "2026-05-21 22:00:00",
+                "table": "workflow_step"
+              },
+              "entitySingularName": "Logs",
+              "entityType": "Logs",
+              "id": 632029,
+              "operation": "Delete",
+              "source": "Schedule",
               "teamIris": [
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>"
+                "cs-non-ownable"
               ],
-              "title": "DB login success for user [csadmin]",
-              "transactionDate": 1779301729548,
-              "user": "CS Admin",
-              "userId": "<uuid>",
-              "userOwnerIris": [
-                "/api/3/people/<uuid>"
-              ]
+              "title": "Storage Optimisation job has triggered (PG Squeeze)",
+              "transactionDate": 1779400800343,
+              "user": "SYSTEM",
+              "userId": "SYSTEM",
+              "userOwnerIris": []
             }
           ],
           "first": true,
@@ -102363,12 +104829,12 @@
   "POST /api/gateway/audit/activities/count": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [],
           "logic": "AND"
@@ -102383,7 +104849,7 @@
   "POST /api/ingest-feeds/observables": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "source": "live-test",
@@ -102395,7 +104861,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "source": "live-test",
@@ -102411,7 +104877,7 @@
   "POST /api/ingest-feeds/reputation": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "reputation": "Suspicious",
@@ -102424,7 +104890,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "reputation": "Suspicious",
@@ -102441,7 +104907,7 @@
   "POST /api/ingest-feeds/stix-bundle": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "id": "bundle--<uuid>",
           "objects": [
@@ -102462,7 +104928,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "id": "bundle--<uuid>",
           "objects": [
@@ -102487,7 +104953,7 @@
   "POST /api/ingest-feeds/threatintel": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "name": "live-<run>-ti-record",
@@ -102498,7 +104964,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": [
           {
             "name": "live-<run>-ti-record",
@@ -102513,13 +104979,13 @@
   "POST /api/integration/configuration/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "config": {
             "default_greeting": "Hello",
             "salutation": "Mr."
           },
-          "connector": 226,
+          "connector": 232,
           "default": false,
           "name": "live-<run>-hwcfg",
           "status": 1,
@@ -102549,13 +105015,13 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "config": {
             "default_greeting": "Hello",
             "salutation": "Mr."
           },
-          "connector": 225,
+          "connector": 231,
           "default": false,
           "name": "live-<run>-hwcfg",
           "status": 1,
@@ -102589,7 +105055,7 @@
   "POST /api/integration/connectors/{id}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {},
         "response_body": {
           "active": true,
@@ -102762,7 +105228,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {},
         "response_body": {
           "active": true,
@@ -102939,7 +105405,7 @@
   "POST /api/integration/execute/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "config": "<uuid>",
           "connector": "hello-world",
@@ -102961,7 +105427,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "config": "<uuid>",
           "connector": "hello-world",
@@ -102987,7 +105453,7 @@
   "POST /api/public/license": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "action": "get_status"
         },
@@ -102998,7 +105464,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "action": "get_status"
         },
@@ -103013,7 +105479,7 @@
   "POST /api/query/{collection}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [
             {
@@ -103290,7 +105756,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [
             {
@@ -103571,7 +106037,7 @@
   "POST /api/query/{collection}/{queryId}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "$limit": 1,
           "$page": 1
@@ -103580,7 +106046,7 @@
         "response_status": 404
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "$limit": 1,
           "$page": 1
@@ -103593,7 +106059,7 @@
   "POST /api/search": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "index": [
             "alerts",
@@ -103606,7 +106072,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "index": [
             "alerts",
@@ -103646,7 +106112,7 @@
   "POST /api/wf/api/jinja-editor/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "template": "{{ name | upper }}",
           "values": {
@@ -103659,7 +106125,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "template": "{{ name | upper }}",
           "values": {
@@ -103676,7 +106142,7 @@
   "POST /api/wf/api/manual-wf-input/list_wfinput/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/manual-wf-input/list_wfinput/context/",
@@ -103713,7 +106179,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/manual-wf-input/list_wfinput/context/",
@@ -103754,7 +106220,7 @@
   "POST /api/wf/api/query/workflow_logs/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [
             {
@@ -103886,7 +106352,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "filters": [
             {
@@ -104022,7 +106488,7 @@
   "POST /api/wf/api/workflows/log_list/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/workflows/log_list/context/",
@@ -104062,7 +106528,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/workflows/log_list/context/",
@@ -104106,7 +106572,7 @@
   "POST /auth/authenticate": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "credentials": {
             "loginid": "csadmin",
@@ -104119,7 +106585,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "credentials": {
             "loginid": "csadmin",
@@ -104136,7 +106602,7 @@
   "PUT /api/3/alerts/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -104359,7 +106825,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -104610,12 +107076,12 @@
   "PUT /api/3/api_keys/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "name": "live-<run>-apikey-renamed",
           "roles": [],
@@ -104702,7 +107168,7 @@
   "PUT /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "isImportant": true
         },
@@ -104806,7 +107272,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "isImportant": true
         },
@@ -104943,7 +107409,7 @@
   "PUT /api/3/incidents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -105150,7 +107616,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -105385,7 +107851,7 @@
   "PUT /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -105464,7 +107930,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -105571,7 +108037,7 @@
   "PUT /api/3/{collection}/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "renamed by live_test"
         },
@@ -105587,7 +108053,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "description": "renamed by live_test"
         },
@@ -105607,12 +108073,12 @@
   "PUT /api/auth/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-20",
+        "captured_at": "2026-05-21",
         "request_body": {
           "api_key_validity": 5,
           "key_type": "API_KEY",

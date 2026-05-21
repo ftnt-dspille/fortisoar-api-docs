@@ -9714,71 +9714,45 @@ paths:
             application/json:
               example:
                 content:
-                - component: crudhub
+                - component: sealab
                   data:
-                    '@id': /api/3/alerts/<uuid>
-                    Ack SLA: Awaiting Action
-                    Closure Notes: 'NOTES HERE
-
-                      --------------
-
-
-
-
-
-                      Reason HERE
-
-                      ----------------'
-                    Created By: WEBHOOK
-                    Created On: 05-20-2026 18:28 PM UTC
-                    Escalated: 'No'
-                    Id: 1182
-                    Name: live-<run>-upsert
-                    Priority Weight: 1
-                    Response SLA: Awaiting Action
-                    Severity: Minimal
-                    Source: live_test
-                    State: New
-                    Status: Active
-                    Type: Other / Unknown
-                    UUID: <uuid>
-                    recordTags: []
-                  displayName: live-<run>-upsert
-                  entitySingularName: Alert
-                  entityType: alerts
-                  entityUuid: <uuid>
-                  id: 622975
+                    completed_time: '2026-05-21 22:00:00'
+                    message: Squeeze query is executed successfully.
+                    retry: 0
+                    start_time: '2026-05-21 22:00:00'
+                    status: success
+                    success: true
+                    table: workflow_step
+                    table_size_after: 2424832
+                    table_size_before: 36626432
+                  entitySingularName: Logs
+                  entityType: Logs
+                  id: 632030
                   operation: Delete
-                  source: 10.100.4.154
-                  subComponent: EntityRecord
+                  source: Schedule
                   teamIris:
-                  - /api/3/teams/<uuid>
-                  title: Alert [live-<run>-upsert] Deleted
-                  transactionDate: 1779301731853
-                  user: WEBHOOK
-                  userId: <uuid>
+                  - cs-non-ownable
+                  title: Storage Optimisation job has completed (PG Squeeze)
+                  transactionDate: 1779400800579
+                  user: SYSTEM
+                  userId: SYSTEM
                   userOwnerIris: []
-                - component: das
-                  displayName: CS Admin
-                  entitySingularName: Person
-                  entityType: people
-                  entityUuid: <uuid>
-                  id: 622974
-                  operation: Login Success
-                  source: 10.100.4.154
+                - component: sealab
+                  data:
+                    start_time: '2026-05-21 22:00:00'
+                    table: workflow_step
+                  entitySingularName: Logs
+                  entityType: Logs
+                  id: 632029
+                  operation: Delete
+                  source: Schedule
                   teamIris:
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  title: DB login success for user [csadmin]
-                  transactionDate: 1779301729548
-                  user: CS Admin
-                  userId: <uuid>
-                  userOwnerIris:
-                  - /api/3/people/<uuid>
+                  - cs-non-ownable
+                  title: Storage Optimisation job has triggered (PG Squeeze)
+                  transactionDate: 1779400800343
+                  user: SYSTEM
+                  userId: SYSTEM
+                  userOwnerIris: []
                 first: true
                 number: 0
       x-verified-live:
@@ -9842,49 +9816,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordLog'
               example:
-                component: crudhub
+                component: sealab
                 data:
-                  '@id': /api/3/alerts/<uuid>
-                  Ack SLA: Awaiting Action
-                  Closure Notes: 'NOTES HERE
-
-                    --------------
-
-
-
-
-
-                    Reason HERE
-
-                    ----------------'
-                  Created By: WEBHOOK
-                  Created On: 05-20-2026 18:28 PM UTC
-                  Escalated: 'No'
-                  Id: 1182
-                  Name: live-<run>-upsert
-                  Priority Weight: 1
-                  Response SLA: Awaiting Action
-                  Severity: Minimal
-                  Source: live_test
-                  State: New
-                  Status: Active
-                  Type: Other / Unknown
-                  UUID: <uuid>
-                  recordTags: []
-                displayName: live-<run>-upsert
-                entitySingularName: Alert
-                entityType: alerts
-                entityUuid: <uuid>
-                id: 622975
+                  completed_time: '2026-05-21 22:00:00'
+                  message: Squeeze query is executed successfully.
+                  retry: 0
+                  start_time: '2026-05-21 22:00:00'
+                  status: success
+                  success: true
+                  table: workflow_step
+                  table_size_after: 2424832
+                  table_size_before: 36626432
+                entitySingularName: Logs
+                entityType: Logs
+                id: 632030
                 operation: Delete
-                source: 10.100.4.154
-                subComponent: EntityRecord
+                source: Schedule
                 teamIris:
-                - /api/3/teams/<uuid>
-                title: Alert [live-<run>-upsert] Deleted
-                transactionDate: 1779301731853
-                user: WEBHOOK
-                userId: <uuid>
+                - cs-non-ownable
+                title: Storage Optimisation job has completed (PG Squeeze)
+                transactionDate: 1779400800579
+                user: SYSTEM
+                userId: SYSTEM
                 userOwnerIris: []
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
         \ gated` \xB7 `Bearer JWT: OK`"
@@ -10141,47 +10094,29 @@ paths:
           content:
             application/json:
               example:
-                '@id': /wf/api/workflows/681013/
+                '@id': /wf/api/workflows/681189/
                 '@type': Workflow
-                created: '2026-05-20T18:12:55.255419Z'
+                created: '2026-05-21T21:00:00.264380Z'
                 debug: true
                 env:
                   auth_info:
                     auth_method: CS HMAC
-                  currentUser: /api/3/people/<uuid>
+                  child_step_id: null
                   debug: true
-                  final_label: score-42-final
-                  final_status: complete
                   globalMock: false
                   input:
-                    params:
-                      score: 42
+                    params: {}
                     records: []
-                  label_seed: score-42
-                  last_run_at: null
+                  last_run_at: '2026-05-21T21:00:00.019359Z'
                   mockPlaybookId: null
-                  request:
-                    baseUri: https://your-soar.example.com
-                    currentUser: /api/3/people/<uuid>
-                    headers:
-                      accept: '*/*'
-                      accept-encoding: gzip, deflate
-                      authorization: '*******'
-                      connection: keep-alive
-                      content-length: '96'
-                      content-type: application/json
-                      host: 10.99.249.205
-                      proxy: ''
-                      user-agent: python-requests/2.33.1
-                      x-php-ob-level: '1'
-                    method: POST
-                    uri: https://your-soar.example.com/api/triggers/1/notrigger/<uuid>
+                  module_exists: 1
+                  request: {}
                   resources: {}
-                  score_int: 42
+                  step_id: 5696363
                   task_id: <uuid>
-                  useMockOutput: false
+                  wf_id: 681189
                 metadata:
-                  id: 1171
+                  id: 5
                   metadata:
                     groups: []
                     routes:
@@ -10190,7 +10125,7 @@ paths:
                       group: null
                       isExecuted: false
                       label: null
-                      name: Pull from input -> Final
+                      name: Fetch Threat Intel Feed Modules details -> Delete Expired Feeds
                       sourceStep: /api/3/workflow_steps/<uuid>
                       targetStep: /api/3/workflow_steps/<uuid>
                       uuid: <uuid>
@@ -10199,100 +10134,101 @@ paths:
                       group: null
                       isExecuted: false
                       label: null
-                      name: Run -> Pull from input
+                      name: Start -> Check if feeds module enabled
                       sourceStep: /api/3/workflow_steps/<uuid>
                       targetStep: /api/3/workflow_steps/<uuid>
                       uuid: <uuid>
                     trigger_step_type: /api/3/workflow_step_types/<uuid>
                   template_iri: /api/3/workflows/<uuid>
-                  wf_modified: '2026-05-16T11:49:34Z'
-                modified: '2026-05-20T18:12:55.585691Z'
-                name: E2E - Compute Severity
+                  wf_modified: '2022-07-18T06:29:11Z'
+                modified: '2026-05-21T21:00:01.345714Z'
+                name: Purge Expired Feeds
                 node_name: fsr-1
                 parent_wf: null
                 peer_details: {}
                 result:
-                  debug: true
-                  final_label: score-42-final
-                  final_status: complete
-                  task_id: <uuid>
+                  data:
+                    total_records_deleted: 0
+                  message: ''
+                  operation: null
+                  status: Success
                 status: finished
                 steps:
-                - '@id': /wf/api/steps/5694957/
+                - '@id': /wf/api/steps/5696363/
                   '@type': Step
-                  completed: '2026-05-20T18:12:55.538442Z'
-                  func: set_multiple
+                  completed: '2026-05-21T21:00:01.303852Z'
+                  func: connector
                   metadata:
-                    id: 7298
+                    id: 29
                     metadata:
                       globalMockUsed: false
                       group: null
                       ignore_errors: false
-                      left: '200'
+                      left: '125'
                       mockOutputUsed: false
                       stepType:
-                        background: '#f7ac20'
-                        displayName: Set Variable
-                        icon: icon icon-set-variables
-                      top: '320'
+                        background: '#ff7600'
+                        displayName: Utilities
+                        icon: icon icon-utilities
+                      top: '300'
                       uuid: <uuid>
                       when: true
                     template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 1171
-                  name: Final
-                  started: '2026-05-20T18:12:55.519617Z'
+                    wf_metadata: 5
+                  name: Delete Expired Feeds
+                  started: '2026-05-21T21:00:00.922537Z'
                   status: finished
-                - '@id': /wf/api/steps/5694958/
+                - '@id': /wf/api/steps/5696364/
                   '@type': Step
-                  completed: '2026-05-20T18:12:55.498456Z'
-                  func: set_multiple
+                  completed: '2026-05-21T21:00:00.890484Z'
+                  func: connector
                   metadata:
-                    id: 7299
+                    id: 30
                     metadata:
                       globalMockUsed: false
                       group: null
                       ignore_errors: false
-                      left: '200'
+                      left: '125'
                       mockOutputUsed: false
                       stepType:
-                        background: '#f7ac20'
-                        displayName: Set Variable
-                        icon: icon icon-set-variables
-                      top: '220'
+                        background: '#ff7600'
+                        displayName: Utilities
+                        icon: icon icon-utilities
+                      top: '165'
                       uuid: <uuid>
                       when: true
                     template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 1171
-                  name: Pull from input
-                  started: '2026-05-20T18:12:55.477921Z'
+                    wf_metadata: 5
+                  name: Fetch Threat Intel Feed Modules details
+                  started: '2026-05-21T21:00:00.559208Z'
                   status: finished
-                - '@id': /wf/api/steps/5694959/
+                - '@id': /wf/api/steps/5696365/
                   '@type': Step
-                  completed: '2026-05-20T18:12:55.456032Z'
+                  completed: '2026-05-21T21:00:00.530589Z'
                   func: set_multiple
                   metadata:
-                    id: 7300
+                    id: 31
                     metadata:
                       globalMockUsed: false
                       group: null
                       ignore_errors: false
-                      left: '200'
+                      left: '125'
                       mockOutputUsed: false
                       stepType:
                         background: null
                         displayName: Referenced
                         icon: icon icon-referenced
-                      top: '120'
+                      top: '30'
                       uuid: <uuid>
                       when: true
                     template_iri: /api/3/workflow_steps/<uuid>
-                    wf_metadata: 1171
-                  name: Run
-                  started: '2026-05-20T18:12:55.440097Z'
+                    wf_metadata: 5
+                  name: Start
+                  started: '2026-05-21T21:00:00.511734Z'
                   status: finished
-                tags: ''
+                tags: system
                 template_iri: /api/3/workflows/<uuid>
-                user: /api/3/people/<uuid>
+                user: ''
       x-verified-live:
       - apikey
       - jwt
@@ -11568,7 +11504,7 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 225
+              connector: 231
               default: false
               name: live-<run>-hwcfg
               status: 1
@@ -12074,36 +12010,948 @@ paths:
       tags:
       - Agents
       summary: List agents
-      description: 'Hydra collection of agent records. The appliance''s **Self agent** is included with `role: self` and is
-        hardcoded at uuid `973c17df-bb4b-41e5-b59c-a408666fdf27` on every install; its `agentId` (the runtime `masterId` used
-        in agent config) varies per appliance and must be read from the response. Health is reported under `configurationHealth.itemValue`
-        - typical values are `Awaiting Remote Node Connection`, `Remote Node Connected`, `Remote Node Unreachable`, and `Configuration
-        In Progress`.'
+      description: "Hydra collection of agent records. The appliance's **Self agent** is included with `role: self` and is\
+        \ hardcoded at uuid `973c17df-bb4b-41e5-b59c-a408666fdf27` on every install; its `agentId` (the runtime `masterId`\
+        \ used in agent config) varies per appliance and must be read from the response. Health is reported under `configurationHealth.itemValue`\
+        \ - typical values are `Awaiting Remote Node Connection`, `Remote Node Connected`, `Remote Node Unreachable`, and\
+        \ `Configuration In Progress`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Hydra collection of Agent.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/Agent
+                '@id': /api/3/agents
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/agents/<uuid>
+                  '@type': Agent
+                  active: true
+                  agentId: <self-agent>
+                  agentType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 103
+                    importedBy: []
+                    itemValue: FSR Agent
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  allowRemoteConnectorOperation: true
+                  appLogs: null
+                  authType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 121
+                    importedBy: []
+                    itemValue: Basic Auth
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  clientCert: null
+                  clientCertExpiry: null
+                  clientKey: null
+                  configstatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 12
+                    importedBy: []
+                    itemValue: Connection Verified
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 5
+                    uuid: <uuid>
+                  configurationHealth:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#D22F18'
+                    icon: null
+                    id: 109
+                    importedBy: []
+                    itemValue: Remote Node Unreachable
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 6
+                    uuid: <uuid>
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: lab-managed:session=student-test-002:host=10.99.248.76:created=1779374558
+                  encryptionKey: PElTLvCAT.0x6a0f19e1.z3vBJXus228WHR7EjSIEt2X48JyQh0Qo6wAjHZww+kisXATjRL3AwxE4XGSoYaHARv0sLMPBufYQBNetzz29IEiHuP66D2XpE64Itobm
+                  healthCheckLastSync: 1779374580
+                  id: 47
+                  installerType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 648
+                    importedBy: null
+                    itemValue: Bash Script
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  isLocal: false
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 2
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Agent
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: lab-student-test-002
+                  role: tenant
+                  router:
+                    '@id': /api/3/routers/<uuid>
+                    '@type': Router
+                    address: fsr-1
+                    apiPort: 15671
+                    certificate: '-----BEGIN CERTIFICATE-----
+
+                      MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                      BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                      MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                      Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                      13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                      vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                      hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                      8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                      BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                      ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                      +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                      LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                      LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                      A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                      06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                      -----END CERTIFICATE-----'
+                    clientCert: null
+                    clientKey: null
+                    configMessage: null
+                    configstatus: /api/3/picklists/<uuid>
+                    createDate: 1700000000
+                    createUser: /api/3/appliances/<uuid>
+                    health:
+                      fsr-1:
+                        configMessage: Configuration successful
+                        configStatus: /api/3/picklists/<uuid>
+                    id: 2
+                    intraTCPPort: 5672
+                    mTLS: false
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/appliances/<uuid>
+                    name: Default (Embedded)
+                    sni: null
+                    tcpPort: 5671
+                    type: /api/3/picklists/<uuid>
+                    username: admin
+                    uuid: <uuid>
+                  ssl: true
+                  upgradeMessage: null
+                  upgradeState: null
+                  username: user_affe30bf5e4444ea1b0cc20e58c964e0
+                  uuid: <uuid>
+                  version: 7.6.5
+                  vhost: vhost_affe30bf5e4444ea1b0cc20e58c964e0
+                - '@id': /api/3/agents/<uuid>
+                  '@type': Agent
+                  active: true
+                  agentId: <self-agent>
+                  agentType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 103
+                    importedBy: []
+                    itemValue: FSR Agent
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  allowRemoteConnectorOperation: true
+                  appLogs: null
+                  authType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 121
+                    importedBy: []
+                    itemValue: Basic Auth
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  clientCert: null
+                  clientCertExpiry: null
+                  clientKey: null
+                  configstatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 12
+                    importedBy: []
+                    itemValue: Connection Verified
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 5
+                    uuid: <uuid>
+                  configurationHealth:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#FEB80C'
+                    icon: null
+                    id: 105
+                    importedBy: []
+                    itemValue: Awaiting Remote Node Connection
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: null
+                  encryptionKey: PEWWLUMyq.0x6a0f087b.GqqaRW3MxeA32iYgKrF0EYbWTXAchm20dQP//7htFREwx/MluHftEsUBbi0SDv6+0iQ3ATAyfp1O5BCWZym438TAoRCYrcXZgSEzCTGs
+                  healthCheckLastSync: null
+                  id: 45
+                  installerType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 648
+                    importedBy: null
+                    itemValue: Bash Script
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  isLocal: false
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 2
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Agent
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: lab-B1-1779370099
+                  role: tenant
+                  router:
+                    '@id': /api/3/routers/<uuid>
+                    '@type': Router
+                    address: fsr-1
+                    apiPort: 15671
+                    certificate: '-----BEGIN CERTIFICATE-----
+
+                      MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                      BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                      MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                      Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                      13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                      vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                      hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                      8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                      BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                      ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                      +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                      LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                      LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                      A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                      06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                      -----END CERTIFICATE-----'
+                    clientCert: null
+                    clientKey: null
+                    configMessage: null
+                    configstatus: /api/3/picklists/<uuid>
+                    createDate: 1700000000
+                    createUser: /api/3/appliances/<uuid>
+                    health:
+                      fsr-1:
+                        configMessage: Configuration successful
+                        configStatus: /api/3/picklists/<uuid>
+                    id: 2
+                    intraTCPPort: 5672
+                    mTLS: false
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/appliances/<uuid>
+                    name: Default (Embedded)
+                    sni: null
+                    tcpPort: 5671
+                    type: /api/3/picklists/<uuid>
+                    username: admin
+                    uuid: <uuid>
+                  ssl: true
+                  upgradeMessage: null
+                  upgradeState: null
+                  username: user_4ceb58cf6cfe3c79469d0286286e99cc
+                  uuid: <uuid>
+                  version: 7.6.5
+                  vhost: vhost_4ceb58cf6cfe3c79469d0286286e99cc
+                - '@id': /api/3/agents/<uuid>
+                  '@type': Agent
+                  active: true
+                  agentId: <self-agent>
+                  agentType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 103
+                    importedBy: []
+                    itemValue: FSR Agent
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  allowRemoteConnectorOperation: true
+                  appLogs: null
+                  authType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 121
+                    importedBy: []
+                    itemValue: Basic Auth
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  clientCert: null
+                  clientCertExpiry: null
+                  clientKey: null
+                  configstatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 12
+                    importedBy: []
+                    itemValue: Connection Verified
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 5
+                    uuid: <uuid>
+                  configurationHealth:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#FEB80C'
+                    icon: null
+                    id: 105
+                    importedBy: []
+                    itemValue: Awaiting Remote Node Connection
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: null
+                  encryptionKey: PEqj30W7e.0x6a0eee4a.AUayD2EOQNx5bcbCdBRp2JV4HXtDfW9RwBszwrTAQEzA9Etmz2U0OzDfMEBhzSdUo38CwARDwr/bqotJAnQOpLuI54kuVjLRQ6r14MIN
+                  healthCheckLastSync: null
+                  id: 9
+                  installerType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 648
+                    importedBy: null
+                    itemValue: Bash Script
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  isLocal: false
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 2
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Agent
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: test
+                  role: tenant
+                  router:
+                    '@id': /api/3/routers/<uuid>
+                    '@type': Router
+                    address: fsr-1
+                    apiPort: 15671
+                    certificate: '-----BEGIN CERTIFICATE-----
+
+                      MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                      BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                      MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                      Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                      13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                      vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                      hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                      8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                      BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                      ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                      +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                      LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                      LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                      A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                      06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                      -----END CERTIFICATE-----'
+                    clientCert: null
+                    clientKey: null
+                    configMessage: null
+                    configstatus: /api/3/picklists/<uuid>
+                    createDate: 1700000000
+                    createUser: /api/3/appliances/<uuid>
+                    health:
+                      fsr-1:
+                        configMessage: Configuration successful
+                        configStatus: /api/3/picklists/<uuid>
+                    id: 2
+                    intraTCPPort: 5672
+                    mTLS: false
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/appliances/<uuid>
+                    name: Default (Embedded)
+                    sni: null
+                    tcpPort: 5671
+                    type: /api/3/picklists/<uuid>
+                    username: admin
+                    uuid: <uuid>
+                  ssl: true
+                  upgradeMessage: null
+                  upgradeState: null
+                  username: user_4f93000c085ae86341538b10f08be6ad
+                  uuid: <uuid>
+                  version: 7.6.5
+                  vhost: vhost_4f93000c085ae86341538b10f08be6ad
+                - '@id': /api/3/agents/<uuid>
+                  '@type': Agent
+                  active: true
+                  agentId: <self-agent>
+                  agentType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 103
+                    importedBy: []
+                    itemValue: FSR Agent
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  allowRemoteConnectorOperation: true
+                  appLogs: null
+                  authType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 121
+                    importedBy: []
+                    itemValue: Basic Auth
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  clientCert: null
+                  clientCertExpiry: null
+                  clientKey: null
+                  configstatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 12
+                    importedBy: []
+                    itemValue: Connection Verified
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 5
+                    uuid: <uuid>
+                  configurationHealth:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#D22F18'
+                    icon: null
+                    id: 109
+                    importedBy: []
+                    itemValue: Remote Node Unreachable
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 6
+                    uuid: <uuid>
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: null
+                  encryptionKey: PEqO5lSei.0x6a0f0348.R4YbBYdf6lmGq0dbb4WIIBZNompi76wODi0YPVVvS8AN0RPjT72KslqVOnpu25AELAYELl65W076rK09zDCC1wnIN4G2KhY91zDPpAHX
+                  healthCheckLastSync: 1779370481
+                  id: 44
+                  installerType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 648
+                    importedBy: null
+                    itemValue: Bash Script
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  isLocal: false
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 1
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Playbook
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: lab-A1-1779368773
+                  role: tenant
+                  router:
+                    '@id': /api/3/routers/<uuid>
+                    '@type': Router
+                    address: fsr-1
+                    apiPort: 15671
+                    certificate: '-----BEGIN CERTIFICATE-----
+
+                      MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                      BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                      MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                      Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                      13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                      vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                      hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                      8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                      BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                      ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                      +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                      LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                      LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                      A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                      06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                      -----END CERTIFICATE-----'
+                    clientCert: null
+                    clientKey: null
+                    configMessage: null
+                    configstatus: /api/3/picklists/<uuid>
+                    createDate: 1700000000
+                    createUser: /api/3/appliances/<uuid>
+                    health:
+                      fsr-1:
+                        configMessage: Configuration successful
+                        configStatus: /api/3/picklists/<uuid>
+                    id: 2
+                    intraTCPPort: 5672
+                    mTLS: false
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/appliances/<uuid>
+                    name: Default (Embedded)
+                    sni: null
+                    tcpPort: 5671
+                    type: /api/3/picklists/<uuid>
+                    username: admin
+                    uuid: <uuid>
+                  ssl: true
+                  upgradeMessage: null
+                  upgradeState: null
+                  username: user_05ca680df04b2c5075af8535e069e271
+                  uuid: <uuid>
+                  version: 7.6.5
+                  vhost: vhost_05ca680df04b2c5075af8535e069e271
+                - '@id': /api/3/agents/<uuid>
+                  '@type': Agent
+                  active: true
+                  agentId: <self-agent>
+                  agentType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 103
+                    importedBy: []
+                    itemValue: FSR Agent
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  allowRemoteConnectorOperation: true
+                  appLogs: null
+                  authType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 121
+                    importedBy: []
+                    itemValue: Basic Auth
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  clientCert: null
+                  clientCertExpiry: null
+                  clientKey: null
+                  configstatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 12
+                    importedBy: []
+                    itemValue: Connection Verified
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 5
+                    uuid: <uuid>
+                  configurationHealth:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#D22F18'
+                    icon: null
+                    id: 109
+                    importedBy: []
+                    itemValue: Remote Node Unreachable
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 6
+                    uuid: <uuid>
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  description: null
+                  encryptionKey: PEGMohgyO.0x6a0f0aa8.5488TAUaVH979yXWt2Q5tU4ODLCiN0I8QwjsdFmsefcBHqBKnOZhhOOXwbTFVDG+mWYR+g2toDWS6dWRBnVHxL0fxj6S5EDZooZiM02H
+                  healthCheckLastSync: 1779372445
+                  id: 46
+                  installerType:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 648
+                    importedBy: null
+                    itemValue: Bash Script
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  isLocal: false
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 2
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Agent
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: lab-B1-1779370654
+                  role: tenant
+                  router:
+                    '@id': /api/3/routers/<uuid>
+                    '@type': Router
+                    address: fsr-1
+                    apiPort: 15671
+                    certificate: '-----BEGIN CERTIFICATE-----
+
+                      MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                      BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                      MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                      Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                      13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                      vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                      hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                      8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                      BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                      ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                      +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                      LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                      LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                      A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                      06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                      -----END CERTIFICATE-----'
+                    clientCert: null
+                    clientKey: null
+                    configMessage: null
+                    configstatus: /api/3/picklists/<uuid>
+                    createDate: 1700000000
+                    createUser: /api/3/appliances/<uuid>
+                    health:
+                      fsr-1:
+                        configMessage: Configuration successful
+                        configStatus: /api/3/picklists/<uuid>
+                    id: 2
+                    intraTCPPort: 5672
+                    mTLS: false
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/appliances/<uuid>
+                    name: Default (Embedded)
+                    sni: null
+                    tcpPort: 5671
+                    type: /api/3/picklists/<uuid>
+                    username: admin
+                    uuid: <uuid>
+                  ssl: true
+                  upgradeMessage: null
+                  upgradeState: null
+                  username: user_690519ff9232839341a16c461469708e
+                  uuid: <uuid>
+                  version: 7.6.5
+                  vhost: vhost_690519ff9232839341a16c461469708e
+                hydra:totalItems: 9
+                hydra:view:
+                  '@id': /api/3/agents?%24limit=5&%24page=1
+                  '@type': hydra:PartialCollectionView
+                  hydra:first: /api/3/agents?%24limit=5&%24page=1
+                  hydra:last: /api/3/agents?%24limit=5&%24page=2
+                  hydra:next: /api/3/agents?%24limit=5&%24page=2
+      x-verified-live:
+      - apikey
+      - jwt
     post:
       tags:
       - Agents
       summary: Create an agent record
-      description: 'Creates a remote-agent record on the FortiSOAR master and returns the one-shot credentials the installer
-        needs.
-
-
-        **Response carries (alongside the usual `uuid`, `@id`, `agentId`):**
-
-        - `encryptionKey` - the peerwise key the installer bakes into the agent VM''s keystore.
-
-        - `username`, `password`, `vhost` - the messaging credentials the agent uses to dial SME.
-
-
-        These secrets are returned **only once**; if the response is lost the record must be deleted and re-created. The newly-created
-        record starts in `Awaiting Remote Node Connection`; it transitions to `Remote Node Connected` after the installer
-        runs on the target VM.
-
-
-        **Prerequisite:** the appliance must have an SME router configured (`GET /api/3/routers` non-empty). If it doesn''t,
-        run `sudo csadm secure-message-exchange enable` on the master first.'
+      description: "Creates a remote-agent record on the FortiSOAR master and returns the one-shot credentials the installer\
+        \ needs.\n\n**Response carries (alongside the usual `uuid`, `@id`, `agentId`):**\n- `encryptionKey` - the peerwise\
+        \ key the installer bakes into the agent VM's keystore.\n- `username`, `password`, `vhost` - the messaging credentials\
+        \ the agent uses to dial SME.\n\nThese secrets are returned **only once**; if the response is lost the record must\
+        \ be deleted and re-created. The newly-created record starts in `Awaiting Remote Node Connection`; it transitions\
+        \ to `Remote Node Connected` after the installer runs on the target VM.\n\n**Prerequisite:** the appliance must have\
+        \ an SME router configured (`GET /api/3/routers` non-empty). If it doesn't, run `sudo csadm secure-message-exchange\
+        \ enable` on the master first.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -12129,13 +12977,225 @@ paths:
                   type: string
                   description: Free-text. Useful for tagging records owned by automation.
             example:
-              name: example
-              router: example
-              installerType: example
-              description: example
+              description: live-lab-agent probe
+              installerType: /api/3/picklists/<uuid>
+              name: live-<run>-agent
+              router: /api/3/routers/<uuid>
       responses:
         '201':
           description: Agent record with one-shot installer credentials (`encryptionKey`, `username`, `password`, `vhost`).
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/Agent
+                '@id': /api/3/agents/<uuid>
+                '@type': Agent
+                active: true
+                agentId: <self-agent>
+                agentType:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 103
+                  importedBy: []
+                  itemValue: FSR Agent
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                allowRemoteConnectorOperation: true
+                appLogs: null
+                authType:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 121
+                  importedBy: []
+                  itemValue: Basic Auth
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                clientCert: null
+                clientCertExpiry: null
+                clientKey: null
+                configstatus:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 6
+                  importedBy: []
+                  itemValue: Configuration In Progress
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 3
+                  uuid: <uuid>
+                configurationHealth:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#FEB80C'
+                  icon: null
+                  id: 104
+                  importedBy: []
+                  itemValue: Configuration In Progress
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: live-lab-agent probe
+                encryptionKey: PEhsEMsik.0x6a0f813a.96qoMJ5CjlO6uXUCkJvPcs9sNCJzIyNL864+9GPh6LIXUsif6UduTi00l7j5FbkxHjMRbF92NvzmsCuvPbaRgCFjiixZIvDaeb3lNcm6
+                healthCheckLastSync: null
+                id: 52
+                installerType:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 648
+                  importedBy: null
+                  itemValue: Bash Script
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                isLocal: false
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-<run>-agent
+                owners:
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                password: <self-agent>
+                role: tenant
+                router:
+                  '@id': /api/3/routers/<uuid>
+                  '@type': Router
+                  address: fsr-1
+                  apiPort: 15671
+                  certificate: '-----BEGIN CERTIFICATE-----
+
+                    MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                    BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                    MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                    9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                    Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                    13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                    vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                    hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                    8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                    BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                    ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                    +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                    LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                    LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                    A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                    06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                    -----END CERTIFICATE-----'
+                  clientCert: null
+                  clientKey: null
+                  configMessage: null
+                  configstatus: /api/3/picklists/<uuid>
+                  createDate: 1700000000
+                  createUser: /api/3/appliances/<uuid>
+                  health:
+                    fsr-1:
+                      configMessage: Configuration successful
+                      configStatus: /api/3/picklists/<uuid>
+                  id: 2
+                  intraTCPPort: 5672
+                  mTLS: false
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/appliances/<uuid>
+                  name: Default (Embedded)
+                  sni: null
+                  tcpPort: 5671
+                  type: /api/3/picklists/<uuid>
+                  username: admin
+                  uuid: <uuid>
+                ssl: true
+                tenants:
+                - /api/3/tenants/<uuid>
+                upgradeMessage: null
+                upgradeState: null
+                username: user_aa73fb4b2b00ab2249689b43a8a6b98e
+                uuid: <uuid>
+                version: 7.6.5
+                vhost: vhost_aa73fb4b2b00ab2249689b43a8a6b98e
+      x-verified-live:
+      - apikey
+      - jwt
   /api/3/agents/{uuid}:
     parameters:
     - name: uuid
@@ -12147,16 +13207,216 @@ paths:
       tags:
       - Agents
       summary: Get an agent record
-      description: 'Returns the full agent record including `agentId`, `role`, `configurationHealth`, and `router`. Polling
-        this endpoint is how callers wait for `configurationHealth.itemValue` to reach `Remote Node Connected` after running
-        the installer.
-
-
-        **Self-agent lookup:** `GET /api/3/agents/973c17df-bb4b-41e5-b59c-a408666fdf27` returns this appliance''s Self agent
-        on every install - use it to learn the appliance''s `agentId` (the runtime `masterId`).'
+      description: "Returns the full agent record including `agentId`, `role`, `configurationHealth`, and `router`. Polling\
+        \ this endpoint is how callers wait for `configurationHealth.itemValue` to reach `Remote Node Connected` after running\
+        \ the installer.\n\n**Self-agent lookup:** `GET /api/3/agents/973c17df-bb4b-41e5-b59c-a408666fdf27` returns this appliance's\
+        \ Self agent on every install - use it to learn the appliance's `agentId` (the runtime `masterId`).\n\n**Auth coverage:**\
+        \ `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Agent record.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/Agent
+                '@id': /api/3/agents/<uuid>
+                '@type': Agent
+                active: true
+                agentId: <self-agent>
+                agentType:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 103
+                  importedBy: []
+                  itemValue: FSR Agent
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                allowRemoteConnectorOperation: true
+                appLogs: null
+                authType:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 121
+                  importedBy: []
+                  itemValue: Basic Auth
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 1
+                  uuid: <uuid>
+                clientCert: null
+                clientCertExpiry: null
+                clientKey: null
+                configstatus:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 6
+                  importedBy: []
+                  itemValue: Configuration In Progress
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 3
+                  uuid: <uuid>
+                configurationHealth:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: '#FEB80C'
+                  icon: null
+                  id: 104
+                  importedBy: []
+                  itemValue: Configuration In Progress
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: live-lab-agent probe
+                encryptionKey: PEhsEMsik.0x6a0f813a.96qoMJ5CjlO6uXUCkJvPcs9sNCJzIyNL864+9GPh6LIXUsif6UduTi00l7j5FbkxHjMRbF92NvzmsCuvPbaRgCFjiixZIvDaeb3lNcm6
+                healthCheckLastSync: null
+                id: 52
+                installerType:
+                  '@id': /api/3/picklists/<uuid>
+                  '@type': Picklist
+                  color: null
+                  icon: null
+                  id: 648
+                  importedBy: null
+                  itemValue: Bash Script
+                  listName: /api/3/picklist_names/<uuid>
+                  orderIndex: 0
+                  uuid: <uuid>
+                isLocal: false
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-<run>-agent
+                role: tenant
+                router:
+                  '@id': /api/3/routers/<uuid>
+                  '@type': Router
+                  address: fsr-1
+                  apiPort: 15671
+                  certificate: '-----BEGIN CERTIFICATE-----
+
+                    MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                    BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                    MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                    9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                    Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                    13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                    vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                    hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                    8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                    BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                    ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                    +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                    LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                    LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                    A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                    06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                    -----END CERTIFICATE-----'
+                  clientCert: null
+                  clientKey: null
+                  configMessage: null
+                  configstatus: /api/3/picklists/<uuid>
+                  createDate: 1700000000
+                  createUser: /api/3/appliances/<uuid>
+                  health:
+                    fsr-1:
+                      configMessage: Configuration successful
+                      configStatus: /api/3/picklists/<uuid>
+                  id: 2
+                  intraTCPPort: 5672
+                  mTLS: false
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/appliances/<uuid>
+                  name: Default (Embedded)
+                  sni: null
+                  tcpPort: 5671
+                  type: /api/3/picklists/<uuid>
+                  username: admin
+                  uuid: <uuid>
+                ssl: true
+                upgradeMessage: null
+                upgradeState: null
+                username: user_aa73fb4b2b00ab2249689b43a8a6b98e
+                uuid: <uuid>
+                version: 7.6.5
+                vhost: vhost_aa73fb4b2b00ab2249689b43a8a6b98e
+      x-verified-live:
+      - apikey
+      - jwt
     delete:
       tags:
       - Agents
@@ -12172,25 +13432,134 @@ paths:
       tags:
       - Agents
       summary: List SME routers
-      description: 'Hydra collection of Secure Message Exchange (SME) router records. The agent-creation flow reads the first
-        member to populate the `router` IRI on `POST /api/3/agents`. Per-item fields of interest:
-
-
-        - `@id` - the IRI passed as `router` when creating an agent.
-
-        - `address` - hostname the agent dials; **must match the router''s TLS cert CN**   (the agent VM typically needs an
-        `/etc/hosts` entry mapping this to the appliance IP).
-
-        - `sni` - SNI value used in the TLS handshake (usually equals `address`).
-
-        - `certificate` - server CA in PEM, written to the agent VM as `ca_cert.pem`.
-
-
-        **Empty collection means SME isn''t enabled.** Run `sudo csadm secure-message-exchange enable` on the master before
-        creating agents.'
+      description: "Hydra collection of Secure Message Exchange (SME) router records. The agent-creation flow reads the first\
+        \ member to populate the `router` IRI on `POST /api/3/agents`. Per-item fields of interest:\n\n- `@id` - the IRI passed\
+        \ as `router` when creating an agent.\n- `address` - hostname the agent dials; **must match the router's TLS cert\
+        \ CN**   (the agent VM typically needs an `/etc/hosts` entry mapping this to the appliance IP).\n- `sni` - SNI value\
+        \ used in the TLS handshake (usually equals `address`).\n- `certificate` - server CA in PEM, written to the agent\
+        \ VM as `ca_cert.pem`.\n\n**Empty collection means SME isn't enabled.** Run `sudo csadm secure-message-exchange enable`\
+        \ on the master before creating agents.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       responses:
         '200':
           description: Hydra collection of Router.
+          content:
+            application/json:
+              example:
+                '@context': /api/3/contexts/Router
+                '@id': /api/3/routers
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/routers/<uuid>
+                  '@type': Router
+                  address: fsr-1
+                  apiPort: 15671
+                  certificate: '-----BEGIN CERTIFICATE-----
+
+                    MIIC+DCCAeCgAwIBAgIUcOiPAZZeclFTn1rgQuFnV2DQtS0wDQYJKoZIhvcNAQEL
+
+                    BQAwFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMB4XDTI2MDExNTAwMDUyM1oXDTI4
+
+                    MDExNTAwMDUyM1owFzEVMBMGA1UEAwwMRlNSRGVmYXVsdENBMIIBIjANBgkqhkiG
+
+                    9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspSYx2g15wffMo4APAXIJEXwy0IeXdeD8wUV
+
+                    Sl3R3YSgpDFXEZiIPSfXdZnjdzYm4iVEApin5E4J8llIaIxbHRGSW0NRB/LHn1m5
+
+                    13j2GHUEYebjhgm6HD0zWtSlsMBRdbwfYzmC5LT+Qazszw46ibgmLelUwLbX4pVa
+
+                    vMvE3zBNdLQsceQnoWqiazaz+Ukgt5YyQ1UnkAB/U7h3eDfVxeusVqzqO1LDiCG8
+
+                    hivuGtnkuoXzeV+oSAOJ2Xs9L9rwj0Vm2dHH50tEClsrEtfpxtXq6/ZmSs1ZqFMR
+
+                    8o2lYpmNwqFIq5PfRxj3cxM53dMV/IZ4CXrGrsYcPqF1Oi4GxQIDAQABozwwOjAM
+
+                    BgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjAdBgNVHQ4EFgQUPLkPyvtNI4Fn3AYp
+
+                    ozVnaBfnHCMwDQYJKoZIhvcNAQELBQADggEBAK5ZoSUpj/OfbM2euXpX7WQm5fwK
+
+                    +Tx+UVU6Xzx1xOmfH16luOM+R2zTBlwJC8d3pUILNoYLl2FYS+q0mD0A0NutlYHS
+
+                    LiVy1WETgFM+j2EHepOJAUrpr5axJRU1QcLMDL773pHKQr6xVNCmLYBXZ5/b0qMW
+
+                    LSBQKx3PlkH/LcMUk37TxGTIjsvpqzz+lFBBtZF2wGh6MB3PW6mQzEjBL2LTdtlE
+
+                    A8Xp0EivssYqlxL1J05gR63p4OmEVzvsJPPfLZmvxwTz+ClgWTiTq4nbdoXRDo1b
+
+                    06nbyCJ9fuBH1FkvlTyGJktKNXqmaZ6swtEIlkeqbU0PilBJPQoZEWfPrDM=
+
+                    -----END CERTIFICATE-----'
+                  clientCert: null
+                  clientKey: null
+                  configMessage: null
+                  configstatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 91
+                    importedBy: []
+                    itemValue: Configured
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 4
+                    uuid: <uuid>
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 1
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Playbook
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  health:
+                    fsr-1:
+                      configMessage: Configuration successful
+                      configStatus: /api/3/picklists/<uuid>
+                  id: 2
+                  intraTCPPort: 5672
+                  mTLS: false
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
+                    avatar: null
+                    createDate: 1700000000
+                    createUser: null
+                    id: 2
+                    modifyDate: 1700000000
+                    modifyUser: null
+                    name: Agent
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: Default (Embedded)
+                  sni: null
+                  tcpPort: 5671
+                  type:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 117
+                    importedBy: []
+                    itemValue: Embedded
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  username: admin
+                  uuid: <uuid>
+                hydra:totalItems: 1
+                hydra:view:
+                  '@id': /api/3/routers?%24limit=1
+                  '@type': hydra:PartialCollectionView
+      x-verified-live:
+      - apikey
+      - jwt
   /api/integration/agent-installer/:
     post:
       tags:
@@ -45603,7 +46972,7 @@ paths:
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
-                  id: 5
+                  id: 62
                   modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
@@ -45632,7 +47001,7 @@ paths:
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
-                  name: WEBHOOK
+                  name: test
                   recordTags: []
                   userId: <uuid>
                   userType: null
@@ -45669,7 +47038,7 @@ paths:
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
-                  id: 9
+                  id: 5
                   modifyDate: 1700000000
                   modifyUser:
                     '@id': /api/3/people/<uuid>
@@ -45698,15 +47067,18 @@ paths:
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
-                  name: taxi
+                  name: WEBHOOK
                   recordTags: []
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                hydra:totalItems: 2
+                hydra:totalItems: 3
                 hydra:view:
-                  '@id': /api/3/api_keys?%24limit=2
+                  '@id': /api/3/api_keys?%24limit=2&%24page=1
                   '@type': hydra:PartialCollectionView
+                  hydra:first: /api/3/api_keys?%24limit=2&%24page=1
+                  hydra:last: /api/3/api_keys?%24limit=2&%24page=2
+                  hydra:next: /api/3/api_keys?%24limit=2&%24page=2
       x-verified-live:
       - apikey
       - jwt
