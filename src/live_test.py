@@ -112,6 +112,55 @@ def _scrub(value: Any) -> Any:
         return [_scrub(v) for v in value]
     return value
 
+def _same_shape(a: Any, b: Any) -> bool:
+    """Structural equality check used by the freeze-on-shape-match merge.
+
+    Two values have the same shape when:
+      - They are the same primitive type (int and float treated as numeric).
+      - Dicts have identical key sets and each value has the same shape.
+      - Lists have shape-matching elements; element order is ignored — we
+        compare the *set* of element shapes so a list rotating its members
+        (audit log, workflow runs) does not register as a shape change. A
+        list whose elements differ in shape *between* prior and current is
+        treated as changed (new field on one of the records).
+
+    Primitive values are NOT compared — only their types — so a `"name"`
+    that changed from `"Foo"` to `"Bar"` keeps the same shape. This is what
+    lets us freeze examples whose content drifts but whose schema is
+    stable, while still surfacing genuinely new fields.
+    """
+    if isinstance(a, dict) and isinstance(b, dict):
+        if set(a) != set(b):
+            return False
+        return all(_same_shape(a[k], b[k]) for k in a)
+    if isinstance(a, list) and isinstance(b, list):
+        if not a and not b:
+            return True
+        if not a or not b:
+            # one empty, one not — shape ambiguous; treat as same if either
+            # side has a homogeneous shape we can confirm against. Empty
+            # list -> assume same as non-empty's element shape.
+            return True
+        # Reduce each side to representative shapes; sets are unhashable so
+        # use a list and dedupe pairwise.
+        def _shapes(lst):
+            out = []
+            for x in lst:
+                if not any(_same_shape(x, s) for s in out):
+                    out.append(x)
+            return out
+        sa = _shapes(a)
+        sb = _shapes(b)
+        if len(sa) != len(sb):
+            return False
+        return all(any(_same_shape(x, y) for y in sb) for x in sa)
+    if isinstance(a, bool) or isinstance(b, bool):
+        return type(a) is type(b)
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return True
+    return type(a) is type(b) or (a is None and b is None)
+
+
 SCENARIOS: dict[str, Callable[["Session"], None]] = {}
 
 
@@ -1432,18 +1481,50 @@ def main() -> int:
         # Merge two levels deep: prior observations for ops we didn't touch
         # this run are preserved, and prior per-auth records for ops we
         # touched under one mode but not the other are also kept.
+        #
+        # **Shape-stable freeze:** when the prior captured body has the same
+        # structural shape as the fresh one (same key set at every dict, same
+        # types, same list element shapes), we keep the prior body and only
+        # update the metadata (`captured_at`, `response_status`). This stops
+        # ops that capture inherently-time-varying records (the latest
+        # workflow run, the tail of the audit log, cpu metrics) from churning
+        # the diff every run. If the shape *does* change — new field appears,
+        # field type flips, list element gains keys — we replace the body so
+        # docs reflect the new contract.
         prior: dict = {}
         if OBSERVATIONS_PATH.exists():
             try:
                 prior = json.loads(OBSERVATIONS_PATH.read_text())
             except json.JSONDecodeError:
                 prior = {}
+        frozen = 0
+        refreshed = 0
         for op_key, op_rec in s.observations.items():
             existing = prior.setdefault(op_key, {"by_auth": {}})
-            existing.setdefault("by_auth", {}).update(op_rec.get("by_auth", {}))
-        OBSERVATIONS_PATH.write_text(json.dumps(prior, indent=2, sort_keys=True))
+            existing_by_auth = existing.setdefault("by_auth", {})
+            for mode, new_rec in op_rec.get("by_auth", {}).items():
+                prior_rec = existing_by_auth.get(mode)
+                if (prior_rec is not None
+                        and "response_body" in prior_rec
+                        and "response_body" in new_rec
+                        and _same_shape(prior_rec["response_body"],
+                                        new_rec["response_body"])):
+                    # Freeze: keep the prior body verbatim, refresh metadata.
+                    merged = dict(prior_rec)
+                    merged["response_status"] = new_rec.get("response_status")
+                    merged["captured_at"] = new_rec.get("captured_at",
+                                                        prior_rec.get("captured_at"))
+                    if "request_body" in new_rec:
+                        merged["request_body"] = new_rec["request_body"]
+                    existing_by_auth[mode] = merged
+                    frozen += 1
+                else:
+                    existing_by_auth[mode] = new_rec
+                    refreshed += 1
+        OBSERVATIONS_PATH.write_text(json.dumps(prior, indent=2, sort_keys=True) + "\n")
         print(f"--- observations: wrote {len(s.observations)} op(s) "
-              f"(total {len(prior)}) to {OBSERVATIONS_PATH.relative_to(ROOT)} ---")
+              f"(total {len(prior)}) to {OBSERVATIONS_PATH.relative_to(ROOT)} "
+              f"[{frozen} shape-stable, {refreshed} refreshed] ---")
 
     if s.redirects:
         # Dedupe on (method, url-path-only, status, location) so a route hit
