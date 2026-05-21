@@ -283,6 +283,7 @@ def sweep(s: Session) -> int:
     removed += _sweep_live_comments(s)
     removed += _sweep_named(s, "/api/3/roles", "role")
     removed += _sweep_named(s, "/api/3/teams", "team")
+    removed += _sweep_named(s, "/api/3/agents", "agent")
     return removed
 
 
@@ -1258,6 +1259,88 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
     s.call("POST", "/api/ingest-feeds/reputation", want=(200, 400),
            json=[{"value": "198.51.100.30", "type": "IP Address",
                   "reputation": "Suspicious", "source": "live-test"}])
+
+
+@scenario("agents_lifecycle")
+def scenario_agents_lifecycle(s: Session) -> None:
+    """Routers + agent record + installer download, then cleanup.
+
+    The flow mirrors what the lab-agent provisioner does:
+      1. GET /api/3/routers          — read the SME router IRI + CA PEM.
+      2. GET /api/3/agents/{self}    — read the appliance's Self agent
+         (uuid is a hardcoded Doctrine fixture).
+      3. POST /api/3/agents          — create a throwaway lab record.
+      4. GET /api/3/agents/{uuid}    — poll health.
+      5. POST /api/integration/agent-installer/ — request the .bin (probe).
+      6. DELETE /api/3/agents/{uuid} — cleanup.
+
+    Skipped (not failed) on appliances where SME isn't enabled: the routers
+    list is empty, so there is no IRI to pass to POST /api/3/agents. The
+    installer download is exercised with the response binary read but not
+    persisted — scenarios that download large blobs would otherwise blow
+    out the captured-examples store.
+    """
+    SELF_AGENT_UUID = "973c17df-bb4b-41e5-b59c-a408666fdf27"
+    BASH_INSTALLER_IRI = "/api/3/picklists/a8181039-30a0-4807-b470-50de69d37561"
+
+    print("[agents] step 1: list routers")
+    _, routers = s.call("GET", "/api/3/routers", want=200, params={"$limit": 1})
+    members = (routers or {}).get("hydra:member") or []
+    if not members:
+        print("[agents] no SME router configured — skipping create/delete probes")
+        return
+    router_iri = members[0].get("@id")
+    assert router_iri, f"router has no @id: {members[0]}"
+
+    print(f"[agents] step 2: read Self agent ({SELF_AGENT_UUID})")
+    s.call("GET", "/api/3/agents/{uuid}", want=200,
+           path_params={"uuid": SELF_AGENT_UUID})
+
+    print("[agents] step 3: list agents")
+    s.call("GET", "/api/3/agents", want=200, params={"$limit": 5})
+
+    print("[agents] step 4: create throwaway agent record")
+    name = s.live_name("agent")
+    _, created = s.call("POST", "/api/3/agents", want=(200, 201),
+                        json={"name": name, "router": router_iri,
+                              "installerType": BASH_INSTALLER_IRI,
+                              "description": f"{LIVE_PREFIX}lab-agent probe"})
+    created = created or {}
+    uuid_ = created.get("uuid")
+    agent_id = created.get("agentId")
+    assert uuid_ and agent_id, f"create response missing uuid/agentId: {created}"
+    s.track("agent", uuid_)
+    print(f"  created uuid={uuid_} agentId={agent_id}")
+
+    print("[agents] step 5: read created record (poll health once)")
+    s.call("GET", "/api/3/agents/{uuid}", want=200, path_params={"uuid": uuid_})
+
+    print("[agents] step 6: request installer .bin (binary response, not asserted)")
+    # The installer endpoint returns a multi-MB binary; using `request` rather
+    # than `call` avoids persisting the body in the captured-examples store.
+    r = s.request("POST", "/api/integration/agent-installer/",
+                  params={"format": "json"},
+                  json={"agent": agent_id, "connectors": [],
+                        "include_last_known_configurations": False},
+                  timeout=120)
+    print(f"  installer download -> {r.status_code} ({len(r.content)} bytes)")
+
+    print("[agents] step 7: probe connector-on-agent routes (read-only)")
+    # These routes proxy to the remote agent over SME. With a lab agent record
+    # that has no live agent VM behind it, the appliance typically responds 200
+    # with an empty listing (GET) or 4xx (write paths). Accept the broad set so
+    # the probes record per-auth coverage without false-failing the run.
+    s.call("GET", "/api/integration/connectors/agents/{name}/{version}/",
+           want=(200, 400, 404),
+           path_params={"name": "hello-world", "version": "1.0.4"})
+    s.call("GET", "/api/integration/agent-heartbeat/{agent}/",
+           want=(200, 400, 404),
+           path_params={"agent": agent_id})
+
+    print("[agents] step 8: cleanup")
+    r, _ = s.call("DELETE", "/api/3/agents/{uuid}", want=(204,),
+                  path_params={"uuid": uuid_})
+    print(f"  DELETE agent -> {r.status_code}")
 
 
 # --- CLI -----------------------------------------------------------------
