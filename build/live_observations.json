@@ -288,9 +288,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 204
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -304,9 +303,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 204
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -320,9 +318,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 204
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -95650,31 +95647,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": {
-          "@context": "/api/3/contexts/Team",
-          "@id": "/api/3/teams",
-          "@type": "hydra:Collection",
-          "hydra:member": [
-            {
-              "@id": "/api/3/teams/<uuid>",
-              "@type": "Team",
-              "description": "Management team",
-              "importedBy": [],
-              "name": "SOC Team",
-              "uuid": "<uuid>"
-            }
-          ],
-          "hydra:totalItems": 6,
-          "hydra:view": {
-            "@id": "/api/3/teams?%24limit=1&%24page=1",
-            "@type": "hydra:PartialCollectionView",
-            "hydra:first": "/api/3/teams?%24limit=1&%24page=1",
-            "hydra:last": "/api/3/teams?%24limit=1&%24page=6",
-            "hydra:next": "/api/3/teams?%24limit=1&%24page=2"
-          }
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -96656,13 +96630,23 @@
         "captured_at": "2026-05-21",
         "request_body": null,
         "response_body": {
-          "component": "das",
-          "displayName": "CS Admin",
-          "entitySingularName": "Person",
-          "entityType": "people",
-          "entityUuid": "<uuid>",
-          "id": 633117,
-          "operation": "Login Success",
+          "component": "agent",
+          "data": {
+            "data": {
+              "agent": "<self-agent>",
+              "delete_sp": false,
+              "name": "hello-world",
+              "status": 204,
+              "version": "1.0.4"
+            },
+            "has_start_event": false,
+            "status": "success"
+          },
+          "entitySingularName": "Connector",
+          "entityType": "connector",
+          "entityUuid": "hello-world_1.0.4_572b3ecd3ddbc133a650f3faecc7c286",
+          "id": 633398,
+          "operation": "Uninstall",
           "source": "10.100.4.154",
           "teamIris": [
             "/api/3/teams/<uuid>",
@@ -96672,13 +96656,11 @@
             "/api/3/teams/<uuid>",
             "/api/3/teams/<uuid>"
           ],
-          "title": "DB login success for user [csadmin]",
-          "transactionDate": 1779404616237,
+          "title": "Connector [hello-world] Version [1.0.4] Uninstalled",
+          "transactionDate": 1779405237667,
           "user": "CS Admin",
           "userId": "<uuid>",
-          "userOwnerIris": [
-            "/api/3/people/<uuid>"
-          ]
+          "userOwnerIris": []
         },
         "response_status": 200
       }
@@ -96796,38 +96778,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": {
-          "data": [
-            {
-              "agent": "<self-agent>",
-              "config": {
-                "context_mode": "Single Context",
-                "enable_password": "AKG4eJUuE.0x68110147.JXW2rHmVCtCkUqqTvbkSQ2TyfKU31d9CthpqG2WMbKT0HAUbD",
-                "password": "AKG4eJUuE.0x68110147.+jTh5vk6Yv87WVpsXJ38OGXljQBaixskF34aY73ZmrAOrdLvA",
-                "port": 2222,
-                "server_url": "10.99.249.57",
-                "username": "admin",
-                "verify_ssl": true
-              },
-              "config_id": "<uuid>",
-              "connector": 117,
-              "default": true,
-              "health_status": {},
-              "id": 69,
-              "name": "lab_asa",
-              "remote_status": {},
-              "status": 1,
-              "teams": []
-            }
-          ],
-          "itemsPerPage": 1,
-          "nextPage": 2,
-          "previousPage": null,
-          "status": "Success",
-          "totalItems": 48
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -96870,54 +96822,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": {
-          "data": [
-            {
-              "active": true,
-              "agent": "<self-agent>",
-              "category": [
-                "Utilities"
-              ],
-              "config_count": 0,
-              "configuration": [],
-              "contributor": null,
-              "created": "2026-05-20T18:27:36.465028Z",
-              "description": "A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings and messages.",
-              "development": false,
-              "help_online": null,
-              "icon_large": "",
-              "icon_small": "",
-              "id": 226,
-              "ingestion_supported": false,
-              "install_result": {
-                "message": "Success",
-                "output": ""
-              },
-              "label": "Hello World",
-              "modified": "2026-05-20T18:27:36.465124Z",
-              "name": "hello-world",
-              "publisher": "Workshop Student",
-              "remote_status": {
-                "message": "Success",
-                "output": "",
-                "status": "finished"
-              },
-              "rpm_full_name": null,
-              "rpm_installed": null,
-              "status": "Completed",
-              "system": false,
-              "tags": [],
-              "version": "1.0.4"
-            }
-          ],
-          "itemsPerPage": 30,
-          "nextPage": null,
-          "previousPage": null,
-          "status": "Success",
-          "totalItems": 1
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -96976,17 +96882,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": null,
-        "response_body": {
-          "_status": true,
-          "config_id": "<uuid>",
-          "message": "Connector is available",
-          "name": "hello-world",
-          "request_id": null,
-          "status": "Available",
-          "version": "1.0.4"
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -128142,7 +128039,7 @@
           "version": "7.6.5",
           "vhost": "vhost_6f80282ce61994435d23a9dead942f04"
         },
-        "response_status": 201
+        "response_status": 400
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -130072,7 +129969,7 @@
           "name": "live-<run>-role",
           "uuid": "<uuid>"
         },
-        "response_status": 201
+        "response_status": 409
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -130160,7 +130057,7 @@
           "version": "1.0.4",
           "workspace_connector": false
         },
-        "response_status": 200
+        "response_status": 400
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -130465,24 +130362,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": {
-          "description": "live_test team (typed)",
-          "name": "live-<run>-team2"
-        },
-        "response_body": {
-          "@context": "/api/3/contexts/Team",
-          "@id": "/api/3/teams/<uuid>",
-          "@type": "Team",
-          "actors": [],
-          "children": [],
-          "description": "live_test team (typed)",
-          "importedBy": [],
-          "name": "live-<run>-team2",
-          "parents": [],
-          "siblings": [],
-          "uuid": "<uuid>"
-        },
-        "response_status": 201
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -131274,24 +131155,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": {
-          "description": "live_test team",
-          "name": "live-<run>-team"
-        },
-        "response_body": {
-          "@context": "/api/3/contexts/Team",
-          "@id": "/api/3/teams/<uuid>",
-          "@type": "Team",
-          "actors": [],
-          "children": [],
-          "description": "live_test team",
-          "importedBy": [],
-          "name": "live-<run>-team",
-          "parents": [],
-          "siblings": [],
-          "uuid": "<uuid>"
-        },
-        "response_status": 201
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -131420,39 +131285,73 @@
         "response_body": {
           "content": [
             {
-              "component": "das",
-              "displayName": "CS Admin",
-              "entitySingularName": "Person",
-              "entityType": "people",
+              "component": "crudhub",
+              "data": {
+                "@id": "/api/3/alerts/<uuid>",
+                "Ack SLA": "Awaiting Action",
+                "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
+                "Created By": "WEBHOOK",
+                "Created On": "05-21-2026 23:13 PM UTC",
+                "Description": "updated by live_test",
+                "Escalated": "No",
+                "Id": 1229,
+                "Name": "live-<run>-alert",
+                "Priority Weight": 1,
+                "Response SLA": "Awaiting Action",
+                "Severity": "Minimal",
+                "Source": "live-test",
+                "State": "New",
+                "Status": "Active",
+                "Type": "Other / Unknown",
+                "UUID": "<uuid>",
+                "recordTags": []
+              },
+              "displayName": "live-<run>-alert",
+              "entitySingularName": "Alert",
+              "entityType": "alerts",
               "entityUuid": "<uuid>",
-              "id": 633120,
-              "operation": "Login Success",
+              "id": 633403,
+              "operation": "Delete",
               "source": "10.100.4.154",
+              "subComponent": "EntityRecord",
               "teamIris": [
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
                 "/api/3/teams/<uuid>"
               ],
-              "title": "DB login success for user [csadmin]",
-              "transactionDate": 1779404640269,
-              "user": "CS Admin",
+              "title": "Alert [live-<run>-alert] Deleted",
+              "transactionDate": 1779405240160,
+              "user": "WEBHOOK",
               "userId": "<uuid>",
-              "userOwnerIris": [
-                "/api/3/people/<uuid>"
-              ]
+              "userOwnerIris": []
             },
             {
-              "component": "das",
-              "displayName": "CS Admin",
-              "entitySingularName": "Person",
-              "entityType": "people",
+              "component": "crudhub",
+              "data": {
+                "@id": "/api/3/alerts/<uuid>",
+                "Ack SLA": "Awaiting Action",
+                "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
+                "Created By": "CS Admin",
+                "Created On": "05-21-2026 23:13 PM UTC",
+                "Escalated": "No",
+                "Id": 1232,
+                "Name": "live-<run>-bulkupsert",
+                "Priority Weight": 1,
+                "Response SLA": "Awaiting Action",
+                "Severity": "Minimal",
+                "Source": "live_test",
+                "State": "New",
+                "Status": "Active",
+                "Type": "Other / Unknown",
+                "UUID": "<uuid>",
+                "recordTags": []
+              },
+              "displayName": "live-<run>-bulkupsert",
+              "entitySingularName": "Alert",
+              "entityType": "alerts",
               "entityUuid": "<uuid>",
-              "id": 633119,
-              "operation": "Login Success",
-              "source": "10.100.4.154",
+              "id": 633404,
+              "operation": "Create",
+              "source": "127.0.0.1",
+              "subComponent": "EntityRecord",
               "teamIris": [
                 "/api/3/teams/<uuid>",
                 "/api/3/teams/<uuid>",
@@ -131461,13 +131360,11 @@
                 "/api/3/teams/<uuid>",
                 "/api/3/teams/<uuid>"
               ],
-              "title": "DB login success for user [csadmin]",
-              "transactionDate": 1779404628837,
+              "title": "Alert [live-<run>-bulkupsert] Created",
+              "transactionDate": 1779405240043,
               "user": "CS Admin",
               "userId": "<uuid>",
-              "userOwnerIris": [
-                "/api/3/people/<uuid>"
-              ]
+              "userOwnerIris": []
             }
           ],
           "first": true,
@@ -131709,39 +131606,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": {
-          "config": {
-            "default_greeting": "Hello",
-            "salutation": "Mr."
-          },
-          "connector": 243,
-          "default": false,
-          "name": "live-<run>-hwcfg",
-          "status": 1,
-          "teams": []
-        },
-        "response_body": {
-          "agent": "<self-agent>",
-          "config": {
-            "default_greeting": "Hello",
-            "salutation": "Mr."
-          },
-          "config_id": "<uuid>",
-          "connector": 226,
-          "connector_name": "hello-world",
-          "connector_version": "1.0.4",
-          "default": false,
-          "health_status": {},
-          "id": 198,
-          "name": "live-<run>-hwcfg",
-          "remote_status": {},
-          "status": {
-            "message": "Connector hello-world version 1.0.4 as been configured successfully",
-            "status": "finished"
-          },
-          "teams": []
-        },
-        "response_status": 201
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -131750,7 +131616,7 @@
             "default_greeting": "Hello",
             "salutation": "Mr."
           },
-          "connector": 242,
+          "connector": 245,
           "default": false,
           "name": "live-<run>-hwcfg",
           "status": 1,
@@ -131785,176 +131651,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": {},
-        "response_body": {
-          "active": true,
-          "agent": "<self-agent>",
-          "category": [
-            "Utilities"
-          ],
-          "config_count": 0,
-          "config_schema": {
-            "fields": [
-              {
-                "editable": true,
-                "isOnChange": false,
-                "name": "default_greeting",
-                "onchange": {},
-                "required": true,
-                "title": "Default Greeting",
-                "tooltip": "The greeting word to use when no custom greeting is provided (e.g., Hello, Hi, Hey).",
-                "type": "text",
-                "value": "Hello",
-                "visible": true
-              },
-              {
-                "editable": true,
-                "isOnChange": false,
-                "name": "salutation",
-                "onchange": {},
-                "required": true,
-                "title": "salutation",
-                "tooltip": "your goodbye message ",
-                "type": "text",
-                "value": "So long!",
-                "visible": true
-              }
-            ]
-          },
-          "configuration": [],
-          "contributor": null,
-          "created": "2026-05-20T18:27:36.465028Z",
-          "cs_approved": false,
-          "cs_compatible": true,
-          "description": "A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings and messages.",
-          "development": false,
-          "help_file": null,
-          "help_online": "",
-          "icon_large": "",
-          "icon_large_name": "large_icon.png",
-          "icon_small": "",
-          "icon_small_name": "small_icon.png",
-          "id": 226,
-          "ingestion_supported": false,
-          "install_result": {
-            "message": "Success",
-            "output": ""
-          },
-          "installed": true,
-          "label": "Hello World",
-          "modified": "2026-05-20T18:27:36.465124Z",
-          "name": "hello-world",
-          "operations": [
-            {
-              "annotation": null,
-              "category": "investigation",
-              "connector": 226,
-              "description": "Returns a simple greeting message using the configured greeting word and a name you provide.",
-              "enabled": true,
-              "id": 3069,
-              "operation": "say_hello",
-              "output_schema": {},
-              "parameters": [
-                {
-                  "editable": true,
-                  "isOnChange": false,
-                  "name": "name",
-                  "onchange": {},
-                  "required": true,
-                  "title": "Name",
-                  "tooltip": "The name to greet.",
-                  "type": "text",
-                  "value": "World",
-                  "visible": true
-                }
-              ],
-              "roles": [],
-              "title": "Say Hello",
-              "visible": true
-            },
-            {
-              "annotation": null,
-              "connector": 226,
-              "description": "Adds two numbers together and returns the result. Demonstrates how to work with numeric parameters.",
-              "enabled": true,
-              "id": 3070,
-              "operation": "add_numbers",
-              "output_schema": {},
-              "parameters": [
-                {
-                  "editable": true,
-                  "name": "number_a",
-                  "required": true,
-                  "title": "Number A",
-                  "tooltip": "The first number.",
-                  "type": "integer",
-                  "visible": true
-                },
-                {
-                  "editable": true,
-                  "name": "number_b",
-                  "required": true,
-                  "title": "Number B",
-                  "tooltip": "The second number.",
-                  "type": "integer",
-                  "visible": true
-                }
-              ],
-              "roles": [],
-              "title": "Add Numbers",
-              "visible": true
-            },
-            {
-              "annotation": null,
-              "category": "investigation",
-              "connector": 226,
-              "description": "Reverses a string of text and returns the result. Demonstrates simple string manipulation.",
-              "enabled": true,
-              "id": 3071,
-              "operation": "reverse_text",
-              "output_schema": {},
-              "parameters": [
-                {
-                  "editable": true,
-                  "isOnChange": false,
-                  "name": "input_text",
-                  "onchange": {},
-                  "required": true,
-                  "title": "Input Text",
-                  "tooltip": "The text to reverse.",
-                  "type": "text",
-                  "visible": true
-                }
-              ],
-              "roles": [],
-              "title": "Reverse Text",
-              "visible": true
-            }
-          ],
-          "playbook_collections": [
-            {
-              "@id": "/api/3/workflow_collections/<uuid>",
-              "description": "Sample playbooks for \"Hello World\" connector. If you are planning to use any of the sample playbooks in your environment, ensure that you clone those playbooks and move them to a different collection, since the sample playbook collection gets deleted during connector upgrade and delete.",
-              "image": null,
-              "name": "Sample - Hello World - 1.0.4"
-            }
-          ],
-          "publisher": "Workshop Student",
-          "remote_status": {
-            "message": "Success",
-            "output": "",
-            "status": "finished"
-          },
-          "requirements_installed": "In-Progress",
-          "rpm_full_name": null,
-          "rpm_installed": null,
-          "status": "Completed",
-          "system": false,
-          "tags": [],
-          "vendor_version": null,
-          "version": "1.0.4"
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -132135,25 +131833,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": {
-          "config": "<uuid>",
-          "connector": "hello-world",
-          "operation": "reverse_text",
-          "params": {
-            "input_text": "live-test"
-          },
-          "version": "1.0.4"
-        },
-        "response_body": {
-          "data": {
-            "original": "live-test",
-            "reversed": "tset-evil"
-          },
-          "message": "",
-          "operation": null,
-          "status": "Success"
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",
@@ -134211,7 +133892,7 @@
           "fileName": null,
           "filehash": null,
           "fsrQueue": null,
-          "id": 26,
+          "id": 66,
           "identificationDate": null,
           "impactAssessments": null,
           "impactROI": null,
@@ -134224,17 +133905,15 @@
           "mitreattackid": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/api_keys/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "ApiKey",
+            "@id": "/api/3/appliances/<uuid>",
+            "@type": "Appliance",
             "avatar": null,
             "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "id": 5,
+            "createUser": null,
+            "id": 1,
             "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "name": "WEBHOOK",
-            "recordTags": [],
+            "modifyUser": null,
+            "name": "Playbook",
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
@@ -134767,19 +134446,8 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-05-21",
-        "request_body": {
-          "description": "renamed by live_test"
-        },
-        "response_body": {
-          "@context": "/api/3/contexts/Team",
-          "@id": "/api/3/teams/<uuid>",
-          "@type": "Team",
-          "description": "renamed by live_test",
-          "importedBy": [],
-          "name": "live-<run>-team",
-          "uuid": "<uuid>"
-        },
-        "response_status": 200
+        "gated_upstream": true,
+        "response_status": null
       },
       "jwt": {
         "captured_at": "2026-05-21",

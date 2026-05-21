@@ -6820,7 +6820,7 @@ paths:
         \ `people`, `appliances`, `workflows`, `playbooks`, `connectors`, `roles`, `teams`, `api_keys`, `comments`, `notes`,\
         \ `attachments`, `picklists`, `picklist_names`, `model_metadatas`, `attribute_metadatas`, `dashboard`, `reporting`,\
         \ `tenants`, `agents`, `routers`, `solutionpacks`, `widgets`, `workflow_collections`, `query_objects`, `import_jobs`,\
-        \ `export_jobs`, `preprocessing_rules`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ `export_jobs`, `preprocessing_rules`.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
       parameters: *id021
       responses:
         '200':
@@ -6848,7 +6848,6 @@ paths:
                   hydra:last: /api/3/teams?%24limit=1&%24page=6
                   hydra:next: /api/3/teams?%24limit=1&%24page=2
       x-verified-live:
-      - apikey
       - jwt
     post:
       tags:
@@ -6881,9 +6880,8 @@ paths:
                 siblings: []
                 uuid: <uuid>
       description: "**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)\n\
-        \n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \n\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
       x-verified-live:
-      - apikey
       - jwt
   /api/3/{collection}/{uuid}:
     parameters:
@@ -7516,9 +7514,9 @@ paths:
                 importedBy: []
                 name: live-<run>-team
                 uuid: <uuid>
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT:\
+        \ OK`"
       x-verified-live:
-      - apikey
       - jwt
     delete:
       tags:
@@ -7527,9 +7525,9 @@ paths:
       responses:
         '204':
           description: Deleted.
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT:\
+        \ OK`"
       x-verified-live:
-      - apikey
       - jwt
   /api/3/insert/{moduleType}:
     parameters:
@@ -9842,13 +9840,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordLog'
               example:
-                component: das
-                displayName: CS Admin
-                entitySingularName: Person
-                entityType: people
-                entityUuid: <uuid>
-                id: 633117
-                operation: Login Success
+                component: agent
+                data:
+                  data:
+                    agent: <self-agent>
+                    delete_sp: false
+                    name: hello-world
+                    status: 204
+                    version: 1.0.4
+                  has_start_event: false
+                  status: success
+                entitySingularName: Connector
+                entityType: connector
+                entityUuid: hello-world_1.0.4_572b3ecd3ddbc133a650f3faecc7c286
+                id: 633398
+                operation: Uninstall
                 source: 10.100.4.154
                 teamIris:
                 - /api/3/teams/<uuid>
@@ -9857,12 +9863,11 @@ paths:
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
-                title: DB login success for user [csadmin]
-                transactionDate: 1779404616237
+                title: Connector [hello-world] Version [1.0.4] Uninstalled
+                transactionDate: 1779405237667
                 user: CS Admin
                 userId: <uuid>
-                userOwnerIris:
-                - /api/3/people/<uuid>
+                userOwnerIris: []
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
         \ gated` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -11277,7 +11282,7 @@ paths:
       summary: Install a connector from a .tgz bundle
       description: "Multipart upload of a connector `.tgz`. The `$type=connector` query parameter is required; `$replace=true`\
         \ re-installs over an existing version. The response carries the full connector record including the integer `id`\
-        \ you'll need for subsequent steps.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ you'll need for subsequent steps.\n\n**Auth coverage:** `API-KEY: 400` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: $type
         in: query
@@ -11367,7 +11372,6 @@ paths:
                 version: 1.0.4
                 workspace_connector: false
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/connectors/:
     get:
@@ -11376,7 +11380,7 @@ paths:
       summary: List installed connectors
       description: "Response envelope is a custom shape (`status`, `totalItems`, `data[]`), **not** a Hydra collection. Each\
         \ `data[]` entry carries an integer `id`, `name`, `version`, `status` (e.g. `Completed`).\n\n**Auth coverage:** `API-KEY:\
-        \ OK` \xB7 `Bearer JWT: OK`"
+        \ gated` \xB7 `Bearer JWT: OK`"
       parameters: &id039
       - name: page_size
         in: query
@@ -11444,7 +11448,6 @@ paths:
                 status: Success
                 totalItems: 1
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/configuration/:
     get:
@@ -11453,7 +11456,7 @@ paths:
       summary: List connector configurations
       description: "Returns the same envelope shape as `/api/integration/connectors/` (`data[]`, not Hydra). Each entry has\
         \ `id` (int), `config_id` (uuid), `connector` (int connector id), `agent` (self-agent hash when remote), `config`\
-        \ (field map).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ (field map).\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
       parameters: *id039
       responses:
         '200':
@@ -11486,7 +11489,6 @@ paths:
                 status: Success
                 totalItems: 48
       x-verified-live:
-      - apikey
       - jwt
     post:
       tags:
@@ -11495,7 +11497,7 @@ paths:
       description: "Required body fields: `name`, `connector` (integer connector id \u2014 not the name), `config` (map of\
         \ the connector's configuration field values). `default`, `status`, and `teams` are optional.\n\n**`agent` is optional.**\
         \ Set it only when delegating execution to a **remote agent**; omit it (or leave unset) to run on the appliance's\
-        \ self-agent, which is the default.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ self-agent, which is the default.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -11528,7 +11530,7 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 242
+              connector: 245
               default: false
               name: live-<run>-hwcfg
               status: 1
@@ -11557,7 +11559,6 @@ paths:
                   status: finished
                 teams: []
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/connectors/{id}/:
     parameters:
@@ -11581,7 +11582,7 @@ paths:
         \ field   (both forms are accepted).\n\n**Quirks:** GET returns `Get method for this API is forbidden, Please use\
         \ POST method`. An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. Trailing slash is required.\
         \ The DELETE verb on this same path uninstalls the connector - don't confuse the two.\n\n**Auth coverage:** `API-KEY:\
-        \ OK` \xB7 `Bearer JWT: OK`"
+        \ gated` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -11735,19 +11736,17 @@ paths:
                 vendor_version: null
                 version: 1.0.4
       x-verified-live:
-      - apikey
       - jwt
     delete:
       tags:
       - Connectors
       summary: Uninstall a connector
-      description: "Trailing slash is required. Returns 204 on success.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
-        \ OK`"
+      description: "Trailing slash is required. Returns 204 on success.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer\
+        \ JWT: OK`"
       responses:
         '204':
           description: Uninstalled.
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/execute/:
     post:
@@ -11768,7 +11767,7 @@ paths:
         \ are installed.\n- `params` (required when the operation declares required parameters) \u2014 the action's   input\
         \ payload as defined by the connector's `info.json`. Discover required params via   the same connector-detail endpoint\
         \ (`operations[].parameters[]` with `required: true`).\n\nErrors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*`\
-        \ code in `message`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ code in `message`.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -11816,7 +11815,6 @@ paths:
                 operation: null
                 status: Success
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/connectors/healthcheck/{name}/{version}/:
     parameters:
@@ -11837,7 +11835,7 @@ paths:
       - Connectors
       summary: Health-check a connector via existing config
       description: "Lighter-weight check than the POST form: takes the configuration uuid as a query parameter rather than\
-        \ re-sending the full config body.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ re-sending the full config body.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: config
         in: query
@@ -11859,7 +11857,6 @@ paths:
                 status: Available
                 version: 1.0.4
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/configuration/{config_id}/:
     parameters:
@@ -11875,13 +11872,12 @@ paths:
       summary: Delete a connector configuration
       description: "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not the integer DB id\
         \ (which returns 500), and the **trailing slash is mandatory** \u2014 without it the request is routed to an HMAC-gated\
-        \ handler that returns the misleading `403 Could not validate HMAC fingerprint`.\n\n**Auth coverage:** `API-KEY: OK`\
+        \ handler that returns the misleading `403 Could not validate HMAC fingerprint`.\n\n**Auth coverage:** `API-KEY: gated`\
         \ \xB7 `Bearer JWT: OK`"
       responses:
         '204':
           description: Deleted.
       x-verified-live:
-      - apikey
       - jwt
   /api/integration/install-connector/:
     post:
@@ -12975,7 +12971,7 @@ paths:
         \ be deleted and re-created. The newly-created record starts in `Awaiting Remote Node Connection`; it transitions\
         \ to `Remote Node Connected` after the installer runs on the target VM.\n\n**Prerequisite:** the appliance must have\
         \ an SME router configured (`GET /api/3/routers` non-empty). If it doesn't, run `sudo csadm secure-message-exchange\
-        \ enable` on the master first.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ enable` on the master first.\n\n**Auth coverage:** `API-KEY: 400` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -13218,7 +13214,6 @@ paths:
                 version: 7.6.5
                 vhost: vhost_aa73fb4b2b00ab2249689b43a8a6b98e
       x-verified-live:
-      - apikey
       - jwt
   /api/3/agents/{uuid}:
     parameters:
@@ -46837,7 +46832,7 @@ paths:
       - Access management
       summary: Create role
       description: "Creates a new role. Body shape follows the generic record contract (`name` plus module-specific fields);\
-        \ see `GET /api/3/contexts/Role` for the full property list.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
+        \ see `GET /api/3/contexts/Role` for the full property list.\n\n**Auth coverage:** `API-KEY: 409` \xB7 `Bearer JWT:\
         \ OK`"
       requestBody:
         required: true
@@ -46863,7 +46858,6 @@ paths:
                 name: live-<run>-role
                 uuid: <uuid>
       x-verified-live:
-      - apikey
       - jwt
   /api/3/teams:
     get:
@@ -46912,7 +46906,7 @@ paths:
       - Access management
       summary: Create team
       description: "Creates a new team. Body shape follows the generic record contract (`name` plus module-specific fields);\
-        \ see `GET /api/3/contexts/Team` for the full property list.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
+        \ see `GET /api/3/contexts/Team` for the full property list.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT:\
         \ OK`"
       requestBody:
         required: true
@@ -46941,7 +46935,6 @@ paths:
                 siblings: []
                 uuid: <uuid>
       x-verified-live:
-      - apikey
       - jwt
   /api/3/api_keys:
     get:
