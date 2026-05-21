@@ -9714,44 +9714,70 @@ paths:
             application/json:
               example:
                 content:
-                - component: sealab
-                  data:
-                    completed_time: '2026-05-21 22:00:00'
-                    message: Squeeze query is executed successfully.
-                    retry: 0
-                    start_time: '2026-05-21 22:00:00'
-                    status: success
-                    success: true
-                    table: workflow_step
-                    table_size_after: 2424832
-                    table_size_before: 36626432
-                  entitySingularName: Logs
-                  entityType: Logs
-                  id: 632030
-                  operation: Delete
-                  source: Schedule
+                - component: das
+                  displayName: CS Admin
+                  entitySingularName: Person
+                  entityType: people
+                  entityUuid: <uuid>
+                  id: 633117
+                  operation: Login Success
+                  source: 10.100.4.154
                   teamIris:
-                  - cs-non-ownable
-                  title: Storage Optimisation job has completed (PG Squeeze)
-                  transactionDate: 1779400800579
-                  user: SYSTEM
-                  userId: SYSTEM
-                  userOwnerIris: []
-                - component: sealab
+                  - /api/3/teams/<uuid>
+                  - /api/3/teams/<uuid>
+                  - /api/3/teams/<uuid>
+                  - /api/3/teams/<uuid>
+                  - /api/3/teams/<uuid>
+                  - /api/3/teams/<uuid>
+                  title: DB login success for user [csadmin]
+                  transactionDate: 1779404616237
+                  user: CS Admin
+                  userId: <uuid>
+                  userOwnerIris:
+                  - /api/3/people/<uuid>
+                - component: crudhub
                   data:
-                    start_time: '2026-05-21 22:00:00'
-                    table: workflow_step
-                  entitySingularName: Logs
-                  entityType: Logs
-                  id: 632029
+                    '@id': /api/3/alerts/<uuid>
+                    Ack SLA: Awaiting Action
+                    Closure Notes: 'NOTES HERE
+
+                      --------------
+
+
+
+
+
+                      Reason HERE
+
+                      ----------------'
+                    Created By: WEBHOOK
+                    Created On: 05-21-2026 23:03 PM UTC
+                    Escalated: 'No'
+                    Id: 1222
+                    Name: live-<run>-upsert
+                    Priority Weight: 1
+                    Response SLA: Awaiting Action
+                    Severity: Minimal
+                    Source: live_test
+                    State: New
+                    Status: Active
+                    Type: Other / Unknown
+                    UUID: <uuid>
+                    recordTags: []
+                  displayName: live-<run>-upsert
+                  entitySingularName: Alert
+                  entityType: alerts
+                  entityUuid: <uuid>
+                  id: 633116
                   operation: Delete
-                  source: Schedule
+                  source: 10.100.4.154
+                  subComponent: EntityRecord
                   teamIris:
-                  - cs-non-ownable
-                  title: Storage Optimisation job has triggered (PG Squeeze)
-                  transactionDate: 1779400800343
-                  user: SYSTEM
-                  userId: SYSTEM
+                  - /api/3/teams/<uuid>
+                  title: Alert [live-<run>-upsert] Deleted
+                  transactionDate: 1779404612949
+                  user: WEBHOOK
+                  userId: <uuid>
                   userOwnerIris: []
                 first: true
                 number: 0
@@ -9816,29 +9842,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordLog'
               example:
-                component: sealab
-                data:
-                  completed_time: '2026-05-21 22:00:00'
-                  message: Squeeze query is executed successfully.
-                  retry: 0
-                  start_time: '2026-05-21 22:00:00'
-                  status: success
-                  success: true
-                  table: workflow_step
-                  table_size_after: 2424832
-                  table_size_before: 36626432
-                entitySingularName: Logs
-                entityType: Logs
-                id: 632030
-                operation: Delete
-                source: Schedule
+                component: das
+                displayName: CS Admin
+                entitySingularName: Person
+                entityType: people
+                entityUuid: <uuid>
+                id: 633117
+                operation: Login Success
+                source: 10.100.4.154
                 teamIris:
-                - cs-non-ownable
-                title: Storage Optimisation job has completed (PG Squeeze)
-                transactionDate: 1779400800579
-                user: SYSTEM
-                userId: SYSTEM
-                userOwnerIris: []
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                - /api/3/teams/<uuid>
+                title: DB login success for user [csadmin]
+                transactionDate: 1779404616237
+                user: CS Admin
+                userId: <uuid>
+                userOwnerIris:
+                - /api/3/people/<uuid>
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
         \ gated` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -11504,7 +11528,7 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 231
+              connector: 242
               default: false
               name: live-<run>-hwcfg
               status: 1
