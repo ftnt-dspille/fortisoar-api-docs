@@ -1537,7 +1537,7 @@ _WF_ACTION_BODIES = {
 }
 for action, desc in [
     ("start", "Manually queue a workflow."),
-    ("resume", "Resume a paused workflow (status=`paused`; for `awaiting`, use the manual-input PUT)."),
+    ("resume", "Resume a paused workflow (status=`paused`; for `awaiting` manual-input runs use `POST {pk}/wfinput_resume/` instead)."),
     ("retry", "Retry a failed workflow from the failed step."),
     ("approval", "Approval-step shortcut. Body shape unverified; expected `{decision, comment}`."),
 ]:
@@ -1567,11 +1567,80 @@ PATHS["/api/wf/api/jinja-editor/"] = {
 
 PATHS["/api/wf/api/manual-wf-input/list_wfinput/"] = {
     "post": {"tags": ["Workflows"], "summary": "List pending manual inputs",
-             "description": "GET on this path returns 405 - must be POST.",
+             "description": "GET on this path returns 405 - must be POST.\n\nEach `hydra:member` carries `id` (the `manual_input_id` for the resume), `step_id` (the execution-step id - the only honest link to a run, since `workflow` is an *encrypted* token, not the run pk), `type` (`InputBased`/`DecisionBased`), and `title`. The list omits `response_mapping` (the buttons) - fetch that via `retrieve_wfinput`.",
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {},
              }}},
              "responses": {"200": _resp("Collection of pending inputs.")}},
+}
+
+# retrieve_wfinput: full record for one pending input, incl. response_mapping.
+PATHS["/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/"] = {
+    "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
+                    "description": "manual_input_id (`list_wfinput[].id`)."}],
+    "post": {"tags": ["Workflows"], "summary": "Retrieve one pending manual input (with buttons)",
+             "description": "Returns the full manual-input record including `response_mapping.options[]` (the buttons and each option's `step_iri`). `list_wfinput` omits these, so you need this call to know which option to send when resuming.",
+             "requestBody": {"required": False, "content": {"application/json": {
+                 "schema": {"type": "object"}, "example": {}}}},
+             "responses": {"200": _resp("Manual-input record with response_mapping.")}},
+}
+
+# The REAL resume path for an `awaiting` (manual-input) run. Verified live
+# end-to-end 2026-05-29: the run advances to `finished` afterward.
+# CORRECTION: an earlier note here called this a decoy and claimed
+# `PUT /api/wf/api/manual-wf-input/{id}/` was canonical. That is WRONG —
+# the PUT returns 200 but does NOT advance the run. wfinput_resume is the
+# path the FortiSOAR UI and the e2e runner both use.
+PATHS["/api/wf/api/workflows/{pk}/wfinput_resume/"] = {
+    "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
+                    "description": "Integer workflow-RUN pk (from the run record `@id`)."}],
+    "post": {
+        "tags": ["Workflows"],
+        "summary": "Resume an awaiting manual-input gate (advances the run)",
+        "description": (
+            "Submit a human's input + chosen button to a paused `awaiting` run and advance it. "
+            "The chosen button is conveyed via its `step_iri` (the next step it routes to), taken from "
+            "`retrieve_wfinput`'s `response_mapping.options[]`. Correlate the gate to the run by id: the run's "
+            "awaiting execution-step ids (`GET {pk}/?step_detail=true`) ∩ `list_wfinput[].step_id`.\n\n"
+            "For `is_approval` gates also send `approved: <bool>`.\n\n"
+            "**Auth coverage:** `jwt: OK`"
+        ),
+        "x-verified-live": ["jwt"],
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["input", "step_iri", "step_id", "manual_input_id"],
+                       "properties": {
+                           "input": {"type": "object", "description": "Submitted inputVariable values, keyed by name."},
+                           "step_iri": {"type": "string", "description": "Chosen option's step_iri (the branch to take)."},
+                           "step_id": {"type": "integer", "description": "Execution-step id of the awaiting gate."},
+                           "manual_input_id": {"type": "integer", "description": "list_wfinput[].id."},
+                       }},
+            "example": {"input": {"ip_address": "1.1.1.1", "reason": "approved"},
+                        "step_iri": "/api/3/workflow_steps/11bbde6b-7afd-5460-97fc-cf7eb96844dc",
+                        "step_id": 5704059, "manual_input_id": 411},
+        }}},
+        "responses": {"200": _resp("Resume accepted; run advances.",
+                                   example={"task_id": "…", "message": "Awaiting Playbook resumed successfully."})},
+    },
+}
+
+# Documented for completeness: this PUT exists and 200s but does NOT
+# advance an awaiting run — use wfinput_resume instead.
+PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
+    "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
+                    "description": "manual_input_id (`list_wfinput[].id`)."}],
+    "put": {
+        "tags": ["Workflows"],
+        "summary": "Update a manual-input record (does NOT resume the run)",
+        "description": (
+            "Returns 200 and updates the record, but **does not advance an `awaiting` run** — a common trap. "
+            "To actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live 2026-05-29: "
+            "PUT here left the run in `awaiting`."
+        ),
+        "x-verified-live": ["jwt"],
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object"}, "example": {"input": {}}}}},
+        "responses": {"200": _resp("Record updated (run NOT advanced).")},
+    },
 }
 
 PATHS["/api/triggers/1/{name}"] = {
@@ -1602,12 +1671,13 @@ PATHS["/api/triggers/1/deferred/{name}"] = {
 PATHS["/api/triggers/1/notrigger/{workflowId}"] = {
     "parameters": [{"name": "workflowId", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
     "post": {"tags": ["Triggers"], "summary": "Run workflow by id without firing trigger conditions",
-             "description": "Direct execution by workflow UUID, bypassing trigger filters. Use for debugging / forced replay.",
+             "description": "Direct execution by workflow UUID, bypassing trigger filters. Use for debugging / forced replay.\n\nResponse carries a top-level `task_id`; track via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`.\n\n**Auth coverage:** `jwt: OK`",
+             "x-verified-live": ["jwt"],
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object", "description": "Arbitrary input payload exposed to the workflow."},
-                 "example": {},
+                 "example": {"input": {}, "request": {"data": {}}, "useMockOutput": False, "globalMock": False},
              }}},
-             "responses": {"200": _resp("Run result.")}},
+             "responses": {"200": _resp("Run result.", example={"task_id": "04495f62-3cc1-4067-955e-18a452a4783c"})}},
 }
 
 
@@ -1819,6 +1889,138 @@ PATHS["/api/integration/configuration/{config_id}/"] = {
 # DELETE for /api/integration/connectors/{id}/ is registered in the
 # operations-discovery block above (placed before /execute/ in the spec
 # so the discovery endpoint reads first in the lifecycle).
+
+# --- Connector development workspace ---------------------------------------
+#
+# Separate flow from the install/import lifecycle above. The development
+# workspace is the Connector Studio / IDE-plugin editor surface, backed by
+# its own on-disk tree at `/opt/cyops/configs/integrations/connectors_development/`
+# (versioned dirs suffixed with `_dev`, e.g. `armis_1_1_0_dev/`). Entities
+# in this tree have integer ids in `connectors_connector` with
+# `development=true`. Crucially, the Publish endpoint below is the ONLY
+# connector-handling code path that calls
+# `connector_development.utils.touch_dev_config_ini()`, which updates
+# `/opt/cyops/configs/integrations/workspace/connector_dev_config.ini` and
+# triggers uwsgi `touch-reload` -> all 10 integrations workers recycle.
+# The standard install/import path (`/api/3/solutionpacks/install?$type=connector`)
+# does **not** fire that signal; that asymmetry is what produces the
+# "ghost version" symptom on same-version replace uploads. See
+# `fortisoar/FORTISOAR_ARCHITECTURE.md` Connector upload + install pipeline
+# section for the full reproduction.
+
+PATHS["/api/integration/connector/development/entity/"] = {
+    "get": {
+        "tags": ["Connectors"],
+        "summary": "List dev-workspace connectors",
+        "description": (
+            "Returns the connector entries currently checked out into the Connector Studio "
+            "development workspace. These are the same connectors you see in the Studio's "
+            "left-hand tree on the appliance."
+        ),
+        "responses": {"200": _resp("Hydra collection of dev-workspace entities.")},
+    },
+}
+
+PATHS["/api/integration/connector/development/entity/{id}/"] = {
+    "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
+                    "description": "Integer connector id of a dev-workspace entity."}],
+    "post": {
+        "tags": ["Connectors"],
+        "summary": "Enter edit mode on a dev-workspace connector",
+        "description": (
+            "Used by Connector Studio when the user clicks Edit. Body `{\"edit_repo_connector\": true}` "
+            "opens the entity for editing and returns its full operations + configuration schema + "
+            "file tree. Pair with the `/files/` endpoints to read and write source files, then "
+            "`/publish/` to land the changes."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {
+                "edit_repo_connector": {"type": "boolean", "default": True},
+            }},
+            "example": {"edit_repo_connector": True},
+        }}},
+        "responses": {"200": _resp("Editable connector detail (operations, configuration, tree).")},
+    },
+}
+
+PATHS["/api/integration/connector/development/entity/{id}/files/"] = {
+    "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
+                    "description": "Dev-workspace entity id."}],
+    "post": {
+        "tags": ["Connectors"],
+        "summary": "Read a file from a dev-workspace connector",
+        "description": (
+            "Returns the contents of a single file inside the entity's source tree. The `xpath` "
+            "is relative to the connector's dev-workspace root and always starts with "
+            "`/<name>_<vtag>_dev/...`. Used by the Studio editor when the user opens a file."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["xpath"], "properties": {
+                "xpath": {"type": "string",
+                          "description": "Path inside the connector's dev tree, e.g. `/armis_dev_1_1_0_dev/info.json`."},
+            }},
+            "example": {"xpath": "/armis_dev_1_1_0_dev/info.json"},
+        }}},
+        "responses": {"200": _resp("`{fileContent: <string>}` with the literal file body.")},
+    },
+    "put": {
+        "tags": ["Connectors"],
+        "summary": "Write a file in a dev-workspace connector",
+        "description": (
+            "Replaces the contents of a single file inside the entity's source tree. Used by the "
+            "Studio editor's Save action. Saved changes are staged in the workspace and do not "
+            "affect playbook execution until `/publish/` is called."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["fileData"], "properties": {
+                "fileData": {"type": "object", "required": ["xpath", "fileContent"], "properties": {
+                    "xpath": {"type": "string"},
+                    "fileContent": {"type": "string"},
+                }},
+            }},
+            "example": {"fileData": {"xpath": "/armis_dev_1_1_0_dev/operations.py",
+                                     "fileContent": "# ... full file body ..."}},
+        }}},
+        "responses": {"200": _resp("Updated tree view of the entity (folders + files).")},
+    },
+}
+
+PATHS["/api/integration/connector/development/entity/{id}/publish/"] = {
+    "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
+                    "description": "Dev-workspace entity id."}],
+    "post": {
+        "tags": ["Connectors"],
+        "summary": "Publish a dev-workspace connector to the running appliance",
+        "description": (
+            "Lands the dev-workspace contents into the live installed-connectors area and signals "
+            "the integrations service to refresh, so subsequent playbook executions pick up the new "
+            "code immediately. This is the recommended way to land changes made via the Studio "
+            "editor, and it is the supported escape hatch when a same-version tgz upload has left "
+            "stale code cached in the integrations service (publish triggers a service refresh "
+            "that the standard `$replace=true` install path does not). `replace=true` overwrites an existing "
+            "installed version of the same name + version. `discard` controls the dev-workspace "
+            "twin's lifecycle, NOT whether edits are published — see the field description. "
+            "Verified empirically 2026-05-27 against ghost-handler v5.0.0."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {
+                "discard": {"type": "boolean", "default": False,
+                            "description": "Controls the dev-workspace twin after a successful "
+                                           "publish, scoped to THIS connector only — other "
+                                           "connectors' dev workspaces are untouched. `true` "
+                                           "destroys this connector's dev twin (one-shot "
+                                           "publish), `false` keeps it (`development=true` row "
+                                           "remains for further editing). Both values publish the "
+                                           "staged edits to the installed connector dir — the "
+                                           "flag does NOT mean 'don't publish'."},
+                "replace": {"type": "boolean", "default": False,
+                            "description": "If true, overwrite an existing same-name+version install."},
+            }},
+            "example": {"discard": False, "replace": True},
+        }}},
+        "responses": {"200": _resp("Published connector record (with integer `id`, configurations, operations).")},
+    },
+}
 
 # --- Connector lifecycle on a remote agent ---------------------------------
 #
@@ -2724,11 +2926,18 @@ The 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynami
 Run control lives under `/api/wf/*`. The endpoints below cover the most common control flows; less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`) are tracked as a future expansion.
 
 - `POST /api/wf/api/workflows/{pk}/start/` - manually queue.
-- `POST /api/wf/api/workflows/{pk}/resume/` - resume a `paused` run. **Not for `awaiting`** - that uses manual-input PUT.
+- `POST /api/wf/api/workflows/{pk}/resume/` - resume a `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).
 - `POST /api/wf/api/workflows/{pk}/retry/` - retry a failed run from the failed step.
 - `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.
 
-**Decoy alert:** `POST /api/wf/api/workflows/{pk}/wfinput_resume/` exists and looks canonical, but the actual resume path for `awaiting` runs is **`PUT /api/wf/api/manual-wf-input/{pk}/`** with body `{workflow: <int_pk>, input: <dict>, type, step_id}`. Don't use `wfinput_resume`.
+**Resuming an `awaiting` manual-input run** (verified live end-to-end 2026-05-29; the run advances to `finished`):
+
+1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true` → the run's awaiting execution-step ids (the correlation anchor).
+2. `POST /api/wf/api/manual-wf-input/list_wfinput/` → the pending input whose `step_id` is one of those ids → `manual_input_id`. (`workflow` on the list member is an *encrypted* token, not the run pk, so `step_id` is the only honest link.)
+3. `POST /api/wf/api/manual-wf-input/{manual_input_id}/retrieve_wfinput/` → `response_mapping.options[]` (the buttons; each has a `step_iri`).
+4. `POST /api/wf/api/workflows/{run_pk}/wfinput_resume/` with `{input, step_iri: <chosen option's step_iri>, step_id, manual_input_id}` (add `approved: <bool>` for `is_approval` gates).
+
+**Correction (was wrong here before):** `wfinput_resume` is the **real** path - it is NOT a decoy. `PUT /api/wf/api/manual-wf-input/{id}/` returns 200 but does **not** advance the run; don't use it to resume.
 
 ### Triggers
 
