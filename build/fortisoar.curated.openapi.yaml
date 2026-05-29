@@ -131,36 +131,43 @@ info:
     \n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints below cover the most common control flows;\
     \ less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`) are tracked as a future expansion.\n\
     \n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/` - resume a\
-    \ `paused` run. **Not for `awaiting`** - that uses manual-input PUT.\n- `POST /api/wf/api/workflows/{pk}/retry/` - retry\
-    \ a failed run from the failed step.\n- `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.\n\n**Decoy\
-    \ alert:** `POST /api/wf/api/workflows/{pk}/wfinput_resume/` exists and looks canonical, but the actual resume path for\
-    \ `awaiting` runs is **`PUT /api/wf/api/manual-wf-input/{pk}/`** with body `{workflow: <int_pk>, input: <dict>, type,\
-    \ step_id}`. Don't use `wfinput_resume`.\n\n### Triggers\n\nThree ways to fire a playbook from outside:\n\n- **`POST /api/triggers/1/{name}`**\
-    \ - hits a Custom API Endpoint trigger (named via the trigger config). Allows alternate auth (Basic / no-auth) for external\
-    \ webhooks, by design - keeps the core API token-locked while letting webhook senders use simpler auth.\n- **`POST /api/triggers/1/deferred/{name}`**\
-    \ - same as above but async (returns 202).\n- **`POST /api/triggers/1/notrigger/{workflowId}`** - direct execution of\
-    \ a workflow by UUID, bypassing trigger conditions. Useful for testing.\n\nThe notifier service has additional fan-out\
-    \ via STOMP-over-WebSocket at `/websocket/` (server pushes workflow updates on `/topic/workflows/`). No REST surface;\
-    \ out of scope here.\n\n### Triggering a playbook with an API key and tracking the task\n\nWorked end-to-end flow against\
-    \ a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it reaches a terminal\
-    \ state, then fetch full execution details. Same pattern works for `deferred/` (async) and `notrigger/<workflowId>` -\
-    \ only the trigger URL changes.\n\n**1. Fire the trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the playbook\
-    \ expects. Auth header is `Authorization: API-KEY <key>` (literal space, not a colon). The response always contains a\
-    \ `task_id` - that is the handle you track, not the workflow IRI.\n\n```python\nimport requests\n\nBASE_URL = \"https://fortisoar.example.com\"\
-    \nHEADERS = {\n    \"Authorization\": f\"API-KEY {API_KEY}\",\n    \"Content-Type\": \"application/json\",\n}\n\nresp\
-    \ = requests.post(\n    f\"{BASE_URL}/api/triggers/1/lookup_ip\",\n    headers=HEADERS,\n    json={\"value\": \"1.1.1.2\"\
-    },\n    verify=False,\n)\nresp.raise_for_status()\ntask_id = resp.json().get(\"task_id\") or resp.json()[\"data\"][\"\
-    task_id\"]\n```\n\nThe `task_id` field sometimes sits at the top level and sometimes inside `data` depending on the trigger\
-    \ flavor - check both. Synchronous triggers return 200; `deferred/` returns 202 with the same envelope.\n\n**2. Poll the\
-    \ workflow log by `task_id`.** The workflows endpoint indexes runs by `task_id` and returns the parent run when filtered\
-    \ with `parent_wf__isnull=True` (skips child sub-workflows). Order by `-modified` and take the first hit.\n\n```python\n\
-    url = (\n    f\"{BASE_URL}/api/wf/api/workflows/\"\n    f\"?format=json&limit=1&offset=0&ordering=-modified\"\n    f\"\
-    &task_id={task_id}&parent_wf__isnull=True\"\n)\nlog = requests.get(url, headers=HEADERS, verify=False).json()[\"hydra:member\"\
-    ][0]\nstatus = log[\"status\"]   # pending | running | finished | failed | terminated | skipped\nworkflow_id = log[\"\
-    @id\"].rstrip(\"/\").split(\"/\")[-1]\n```\n\nTerminal states are **`finished`**, **`failed`**, **`terminated`**, **`skipped`**.\
-    \ Anything else (`pending`, `running`, `awaiting`, ...) means keep polling. An empty `hydra:member` array right after\
-    \ trigger is normal - the log row is written on first executor pickup, not on trigger receipt.\n\n**3. Fetch full execution\
-    \ details.** Once terminal, hit the workflow record directly:\n\n```python\ndetails = requests.get(\n    f\"{BASE_URL}/api/wf/api/workflows/{workflow_id}/?format=json\"\
+    \ `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).\n- `POST /api/wf/api/workflows/{pk}/retry/`\
+    \ - retry a failed run from the failed step.\n- `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.\n\
+    \n**Resuming an `awaiting` manual-input run** (verified live end-to-end 2026-05-29; the run advances to `finished`):\n\
+    \n1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true` \u2192 the run's awaiting execution-step ids (the correlation\
+    \ anchor).\n2. `POST /api/wf/api/manual-wf-input/list_wfinput/` \u2192 the pending input whose `step_id` is one of those\
+    \ ids \u2192 `manual_input_id`. (`workflow` on the list member is an *encrypted* token, not the run pk, so `step_id` is\
+    \ the only honest link.)\n3. `POST /api/wf/api/manual-wf-input/{manual_input_id}/retrieve_wfinput/` \u2192 `response_mapping.options[]`\
+    \ (the buttons; each has a `step_iri`).\n4. `POST /api/wf/api/workflows/{run_pk}/wfinput_resume/` with `{input, step_iri:\
+    \ <chosen option's step_iri>, step_id, manual_input_id}` (add `approved: <bool>` for `is_approval` gates).\n\n**Correction\
+    \ (was wrong here before):** `wfinput_resume` is the **real** path - it is NOT a decoy. `PUT /api/wf/api/manual-wf-input/{id}/`\
+    \ returns 200 but does **not** advance the run; don't use it to resume.\n\n### Triggers\n\nThree ways to fire a playbook\
+    \ from outside:\n\n- **`POST /api/triggers/1/{name}`** - hits a Custom API Endpoint trigger (named via the trigger config).\
+    \ Allows alternate auth (Basic / no-auth) for external webhooks, by design - keeps the core API token-locked while letting\
+    \ webhook senders use simpler auth.\n- **`POST /api/triggers/1/deferred/{name}`** - same as above but async (returns 202).\n\
+    - **`POST /api/triggers/1/notrigger/{workflowId}`** - direct execution of a workflow by UUID, bypassing trigger conditions.\
+    \ Useful for testing.\n\nThe notifier service has additional fan-out via STOMP-over-WebSocket at `/websocket/` (server\
+    \ pushes workflow updates on `/topic/workflows/`). No REST surface; out of scope here.\n\n### Triggering a playbook with\
+    \ an API key and tracking the task\n\nWorked end-to-end flow against a Custom API Endpoint trigger: fire the playbook,\
+    \ capture the `task_id`, poll the workflow log until it reaches a terminal state, then fetch full execution details. Same\
+    \ pattern works for `deferred/` (async) and `notrigger/<workflowId>` - only the trigger URL changes.\n\n**1. Fire the\
+    \ trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the playbook expects. Auth header is `Authorization:\
+    \ API-KEY <key>` (literal space, not a colon). The response always contains a `task_id` - that is the handle you track,\
+    \ not the workflow IRI.\n\n```python\nimport requests\n\nBASE_URL = \"https://fortisoar.example.com\"\nHEADERS = {\n \
+    \   \"Authorization\": f\"API-KEY {API_KEY}\",\n    \"Content-Type\": \"application/json\",\n}\n\nresp = requests.post(\n\
+    \    f\"{BASE_URL}/api/triggers/1/lookup_ip\",\n    headers=HEADERS,\n    json={\"value\": \"1.1.1.2\"},\n    verify=False,\n\
+    )\nresp.raise_for_status()\ntask_id = resp.json().get(\"task_id\") or resp.json()[\"data\"][\"task_id\"]\n```\n\nThe `task_id`\
+    \ field sometimes sits at the top level and sometimes inside `data` depending on the trigger flavor - check both. Synchronous\
+    \ triggers return 200; `deferred/` returns 202 with the same envelope.\n\n**2. Poll the workflow log by `task_id`.** The\
+    \ workflows endpoint indexes runs by `task_id` and returns the parent run when filtered with `parent_wf__isnull=True`\
+    \ (skips child sub-workflows). Order by `-modified` and take the first hit.\n\n```python\nurl = (\n    f\"{BASE_URL}/api/wf/api/workflows/\"\
+    \n    f\"?format=json&limit=1&offset=0&ordering=-modified\"\n    f\"&task_id={task_id}&parent_wf__isnull=True\"\n)\nlog\
+    \ = requests.get(url, headers=HEADERS, verify=False).json()[\"hydra:member\"][0]\nstatus = log[\"status\"]   # pending\
+    \ | running | finished | failed | terminated | skipped\nworkflow_id = log[\"@id\"].rstrip(\"/\").split(\"/\")[-1]\n```\n\
+    \nTerminal states are **`finished`**, **`failed`**, **`terminated`**, **`skipped`**. Anything else (`pending`, `running`,\
+    \ `awaiting`, ...) means keep polling. An empty `hydra:member` array right after trigger is normal - the log row is written\
+    \ on first executor pickup, not on trigger receipt.\n\n**3. Fetch full execution details.** Once terminal, hit the workflow\
+    \ record directly:\n\n```python\ndetails = requests.get(\n    f\"{BASE_URL}/api/wf/api/workflows/{workflow_id}/?format=json\"\
     ,\n    headers=HEADERS, verify=False,\n).json()\n```\n\n- **`details[\"result\"]`** - the playbook's final output (the\
     \ output of the last executed step). This is what 90% of callers want.\n- **`details[\"name\"]`** - playbook name.\n-\
     \ **`details[\"status\"]`** - same terminal status as the log row.\n- **Per-step outputs** - the workflow record also\
@@ -2373,6 +2380,7 @@ paths:
                     uuid: <uuid>
                   commandLine: null
                   computerName: null
+                  conflict: null
                   createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
@@ -2550,15 +2558,29 @@ paths:
                   mitreattackid: null
                   modifyDate: 1700000000
                   modifyUser:
-                    '@id': /api/3/appliances/<uuid>
-                    '@type': Appliance
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
                     avatar: null
+                    companyId: null
                     createDate: 1700000000
-                    createUser: null
-                    id: 1
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
                     modifyDate: 1700000000
-                    modifyUser: null
-                    name: Playbook
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    title: Admin
+                    type: null
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
@@ -2895,6 +2917,25 @@ paths:
                     uuid: <uuid>
                   targetAsset: null
                   targetProcess: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 1
                   ticketID: null
                   tier2Team: null
                   type:
@@ -2940,6 +2981,7 @@ paths:
                   closureReason: null
                   commandLine: null
                   computerName: null
+                  conflict: null
                   createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
@@ -3490,6 +3532,25 @@ paths:
                     uuid: <uuid>
                   targetAsset: null
                   targetProcess: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 2
                   ticketID: null
                   tier2Team: null
                   type:
@@ -3597,6 +3658,7 @@ paths:
                 communications: []
                 companies: []
                 computerName: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -3666,7 +3728,7 @@ paths:
                 fsrQueue: null
                 hunts: []
                 iPAddresses: null
-                id: 1178
+                id: 1239
                 incidents: []
                 indicators: []
                 killChainPhase: null
@@ -3800,6 +3862,25 @@ paths:
                 targetAsset: null
                 targetProcess: null
                 tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 1239
                 ticketID: null
                 tier2Team: null
                 type:
@@ -3890,6 +3971,7 @@ paths:
                 closureReason: null
                 commandLine: null
                 computerName: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -3957,7 +4039,7 @@ paths:
                 filePath: null
                 fsrQueue: null
                 iPAddresses: null
-                id: 1178
+                id: 1239
                 killChainPhase: null
                 latestLogin: null
                 metrics: null
@@ -4073,6 +4155,25 @@ paths:
                   uuid: <uuid>
                 targetAsset: null
                 targetProcess: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 1239
                 ticketID: null
                 tier2Team: null
                 type:
@@ -4161,6 +4262,7 @@ paths:
                 closureReason: null
                 commandLine: null
                 computerName: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -4228,7 +4330,7 @@ paths:
                 filePath: null
                 fsrQueue: null
                 iPAddresses: null
-                id: 1178
+                id: 1239
                 killChainPhase: null
                 latestLogin: null
                 metrics: null
@@ -4344,6 +4446,25 @@ paths:
                   uuid: <uuid>
                 targetAsset: null
                 targetProcess: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 1239
                 ticketID: null
                 tier2Team: null
                 type:
@@ -4454,6 +4575,7 @@ paths:
                     orderIndex: 8
                     uuid: <uuid>
                   confirmationDate: null
+                  conflict: null
                   containmentDate: null
                   containmentTime: null
                   createDate: 1700000000
@@ -4601,6 +4723,25 @@ paths:
                     orderIndex: 0
                     uuid: <uuid>
                   targetAsset: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 10
                   ticketID: null
                   uuid: <uuid>
                   volatileData: null
@@ -4628,6 +4769,7 @@ paths:
                     orderIndex: 8
                     uuid: <uuid>
                   confirmationDate: null
+                  conflict: null
                   containmentDate: null
                   containmentTime: null
                   createDate: 1700000000
@@ -4780,6 +4922,25 @@ paths:
                     orderIndex: 0
                     uuid: <uuid>
                   targetAsset: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 12
                   ticketID: null
                   uuid: <uuid>
                   volatileData: null
@@ -4857,6 +5018,7 @@ paths:
                 communications: []
                 companies: []
                 confirmationDate: null
+                conflict: false
                 containmentDate: null
                 containmentTime: null
                 createDate: 1700000000
@@ -4910,7 +5072,7 @@ paths:
                 fileName: null
                 filehash: null
                 fsrQueue: null
-                id: 27
+                id: 75
                 identificationDate: null
                 impactAssessments: null
                 impactROI: null
@@ -5050,6 +5212,25 @@ paths:
                   uuid: <uuid>
                 targetAsset: null
                 tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 75
                 ticketID: null
                 uuid: <uuid>
                 volatileData: null
@@ -5111,6 +5292,7 @@ paths:
                   orderIndex: 8
                   uuid: <uuid>
                 confirmationDate: null
+                conflict: false
                 containmentDate: null
                 containmentTime: null
                 createDate: 1700000000
@@ -5164,7 +5346,7 @@ paths:
                 fileName: null
                 filehash: null
                 fsrQueue: null
-                id: 25
+                id: 73
                 identificationDate: null
                 impactAssessments: null
                 impactROI: null
@@ -5295,6 +5477,25 @@ paths:
                   orderIndex: 0
                   uuid: <uuid>
                 targetAsset: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 73
                 ticketID: null
                 uuid: <uuid>
                 volatileData: null
@@ -5355,6 +5556,7 @@ paths:
                   orderIndex: 8
                   uuid: <uuid>
                 confirmationDate: null
+                conflict: false
                 containmentDate: null
                 containmentTime: null
                 createDate: 1700000000
@@ -5408,7 +5610,7 @@ paths:
                 fileName: null
                 filehash: null
                 fsrQueue: null
-                id: 25
+                id: 73
                 identificationDate: null
                 impactAssessments: null
                 impactROI: null
@@ -5421,29 +5623,15 @@ paths:
                 mitreattackid: null
                 modifyDate: 1700000000
                 modifyUser:
-                  '@id': /api/3/people/<uuid>
-                  '@settings': /api/3/user_settings/<uuid>
-                  '@type': Person
-                  accessType: Named
+                  '@id': /api/3/appliances/<uuid>
+                  '@type': Appliance
                   avatar: null
-                  companyId: null
                   createDate: 1700000000
-                  createUser: /api/3/people/<uuid>
-                  csActive: true
-                  department: null
-                  description: null
-                  email: admin@example.com
-                  firstname: CS
-                  id: 3
-                  lastname: Admin
+                  createUser: null
+                  id: 1
                   modifyDate: 1700000000
-                  modifyUser: /api/3/people/<uuid>
-                  phoneFax: null
-                  phoneHome: null
-                  phoneMobile: null
-                  phoneWork: '+16462759691'
-                  title: Admin
-                  type: null
+                  modifyUser: null
+                  name: Playbook
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
@@ -5539,6 +5727,25 @@ paths:
                   orderIndex: 0
                   uuid: <uuid>
                 targetAsset: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 73
                 ticketID: null
                 uuid: <uuid>
                 volatileData: null
@@ -5620,6 +5827,7 @@ paths:
                   assignedToPerson: null
                   assignee: ''
                   completedOnDate: null
+                  conflict: null
                   createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
@@ -5661,6 +5869,25 @@ paths:
                   submittedBy: null
                   taskdata: null
                   tasktype: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 4
                   type: null
                   uuid: <uuid>
                   workflowid: null
@@ -5672,6 +5899,7 @@ paths:
                   assignedToPerson: null
                   assignee: ''
                   completedOnDate: null
+                  conflict: null
                   createDate: 1700000000
                   createUser:
                     '@id': /api/3/appliances/<uuid>
@@ -5713,6 +5941,25 @@ paths:
                   submittedBy: null
                   taskdata: null
                   tasktype: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 35
                   type: null
                   uuid: <uuid>
                   workflowid: null
@@ -5772,6 +6019,7 @@ paths:
                 comments: []
                 companies: []
                 completedOnDate: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -5804,7 +6052,7 @@ paths:
                 dueBy: null
                 fsrQueue: null
                 hunt: []
-                id: 57
+                id: 81
                 incidents: []
                 indicators: []
                 modifyDate: 1700000000
@@ -5862,6 +6110,25 @@ paths:
                 submittedBy: null
                 taskdata: null
                 tasktype: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 81
                 threatIntelFeeds: []
                 type: null
                 userOwners: []
@@ -5910,6 +6177,7 @@ paths:
                 assignedToPerson: null
                 assignee: ''
                 completedOnDate: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -5941,7 +6209,7 @@ paths:
                 description: live_test task
                 dueBy: null
                 fsrQueue: null
-                id: 57
+                id: 81
                 modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
@@ -5989,6 +6257,25 @@ paths:
                 submittedBy: null
                 taskdata: null
                 tasktype: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 81
                 type: null
                 uuid: <uuid>
                 workflowid: null
@@ -6033,6 +6320,7 @@ paths:
                 assignedToPerson: null
                 assignee: ''
                 completedOnDate: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -6064,7 +6352,7 @@ paths:
                 description: updated by live_test
                 dueBy: null
                 fsrQueue: null
-                id: 57
+                id: 81
                 modifyDate: 1700000000
                 modifyUser:
                   '@id': /api/3/people/<uuid>
@@ -6112,6 +6400,25 @@ paths:
                 submittedBy: null
                 taskdata: null
                 tasktype: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 81
                 type: null
                 uuid: <uuid>
                 workflowid: null
@@ -6230,6 +6537,7 @@ paths:
                 cVEs: []
                 campaigns: []
                 communication: []
+                conflict: false
                 content: <p>live-<run>-comment linked to incident</p>
                 createDate: 1700000000
                 createUser:
@@ -6267,7 +6575,7 @@ paths:
                 file3: null
                 file4: null
                 hunt: []
-                id: 28265
+                id: 28301
                 incidents:
                 - /api/3/incidents/<uuid>
                 indicators: []
@@ -6322,6 +6630,25 @@ paths:
                 scans: []
                 scenario: []
                 tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 28301
                 threatActors: []
                 threatIntelReports: []
                 type:
@@ -6373,6 +6700,7 @@ paths:
                 '@context': /api/3/contexts/Comment
                 '@id': /api/3/comments/<uuid>
                 '@type': Comment
+                conflict: false
                 content: <p>live-<run>-comment linked to incident</p>
                 createDate: 1700000000
                 createUser:
@@ -6407,7 +6735,7 @@ paths:
                 file2: null
                 file3: null
                 file4: null
-                id: 28265
+                id: 28301
                 isDeleted: null
                 isImportant: null
                 lastReplyDate: 1700000000
@@ -6443,6 +6771,25 @@ paths:
                 rawCommentData: null
                 recordTags: []
                 replyTo: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 28301
                 type:
                   '@id': /api/3/picklists/<uuid>
                   '@type': Picklist
@@ -6497,6 +6844,7 @@ paths:
                 cVEs: []
                 campaigns: []
                 communication: []
+                conflict: false
                 content: <p>live-<run>-comment linked to incident</p>
                 createDate: 1700000000
                 createUser:
@@ -6534,7 +6882,7 @@ paths:
                 file3: null
                 file4: null
                 hunt: []
-                id: 28265
+                id: 28301
                 incidents:
                 - /api/3/incidents/<uuid>
                 indicators: []
@@ -6589,6 +6937,25 @@ paths:
                 scans: []
                 scenario: []
                 tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 28301
                 threatActors: []
                 threatIntelReports: []
                 type:
@@ -6640,6 +7007,7 @@ paths:
                 cVEs: []
                 campaigns: []
                 communication: []
+                conflict: false
                 content: <p>live-<run>-comment linked to incident</p>
                 createDate: 1700000000
                 createUser:
@@ -6677,7 +7045,7 @@ paths:
                 file3: null
                 file4: null
                 hunt: []
-                id: 28265
+                id: 28301
                 incidents:
                 - /api/3/incidents/<uuid>
                 indicators: []
@@ -6732,6 +7100,25 @@ paths:
                 scans: []
                 scenario: []
                 tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 28301
                 threatActors: []
                 threatIntelReports: []
                 type:
@@ -6820,7 +7207,7 @@ paths:
         \ `people`, `appliances`, `workflows`, `playbooks`, `connectors`, `roles`, `teams`, `api_keys`, `comments`, `notes`,\
         \ `attachments`, `picklists`, `picklist_names`, `model_metadatas`, `attribute_metadatas`, `dashboard`, `reporting`,\
         \ `tenants`, `agents`, `routers`, `solutionpacks`, `widgets`, `workflow_collections`, `query_objects`, `import_jobs`,\
-        \ `export_jobs`, `preprocessing_rules`.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
+        \ `export_jobs`, `preprocessing_rules`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters: *id021
       responses:
         '200':
@@ -6848,6 +7235,7 @@ paths:
                   hydra:last: /api/3/teams?%24limit=1&%24page=6
                   hydra:next: /api/3/teams?%24limit=1&%24page=2
       x-verified-live:
+      - apikey
       - jwt
     post:
       tags:
@@ -6880,8 +7268,9 @@ paths:
                 siblings: []
                 uuid: <uuid>
       description: "**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)\n\
-        \n\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
+        \n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
+      - apikey
       - jwt
   /api/3/{collection}/{uuid}:
     parameters:
@@ -6943,6 +7332,7 @@ paths:
                   uuid: <uuid>
                 commandLine: null
                 computerName: null
+                conflict: null
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/appliances/<uuid>
@@ -7119,15 +7509,29 @@ paths:
                 mitreattackid: null
                 modifyDate: 1700000000
                 modifyUser:
-                  '@id': /api/3/appliances/<uuid>
-                  '@type': Appliance
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
                   avatar: null
+                  companyId: null
                   createDate: 1700000000
-                  createUser: null
-                  id: 1
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
                   modifyDate: 1700000000
-                  modifyUser: null
-                  name: Playbook
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  title: Admin
+                  type: null
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
@@ -7460,6 +7864,25 @@ paths:
                   uuid: <uuid>
                 targetAsset: null
                 targetProcess: null
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 1
                 ticketID: null
                 tier2Team: null
                 type:
@@ -7514,9 +7937,9 @@ paths:
                 importedBy: []
                 name: live-<run>-team
                 uuid: <uuid>
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT:\
-        \ OK`"
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
+      - apikey
       - jwt
     delete:
       tags:
@@ -7525,9 +7948,9 @@ paths:
       responses:
         '204':
           description: Deleted.
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT:\
-        \ OK`"
+      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
+      - apikey
       - jwt
   /api/3/insert/{moduleType}:
     parameters:
@@ -7735,6 +8158,7 @@ paths:
                 communications: []
                 companies: []
                 computerName: null
+                conflict: false
                 createDate: 1700000000
                 createUser:
                   '@id': /api/3/people/<uuid>
@@ -7804,7 +8228,7 @@ paths:
                 fsrQueue: null
                 hunts: []
                 iPAddresses: null
-                id: 1180
+                id: 1241
                 incidents: []
                 indicators: []
                 killChainPhase: null
@@ -7938,6 +8362,25 @@ paths:
                 targetAsset: null
                 targetProcess: null
                 tasks: []
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 1241
                 ticketID: null
                 tier2Team: null
                 type:
@@ -8054,6 +8497,7 @@ paths:
                   communications: []
                   companies: []
                   computerName: null
+                  conflict: false
                   createDate: 1700000000
                   createUser:
                     '@id': /api/3/people/<uuid>
@@ -8123,7 +8567,7 @@ paths:
                   fsrQueue: null
                   hunts: []
                   iPAddresses: null
-                  id: 1181
+                  id: 1242
                   incidents: []
                   indicators: []
                   killChainPhase: null
@@ -8257,6 +8701,25 @@ paths:
                   targetAsset: null
                   targetProcess: null
                   tasks: []
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 1242
                   ticketID: null
                   tier2Team: null
                   type:
@@ -8629,50 +9092,7 @@ paths:
                 - '@id': /api/3/threat_intel_feeds/<uuid>
                   '@type': ThreatIntel
                   confidence: 100
-                  created: null
-                  description: <p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
-                    Evil Corp group to collect information on compromised systems</p>
-                  expiresOn: null
-                  feedType: indicator
-                  id: indicator--2023060612951
-                  indicatorTypes: null
-                  killChainPhases: []
-                  label: null
-                  lastSeen: null
-                  modified: null
-                  name: 94.142.138.61
-                  pattern: null
-                  patternType: STIX
-                  patternVersion: '2.1'
-                  recordTags:
-                  - evil corp
-                  - gold drake
-                  - indrik spider
-                  - information stealer
-                  - malvertising campaign
-                  - malware
-                  - silence group
-                  reputation: Malicious
-                  source: FortiRecon ACI Report
-                  sourceData:
-                    ioc: 94.142.138.61
-                    ioc_type: ip
-                    report_id: '2023060612951'
-                    report_title: Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
-                      Evil Corp group to collect information on compromised systems
-                  sourceId: '2023060612951'
-                  specVersion: '2.1'
-                  tLP: Green
-                  threatTypes: []
-                  type: indicator
-                  typeOfFeed: IP Address
-                  uuid: <uuid>
-                  validFrom: null
-                  validUntil: null
-                  value: 94.142.138.61
-                - '@id': /api/3/threat_intel_feeds/<uuid>
-                  '@type': ThreatIntel
-                  confidence: 100
+                  conflict: null
                   created: null
                   description: <p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
                     Evil Corp group to collect information on compromised systems</p>
@@ -8707,6 +9127,8 @@ paths:
                   sourceId: '2023060612951'
                   specVersion: '2.1'
                   tLP: Green
+                  tenant: Self
+                  tenantRecordId: indicator--2023060612951
                   threatTypes: []
                   type: indicator
                   typeOfFeed: FileHash
@@ -8714,6 +9136,40 @@ paths:
                   validFrom: null
                   validUntil: null
                   value: <api-key>
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: null
+                  conflict: null
+                  created: null
+                  description: null
+                  expiresOn: null
+                  feedType: indicator
+                  id: indicator--
+                  indicatorTypes: null
+                  killChainPhases: []
+                  label: null
+                  lastSeen: null
+                  modified: null
+                  name: demo-value
+                  pattern: null
+                  patternType: STIX
+                  patternVersion: '2.1'
+                  recordTags: []
+                  reputation: null
+                  source: null
+                  sourceData: null
+                  sourceId: null
+                  specVersion: '2.1'
+                  tLP: null
+                  tenant: Self
+                  tenantRecordId: indicator--
+                  threatTypes: []
+                  type: indicator
+                  typeOfFeed: null
+                  uuid: <uuid>
+                  validFrom: null
+                  validUntil: null
+                  value: demo-value
                 totalItems: 8
       x-verified-live:
       - apikey
@@ -8779,50 +9235,7 @@ paths:
                 - '@id': /api/3/threat_intel_feeds/<uuid>
                   '@type': ThreatIntel
                   confidence: 100
-                  created: null
-                  description: <p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
-                    Evil Corp group to collect information on compromised systems</p>
-                  expiresOn: null
-                  feedType: indicator
-                  id: indicator--2023060612951
-                  indicatorTypes: null
-                  killChainPhases: []
-                  label: null
-                  lastSeen: null
-                  modified: null
-                  name: 94.142.138.61
-                  pattern: null
-                  patternType: STIX
-                  patternVersion: '2.1'
-                  recordTags:
-                  - evil corp
-                  - gold drake
-                  - indrik spider
-                  - information stealer
-                  - malvertising campaign
-                  - malware
-                  - silence group
-                  reputation: Malicious
-                  source: FortiRecon ACI Report
-                  sourceData:
-                    ioc: 94.142.138.61
-                    ioc_type: ip
-                    report_id: '2023060612951'
-                    report_title: Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
-                      Evil Corp group to collect information on compromised systems
-                  sourceId: '2023060612951'
-                  specVersion: '2.1'
-                  tLP: Green
-                  threatTypes: []
-                  type: indicator
-                  typeOfFeed: IP Address
-                  uuid: <uuid>
-                  validFrom: null
-                  validUntil: null
-                  value: 94.142.138.61
-                - '@id': /api/3/threat_intel_feeds/<uuid>
-                  '@type': ThreatIntel
-                  confidence: 100
+                  conflict: null
                   created: null
                   description: <p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's
                     Evil Corp group to collect information on compromised systems</p>
@@ -8857,6 +9270,8 @@ paths:
                   sourceId: '2023060612951'
                   specVersion: '2.1'
                   tLP: Green
+                  tenant: Self
+                  tenantRecordId: indicator--2023060612951
                   threatTypes: []
                   type: indicator
                   typeOfFeed: FileHash
@@ -8864,6 +9279,40 @@ paths:
                   validFrom: null
                   validUntil: null
                   value: <api-key>
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: null
+                  conflict: null
+                  created: null
+                  description: null
+                  expiresOn: null
+                  feedType: indicator
+                  id: indicator--
+                  indicatorTypes: null
+                  killChainPhases: []
+                  label: null
+                  lastSeen: null
+                  modified: null
+                  name: demo-value
+                  pattern: null
+                  patternType: STIX
+                  patternVersion: '2.1'
+                  recordTags: []
+                  reputation: null
+                  source: null
+                  sourceData: null
+                  sourceId: null
+                  specVersion: '2.1'
+                  tLP: null
+                  tenant: Self
+                  tenantRecordId: indicator--
+                  threatTypes: []
+                  type: indicator
+                  typeOfFeed: null
+                  uuid: <uuid>
+                  validFrom: null
+                  validUntil: null
+                  value: demo-value
                 totalItems: 8
       x-verified-live:
       - apikey
@@ -9093,82 +9542,23 @@ paths:
                   closureReason: null
                   commandLine: null
                   computerName: null
+                  conflict: null
                   createDate: 1700000000
                   createUser:
-                    '@id': /api/3/people/<uuid>
-                    '@settings': /api/3/user_settings/<uuid>
-                    '@type': Person
-                    accessType: Named
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
                     avatar: null
-                    companyId: null
                     createDate: 1700000000
-                    createUser: /api/3/people/<uuid>
-                    csActive: true
-                    department: null
-                    description: null
-                    email: admin@example.com
-                    firstname: CS
-                    id: 3
-                    lastname: Admin
+                    createUser: null
+                    id: 1
                     modifyDate: 1700000000
-                    modifyUser: /api/3/people/<uuid>
-                    phoneFax: null
-                    phoneHome: null
-                    phoneMobile: null
-                    phoneWork: '+16462759691'
-                    title: Admin
-                    type: null
+                    modifyUser: null
+                    name: Playbook
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
                   decodedCommandLine: null
-                  description: '<p>FortiRecon EASM has discovered the following certificate issue on the asset:</p>
-
-                    <br>
-
-                    <table>
-
-                    <tbody>
-
-                    <tr>
-
-                    <th><b>Asset </b></th> <td> www-uat.eseitalia.it</td>
-
-                    </tr>
-
-                    <tr>
-
-                    <th><b>Bucket </b></th> <td>Certificate Issues</td>
-
-                    </tr>
-
-                    <tr>
-
-                    <th><b>Bucket ID </b></th> <td> certificate_issues</td>
-
-                    </tr>
-
-                    <tr>
-
-                    <th><b>Status </b></th> <td> Active</td>
-
-                    </tr>
-
-                    <tr>
-
-                    <th><b>Severity </b></th> <td> High</td>
-
-                    </tr>
-
-                    <tr>
-
-                    <th><b>User Name </b></th> <td> NA</td>
-
-                    </tr>
-
-                    </tbody>
-
-                    </table>'
+                  description: null
                   destinationID: null
                   destinationIp: null
                   destinationPort: null
@@ -9178,12 +9568,68 @@ paths:
                   deviceUID: null
                   domain: null
                   dueBy: 1700000000
-                  emailBody: ''
+                  emailBody: '
+
+
+                    <p>Hey Team,
+
+
+                    We stand to win some Bitcoins if we can demonstrate our software on hxxp://demo.gumblar.cn/
+
+
+                    cheers,
+
+                    Raj
+
+                    </p>
+
+                    '
                   emailClassification: null
-                  emailFrom: null
-                  emailHeaders: null
-                  emailSubject: null
-                  emailTo: null
+                  emailFrom: Shiv <Shiv@CyberSponse.com>
+                  emailHeaders: '{"to": "DevOps@CyberSponse.com", "date": "Fri, 25 Jan 2019 07:25:28 +0100", "from": "Shiv
+                    <Shiv@CyberSponse.com>", "list-id": "<DevOps.cybersponse.com>", "subject": "Urgent: Requesting CEO Level
+                    Demo Environment", "arc-seal": ["i=2; a=rsa-sha256; t=1548397533; cv=pass;        d=google.com; s=arc-20160816;        b=VxSWv7HTJI2spGQOPcHGFZeK6VZZQ6bN6NPvrLx1+oxh/AkvLoE+oIvVY6KeUqVapG         E8oQC+tuHOzyI5ZULamwWEvz+h4WIKr0y812ALr30cXtB9W6g6dFbgOgjPUbHgVkqDr4         dQh/Z2I4aL2zvopjYOgkrOlm6ojLayKJ0PQyrq0547hGLy8uTUHKg387/C0jM/0frT/a         lGu5zoGVuwtsQCHIM41w5twN7hJIOu4VG4x8iWQz+9Mn5Gts6BLfVSiirvMIE/I1ttmf         DoIUHL1R7MJ/Su18PYuMCL8iAIZmczZ9rdC4Pqv4BtrwGI6K0aiJDHHQ2y04AwOtMSzs         m+6w==",
+                    "i=1; a=rsa-sha256; t=1548397532; cv=none;        d=google.com; s=arc-20160816;        b=0pWSMaUY0sWsRjWs/uGp9bZTllm42glorQf4+PNhK259yM2We3CO8G1GyGPmVgT8i5         3tK+4d2uf2am4cWoKRk0Jd1LkH5TLSrIloiLIiqRPEWNTgEN0SS5MrusvdojvLB4qJEe         /cubcaN2VM1zpcPIcowh8XeClxpUI+aKkcABxuR5ZomGMH8HqEe6b9lWAtFGW7GRFPfn         4QL9y4iRH2jnFgNRS9btyNFuousw62zjiySVyur+x4J1dvZ4mAuuJv31PspoxXai9tTG         CKN8iiqsJMQDdk3C/CRW2JRCUSTE4F20g9CXBt37+YY3tM0xMtybkpy2SpTpZXsr9Lxo         m1Qw=="],
+                    "received": ["by 2002:a37:7146:0:0:0:0:0 with SMTP id m67csp2826qkc;        Thu, 24 Jan 2019 22:25:33
+                    -0800 (PST)", "from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])        by mx.google.com
+                    with SMTPS id t13sor39874615wmt.4.2019.01.24.22.25.32        for <abhishek@cybersponse.com>        (Google
+                    Transport Security);        Thu, 24 Jan 2019 22:25:33 -0800 (PST)", "by 2002:a7b:ce8d:: with SMTP id q13ls730738wmj.12.canary-gmail;
+                    Thu, 24 Jan 2019 22:25:32 -0800 (PST)", "from localhost ([2a01:5e0:36:5001::22])        by mx.google.com
+                    with ESMTPS id d10si73595096wrj.421.2019.01.24.22.25.32        for <DevOps@cybersponse.com>        (version=TLS1_2
+                    cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);        Thu, 24 Jan 2019 22:25:32 -0800 (PST)", "by localhost
+                    (Postfix, from userid 33)\tid 3D39AD6373; Fri, 25 Jan 2019 07:25:30 +0100 (CET)"], "reply-to": "Shiv@CyberrSponse.com",
+                    "errors-to": "Shiv@CyberSponse.com", "list-help": " <https://support.google.com/a/cybersponse.com/bin/topic.py?topic=25838>,
+                    <mailto:DevOps+help@cybersponse.com>", "list-post": "<https://groups.google.com/a/cybersponse.com/group/DevOps/post>,
+                    <mailto:DevOps@cybersponse.com>", "importance": "Normal", "message-id": "<20190125062531.3D39AD6373@localhost>",
+                    "precedence": "list", "x-priority": "3 (Normal)", "x-received": ["by 2002:adf:ec50:: with SMTP id w16mr10331689wrn.171.1548397533034;        Thu,
+                    24 Jan 2019 22:25:33 -0800 (PST)", "by 2002:a1c:9cc3:: with SMTP id f186mr528578wme.11.1548397532620;        Thu,
+                    24 Jan 2019 22:25:32 -0800 (PST)", "by 2002:a1c:541a:: with SMTP id i26mr5553759wmb.128.1548397532257;        Thu,
+                    24 Jan 2019 22:25:32 -0800 (PST)"], "return-path": "<devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com>",
+                    "x-beenthere": "devops@cybersponse.com", "content-type": "text/plain; charset=\"utf-8\"", "delivered-to":
+                    "abhishek@cybersponse.com", "list-archive": "<https://groups.google.com/a/cybersponse.com/group/DevOps/>",
+                    "mailing-list": " list DevOps@cybersponse.com; contact DevOps+owners@cybersponse.com", "mime-version":
+                    "1.0", "received-spf": ["pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com
+                    designates 209.85.220.69 as permitted sender) client-ip=209.85.220.69;", "softfail (google.com: domain
+                    of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) client-ip=2a01:5e0:36:5001::22;"],
+                    "list-unsubscribe": " <mailto:googlegroups-manage+787278636190+unsubscribe@googlegroups.com>, <https://groups.google.com/a/cybersponse.com/group/DevOps/subscribe>",
+                    "x-google-group-id": "787278636190", "x-original-sender": "shiv@cybersponse.com", "x-gm-message-state":
+                    "AJcUukcTalfVsK49MCkkmXfxAAgAjCwJx7azY0YiQwjV6xKdkgTvuwpY\tVfPdc2eqi1JuoK8RvBczNkE78SQn", "x-google-smtp-source":
+                    "ALg8bN6/mKkreSepRgLYoaD7gcY9o2UYZn3XuIb31HPhBgBxqJdq2ByYUsrub2fvPZBVKwEzmkXF0A==", "arc-message-signature":
+                    ["i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=list-unsubscribe:list-archive:list-help:list-post:list-id         :mailing-list:precedence:date:message-id:reply-to:errors-to         :importance:from:subject:to:mime-version;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=XxaiXr8yDzRMzoiU4s9yFOd7UBBwxJCgoogpo41yx40LaouRQBS3qb4zPHKUI0RrOT         PRsjesSjb3DR+6sT3n7zFFccP/SWsJIuVM9r//ndNhd71SaNk2+ajkVVmN2DP58ansvE         Epv+YSggN3OciTMXMQt/Ov1emvYxBPu9Hz/YdrHNcWnwVVzRw2TL+GQ8e3rUKvjZY0Oe         6e16f02L1AuO73vbgo7PKteS2899OQaS3ZlqJrGZZtcRypHoLyBYqk840/Ykqpqhs8EJ         goYqhWRI4tiRZ3Cc7tbfQlaeUtzXPdclRb/1Jwi/8fG5N33Qx9WLgrrdBulp2cZ7SrG3         f1Fg==",
+                    "i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=date:message-id:reply-to:errors-to:importance:from:subject:to;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=wE5ScZeiHZKs7Dm2+n4yDXPAIcS6P2MxfK1XHnnIZ7zRblhW4zI6Y67V6Xft46r4mW         gRItru6Ncw2KI5P6vmZ4PetdH2Ym4fQx0GlxJGH4w5zPddSTdVtTRUNMY91Yl0eUIKLU         6V4pWa83SgvmmNUaSELaBwLNIRhx3m5D3ntLneT678x2zEHMNh/6J8t5XfvkPd/SUDr3         IzfQ0fUvUTYMs/dFh2jaQJ+jGL67f8lc6hOOEzrVEO9Rdrv7KhJ6pUhdvcpzb8nHE8i2         7HMDFUBYtQNTHzZ/QnFwIe640JFrlnkoWIkMcbSpGVtwgsDCAs4ohpVZFzzYJcuJCWud         8gCQ=="],
+                    "authentication-results": "mx.google.com;       arc=pass (i=1);       spf=pass (google.com: domain of
+                    devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com",
+                    "x-google-dkim-signature": "v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20161025;        h=x-gm-message-state:mime-version:to:subject:from:importance         :errors-to:reply-to:message-id:date:x-original-sender         :x-original-authentication-results:precedence:mailing-list:list-id         :x-spam-checked-in-group:list-post:list-help:list-archive         :list-unsubscribe;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=Xjl3LnXhTXQGPLIhyaFQLCbQ/H6X6bLvpAOVEu18MeA4cLiTTpsbfkFvElS5tt4+Wi         gNTcy6QpYQMC98MeOLz0LwKG5f747U+wDhE237W4bifxWI2YtlAk5UETcNVQ7OLhBH5s         TqhUZwpW8OBEa3TGEOqrnHHh+aIPIJMk6tcYWWWVmwkLX8oLKswimX3yIGZxgaeY7x/+         /VPSb68rg3ncNQLK64FS/QYsMrn4v8Arh/NADSr0Gd88XyDDAoOy/T2IaMsusoPDMtjZ         t6Eki0kEnOJeNDUj4KvbK+sA8L5gZqkJBKx0vCnTzKIEemTl3BrH6ijiSr8roRu/1YBj         GSug==",
+                    "x-spam-checked-in-group": "DevOps@cybersponse.com", "content-transfer-encoding": "quoted-printable",
+                    "arc-authentication-results": ["i=2; mx.google.com;       arc=pass (i=1);       spf=pass (google.com:
+                    domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender)
+                    smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com", "i=1; mx.google.com;       spf=softfail
+                    (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted
+                    sender) smtp.mailfrom=Shiv@cybersponse.com"], "x-original-authentication-results": "mx.google.com;       spf=softfail
+                    (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted
+                    sender) smtp.mailfrom=Shiv@cybersponse.com"}'
+                  emailSubject: 'Urgent: Requesting CEO Level Demo Environment'
+                  emailTo: DevOps@CyberSponse.com
                   epochTime: null
                   escalatedtoincident:
                     '@id': /api/3/picklists/<uuid>
@@ -9199,14 +9645,14 @@ paths:
                   escalationReason: null
                   eventTime: null
                   fileEmail: null
-                  fileHash: null
+                  fileHash: ''
                   fileHashes: null
                   fileName: null
-                  fileNames: null
+                  fileNames: NA
                   filePath: null
                   fsrQueue: null
                   iPAddresses: null
-                  id: 1176
+                  id: 1238
                   killChainPhase: null
                   latestLogin: null
                   metrics: null
@@ -9214,33 +9660,19 @@ paths:
                   mitreattackid: null
                   modifyDate: 1700000000
                   modifyUser:
-                    '@id': /api/3/people/<uuid>
-                    '@settings': /api/3/user_settings/<uuid>
-                    '@type': Person
-                    accessType: Named
+                    '@id': /api/3/appliances/<uuid>
+                    '@type': Appliance
                     avatar: null
-                    companyId: null
                     createDate: 1700000000
-                    createUser: /api/3/people/<uuid>
-                    csActive: true
-                    department: null
-                    description: null
-                    email: admin@example.com
-                    firstname: CS
-                    id: 3
-                    lastname: Admin
+                    createUser: null
+                    id: 1
                     modifyDate: 1700000000
-                    modifyUser: /api/3/people/<uuid>
-                    phoneFax: null
-                    phoneHome: null
-                    phoneMobile: null
-                    phoneWork: '+16462759691'
-                    title: Admin
-                    type: null
+                    modifyUser: null
+                    name: Playbook
                     userId: <uuid>
                     userType: null
                     uuid: <uuid>
-                  name: Expired Certificate for Asset www-uat.eseitalia.it (1) (1)
+                  name: 'Suspicious Email: Urgent: Requesting CEO Level Demo Environment '
                   parentProcessCmdLine: null
                   parentProcessName: null
                   parentProcessPid: null
@@ -9249,15 +9681,40 @@ paths:
                   processId: null
                   processName: null
                   processTree: null
-                  recipientEmailAddress: null
-                  recordTags:
-                  - EASM
-                  - FortiRecon
+                  recipientEmailAddress: DevOps@CyberSponse.com
+                  recordTags: []
                   registryKey: null
                   registryKeyValue: null
-                  reporter: null
-                  reporterEmailBody: null
-                  resolvedAutomatedly: null
+                  reporter: reporter@example.com
+                  reporterEmailBody: "<p><html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:w=\"urn:schemas-microsoft-com:office:word\"\
+                    \ xmlns:m=\"http://schemas.microsoft.com/office/2004/12/omml\" xmlns=\"http://www.w3.org/TR/REC-html40\"\
+                    ><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\r\n<meta name=\"Generator\"\
+                    \ content=\"Microsoft Word 15 (filtered medium)\">\r\n<style><!--\r\n/* Font Definitions */\r\n@font-face\r\
+                    \n\t{font-family:\"Cambria Math\";\r\n\tpanose-1:2 4 5 3 5 4 6 3 2 4;}\r\n@font-face\r\n\t{font-family:Calibri;\r\
+                    \n\tpanose-1:2 15 5 2 2 2 4 3 2 4;}\r\n/* Style Definitions */\r\np.MsoNormal, li.MsoNormal, div.MsoNormal\r\
+                    \n\t{margin:0cm;\r\n\tfont-size:12.0pt;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tmso-fareast-language:EN-US;}\r\
+                    \nspan.EmailStyle17\r\n\t{mso-style-type:personal-compose;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\
+                    \tcolor:windowtext;}\r\n.MsoChpDefault\r\n\t{mso-style-type:export-only;\r\n\tfont-size:12.0pt;\r\n\t\
+                    font-family:\"Calibri\",sans-serif;\r\n\tmso-fareast-language:EN-US;}\r\n@page WordSection1\r\n\t{size:612.0pt\
+                    \ 792.0pt;\r\n\tmargin:72.0pt 72.0pt 72.0pt 72.0pt;}\r\ndiv.WordSection1\r\n\t{page:WordSection1;}\r\n\
+                    --></style>\r\n</head>\r\n<body lang=\"EN-IN\" link=\"#0563C1\" vlink=\"#954F72\" style=\"word-wrap:break-word\"\
+                    >\r\n<div class=\"WordSection1\">\r\n<p class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\"\
+                    >CyberSec team \u2013 please can you investigate the attached suspicious email we have received.<o:p></o:p></span></p>\r\
+                    \n<p class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\"><o:p>&nbsp;</o:p></span></p>\r\
+                    \n<p class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\">We don\u2019t have anybody name\
+                    \ Shiv or Raj in the organization, and moreover, the return address seems to be the spoofed domain.<o:p></o:p></span></p>\r\
+                    \n</div>\r\n<div><br></div>\n<font bgcolor=\"#ffffff\" color=\"#000000\"><b><br><hr>\n***  Please note\
+                    \ that this message and any attachments may contain confidential \nand proprietary material and information\
+                    \ and are intended only for the use of \nthe intended recipient(s). If you are not the intended recipient,\
+                    \ you are hereby \nnotified that any review, use, disclosure, dissemination, distribution or copying \n\
+                    of this message and any attachments is strictly prohibited. If you have received \nthis email in error,\
+                    \ please immediately notify the sender and destroy this e-mail \nand any attachments and all copies, whether\
+                    \ electronic or printed.\nPlease also note that any views, opinions, conclusions or commitments expressed\
+                    \ \nin this message are those of the individual sender and do not necessarily reflect \nthe views of Fortinet,\
+                    \ Inc., its affiliates, and emails are not binding on \nFortinet and only a writing manually signed by\
+                    \ Fortinet's General Counsel can be \na binding commitment of Fortinet to Fortinet's customers or partners.\
+                    \ Thank you. ***\n<br><hr></b></font>\n</body>\r\n</html>\r\n</p>"
+                  resolvedAutomatedly: false
                   resolveddate: null
                   respDate: null
                   respDueDate: 1700000000
@@ -9274,36 +9731,111 @@ paths:
                     orderIndex: 2
                     uuid: <uuid>
                   responseSLAResumeDate: null
-                  returnPath: null
+                  returnPath: devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com
                   rule: null
                   scheduledTask: null
-                  senderDomain: null
-                  senderEmailAddress: null
+                  senderDomain: CyberSponse.com
+                  senderEmailAddress: Shiv <Shiv@CyberSponse.com>
                   servicenowTicketID: null
                   services: null
                   severity:
                     '@id': /api/3/picklists/<uuid>
                     '@type': Picklist
-                    color: '#DE7A13'
+                    color: '#e31b1d'
                     icon: null
-                    id: 442
+                    id: 444
                     importedBy: []
-                    itemValue: High
+                    itemValue: Critical
                     listName: /api/3/picklist_names/<uuid>
-                    orderIndex: 3
+                    orderIndex: 4
                     uuid: <uuid>
-                  source: FortiRecon EASM
-                  sourceId: 69f37f3b758a4f291350b81b (1) (1)
+                  source: User Reported
+                  sourceId: ' <20190125062531.3D39AD6373@localhost> '
                   sourceIp: null
-                  sourcePort: '443'
+                  sourcePort: null
                   sourceProcess: null
                   sourceTool: null
                   sourceType: null
-                  sourcedata: '{"id": "69f37f3b758a4f291350b81b", "port": 443, "tags": [], "asset": "www-uat.eseitalia.it",
-                    "bucket": "Certificate Issues", "groups": [], "status": "active", "country": null, "severity": "high",
-                    "bucket_id": "certificate_issues", "user_name": null, "asset_type": "sub_domain", "created_ts": "2026-04-30T16:11:39.430000",
-                    "issue_name": "Expired Certificate", "modified_ts": "2026-04-30T16:11:39.430000", "nvd_severity": null,
-                    "recon_severity": "high", "issue_name_identifier": "expired_certificate"}'
+                  sourcedata: '{"body": {"html": "", "json": null, "text": "Hey Team,\n\nWe stand to win some Bitcoins if
+                    we can demonstrate our software on http://demo.gumblar.cn/\n\ncheers,\nRaj\n"}, "file": "<self-agent>",
+                    "headers": {"to": "DevOps@CyberSponse.com", "date": "Fri, 25 Jan 2019 07:25:28 +0100", "from": "Shiv <Shiv@CyberSponse.com>",
+                    "list-id": "<DevOps.cybersponse.com>", "subject": "Urgent: Requesting CEO Level Demo Environment", "arc-seal":
+                    ["i=2; a=rsa-sha256; t=1548397533; cv=pass;        d=google.com; s=arc-20160816;        b=VxSWv7HTJI2spGQOPcHGFZeK6VZZQ6bN6NPvrLx1+oxh/AkvLoE+oIvVY6KeUqVapG         E8oQC+tuHOzyI5ZULamwWEvz+h4WIKr0y812ALr30cXtB9W6g6dFbgOgjPUbHgVkqDr4         dQh/Z2I4aL2zvopjYOgkrOlm6ojLayKJ0PQyrq0547hGLy8uTUHKg387/C0jM/0frT/a         lGu5zoGVuwtsQCHIM41w5twN7hJIOu4VG4x8iWQz+9Mn5Gts6BLfVSiirvMIE/I1ttmf         DoIUHL1R7MJ/Su18PYuMCL8iAIZmczZ9rdC4Pqv4BtrwGI6K0aiJDHHQ2y04AwOtMSzs         m+6w==",
+                    "i=1; a=rsa-sha256; t=1548397532; cv=none;        d=google.com; s=arc-20160816;        b=0pWSMaUY0sWsRjWs/uGp9bZTllm42glorQf4+PNhK259yM2We3CO8G1GyGPmVgT8i5         3tK+4d2uf2am4cWoKRk0Jd1LkH5TLSrIloiLIiqRPEWNTgEN0SS5MrusvdojvLB4qJEe         /cubcaN2VM1zpcPIcowh8XeClxpUI+aKkcABxuR5ZomGMH8HqEe6b9lWAtFGW7GRFPfn         4QL9y4iRH2jnFgNRS9btyNFuousw62zjiySVyur+x4J1dvZ4mAuuJv31PspoxXai9tTG         CKN8iiqsJMQDdk3C/CRW2JRCUSTE4F20g9CXBt37+YY3tM0xMtybkpy2SpTpZXsr9Lxo         m1Qw=="],
+                    "received": ["by 2002:a37:7146:0:0:0:0:0 with SMTP id m67csp2826qkc;        Thu, 24 Jan 2019 22:25:33
+                    -0800 (PST)", "from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])        by mx.google.com
+                    with SMTPS id t13sor39874615wmt.4.2019.01.24.22.25.32        for <abhishek@cybersponse.com>        (Google
+                    Transport Security);        Thu, 24 Jan 2019 22:25:33 -0800 (PST)", "by 2002:a7b:ce8d:: with SMTP id q13ls730738wmj.12.canary-gmail;
+                    Thu, 24 Jan 2019 22:25:32 -0800 (PST)", "from localhost ([2a01:5e0:36:5001::22])        by mx.google.com
+                    with ESMTPS id d10si73595096wrj.421.2019.01.24.22.25.32        for <DevOps@cybersponse.com>        (version=TLS1_2
+                    cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);        Thu, 24 Jan 2019 22:25:32 -0800 (PST)", "by localhost
+                    (Postfix, from userid 33)\tid 3D39AD6373; Fri, 25 Jan 2019 07:25:30 +0100 (CET)"], "reply-to": "Shiv@CyberrSponse.com",
+                    "errors-to": "Shiv@CyberSponse.com", "list-help": " <https://support.google.com/a/cybersponse.com/bin/topic.py?topic=25838>,
+                    <mailto:DevOps+help@cybersponse.com>", "list-post": "<https://groups.google.com/a/cybersponse.com/group/DevOps/post>,
+                    <mailto:DevOps@cybersponse.com>", "importance": "Normal", "message-id": "<20190125062531.3D39AD6373@localhost>",
+                    "precedence": "list", "x-priority": "3 (Normal)", "x-received": ["by 2002:adf:ec50:: with SMTP id w16mr10331689wrn.171.1548397533034;        Thu,
+                    24 Jan 2019 22:25:33 -0800 (PST)", "by 2002:a1c:9cc3:: with SMTP id f186mr528578wme.11.1548397532620;        Thu,
+                    24 Jan 2019 22:25:32 -0800 (PST)", "by 2002:a1c:541a:: with SMTP id i26mr5553759wmb.128.1548397532257;        Thu,
+                    24 Jan 2019 22:25:32 -0800 (PST)"], "return-path": "<devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com>",
+                    "x-beenthere": "devops@cybersponse.com", "content-type": "text/plain; charset=\"utf-8\"", "delivered-to":
+                    "abhishek@cybersponse.com", "list-archive": "<https://groups.google.com/a/cybersponse.com/group/DevOps/>",
+                    "mailing-list": " list DevOps@cybersponse.com; contact DevOps+owners@cybersponse.com", "mime-version":
+                    "1.0", "received-spf": ["pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com
+                    designates 209.85.220.69 as permitted sender) client-ip=209.85.220.69;", "softfail (google.com: domain
+                    of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) client-ip=2a01:5e0:36:5001::22;"],
+                    "list-unsubscribe": " <mailto:googlegroups-manage+787278636190+unsubscribe@googlegroups.com>, <https://groups.google.com/a/cybersponse.com/group/DevOps/subscribe>",
+                    "x-google-group-id": "787278636190", "x-original-sender": "shiv@cybersponse.com", "x-gm-message-state":
+                    "AJcUukcTalfVsK49MCkkmXfxAAgAjCwJx7azY0YiQwjV6xKdkgTvuwpY\tVfPdc2eqi1JuoK8RvBczNkE78SQn", "x-google-smtp-source":
+                    "ALg8bN6/mKkreSepRgLYoaD7gcY9o2UYZn3XuIb31HPhBgBxqJdq2ByYUsrub2fvPZBVKwEzmkXF0A==", "arc-message-signature":
+                    ["i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=list-unsubscribe:list-archive:list-help:list-post:list-id         :mailing-list:precedence:date:message-id:reply-to:errors-to         :importance:from:subject:to:mime-version;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=XxaiXr8yDzRMzoiU4s9yFOd7UBBwxJCgoogpo41yx40LaouRQBS3qb4zPHKUI0RrOT         PRsjesSjb3DR+6sT3n7zFFccP/SWsJIuVM9r//ndNhd71SaNk2+ajkVVmN2DP58ansvE         Epv+YSggN3OciTMXMQt/Ov1emvYxBPu9Hz/YdrHNcWnwVVzRw2TL+GQ8e3rUKvjZY0Oe         6e16f02L1AuO73vbgo7PKteS2899OQaS3ZlqJrGZZtcRypHoLyBYqk840/Ykqpqhs8EJ         goYqhWRI4tiRZ3Cc7tbfQlaeUtzXPdclRb/1Jwi/8fG5N33Qx9WLgrrdBulp2cZ7SrG3         f1Fg==",
+                    "i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=date:message-id:reply-to:errors-to:importance:from:subject:to;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=wE5ScZeiHZKs7Dm2+n4yDXPAIcS6P2MxfK1XHnnIZ7zRblhW4zI6Y67V6Xft46r4mW         gRItru6Ncw2KI5P6vmZ4PetdH2Ym4fQx0GlxJGH4w5zPddSTdVtTRUNMY91Yl0eUIKLU         6V4pWa83SgvmmNUaSELaBwLNIRhx3m5D3ntLneT678x2zEHMNh/6J8t5XfvkPd/SUDr3         IzfQ0fUvUTYMs/dFh2jaQJ+jGL67f8lc6hOOEzrVEO9Rdrv7KhJ6pUhdvcpzb8nHE8i2         7HMDFUBYtQNTHzZ/QnFwIe640JFrlnkoWIkMcbSpGVtwgsDCAs4ohpVZFzzYJcuJCWud         8gCQ=="],
+                    "authentication-results": "mx.google.com;       arc=pass (i=1);       spf=pass (google.com: domain of
+                    devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com",
+                    "x-google-dkim-signature": "v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20161025;        h=x-gm-message-state:mime-version:to:subject:from:importance         :errors-to:reply-to:message-id:date:x-original-sender         :x-original-authentication-results:precedence:mailing-list:list-id         :x-spam-checked-in-group:list-post:list-help:list-archive         :list-unsubscribe;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=Xjl3LnXhTXQGPLIhyaFQLCbQ/H6X6bLvpAOVEu18MeA4cLiTTpsbfkFvElS5tt4+Wi         gNTcy6QpYQMC98MeOLz0LwKG5f747U+wDhE237W4bifxWI2YtlAk5UETcNVQ7OLhBH5s         TqhUZwpW8OBEa3TGEOqrnHHh+aIPIJMk6tcYWWWVmwkLX8oLKswimX3yIGZxgaeY7x/+         /VPSb68rg3ncNQLK64FS/QYsMrn4v8Arh/NADSr0Gd88XyDDAoOy/T2IaMsusoPDMtjZ         t6Eki0kEnOJeNDUj4KvbK+sA8L5gZqkJBKx0vCnTzKIEemTl3BrH6ijiSr8roRu/1YBj         GSug==",
+                    "x-spam-checked-in-group": "DevOps@cybersponse.com", "content-transfer-encoding": "quoted-printable",
+                    "arc-authentication-results": ["i=2; mx.google.com;       arc=pass (i=1);       spf=pass (google.com:
+                    domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender)
+                    smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com", "i=1; mx.google.com;       spf=softfail
+                    (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted
+                    sender) smtp.mailfrom=Shiv@cybersponse.com"], "x-original-authentication-results": "mx.google.com;       spf=softfail
+                    (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted
+                    sender) smtp.mailfrom=Shiv@cybersponse.com"}, "epilogue": null, "preamble": "", "attachments": [], "attachment_files":
+                    [], "reporterEmailBody": {"html": "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:w=\"urn:schemas-microsoft-com:office:word\"
+                    xmlns:m=\"http://schemas.microsoft.com/office/2004/12/omml\" xmlns=\"http://www.w3.org/TR/REC-html40\"><head>\r\n<meta
+                    http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\r\n<meta name=\"Generator\" content=\"Microsoft
+                    Word 15 (filtered medium)\">\r\n<style><!--\r\n/* Font Definitions */\r\n@font-face\r\n\t{font-family:\"Cambria
+                    Math\";\r\n\tpanose-1:2 4 5 3 5 4 6 3 2 4;}\r\n@font-face\r\n\t{font-family:Calibri;\r\n\tpanose-1:2 15
+                    5 2 2 2 4 3 2 4;}\r\n/* Style Definitions */\r\np.MsoNormal, li.MsoNormal, div.MsoNormal\r\n\t{margin:0cm;\r\n\tfont-size:12.0pt;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tmso-fareast-language:EN-US;}\r\nspan.EmailStyle17\r\n\t{mso-style-type:personal-compose;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tcolor:windowtext;}\r\n.MsoChpDefault\r\n\t{mso-style-type:export-only;\r\n\tfont-size:12.0pt;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tmso-fareast-language:EN-US;}\r\n@page
+                    WordSection1\r\n\t{size:612.0pt 792.0pt;\r\n\tmargin:72.0pt 72.0pt 72.0pt 72.0pt;}\r\ndiv.WordSection1\r\n\t{page:WordSection1;}\r\n--></style>\r\n</head>\r\n<body
+                    lang=\"EN-IN\" link=\"#0563C1\" vlink=\"#954F72\" style=\"word-wrap:break-word\">\r\n<div class=\"WordSection1\">\r\n<p
+                    class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\">CyberSec team \u2013 please can you
+                    investigate the attached suspicious email we have received.<o:p></o:p></span></p>\r\n<p class=\"MsoNormal\"><span
+                    lang=\"EN-US\" style=\"font-size:11.0pt\"><o:p>&nbsp;</o:p></span></p>\r\n<p class=\"MsoNormal\"><span
+                    lang=\"EN-US\" style=\"font-size:11.0pt\">We don\u2019t have anybody name Shiv or Raj in the organization,
+                    and moreover, the return address seems to be the spoofed domain.<o:p></o:p></span></p>\r\n</div>\r\n<div><br></div>\n<font
+                    bgcolor=\"#ffffff\" color=\"#000000\"><b><br><hr>\n***  Please note that this message and any attachments
+                    may contain confidential \nand proprietary material and information and are intended only for the use
+                    of \nthe intended recipient(s). If you are not the intended recipient, you are hereby \nnotified that
+                    any review, use, disclosure, dissemination, distribution or copying \nof this message and any attachments
+                    is strictly prohibited. If you have received \nthis email in error, please immediately notify the sender
+                    and destroy this e-mail \nand any attachments and all copies, whether electronic or printed.\nPlease also
+                    note that any views, opinions, conclusions or commitments expressed \nin this message are those of the
+                    individual sender and do not necessarily reflect \nthe views of Fortinet, Inc., its affiliates, and emails
+                    are not binding on \nFortinet and only a writing manually signed by Fortinet''s General Counsel can be
+                    \na binding commitment of Fortinet to Fortinet''s customers or partners. Thank you. ***\n<br><hr></b></font>\n</body>\r\n</html>\r\n",
+                    "json": null, "text": "CyberSec team \u2013 please can you investigate the attached suspicious email we
+                    have received.\r\n\r\nWe don\u2019t have anybody name Shiv or Raj in the organization, and moreover, the
+                    return address seems to be the spoofed domain.\r\n\n\n***  Please note that this message and any attachments
+                    may contain confidential and proprietary material and information and are intended only for the use of
+                    the intended recipient(s). If you are not the intended recipient, you are hereby notified that any review,
+                    use, disclosure, dissemination, distribution or copying of this message and any attachments is strictly
+                    prohibited. If you have received this email in error, please immediately notify the sender and destroy
+                    this e-mail and any attachments and all copies, whether electronic or printed. Please also note that any
+                    views, opinions, conclusions or commitments expressed in this message are those of the individual sender
+                    and do not necessarily reflect the views of Fortinet, Inc., its affiliates, and emails are not binding
+                    on Fortinet and only a writing manually signed by Fortinet''s General Counsel can be a binding commitment
+                    of Fortinet to Fortinet''s customers or partners. Thank you. *** \n\n"}, "reporterEmailAddress": "reporter@example.com",
+                    "parsed_attachment_data": []}'
                   state:
                     '@id': /api/3/picklists/<uuid>
                     '@type': Picklist
@@ -9326,8 +9858,27 @@ paths:
                     listName: /api/3/picklist_names/<uuid>
                     orderIndex: 1
                     uuid: <uuid>
-                  targetAsset: www-uat.eseitalia.it
+                  targetAsset: null
                   targetProcess: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 1238
                   ticketID: null
                   tier2Team: null
                   type:
@@ -9335,11 +9886,11 @@ paths:
                     '@type': Picklist
                     color: null
                     icon: null
-                    id: 5936
+                    id: 227
                     importedBy: []
-                    itemValue: Certificate Monitoring
+                    itemValue: Suspicious Email
                     listName: /api/3/picklist_names/<uuid>
-                    orderIndex: 27
+                    orderIndex: 15
                     uuid: <uuid>
                   url: null
                   userDetails: null
@@ -9712,27 +10263,6 @@ paths:
             application/json:
               example:
                 content:
-                - component: das
-                  displayName: CS Admin
-                  entitySingularName: Person
-                  entityType: people
-                  entityUuid: <uuid>
-                  id: 633117
-                  operation: Login Success
-                  source: 10.100.4.154
-                  teamIris:
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  title: DB login success for user [csadmin]
-                  transactionDate: 1779404616237
-                  user: CS Admin
-                  userId: <uuid>
-                  userOwnerIris:
-                  - /api/3/people/<uuid>
                 - component: crudhub
                   data:
                     '@id': /api/3/alerts/<uuid>
@@ -9749,9 +10279,9 @@ paths:
 
                       ----------------'
                     Created By: WEBHOOK
-                    Created On: 05-21-2026 23:03 PM UTC
+                    Created On: 05-27-2026 23:33 PM UTC
                     Escalated: 'No'
-                    Id: 1222
+                    Id: 1243
                     Name: live-<run>-upsert
                     Priority Weight: 1
                     Response SLA: Awaiting Action
@@ -9761,19 +10291,69 @@ paths:
                     Status: Active
                     Type: Other / Unknown
                     UUID: <uuid>
+                    conflict: false
                     recordTags: []
+                    tenant: Self
+                    tenantRecordId: 1243
                   displayName: live-<run>-upsert
                   entitySingularName: Alert
                   entityType: alerts
                   entityUuid: <uuid>
-                  id: 633116
+                  id: 637534
                   operation: Delete
                   source: 10.100.4.154
                   subComponent: EntityRecord
                   teamIris:
                   - /api/3/teams/<uuid>
                   title: Alert [live-<run>-upsert] Deleted
-                  transactionDate: 1779404612949
+                  transactionDate: 1779924830289
+                  user: WEBHOOK
+                  userId: <uuid>
+                  userOwnerIris: []
+                - component: crudhub
+                  data:
+                    '@id': /api/3/alerts/<uuid>
+                    Ack SLA: Awaiting Action
+                    Closure Notes: 'NOTES HERE
+
+                      --------------
+
+
+
+
+
+                      Reason HERE
+
+                      ----------------'
+                    Created By: WEBHOOK
+                    Created On: 05-27-2026 23:33 PM UTC
+                    Escalated: 'No'
+                    Id: 1243
+                    Name: live-<run>-upsert
+                    Priority Weight: 1
+                    Response SLA: Awaiting Action
+                    Severity: Minimal
+                    Source: live_test
+                    State: New
+                    Status: Active
+                    Type: Other / Unknown
+                    UUID: <uuid>
+                    conflict: false
+                    recordTags: []
+                    tenant: Self
+                    tenantRecordId: 1243
+                  displayName: live-<run>-upsert
+                  entitySingularName: Alert
+                  entityType: alerts
+                  entityUuid: <uuid>
+                  id: 637533
+                  operation: Create
+                  source: 10.100.4.154
+                  subComponent: EntityRecord
+                  teamIris:
+                  - /api/3/teams/<uuid>
+                  title: Alert [live-<run>-upsert] Created
+                  transactionDate: 1779924825486
                   user: WEBHOOK
                   userId: <uuid>
                   userOwnerIris: []
@@ -9840,32 +10420,51 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordLog'
               example:
-                component: agent
+                component: crudhub
                 data:
-                  data:
-                    agent: <self-agent>
-                    delete_sp: false
-                    name: hello-world
-                    status: 204
-                    version: 1.0.4
-                  has_start_event: false
-                  status: success
-                entitySingularName: Connector
-                entityType: connector
-                entityUuid: hello-world_1.0.4_572b3ecd3ddbc133a650f3faecc7c286
-                id: 633398
-                operation: Uninstall
+                  '@id': /api/3/alerts/<uuid>
+                  Ack SLA: Awaiting Action
+                  Closure Notes: 'NOTES HERE
+
+                    --------------
+
+
+
+
+
+                    Reason HERE
+
+                    ----------------'
+                  Created By: WEBHOOK
+                  Created On: 05-27-2026 23:33 PM UTC
+                  Escalated: 'No'
+                  Id: 1243
+                  Name: live-<run>-upsert
+                  Priority Weight: 1
+                  Response SLA: Awaiting Action
+                  Severity: Minimal
+                  Source: live_test
+                  State: New
+                  Status: Active
+                  Type: Other / Unknown
+                  UUID: <uuid>
+                  conflict: false
+                  recordTags: []
+                  tenant: Self
+                  tenantRecordId: 1243
+                displayName: live-<run>-upsert
+                entitySingularName: Alert
+                entityType: alerts
+                entityUuid: <uuid>
+                id: 637534
+                operation: Delete
                 source: 10.100.4.154
+                subComponent: EntityRecord
                 teamIris:
                 - /api/3/teams/<uuid>
-                - /api/3/teams/<uuid>
-                - /api/3/teams/<uuid>
-                - /api/3/teams/<uuid>
-                - /api/3/teams/<uuid>
-                - /api/3/teams/<uuid>
-                title: Connector [hello-world] Version [1.0.4] Uninstalled
-                transactionDate: 1779405237667
-                user: CS Admin
+                title: Alert [live-<run>-upsert] Deleted
+                transactionDate: 1779924830289
+                user: WEBHOOK
                 userId: <uuid>
                 userOwnerIris: []
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
@@ -10990,7 +11589,7 @@ paths:
       description: '**See:** [Workflows & triggers](#description/workflows-triggers) (decoy alert: not for `awaiting` runs)
 
 
-        Resume a paused workflow (status=`paused`; for `awaiting`, use the manual-input PUT).'
+        Resume a paused workflow (status=`paused`; for `awaiting` manual-input runs use `POST {pk}/wfinput_resume/` instead).'
       requestBody:
         required: false
         content:
@@ -11125,7 +11724,10 @@ paths:
       - Workflows
       summary: List pending manual inputs
       description: "**See:** [Workflows & triggers](#description/workflows-triggers) (canonical resume path)\n\nGET on this\
-        \ path returns 405 - must be POST.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+        \ path returns 405 - must be POST.\n\nEach `hydra:member` carries `id` (the `manual_input_id` for the resume), `step_id`\
+        \ (the execution-step id - the only honest link to a run, since `workflow` is an *encrypted* token, not the run pk),\
+        \ `type` (`InputBased`/`DecisionBased`), and `title`. The list omits `response_mapping` (the buttons) - fetch that\
+        \ via `retrieve_wfinput`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: false
         content:
@@ -11168,6 +11770,115 @@ paths:
       x-verified-live:
       - apikey
       - jwt
+  /api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/:
+    parameters:
+    - name: pk
+      in: path
+      required: true
+      schema:
+        type: string
+      description: manual_input_id (`list_wfinput[].id`).
+    post:
+      tags:
+      - Workflows
+      summary: Retrieve one pending manual input (with buttons)
+      description: Returns the full manual-input record including `response_mapping.options[]` (the buttons and each option's
+        `step_iri`). `list_wfinput` omits these, so you need this call to know which option to send when resuming.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '200':
+          description: Manual-input record with response_mapping.
+  /api/wf/api/workflows/{pk}/wfinput_resume/:
+    parameters:
+    - name: pk
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Integer workflow-RUN pk (from the run record `@id`).
+    post:
+      tags:
+      - Workflows
+      summary: Resume an awaiting manual-input gate (advances the run)
+      description: "Submit a human's input + chosen button to a paused `awaiting` run and advance it. The chosen button is\
+        \ conveyed via its `step_iri` (the next step it routes to), taken from `retrieve_wfinput`'s `response_mapping.options[]`.\
+        \ Correlate the gate to the run by id: the run's awaiting execution-step ids (`GET {pk}/?step_detail=true`) \u2229\
+        \ `list_wfinput[].step_id`.\n\nFor `is_approval` gates also send `approved: <bool>`.\n\n**Auth coverage:** `jwt: OK`"
+      x-verified-live:
+      - jwt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - input
+              - step_iri
+              - step_id
+              - manual_input_id
+              properties:
+                input:
+                  type: object
+                  description: Submitted inputVariable values, keyed by name.
+                step_iri:
+                  type: string
+                  description: Chosen option's step_iri (the branch to take).
+                step_id:
+                  type: integer
+                  description: Execution-step id of the awaiting gate.
+                manual_input_id:
+                  type: integer
+                  description: list_wfinput[].id.
+            example:
+              input:
+                ip_address: 1.1.1.1
+                reason: approved
+              step_iri: /api/3/workflow_steps/11bbde6b-7afd-5460-97fc-cf7eb96844dc
+              step_id: 5704059
+              manual_input_id: 411
+      responses:
+        '200':
+          description: Resume accepted; run advances.
+          content:
+            application/json:
+              example:
+                task_id: "\u2026"
+                message: Awaiting Playbook resumed successfully.
+  /api/wf/api/manual-wf-input/{pk}/:
+    parameters:
+    - name: pk
+      in: path
+      required: true
+      schema:
+        type: string
+      description: manual_input_id (`list_wfinput[].id`).
+    put:
+      tags:
+      - Workflows
+      summary: Update a manual-input record (does NOT resume the run)
+      description: "Returns 200 and updates the record, but **does not advance an `awaiting` run** \u2014 a common trap. To\
+        \ actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live 2026-05-29: PUT here left\
+        \ the run in `awaiting`."
+      x-verified-live:
+      - jwt
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              input: {}
+      responses:
+        '200':
+          description: Record updated (run NOT advanced).
   /api/triggers/1/{name}:
     parameters:
     - name: name
@@ -11255,7 +11966,15 @@ paths:
       description: '**See:** [Workflows & triggers](#description/workflows-triggers) (Triggers)
 
 
-        Direct execution by workflow UUID, bypassing trigger filters. Use for debugging / forced replay.'
+        Direct execution by workflow UUID, bypassing trigger filters. Use for debugging / forced replay.
+
+
+        Response carries a top-level `task_id`; track via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`.
+
+
+        **Auth coverage:** `jwt: OK`'
+      x-verified-live:
+      - jwt
       requestBody:
         required: false
         content:
@@ -11282,7 +12001,7 @@ paths:
       summary: Install a connector from a .tgz bundle
       description: "Multipart upload of a connector `.tgz`. The `$type=connector` query parameter is required; `$replace=true`\
         \ re-installs over an existing version. The response carries the full connector record including the integer `id`\
-        \ you'll need for subsequent steps.\n\n**Auth coverage:** `API-KEY: 400` \xB7 `Bearer JWT: OK`"
+        \ you'll need for subsequent steps.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: $type
         in: query
@@ -11372,6 +12091,7 @@ paths:
                 version: 1.0.4
                 workspace_connector: false
       x-verified-live:
+      - apikey
       - jwt
   /api/integration/connectors/:
     get:
@@ -11380,7 +12100,7 @@ paths:
       summary: List installed connectors
       description: "Response envelope is a custom shape (`status`, `totalItems`, `data[]`), **not** a Hydra collection. Each\
         \ `data[]` entry carries an integer `id`, `name`, `version`, `status` (e.g. `Completed`).\n\n**Auth coverage:** `API-KEY:\
-        \ gated` \xB7 `Bearer JWT: OK`"
+        \ OK` \xB7 `Bearer JWT: OK`"
       parameters: &id039
       - name: page_size
         in: query
@@ -11448,6 +12168,7 @@ paths:
                 status: Success
                 totalItems: 1
       x-verified-live:
+      - apikey
       - jwt
   /api/integration/configuration/:
     get:
@@ -11456,7 +12177,7 @@ paths:
       summary: List connector configurations
       description: "Returns the same envelope shape as `/api/integration/connectors/` (`data[]`, not Hydra). Each entry has\
         \ `id` (int), `config_id` (uuid), `connector` (int connector id), `agent` (self-agent hash when remote), `config`\
-        \ (field map).\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
+        \ (field map).\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters: *id039
       responses:
         '200':
@@ -11489,6 +12210,7 @@ paths:
                 status: Success
                 totalItems: 48
       x-verified-live:
+      - apikey
       - jwt
     post:
       tags:
@@ -11497,7 +12219,7 @@ paths:
       description: "Required body fields: `name`, `connector` (integer connector id \u2014 not the name), `config` (map of\
         \ the connector's configuration field values). `default`, `status`, and `teams` are optional.\n\n**`agent` is optional.**\
         \ Set it only when delegating execution to a **remote agent**; omit it (or leave unset) to run on the appliance's\
-        \ self-agent, which is the default.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
+        \ self-agent, which is the default.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -11530,7 +12252,7 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 245
+              connector: 293
               default: false
               name: live-<run>-hwcfg
               status: 1
@@ -11559,6 +12281,7 @@ paths:
                   status: finished
                 teams: []
       x-verified-live:
+      - apikey
       - jwt
   /api/integration/connectors/{id}/:
     parameters:
@@ -11582,7 +12305,7 @@ paths:
         \ field   (both forms are accepted).\n\n**Quirks:** GET returns `Get method for this API is forbidden, Please use\
         \ POST method`. An empty/missing body returns 415 `Unsupported media type`; send `{}` instead. Trailing slash is required.\
         \ The DELETE verb on this same path uninstalls the connector - don't confuse the two.\n\n**Auth coverage:** `API-KEY:\
-        \ gated` \xB7 `Bearer JWT: OK`"
+        \ OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -11736,17 +12459,19 @@ paths:
                 vendor_version: null
                 version: 1.0.4
       x-verified-live:
+      - apikey
       - jwt
     delete:
       tags:
       - Connectors
       summary: Uninstall a connector
-      description: "Trailing slash is required. Returns 204 on success.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer\
-        \ JWT: OK`"
+      description: "Trailing slash is required. Returns 204 on success.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
+        \ OK`"
       responses:
         '204':
           description: Uninstalled.
       x-verified-live:
+      - apikey
       - jwt
   /api/integration/execute/:
     post:
@@ -11767,7 +12492,7 @@ paths:
         \ are installed.\n- `params` (required when the operation declares required parameters) \u2014 the action's   input\
         \ payload as defined by the connector's `info.json`. Discover required params via   the same connector-detail endpoint\
         \ (`operations[].parameters[]` with `required: true`).\n\nErrors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*`\
-        \ code in `message`.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
+        \ code in `message`.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -11815,6 +12540,7 @@ paths:
                 operation: null
                 status: Success
       x-verified-live:
+      - apikey
       - jwt
   /api/integration/connectors/healthcheck/{name}/{version}/:
     parameters:
@@ -11835,7 +12561,7 @@ paths:
       - Connectors
       summary: Health-check a connector via existing config
       description: "Lighter-weight check than the POST form: takes the configuration uuid as a query parameter rather than\
-        \ re-sending the full config body.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT: OK`"
+        \ re-sending the full config body.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       parameters:
       - name: config
         in: query
@@ -11857,6 +12583,7 @@ paths:
                 status: Available
                 version: 1.0.4
       x-verified-live:
+      - apikey
       - jwt
   /api/integration/configuration/{config_id}/:
     parameters:
@@ -11872,13 +12599,161 @@ paths:
       summary: Delete a connector configuration
       description: "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not the integer DB id\
         \ (which returns 500), and the **trailing slash is mandatory** \u2014 without it the request is routed to an HMAC-gated\
-        \ handler that returns the misleading `403 Could not validate HMAC fingerprint`.\n\n**Auth coverage:** `API-KEY: gated`\
+        \ handler that returns the misleading `403 Could not validate HMAC fingerprint`.\n\n**Auth coverage:** `API-KEY: OK`\
         \ \xB7 `Bearer JWT: OK`"
       responses:
         '204':
           description: Deleted.
       x-verified-live:
+      - apikey
       - jwt
+  /api/integration/connector/development/entity/:
+    get:
+      tags:
+      - Connectors
+      summary: List dev-workspace connectors
+      description: Returns the connector entries currently checked out into the Connector Studio development workspace. These
+        are the same connectors you see in the Studio's left-hand tree on the appliance.
+      responses:
+        '200':
+          description: Hydra collection of dev-workspace entities.
+  /api/integration/connector/development/entity/{id}/:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Integer connector id of a dev-workspace entity.
+    post:
+      tags:
+      - Connectors
+      summary: Enter edit mode on a dev-workspace connector
+      description: 'Used by Connector Studio when the user clicks Edit. Body `{"edit_repo_connector": true}` opens the entity
+        for editing and returns its full operations + configuration schema + file tree. Pair with the `/files/` endpoints
+        to read and write source files, then `/publish/` to land the changes.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                edit_repo_connector:
+                  type: boolean
+                  default: true
+            example:
+              edit_repo_connector: true
+      responses:
+        '200':
+          description: Editable connector detail (operations, configuration, tree).
+  /api/integration/connector/development/entity/{id}/files/:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Dev-workspace entity id.
+    post:
+      tags:
+      - Connectors
+      summary: Read a file from a dev-workspace connector
+      description: Returns the contents of a single file inside the entity's source tree. The `xpath` is relative to the connector's
+        dev-workspace root and always starts with `/<name>_<vtag>_dev/...`. Used by the Studio editor when the user opens
+        a file.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - xpath
+              properties:
+                xpath:
+                  type: string
+                  description: Path inside the connector's dev tree, e.g. `/armis_dev_1_1_0_dev/info.json`.
+            example:
+              xpath: /armis_dev_1_1_0_dev/info.json
+      responses:
+        '200':
+          description: '`{fileContent: <string>}` with the literal file body.'
+    put:
+      tags:
+      - Connectors
+      summary: Write a file in a dev-workspace connector
+      description: Replaces the contents of a single file inside the entity's source tree. Used by the Studio editor's Save
+        action. Saved changes are staged in the workspace and do not affect playbook execution until `/publish/` is called.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - fileData
+              properties:
+                fileData:
+                  type: object
+                  required:
+                  - xpath
+                  - fileContent
+                  properties:
+                    xpath:
+                      type: string
+                    fileContent:
+                      type: string
+            example:
+              fileData:
+                xpath: /armis_dev_1_1_0_dev/operations.py
+                fileContent: '# ... full file body ...'
+      responses:
+        '200':
+          description: Updated tree view of the entity (folders + files).
+  /api/integration/connector/development/entity/{id}/publish/:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Dev-workspace entity id.
+    post:
+      tags:
+      - Connectors
+      summary: Publish a dev-workspace connector to the running appliance
+      description: "Lands the dev-workspace contents into the live installed-connectors area and signals the integrations\
+        \ service to refresh, so subsequent playbook executions pick up the new code immediately. This is the recommended\
+        \ way to land changes made via the Studio editor, and it is the supported escape hatch when a same-version tgz upload\
+        \ has left stale code cached in the integrations service (publish triggers a service refresh that the standard `$replace=true`\
+        \ install path does not). `replace=true` overwrites an existing installed version of the same name + version. `discard`\
+        \ controls the dev-workspace twin's lifecycle, NOT whether edits are published \u2014 see the field description. Verified\
+        \ empirically 2026-05-27 against ghost-handler v5.0.0."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                discard:
+                  type: boolean
+                  default: false
+                  description: "Controls the dev-workspace twin after a successful publish, scoped to THIS connector only\
+                    \ \u2014 other connectors' dev workspaces are untouched. `true` destroys this connector's dev twin (one-shot\
+                    \ publish), `false` keeps it (`development=true` row remains for further editing). Both values publish\
+                    \ the staged edits to the installed connector dir \u2014 the flag does NOT mean 'don't publish'."
+                replace:
+                  type: boolean
+                  default: false
+                  description: If true, overwrite an existing same-name+version install.
+            example:
+              discard: false
+              replace: true
+      responses:
+        '200':
+          description: Published connector record (with integer `id`, configurations, operations).
   /api/integration/install-connector/:
     post:
       tags:
@@ -12971,7 +13846,7 @@ paths:
         \ be deleted and re-created. The newly-created record starts in `Awaiting Remote Node Connection`; it transitions\
         \ to `Remote Node Connected` after the installer runs on the target VM.\n\n**Prerequisite:** the appliance must have\
         \ an SME router configured (`GET /api/3/routers` non-empty). If it doesn't, run `sudo csadm secure-message-exchange\
-        \ enable` on the master first.\n\n**Auth coverage:** `API-KEY: 400` \xB7 `Bearer JWT: OK`"
+        \ enable` on the master first.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -13214,6 +14089,7 @@ paths:
                 version: 7.6.5
                 vhost: vhost_aa73fb4b2b00ab2249689b43a8a6b98e
       x-verified-live:
+      - apikey
       - jwt
   /api/3/agents/{uuid}:
     parameters:
@@ -14301,6 +15177,7 @@ paths:
                     '@type': '@id'
                   companiesCount: Alert/companiesCount
                   computerName: Alert/computerName
+                  conflict: Alert/conflict
                   createDate: Alert/createDate
                   createUser:
                     '@id': Alert/createUser
@@ -14464,6 +15341,10 @@ paths:
                     '@id': Alert/tasks
                     '@type': '@id'
                   tasksCount: Alert/tasksCount
+                  tenant:
+                    '@id': Alert/tenant
+                    '@type': '@id'
+                  tenantRecordId: Alert/tenantRecordId
                   ticketID: Alert/ticketID
                   tier2Team:
                     '@id': Alert/tier2Team
@@ -46832,7 +47713,7 @@ paths:
       - Access management
       summary: Create role
       description: "Creates a new role. Body shape follows the generic record contract (`name` plus module-specific fields);\
-        \ see `GET /api/3/contexts/Role` for the full property list.\n\n**Auth coverage:** `API-KEY: 409` \xB7 `Bearer JWT:\
+        \ see `GET /api/3/contexts/Role` for the full property list.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
         \ OK`"
       requestBody:
         required: true
@@ -46858,6 +47739,7 @@ paths:
                 name: live-<run>-role
                 uuid: <uuid>
       x-verified-live:
+      - apikey
       - jwt
   /api/3/teams:
     get:
@@ -46906,7 +47788,7 @@ paths:
       - Access management
       summary: Create team
       description: "Creates a new team. Body shape follows the generic record contract (`name` plus module-specific fields);\
-        \ see `GET /api/3/contexts/Team` for the full property list.\n\n**Auth coverage:** `API-KEY: gated` \xB7 `Bearer JWT:\
+        \ see `GET /api/3/contexts/Team` for the full property list.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
         \ OK`"
       requestBody:
         required: true
@@ -46935,6 +47817,7 @@ paths:
                 siblings: []
                 uuid: <uuid>
       x-verified-live:
+      - apikey
       - jwt
   /api/3/api_keys:
     get:
