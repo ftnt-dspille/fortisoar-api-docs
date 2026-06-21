@@ -2,13 +2,13 @@
   "DELETE /api/3/alerts/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -18,7 +18,7 @@
   "DELETE /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -31,6 +31,7 @@
           "cVEs": [],
           "campaigns": [],
           "communication": [],
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -57,7 +58,7 @@
           "file3": null,
           "file4": null,
           "hunt": [],
-          "id": 28266,
+          "id": 28302,
           "incidents": [
             "/api/3/incidents/<uuid>"
           ],
@@ -98,6 +99,26 @@
           "scans": [],
           "scenario": [],
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28302,
           "threatActors": [],
           "threatIntelReports": [],
           "type": {
@@ -120,7 +141,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -133,6 +154,7 @@
           "cVEs": [],
           "campaigns": [],
           "communication": [],
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -171,7 +193,7 @@
           "file3": null,
           "file4": null,
           "hunt": [],
-          "id": 28265,
+          "id": 28301,
           "incidents": [
             "/api/3/incidents/<uuid>"
           ],
@@ -229,6 +251,26 @@
           "scans": [],
           "scenario": [],
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28301,
           "threatActors": [],
           "threatIntelReports": [],
           "type": {
@@ -255,13 +297,13 @@
   "DELETE /api/3/incidents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -271,13 +313,13 @@
   "DELETE /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -287,12 +329,13 @@
   "DELETE /api/3/{collection}/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -302,12 +345,13 @@
   "DELETE /api/integration/configuration/{config_id}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -317,12 +361,13 @@
   "DELETE /api/integration/connectors/{id}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -332,7 +377,7 @@
   "GET /api/3/actors/current": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
@@ -1499,7 +1544,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Person",
@@ -2459,7 +2504,7 @@
   "GET /api/3/agents": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Agent",
@@ -3264,7 +3309,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Agent",
@@ -4083,7 +4128,7 @@
   "GET /api/3/agents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Agent",
@@ -4238,7 +4283,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Agent",
@@ -4421,7 +4466,7 @@
   "GET /api/3/alerts": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -4468,6 +4513,7 @@
               },
               "commandLine": null,
               "computerName": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/appliances/<uuid>",
@@ -4542,15 +4588,29 @@
               "mitreattackid": null,
               "modifyDate": 1700000000,
               "modifyUser": {
-                "@id": "/api/3/appliances/<uuid>",
-                "@type": "Appliance",
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
                 "avatar": null,
+                "companyId": null,
                 "createDate": 1700000000,
-                "createUser": null,
-                "id": 1,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
                 "modifyDate": 1700000000,
-                "modifyUser": null,
-                "name": "Playbook",
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
                 "userId": "<uuid>",
                 "userType": null,
                 "uuid": "<uuid>"
@@ -4643,6 +4703,26 @@
               },
               "targetAsset": null,
               "targetProcess": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 1,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -4692,6 +4772,7 @@
               "closureReason": null,
               "commandLine": null,
               "computerName": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/people/<uuid>",
@@ -4895,6 +4976,26 @@
               },
               "targetAsset": null,
               "targetProcess": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 2,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -4916,19 +5017,19 @@
               "vulnerabilitySeverity": null
             }
           ],
-          "hydra:totalItems": 1023,
+          "hydra:totalItems": 1022,
           "hydra:view": {
             "@id": "/api/3/alerts?%24limit=2&%24page=1",
             "@type": "hydra:PartialCollectionView",
             "hydra:first": "/api/3/alerts?%24limit=2&%24page=1",
-            "hydra:last": "/api/3/alerts?%24limit=2&%24page=512",
+            "hydra:last": "/api/3/alerts?%24limit=2&%24page=511",
             "hydra:next": "/api/3/alerts?%24limit=2&%24page=2"
           }
         },
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -4975,6 +5076,7 @@
               },
               "commandLine": null,
               "computerName": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/appliances/<uuid>",
@@ -5049,15 +5151,29 @@
               "mitreattackid": null,
               "modifyDate": 1700000000,
               "modifyUser": {
-                "@id": "/api/3/appliances/<uuid>",
-                "@type": "Appliance",
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
                 "avatar": null,
+                "companyId": null,
                 "createDate": 1700000000,
-                "createUser": null,
-                "id": 1,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
                 "modifyDate": 1700000000,
-                "modifyUser": null,
-                "name": "Playbook",
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "title": "Admin",
+                "type": null,
                 "userId": "<uuid>",
                 "userType": null,
                 "uuid": "<uuid>"
@@ -5150,6 +5266,26 @@
               },
               "targetAsset": null,
               "targetProcess": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 1,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -5199,6 +5335,7 @@
               "closureReason": null,
               "commandLine": null,
               "computerName": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/people/<uuid>",
@@ -5402,6 +5539,26 @@
               },
               "targetAsset": null,
               "targetProcess": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 2,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -5439,7 +5596,7 @@
   "GET /api/3/alerts/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -5471,6 +5628,7 @@
           "closureReason": null,
           "commandLine": null,
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -5528,7 +5686,7 @@
           "filePath": null,
           "fsrQueue": null,
           "iPAddresses": null,
-          "id": 1179,
+          "id": 1240,
           "killChainPhase": null,
           "latestLogin": null,
           "metrics": null,
@@ -5637,6 +5795,26 @@
           },
           "targetAsset": null,
           "targetProcess": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1240,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -5660,7 +5838,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -5692,6 +5870,7 @@
           "closureReason": null,
           "commandLine": null,
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -5761,7 +5940,7 @@
           "filePath": null,
           "fsrQueue": null,
           "iPAddresses": null,
-          "id": 1178,
+          "id": 1239,
           "killChainPhase": null,
           "latestLogin": null,
           "metrics": null,
@@ -5882,6 +6061,26 @@
           },
           "targetAsset": null,
           "targetProcess": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1239,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -5909,7 +6108,7 @@
   "GET /api/3/api_keys": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
@@ -6069,7 +6268,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
@@ -6233,12 +6432,12 @@
   "GET /api/3/api_keys/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ApiKey",
@@ -6318,12 +6517,13 @@
   "GET /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
           "@id": "/api/3/comments/<uuid>",
           "@type": "Comment",
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -6347,7 +6547,7 @@
           "file2": null,
           "file3": null,
           "file4": null,
-          "id": 28266,
+          "id": 28302,
           "isDeleted": null,
           "isImportant": null,
           "lastReplyDate": 1700000000,
@@ -6372,6 +6572,26 @@
           "rawCommentData": null,
           "recordTags": [],
           "replyTo": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28302,
           "type": {
             "@id": "/api/3/picklists/<uuid>",
             "@type": "Picklist",
@@ -6389,12 +6609,13 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
           "@id": "/api/3/comments/<uuid>",
           "@type": "Comment",
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -6430,7 +6651,7 @@
           "file2": null,
           "file3": null,
           "file4": null,
-          "id": 28265,
+          "id": 28301,
           "isDeleted": null,
           "isImportant": null,
           "lastReplyDate": 1700000000,
@@ -6467,6 +6688,26 @@
           "rawCommentData": null,
           "recordTags": [],
           "replyTo": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28301,
           "type": {
             "@id": "/api/3/picklists/<uuid>",
             "@type": "Picklist",
@@ -6488,7 +6729,7 @@
   "GET /api/3/contexts/{shortName}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -6557,6 +6798,7 @@
             },
             "companiesCount": "Alert/companiesCount",
             "computerName": "Alert/computerName",
+            "conflict": "Alert/conflict",
             "createDate": "Alert/createDate",
             "createUser": {
               "@id": "Alert/createUser",
@@ -6746,6 +6988,11 @@
               "@type": "@id"
             },
             "tasksCount": "Alert/tasksCount",
+            "tenant": {
+              "@id": "Alert/tenant",
+              "@type": "@id"
+            },
+            "tenantRecordId": "Alert/tenantRecordId",
             "ticketID": "Alert/ticketID",
             "tier2Team": {
               "@id": "Alert/tier2Team",
@@ -6775,7 +7022,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -6844,6 +7091,7 @@
             },
             "companiesCount": "Alert/companiesCount",
             "computerName": "Alert/computerName",
+            "conflict": "Alert/conflict",
             "createDate": "Alert/createDate",
             "createUser": {
               "@id": "Alert/createUser",
@@ -7033,6 +7281,11 @@
               "@type": "@id"
             },
             "tasksCount": "Alert/tasksCount",
+            "tenant": {
+              "@id": "Alert/tenant",
+              "@type": "@id"
+            },
+            "tenantRecordId": "Alert/tenantRecordId",
             "ticketID": "Alert/ticketID",
             "tier2Team": {
               "@id": "Alert/tier2Team",
@@ -7066,7 +7319,7 @@
   "GET /api/3/docs.jsonld": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -49647,7 +49900,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": {
@@ -92232,7 +92485,7 @@
   "GET /api/3/incidents": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -92264,6 +92517,7 @@
                 "uuid": "<uuid>"
               },
               "confirmationDate": null,
+              "conflict": null,
               "containmentDate": null,
               "containmentTime": null,
               "createDate": 1700000000,
@@ -92418,6 +92672,26 @@
                 "uuid": "<uuid>"
               },
               "targetAsset": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 10,
               "ticketID": null,
               "uuid": "<uuid>",
               "volatileData": null,
@@ -92448,6 +92722,7 @@
                 "uuid": "<uuid>"
               },
               "confirmationDate": null,
+              "conflict": null,
               "containmentDate": null,
               "containmentTime": null,
               "createDate": 1700000000,
@@ -92602,6 +92877,26 @@
                 "uuid": "<uuid>"
               },
               "targetAsset": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 12,
               "ticketID": null,
               "uuid": "<uuid>",
               "volatileData": null,
@@ -92620,7 +92915,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -92652,6 +92947,7 @@
                 "uuid": "<uuid>"
               },
               "confirmationDate": null,
+              "conflict": null,
               "containmentDate": null,
               "containmentTime": null,
               "createDate": 1700000000,
@@ -92806,6 +93102,26 @@
                 "uuid": "<uuid>"
               },
               "targetAsset": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 10,
               "ticketID": null,
               "uuid": "<uuid>",
               "volatileData": null,
@@ -92836,6 +93152,7 @@
                 "uuid": "<uuid>"
               },
               "confirmationDate": null,
+              "conflict": null,
               "containmentDate": null,
               "containmentTime": null,
               "createDate": 1700000000,
@@ -92990,6 +93307,26 @@
                 "uuid": "<uuid>"
               },
               "targetAsset": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 12,
               "ticketID": null,
               "uuid": "<uuid>",
               "volatileData": null,
@@ -93012,7 +93349,7 @@
   "GET /api/3/incidents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -93040,6 +93377,7 @@
             "uuid": "<uuid>"
           },
           "confirmationDate": null,
+          "conflict": false,
           "containmentDate": null,
           "containmentTime": null,
           "createDate": 1700000000,
@@ -93083,7 +93421,7 @@
           "fileName": null,
           "filehash": null,
           "fsrQueue": null,
-          "id": 26,
+          "id": 74,
           "identificationDate": null,
           "impactAssessments": null,
           "impactROI": null,
@@ -93209,6 +93547,26 @@
             "uuid": "<uuid>"
           },
           "targetAsset": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 74,
           "ticketID": null,
           "uuid": "<uuid>",
           "volatileData": null,
@@ -93217,7 +93575,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Incident",
@@ -93245,6 +93603,7 @@
             "uuid": "<uuid>"
           },
           "confirmationDate": null,
+          "conflict": false,
           "containmentDate": null,
           "containmentTime": null,
           "createDate": 1700000000,
@@ -93300,7 +93659,7 @@
           "fileName": null,
           "filehash": null,
           "fsrQueue": null,
-          "id": 25,
+          "id": 73,
           "identificationDate": null,
           "impactAssessments": null,
           "impactROI": null,
@@ -93438,6 +93797,26 @@
             "uuid": "<uuid>"
           },
           "targetAsset": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 73,
           "ticketID": null,
           "uuid": "<uuid>",
           "volatileData": null,
@@ -93450,7 +93829,7 @@
   "GET /api/3/model_metadatas": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ModelMetadata",
@@ -93732,7 +94111,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/ModelMetadata",
@@ -94018,7 +94397,7 @@
   "GET /api/3/picklist_names": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -94204,7 +94583,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -94394,7 +94773,7 @@
   "GET /api/3/picklist_names/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -94566,7 +94945,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/PicklistName",
@@ -94742,7 +95121,7 @@
   "GET /api/3/picklists/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Picklist",
@@ -94760,7 +95139,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Picklist",
@@ -94782,7 +95161,7 @@
   "GET /api/3/roles": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Role",
@@ -94824,7 +95203,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Role",
@@ -94870,7 +95249,7 @@
   "GET /api/3/routers": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Router",
@@ -94965,7 +95344,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Router",
@@ -95064,7 +95443,7 @@
   "GET /api/3/tasks": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -95080,6 +95459,7 @@
               "assignedToPerson": null,
               "assignee": "",
               "completedOnDate": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/people/<uuid>",
@@ -95151,6 +95531,26 @@
               "submittedBy": null,
               "taskdata": null,
               "tasktype": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 49,
               "type": null,
               "uuid": "<uuid>",
               "workflowid": null
@@ -95164,6 +95564,7 @@
               "assignedToPerson": null,
               "assignee": "",
               "completedOnDate": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/people/<uuid>",
@@ -95235,6 +95636,26 @@
               "submittedBy": null,
               "taskdata": null,
               "tasktype": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 55,
               "type": null,
               "uuid": "<uuid>",
               "workflowid": null
@@ -95252,7 +95673,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -95268,6 +95689,7 @@
               "assignedToPerson": null,
               "assignee": "",
               "completedOnDate": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/appliances/<uuid>",
@@ -95311,6 +95733,26 @@
               "submittedBy": null,
               "taskdata": null,
               "tasktype": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 4,
               "type": null,
               "uuid": "<uuid>",
               "workflowid": null
@@ -95324,6 +95766,7 @@
               "assignedToPerson": null,
               "assignee": "",
               "completedOnDate": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/appliances/<uuid>",
@@ -95367,6 +95810,26 @@
               "submittedBy": null,
               "taskdata": null,
               "tasktype": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 35,
               "type": null,
               "uuid": "<uuid>",
               "workflowid": null
@@ -95388,7 +95851,7 @@
   "GET /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -95400,6 +95863,7 @@
           "assignedToPerson": null,
           "assignee": "",
           "completedOnDate": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -95420,7 +95884,7 @@
           "description": "live_test task",
           "dueBy": null,
           "fsrQueue": null,
-          "id": 58,
+          "id": 82,
           "modifyDate": 1700000000,
           "modifyUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -95458,6 +95922,26 @@
           "submittedBy": null,
           "taskdata": null,
           "tasktype": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 82,
           "type": null,
           "uuid": "<uuid>",
           "workflowid": null
@@ -95465,7 +95949,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Task",
@@ -95477,6 +95961,7 @@
           "assignedToPerson": null,
           "assignee": "",
           "completedOnDate": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -95509,7 +95994,7 @@
           "description": "live_test task",
           "dueBy": null,
           "fsrQueue": null,
-          "id": 57,
+          "id": 81,
           "modifyDate": 1700000000,
           "modifyUser": {
             "@id": "/api/3/people/<uuid>",
@@ -95559,6 +96044,26 @@
           "submittedBy": null,
           "taskdata": null,
           "tasktype": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 81,
           "type": null,
           "uuid": "<uuid>",
           "workflowid": null
@@ -95570,7 +96075,7 @@
   "GET /api/3/teams": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -95606,7 +96111,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -95646,12 +96151,35 @@
   "GET /api/3/{collection}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Team",
+          "@id": "/api/3/teams",
+          "@type": "hydra:Collection",
+          "hydra:member": [
+            {
+              "@id": "/api/3/teams/<uuid>",
+              "@type": "Team",
+              "description": "Management team",
+              "importedBy": [],
+              "name": "SOC Team",
+              "uuid": "<uuid>"
+            }
+          ],
+          "hydra:totalItems": 6,
+          "hydra:view": {
+            "@id": "/api/3/teams?%24limit=1&%24page=1",
+            "@type": "hydra:PartialCollectionView",
+            "hydra:first": "/api/3/teams?%24limit=1&%24page=1",
+            "hydra:last": "/api/3/teams?%24limit=1&%24page=6",
+            "hydra:next": "/api/3/teams?%24limit=1&%24page=2"
+          }
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Team",
@@ -95683,7 +96211,7 @@
   "GET /api/3/{collection}/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -95726,6 +96254,7 @@
           },
           "commandLine": null,
           "computerName": null,
+          "conflict": null,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/appliances/<uuid>",
@@ -95800,15 +96329,29 @@
           "mitreattackid": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/appliances/<uuid>",
-            "@type": "Appliance",
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
             "avatar": null,
+            "companyId": null,
             "createDate": 1700000000,
-            "createUser": null,
-            "id": 1,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
             "modifyDate": 1700000000,
-            "modifyUser": null,
-            "name": "Playbook",
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
@@ -95901,6 +96444,26 @@
           },
           "targetAsset": null,
           "targetProcess": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -95924,7 +96487,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -95967,6 +96530,7 @@
           },
           "commandLine": null,
           "computerName": null,
+          "conflict": null,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/appliances/<uuid>",
@@ -96041,15 +96605,29 @@
           "mitreattackid": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/appliances/<uuid>",
-            "@type": "Appliance",
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
             "avatar": null,
+            "companyId": null,
             "createDate": 1700000000,
-            "createUser": null,
-            "id": 1,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
             "modifyDate": 1700000000,
-            "modifyUser": null,
-            "name": "Playbook",
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
@@ -96142,6 +96720,26 @@
           },
           "targetAsset": null,
           "targetProcess": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -96169,7 +96767,7 @@
   "GET /api/3/{module}/{recordId}/comments": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -96185,7 +96783,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/api/3/contexts/Comment",
@@ -96205,13 +96803,13 @@
   "GET /api/auth/cluster/health": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": [
           {
@@ -96443,13 +97041,13 @@
   "GET /api/auth/config": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "hydra:member": [
@@ -96484,13 +97082,13 @@
   "GET /api/auth/license": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": null,
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "details": {
@@ -96585,12 +97183,12 @@
   "GET /api/auth/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "usersresp": [
@@ -96622,43 +97220,51 @@
   "GET /api/gateway/audit/activities/{auditId}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
-          "component": "agent",
+          "component": "crudhub",
           "data": {
-            "data": {
-              "agent": "<self-agent>",
-              "delete_sp": false,
-              "name": "hello-world",
-              "status": 204,
-              "version": "1.0.4"
-            },
-            "has_start_event": false,
-            "status": "success"
+            "@id": "/api/3/alerts/<uuid>",
+            "Ack SLA": "Awaiting Action",
+            "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
+            "Created By": "WEBHOOK",
+            "Created On": "05-27-2026 23:33 PM UTC",
+            "Escalated": "No",
+            "Id": 1243,
+            "Name": "live-<run>-upsert",
+            "Priority Weight": 1,
+            "Response SLA": "Awaiting Action",
+            "Severity": "Minimal",
+            "Source": "live_test",
+            "State": "New",
+            "Status": "Active",
+            "Type": "Other / Unknown",
+            "UUID": "<uuid>",
+            "conflict": false,
+            "recordTags": [],
+            "tenant": "Self",
+            "tenantRecordId": 1243
           },
-          "entitySingularName": "Connector",
-          "entityType": "connector",
-          "entityUuid": "hello-world_1.0.4_572b3ecd3ddbc133a650f3faecc7c286",
-          "id": 633398,
-          "operation": "Uninstall",
+          "displayName": "live-<run>-upsert",
+          "entitySingularName": "Alert",
+          "entityType": "alerts",
+          "entityUuid": "<uuid>",
+          "id": 637534,
+          "operation": "Delete",
           "source": "10.100.4.154",
+          "subComponent": "EntityRecord",
           "teamIris": [
-            "/api/3/teams/<uuid>",
-            "/api/3/teams/<uuid>",
-            "/api/3/teams/<uuid>",
-            "/api/3/teams/<uuid>",
-            "/api/3/teams/<uuid>",
             "/api/3/teams/<uuid>"
           ],
-          "title": "Connector [hello-world] Version [1.0.4] Uninstalled",
-          "transactionDate": 1779405237667,
-          "user": "CS Admin",
+          "title": "Alert [live-<run>-upsert] Deleted",
+          "transactionDate": 1779924830289,
+          "user": "WEBHOOK",
           "userId": "<uuid>",
           "userOwnerIris": []
         },
@@ -96669,7 +97275,7 @@
   "GET /api/gateway/audit/operations": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": [
           "Create",
@@ -96721,7 +97327,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": [
           "Create",
@@ -96777,12 +97383,42 @@
   "GET /api/integration/configuration/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": {
+          "data": [
+            {
+              "agent": "<self-agent>",
+              "config": {
+                "context_mode": "Single Context",
+                "enable_password": "AKG4eJUuE.0x68110147.JXW2rHmVCtCkUqqTvbkSQ2TyfKU31d9CthpqG2WMbKT0HAUbD",
+                "password": "AKG4eJUuE.0x68110147.+jTh5vk6Yv87WVpsXJ38OGXljQBaixskF34aY73ZmrAOrdLvA",
+                "port": 2222,
+                "server_url": "10.99.249.57",
+                "username": "admin",
+                "verify_ssl": true
+              },
+              "config_id": "<uuid>",
+              "connector": 117,
+              "default": true,
+              "health_status": {},
+              "id": 69,
+              "name": "lab_asa",
+              "remote_status": {},
+              "status": 1,
+              "teams": []
+            }
+          ],
+          "itemsPerPage": 1,
+          "nextPage": 2,
+          "previousPage": null,
+          "status": "Success",
+          "totalItems": 48
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "data": [
@@ -96821,12 +97457,58 @@
   "GET /api/integration/connectors/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": {
+          "data": [
+            {
+              "active": true,
+              "agent": "<self-agent>",
+              "category": [
+                "Utilities"
+              ],
+              "config_count": 0,
+              "configuration": [],
+              "contributor": null,
+              "created": "2026-05-27T23:31:19.181352Z",
+              "description": "A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings and messages.",
+              "development": false,
+              "help_online": null,
+              "icon_large": "",
+              "icon_small": "",
+              "id": 294,
+              "ingestion_supported": false,
+              "install_result": {
+                "message": "Success",
+                "output": ""
+              },
+              "label": "Hello World",
+              "modified": "2026-05-27T23:31:19.181406Z",
+              "name": "hello-world",
+              "publisher": "Workshop Student",
+              "remote_status": {
+                "message": "Success",
+                "output": "",
+                "status": "finished"
+              },
+              "rpm_full_name": null,
+              "rpm_installed": null,
+              "status": "Completed",
+              "system": false,
+              "tags": [],
+              "version": "1.0.4"
+            }
+          ],
+          "itemsPerPage": 30,
+          "nextPage": null,
+          "previousPage": null,
+          "status": "Success",
+          "totalItems": 1
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "data": [
@@ -96881,12 +97563,21 @@
   "GET /api/integration/connectors/healthcheck/{name}/{version}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": null,
+        "response_body": {
+          "_status": true,
+          "config_id": "<uuid>",
+          "message": "Connector is available",
+          "name": "hello-world",
+          "request_id": null,
+          "status": "Available",
+          "version": "1.0.4"
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "_status": true,
@@ -96904,7 +97595,7 @@
   "GET /api/permissions/current": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "activities": {
@@ -97914,7 +98605,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "activities": {
@@ -98565,7 +99256,7 @@
   "GET /api/product/feature-access": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "productType": "FortiSOAR Enterprise",
@@ -98575,7 +99266,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "productType": "FortiSOAR Enterprise",
@@ -98589,7 +99280,7 @@
   "GET /api/taxii/1/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "max_content_length": 1000000,
@@ -98601,7 +99292,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "max_content_length": 1000000,
@@ -98617,7 +99308,7 @@
   "GET /api/taxii/1/collections": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "collections": [
@@ -98703,7 +99394,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "collections": [
@@ -98969,7 +99660,7 @@
   "GET /api/taxii/1/collections/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "can_read": true,
@@ -98985,7 +99676,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "can_read": true,
@@ -99041,7 +99732,7 @@
   "GET /api/taxii/1/collections/{uuid}/manifest": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -99051,52 +99742,7 @@
               "@id": "/api/3/threat_intel_feeds/<uuid>",
               "@type": "ThreatIntel",
               "confidence": 100,
-              "created": null,
-              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
-              "expiresOn": null,
-              "feedType": "indicator",
-              "id": "indicator--2023060612951",
-              "indicatorTypes": null,
-              "killChainPhases": [],
-              "label": null,
-              "lastSeen": null,
-              "modified": null,
-              "name": "94.142.138.61",
-              "pattern": null,
-              "patternType": "STIX",
-              "patternVersion": "2.1",
-              "recordTags": [
-                "evil corp",
-                "gold drake",
-                "indrik spider",
-                "information stealer",
-                "malvertising campaign",
-                "malware",
-                "silence group"
-              ],
-              "reputation": "Malicious",
-              "source": "FortiRecon ACI Report",
-              "sourceData": {
-                "ioc": "94.142.138.61",
-                "ioc_type": "ip",
-                "report_id": "2023060612951",
-                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
-              },
-              "sourceId": "2023060612951",
-              "specVersion": "2.1",
-              "tLP": "Green",
-              "threatTypes": [],
-              "type": "indicator",
-              "typeOfFeed": "IP Address",
-              "uuid": "<uuid>",
-              "validFrom": null,
-              "validUntil": null,
-              "value": "94.142.138.61"
-            },
-            {
-              "@id": "/api/3/threat_intel_feeds/<uuid>",
-              "@type": "ThreatIntel",
-              "confidence": 100,
+              "conflict": null,
               "created": null,
               "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
               "expiresOn": null,
@@ -99131,6 +99777,8 @@
               "sourceId": "2023060612951",
               "specVersion": "2.1",
               "tLP": "Green",
+              "tenant": "Self",
+              "tenantRecordId": "indicator--2023060612951",
               "threatTypes": [],
               "type": "indicator",
               "typeOfFeed": "FileHash",
@@ -99138,6 +99786,42 @@
               "validFrom": null,
               "validUntil": null,
               "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "conflict": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "tenant": "Self",
+              "tenantRecordId": "indicator--",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
             }
           ],
           "totalItems": 8
@@ -99145,7 +99829,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -99155,52 +99839,7 @@
               "@id": "/api/3/threat_intel_feeds/<uuid>",
               "@type": "ThreatIntel",
               "confidence": 100,
-              "created": null,
-              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
-              "expiresOn": null,
-              "feedType": "indicator",
-              "id": "indicator--2023060612951",
-              "indicatorTypes": null,
-              "killChainPhases": [],
-              "label": null,
-              "lastSeen": null,
-              "modified": null,
-              "name": "94.142.138.61",
-              "pattern": null,
-              "patternType": "STIX",
-              "patternVersion": "2.1",
-              "recordTags": [
-                "evil corp",
-                "gold drake",
-                "indrik spider",
-                "information stealer",
-                "malvertising campaign",
-                "malware",
-                "silence group"
-              ],
-              "reputation": "Malicious",
-              "source": "FortiRecon ACI Report",
-              "sourceData": {
-                "ioc": "94.142.138.61",
-                "ioc_type": "ip",
-                "report_id": "2023060612951",
-                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
-              },
-              "sourceId": "2023060612951",
-              "specVersion": "2.1",
-              "tLP": "Green",
-              "threatTypes": [],
-              "type": "indicator",
-              "typeOfFeed": "IP Address",
-              "uuid": "<uuid>",
-              "validFrom": null,
-              "validUntil": null,
-              "value": "94.142.138.61"
-            },
-            {
-              "@id": "/api/3/threat_intel_feeds/<uuid>",
-              "@type": "ThreatIntel",
-              "confidence": 100,
+              "conflict": null,
               "created": null,
               "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
               "expiresOn": null,
@@ -99235,6 +99874,8 @@
               "sourceId": "2023060612951",
               "specVersion": "2.1",
               "tLP": "Green",
+              "tenant": "Self",
+              "tenantRecordId": "indicator--2023060612951",
               "threatTypes": [],
               "type": "indicator",
               "typeOfFeed": "FileHash",
@@ -99242,6 +99883,42 @@
               "validFrom": null,
               "validUntil": null,
               "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "conflict": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "tenant": "Self",
+              "tenantRecordId": "indicator--",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
             }
           ],
           "totalItems": 8
@@ -99465,7 +100142,7 @@
   "GET /api/taxii/1/collections/{uuid}/objects": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -99475,52 +100152,7 @@
               "@id": "/api/3/threat_intel_feeds/<uuid>",
               "@type": "ThreatIntel",
               "confidence": 100,
-              "created": null,
-              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
-              "expiresOn": null,
-              "feedType": "indicator",
-              "id": "indicator--2023060612951",
-              "indicatorTypes": null,
-              "killChainPhases": [],
-              "label": null,
-              "lastSeen": null,
-              "modified": null,
-              "name": "94.142.138.61",
-              "pattern": null,
-              "patternType": "STIX",
-              "patternVersion": "2.1",
-              "recordTags": [
-                "evil corp",
-                "gold drake",
-                "indrik spider",
-                "information stealer",
-                "malvertising campaign",
-                "malware",
-                "silence group"
-              ],
-              "reputation": "Malicious",
-              "source": "FortiRecon ACI Report",
-              "sourceData": {
-                "ioc": "94.142.138.61",
-                "ioc_type": "ip",
-                "report_id": "2023060612951",
-                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
-              },
-              "sourceId": "2023060612951",
-              "specVersion": "2.1",
-              "tLP": "Green",
-              "threatTypes": [],
-              "type": "indicator",
-              "typeOfFeed": "IP Address",
-              "uuid": "<uuid>",
-              "validFrom": null,
-              "validUntil": null,
-              "value": "94.142.138.61"
-            },
-            {
-              "@id": "/api/3/threat_intel_feeds/<uuid>",
-              "@type": "ThreatIntel",
-              "confidence": 100,
+              "conflict": null,
               "created": null,
               "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
               "expiresOn": null,
@@ -99555,6 +100187,8 @@
               "sourceId": "2023060612951",
               "specVersion": "2.1",
               "tLP": "Green",
+              "tenant": "Self",
+              "tenantRecordId": "indicator--2023060612951",
               "threatTypes": [],
               "type": "indicator",
               "typeOfFeed": "FileHash",
@@ -99562,6 +100196,42 @@
               "validFrom": null,
               "validUntil": null,
               "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "conflict": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "tenant": "Self",
+              "tenantRecordId": "indicator--",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
             }
           ],
           "totalItems": 8
@@ -99569,7 +100239,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "more": true,
@@ -99579,52 +100249,7 @@
               "@id": "/api/3/threat_intel_feeds/<uuid>",
               "@type": "ThreatIntel",
               "confidence": 100,
-              "created": null,
-              "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
-              "expiresOn": null,
-              "feedType": "indicator",
-              "id": "indicator--2023060612951",
-              "indicatorTypes": null,
-              "killChainPhases": [],
-              "label": null,
-              "lastSeen": null,
-              "modified": null,
-              "name": "94.142.138.61",
-              "pattern": null,
-              "patternType": "STIX",
-              "patternVersion": "2.1",
-              "recordTags": [
-                "evil corp",
-                "gold drake",
-                "indrik spider",
-                "information stealer",
-                "malvertising campaign",
-                "malware",
-                "silence group"
-              ],
-              "reputation": "Malicious",
-              "source": "FortiRecon ACI Report",
-              "sourceData": {
-                "ioc": "94.142.138.61",
-                "ioc_type": "ip",
-                "report_id": "2023060612951",
-                "report_title": "Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems"
-              },
-              "sourceId": "2023060612951",
-              "specVersion": "2.1",
-              "tLP": "Green",
-              "threatTypes": [],
-              "type": "indicator",
-              "typeOfFeed": "IP Address",
-              "uuid": "<uuid>",
-              "validFrom": null,
-              "validUntil": null,
-              "value": "94.142.138.61"
-            },
-            {
-              "@id": "/api/3/threat_intel_feeds/<uuid>",
-              "@type": "ThreatIntel",
-              "confidence": 100,
+              "conflict": null,
               "created": null,
               "description": "<p>Indicators associated with  TrueBot trojan botnet being distributed potentially by Russia's Evil Corp group to collect information on compromised systems</p>",
               "expiresOn": null,
@@ -99659,6 +100284,8 @@
               "sourceId": "2023060612951",
               "specVersion": "2.1",
               "tLP": "Green",
+              "tenant": "Self",
+              "tenantRecordId": "indicator--2023060612951",
               "threatTypes": [],
               "type": "indicator",
               "typeOfFeed": "FileHash",
@@ -99666,6 +100293,42 @@
               "validFrom": null,
               "validUntil": null,
               "value": "<api-key>"
+            },
+            {
+              "@id": "/api/3/threat_intel_feeds/<uuid>",
+              "@type": "ThreatIntel",
+              "confidence": null,
+              "conflict": null,
+              "created": null,
+              "description": null,
+              "expiresOn": null,
+              "feedType": "indicator",
+              "id": "indicator--",
+              "indicatorTypes": null,
+              "killChainPhases": [],
+              "label": null,
+              "lastSeen": null,
+              "modified": null,
+              "name": "demo-value",
+              "pattern": null,
+              "patternType": "STIX",
+              "patternVersion": "2.1",
+              "recordTags": [],
+              "reputation": null,
+              "source": null,
+              "sourceData": null,
+              "sourceId": null,
+              "specVersion": "2.1",
+              "tLP": null,
+              "tenant": "Self",
+              "tenantRecordId": "indicator--",
+              "threatTypes": [],
+              "type": "indicator",
+              "typeOfFeed": null,
+              "uuid": "<uuid>",
+              "validFrom": null,
+              "validUntil": null,
+              "value": "demo-value"
             }
           ],
           "totalItems": 8
@@ -99889,7 +100552,7 @@
   "GET /api/taxii/1/collections/{uuid}/objects/{stixId}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "objects": [],
@@ -99898,7 +100561,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "objects": [],
@@ -99933,7 +100596,7 @@
   "GET /api/version": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "version": "7.6.5-5662"
@@ -99941,7 +100604,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "version": "7.6.5-5662"
@@ -99953,7 +100616,7 @@
   "GET /api/wf/api/historical-workflows/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/historical-workflows/context/",
@@ -113509,7 +114172,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/historical-workflows/context/",
@@ -113713,7 +114376,7 @@
   "GET /api/wf/api/historical-workflows/{pk}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@id": "/wf/api/historical-workflows/681200/",
@@ -127258,7 +127921,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@id": "/wf/api/historical-workflows/681008/",
@@ -127451,7 +128114,7 @@
   "GET /api/wf/api/workflows/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/workflows/context/",
@@ -127479,7 +128142,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@context": "/wf/api/workflows/context/",
@@ -127511,7 +128174,7 @@
   "GET /api/wf/api/workflows/count/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "count": 3482
@@ -127519,7 +128182,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "count": 3482
@@ -127531,7 +128194,7 @@
   "GET /api/wf/api/workflows/{pk}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@id": "/wf/api/workflows/681189/",
@@ -127701,7 +128364,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": null,
         "response_body": {
           "@id": "/wf/api/workflows/681189/",
@@ -127875,7 +128538,7 @@
   "POST /api/3/agents": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live-lab-agent probe",
           "installerType": "/api/3/picklists/<uuid>",
@@ -128039,10 +128702,10 @@
           "version": "7.6.5",
           "vhost": "vhost_6f80282ce61994435d23a9dead942f04"
         },
-        "response_status": 400
+        "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live-lab-agent probe",
           "installerType": "/api/3/picklists/<uuid>",
@@ -128242,7 +128905,7 @@
   "POST /api/3/alerts": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-alert",
           "severity": "/api/3/picklists/<uuid>",
@@ -128287,6 +128950,7 @@
           "communications": [],
           "companies": [],
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -128346,7 +129010,7 @@
           "fsrQueue": null,
           "hunts": [],
           "iPAddresses": null,
-          "id": 1179,
+          "id": 1240,
           "incidents": [],
           "indicators": [],
           "killChainPhase": null,
@@ -128469,6 +129133,26 @@
           "targetAsset": null,
           "targetProcess": null,
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1240,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -128494,7 +129178,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-alert",
           "severity": "/api/3/picklists/<uuid>",
@@ -128539,6 +129223,7 @@
           "communications": [],
           "companies": [],
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -128610,7 +129295,7 @@
           "fsrQueue": null,
           "hunts": [],
           "iPAddresses": null,
-          "id": 1178,
+          "id": 1239,
           "incidents": [],
           "indicators": [],
           "killChainPhase": null,
@@ -128750,6 +129435,26 @@
           "targetAsset": null,
           "targetProcess": null,
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1239,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -128779,12 +129484,12 @@
   "POST /api/3/api_keys": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-apikey",
           "roles": [],
@@ -128871,7 +129576,7 @@
   "POST /api/3/bulkupsert/{moduleType}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "name": "live-<run>-bulkupsert",
@@ -128884,7 +129589,7 @@
         "response_status": 500
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "name": "live-<run>-bulkupsert",
@@ -128934,6 +129639,7 @@
               "communications": [],
               "companies": [],
               "computerName": null,
+              "conflict": false,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/people/<uuid>",
@@ -129005,7 +129711,7 @@
               "fsrQueue": null,
               "hunts": [],
               "iPAddresses": null,
-              "id": 1181,
+              "id": 1242,
               "incidents": [],
               "indicators": [],
               "killChainPhase": null,
@@ -129145,6 +129851,26 @@
               "targetAsset": null,
               "targetProcess": null,
               "tasks": [],
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 1242,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -129177,7 +129903,7 @@
   "POST /api/3/comments": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "content": "<p>live-<run>-comment linked to incident</p>",
           "incidents": [
@@ -129195,6 +129921,7 @@
           "cVEs": [],
           "campaigns": [],
           "communication": [],
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -129221,7 +129948,7 @@
           "file3": null,
           "file4": null,
           "hunt": [],
-          "id": 28266,
+          "id": 28302,
           "incidents": [
             "/api/3/incidents/<uuid>"
           ],
@@ -129262,6 +129989,26 @@
           "scans": [],
           "scenario": [],
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28302,
           "threatActors": [],
           "threatIntelReports": [],
           "type": {
@@ -129284,7 +130031,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "content": "<p>live-<run>-comment linked to incident</p>",
           "incidents": [
@@ -129302,6 +130049,7 @@
           "cVEs": [],
           "campaigns": [],
           "communication": [],
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -129340,7 +130088,7 @@
           "file3": null,
           "file4": null,
           "hunt": [],
-          "id": 28265,
+          "id": 28301,
           "incidents": [
             "/api/3/incidents/<uuid>"
           ],
@@ -129398,6 +130146,26 @@
           "scans": [],
           "scenario": [],
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28301,
           "threatActors": [],
           "threatIntelReports": [],
           "type": {
@@ -129424,7 +130192,7 @@
   "POST /api/3/files": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "file": "<binary>"
         },
@@ -129445,7 +130213,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "file": "<binary>"
         },
@@ -129470,7 +130238,7 @@
   "POST /api/3/incidents": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-comment-parent",
           "severity": "/api/3/picklists/<uuid>",
@@ -129510,6 +130278,7 @@
           "communications": [],
           "companies": [],
           "confirmationDate": null,
+          "conflict": false,
           "containmentDate": null,
           "containmentTime": null,
           "createDate": 1700000000,
@@ -129553,7 +130322,7 @@
           "fileName": null,
           "filehash": null,
           "fsrQueue": null,
-          "id": 28,
+          "id": 76,
           "identificationDate": null,
           "impactAssessments": null,
           "impactROI": null,
@@ -129688,6 +130457,26 @@
           },
           "targetAsset": null,
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 76,
           "ticketID": null,
           "uuid": "<uuid>",
           "volatileData": null,
@@ -129698,7 +130487,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-comment-parent",
           "severity": "/api/3/picklists/<uuid>",
@@ -129738,6 +130527,7 @@
           "communications": [],
           "companies": [],
           "confirmationDate": null,
+          "conflict": false,
           "containmentDate": null,
           "containmentTime": null,
           "createDate": 1700000000,
@@ -129793,7 +130583,7 @@
           "fileName": null,
           "filehash": null,
           "fsrQueue": null,
-          "id": 27,
+          "id": 75,
           "identificationDate": null,
           "impactAssessments": null,
           "impactROI": null,
@@ -129940,6 +130730,26 @@
           },
           "targetAsset": null,
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 75,
           "ticketID": null,
           "uuid": "<uuid>",
           "volatileData": null,
@@ -129954,7 +130764,7 @@
   "POST /api/3/roles": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live_test role",
           "name": "live-<run>-role"
@@ -129969,10 +130779,10 @@
           "name": "live-<run>-role",
           "uuid": "<uuid>"
         },
-        "response_status": 409
+        "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live_test role",
           "name": "live-<run>-role"
@@ -129994,7 +130804,7 @@
   "POST /api/3/solutionpacks/install": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "file": "<binary>"
         },
@@ -130057,10 +130867,10 @@
           "version": "1.0.4",
           "workspace_connector": false
         },
-        "response_status": 400
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "file": "<binary>"
         },
@@ -130130,7 +130940,7 @@
   "POST /api/3/tasks": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live_test task",
           "name": "live-<run>-task",
@@ -130152,6 +130962,7 @@
           "comments": [],
           "companies": [],
           "completedOnDate": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -130173,7 +130984,7 @@
           "dueBy": null,
           "fsrQueue": null,
           "hunt": [],
-          "id": 58,
+          "id": 82,
           "incidents": [],
           "indicators": [],
           "modifyDate": 1700000000,
@@ -130217,6 +131028,26 @@
           "submittedBy": null,
           "taskdata": null,
           "tasktype": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 82,
           "threatIntelFeeds": [],
           "type": null,
           "userOwners": [],
@@ -130229,7 +131060,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live_test task",
           "name": "live-<run>-task",
@@ -130251,6 +131082,7 @@
           "comments": [],
           "companies": [],
           "completedOnDate": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -130284,7 +131116,7 @@
           "dueBy": null,
           "fsrQueue": null,
           "hunt": [],
-          "id": 57,
+          "id": 81,
           "incidents": [],
           "indicators": [],
           "modifyDate": 1700000000,
@@ -130345,6 +131177,26 @@
           "submittedBy": null,
           "taskdata": null,
           "tasktype": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 81,
           "threatIntelFeeds": [],
           "type": null,
           "userOwners": [],
@@ -130361,12 +131213,28 @@
   "POST /api/3/teams": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": {
+          "description": "live_test team (typed)",
+          "name": "live-<run>-team2"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Team",
+          "@id": "/api/3/teams/<uuid>",
+          "@type": "Team",
+          "actors": [],
+          "children": [],
+          "description": "live_test team (typed)",
+          "importedBy": [],
+          "name": "live-<run>-team2",
+          "parents": [],
+          "siblings": [],
+          "uuid": "<uuid>"
+        },
+        "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live_test team (typed)",
           "name": "live-<run>-team2"
@@ -130391,7 +131259,7 @@
   "POST /api/3/upsert/{moduleType}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-upsert",
           "severity": "/api/3/picklists/<uuid>",
@@ -130436,6 +131304,7 @@
           "communications": [],
           "companies": [],
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -130495,7 +131364,7 @@
           "fsrQueue": null,
           "hunts": [],
           "iPAddresses": null,
-          "id": 1182,
+          "id": 1243,
           "incidents": [],
           "indicators": [],
           "killChainPhase": null,
@@ -130618,6 +131487,26 @@
           "targetAsset": null,
           "targetProcess": null,
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1243,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -130643,7 +131532,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-upsert",
           "severity": "/api/3/picklists/<uuid>",
@@ -130688,6 +131577,7 @@
           "communications": [],
           "companies": [],
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -130759,7 +131649,7 @@
           "fsrQueue": null,
           "hunts": [],
           "iPAddresses": null,
-          "id": 1180,
+          "id": 1241,
           "incidents": [],
           "indicators": [],
           "killChainPhase": null,
@@ -130899,6 +131789,26 @@
           "targetAsset": null,
           "targetProcess": null,
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1241,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -130928,7 +131838,7 @@
   "POST /api/3/user_queries": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "models": "/api/3/model_metadatas/<uuid>",
           "name": "live-<run>-savedq",
@@ -131039,7 +131949,7 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "models": "/api/3/model_metadatas/<uuid>",
           "name": "live-<run>-savedq",
@@ -131154,12 +132064,28 @@
   "POST /api/3/{collection}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": {
+          "description": "live_test team",
+          "name": "live-<run>-team"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Team",
+          "@id": "/api/3/teams/<uuid>",
+          "@type": "Team",
+          "actors": [],
+          "children": [],
+          "description": "live_test team",
+          "importedBy": [],
+          "name": "live-<run>-team",
+          "parents": [],
+          "siblings": [],
+          "uuid": "<uuid>"
+        },
+        "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "live_test team",
           "name": "live-<run>-team"
@@ -131204,12 +132130,12 @@
   "POST /api/auth/query/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "show_api_key": false,
           "users": [
@@ -131246,7 +132172,7 @@
   "POST /api/auth/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "api_key_validity": 1,
           "status": 1,
@@ -131256,7 +132182,7 @@
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "api_key_validity": 1,
           "status": 1,
@@ -131276,7 +132202,7 @@
   "POST /api/gateway/audit/activities": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [],
           "limit": 2,
@@ -131373,7 +132299,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [],
           "limit": 2,
@@ -131382,40 +132308,15 @@
         "response_body": {
           "content": [
             {
-              "component": "das",
-              "displayName": "CS Admin",
-              "entitySingularName": "Person",
-              "entityType": "people",
-              "entityUuid": "<uuid>",
-              "id": 633117,
-              "operation": "Login Success",
-              "source": "10.100.4.154",
-              "teamIris": [
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>",
-                "/api/3/teams/<uuid>"
-              ],
-              "title": "DB login success for user [csadmin]",
-              "transactionDate": 1779404616237,
-              "user": "CS Admin",
-              "userId": "<uuid>",
-              "userOwnerIris": [
-                "/api/3/people/<uuid>"
-              ]
-            },
-            {
               "component": "crudhub",
               "data": {
                 "@id": "/api/3/alerts/<uuid>",
                 "Ack SLA": "Awaiting Action",
                 "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
                 "Created By": "WEBHOOK",
-                "Created On": "05-21-2026 23:03 PM UTC",
+                "Created On": "05-27-2026 23:33 PM UTC",
                 "Escalated": "No",
-                "Id": 1222,
+                "Id": 1243,
                 "Name": "live-<run>-upsert",
                 "Priority Weight": 1,
                 "Response SLA": "Awaiting Action",
@@ -131425,13 +132326,16 @@
                 "Status": "Active",
                 "Type": "Other / Unknown",
                 "UUID": "<uuid>",
-                "recordTags": []
+                "conflict": false,
+                "recordTags": [],
+                "tenant": "Self",
+                "tenantRecordId": 1243
               },
               "displayName": "live-<run>-upsert",
               "entitySingularName": "Alert",
               "entityType": "alerts",
               "entityUuid": "<uuid>",
-              "id": 633116,
+              "id": 637534,
               "operation": "Delete",
               "source": "10.100.4.154",
               "subComponent": "EntityRecord",
@@ -131439,7 +132343,48 @@
                 "/api/3/teams/<uuid>"
               ],
               "title": "Alert [live-<run>-upsert] Deleted",
-              "transactionDate": 1779404612949,
+              "transactionDate": 1779924830289,
+              "user": "WEBHOOK",
+              "userId": "<uuid>",
+              "userOwnerIris": []
+            },
+            {
+              "component": "crudhub",
+              "data": {
+                "@id": "/api/3/alerts/<uuid>",
+                "Ack SLA": "Awaiting Action",
+                "Closure Notes": "NOTES HERE\n--------------\n\n\n\n\nReason HERE\n----------------",
+                "Created By": "WEBHOOK",
+                "Created On": "05-27-2026 23:33 PM UTC",
+                "Escalated": "No",
+                "Id": 1243,
+                "Name": "live-<run>-upsert",
+                "Priority Weight": 1,
+                "Response SLA": "Awaiting Action",
+                "Severity": "Minimal",
+                "Source": "live_test",
+                "State": "New",
+                "Status": "Active",
+                "Type": "Other / Unknown",
+                "UUID": "<uuid>",
+                "conflict": false,
+                "recordTags": [],
+                "tenant": "Self",
+                "tenantRecordId": 1243
+              },
+              "displayName": "live-<run>-upsert",
+              "entitySingularName": "Alert",
+              "entityType": "alerts",
+              "entityUuid": "<uuid>",
+              "id": 637533,
+              "operation": "Create",
+              "source": "10.100.4.154",
+              "subComponent": "EntityRecord",
+              "teamIris": [
+                "/api/3/teams/<uuid>"
+              ],
+              "title": "Alert [live-<run>-upsert] Created",
+              "transactionDate": 1779924825486,
               "user": "WEBHOOK",
               "userId": "<uuid>",
               "userOwnerIris": []
@@ -131455,12 +132400,12 @@
   "POST /api/gateway/audit/activities/count": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [],
           "logic": "AND"
@@ -131475,7 +132420,7 @@
   "POST /api/ingest-feeds/observables": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "source": "live-test",
@@ -131487,7 +132432,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "source": "live-test",
@@ -131503,7 +132448,7 @@
   "POST /api/ingest-feeds/reputation": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "reputation": "Suspicious",
@@ -131516,7 +132461,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "reputation": "Suspicious",
@@ -131533,7 +132478,7 @@
   "POST /api/ingest-feeds/stix-bundle": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "id": "bundle--<uuid>",
           "objects": [
@@ -131554,7 +132499,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "id": "bundle--<uuid>",
           "objects": [
@@ -131579,7 +132524,7 @@
   "POST /api/ingest-feeds/threatintel": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "name": "live-<run>-ti-record",
@@ -131590,7 +132535,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": [
           {
             "name": "live-<run>-ti-record",
@@ -131605,18 +132550,49 @@
   "POST /api/integration/configuration/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "config": {
             "default_greeting": "Hello",
             "salutation": "Mr."
           },
-          "connector": 245,
+          "connector": 294,
+          "default": false,
+          "name": "live-<run>-hwcfg",
+          "status": 1,
+          "teams": []
+        },
+        "response_body": {
+          "agent": "<self-agent>",
+          "config": {
+            "default_greeting": "Hello",
+            "salutation": "Mr."
+          },
+          "config_id": "<uuid>",
+          "connector": 294,
+          "connector_name": "hello-world",
+          "connector_version": "1.0.4",
+          "default": false,
+          "health_status": {},
+          "id": 252,
+          "name": "live-<run>-hwcfg",
+          "remote_status": {},
+          "status": {
+            "message": "Connector hello-world version 1.0.4 as been configured successfully",
+            "status": "finished"
+          },
+          "teams": []
+        },
+        "response_status": 201
+      },
+      "jwt": {
+        "captured_at": "2026-05-27",
+        "request_body": {
+          "config": {
+            "default_greeting": "Hello",
+            "salutation": "Mr."
+          },
+          "connector": 293,
           "default": false,
           "name": "live-<run>-hwcfg",
           "status": 1,
@@ -131650,12 +132626,173 @@
   "POST /api/integration/connectors/{id}/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": {},
+        "response_body": {
+          "active": true,
+          "agent": "<self-agent>",
+          "category": [
+            "Utilities"
+          ],
+          "config_count": 0,
+          "config_schema": {
+            "fields": [
+              {
+                "editable": true,
+                "isOnChange": false,
+                "name": "default_greeting",
+                "onchange": {},
+                "required": true,
+                "title": "Default Greeting",
+                "tooltip": "The greeting word to use when no custom greeting is provided (e.g., Hello, Hi, Hey).",
+                "type": "text",
+                "value": "Hello",
+                "visible": true
+              },
+              {
+                "editable": true,
+                "isOnChange": false,
+                "name": "salutation",
+                "onchange": {},
+                "required": true,
+                "title": "salutation",
+                "tooltip": "your goodbye message ",
+                "type": "text",
+                "value": "So long!",
+                "visible": true
+              }
+            ]
+          },
+          "configuration": [],
+          "contributor": null,
+          "created": "2026-05-27T23:31:19.181352Z",
+          "cs_approved": false,
+          "cs_compatible": true,
+          "description": "A minimal example connector for learning FortiSOAR connector structure. Returns simple greetings and messages.",
+          "development": false,
+          "help_file": null,
+          "help_online": "",
+          "icon_large": "",
+          "icon_large_name": "large_icon.png",
+          "icon_small": "",
+          "icon_small_name": "small_icon.png",
+          "id": 294,
+          "ingestion_supported": false,
+          "install_result": {
+            "message": "Success",
+            "output": ""
+          },
+          "installed": true,
+          "label": "Hello World",
+          "modified": "2026-05-27T23:31:19.181406Z",
+          "name": "hello-world",
+          "operations": [
+            {
+              "annotation": null,
+              "category": "investigation",
+              "connector": 294,
+              "description": "Returns a simple greeting message using the configured greeting word and a name you provide.",
+              "enabled": true,
+              "id": 3318,
+              "operation": "say_hello",
+              "output_schema": {},
+              "parameters": [
+                {
+                  "editable": true,
+                  "isOnChange": false,
+                  "name": "name",
+                  "onchange": {},
+                  "required": true,
+                  "title": "Name",
+                  "tooltip": "The name to greet.",
+                  "type": "text",
+                  "value": "World",
+                  "visible": true
+                }
+              ],
+              "roles": [],
+              "title": "Say Hello",
+              "visible": true
+            },
+            {
+              "annotation": null,
+              "connector": 294,
+              "description": "Adds two numbers together and returns the result. Demonstrates how to work with numeric parameters.",
+              "enabled": true,
+              "id": 3319,
+              "operation": "add_numbers",
+              "output_schema": {},
+              "parameters": [
+                {
+                  "editable": true,
+                  "name": "number_a",
+                  "required": true,
+                  "title": "Number A",
+                  "tooltip": "The first number.",
+                  "type": "integer",
+                  "visible": true
+                },
+                {
+                  "editable": true,
+                  "name": "number_b",
+                  "required": true,
+                  "title": "Number B",
+                  "tooltip": "The second number.",
+                  "type": "integer",
+                  "visible": true
+                }
+              ],
+              "roles": [],
+              "title": "Add Numbers",
+              "visible": true
+            },
+            {
+              "annotation": null,
+              "category": "investigation",
+              "connector": 294,
+              "description": "Reverses a string of text and returns the result. Demonstrates simple string manipulation.",
+              "enabled": true,
+              "id": 3320,
+              "operation": "reverse_text",
+              "output_schema": {},
+              "parameters": [
+                {
+                  "editable": true,
+                  "isOnChange": false,
+                  "name": "input_text",
+                  "onchange": {},
+                  "required": true,
+                  "title": "Input Text",
+                  "tooltip": "The text to reverse.",
+                  "type": "text",
+                  "visible": true
+                }
+              ],
+              "roles": [],
+              "title": "Reverse Text",
+              "visible": true
+            }
+          ],
+          "playbook_collections": [],
+          "publisher": "Workshop Student",
+          "remote_status": {
+            "message": "Success",
+            "output": "",
+            "status": "finished"
+          },
+          "requirements_installed": "In-Progress",
+          "rpm_full_name": null,
+          "rpm_installed": null,
+          "status": "Completed",
+          "system": false,
+          "tags": [],
+          "vendor_version": null,
+          "version": "1.0.4"
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {},
         "response_body": {
           "active": true,
@@ -131832,12 +132969,29 @@
   "POST /api/integration/execute/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": {
+          "config": "<uuid>",
+          "connector": "hello-world",
+          "operation": "reverse_text",
+          "params": {
+            "input_text": "live-test"
+          },
+          "version": "1.0.4"
+        },
+        "response_body": {
+          "data": {
+            "original": "live-test",
+            "reversed": "tset-evil"
+          },
+          "message": "",
+          "operation": null,
+          "status": "Success"
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "config": "<uuid>",
           "connector": "hello-world",
@@ -131863,7 +133017,7 @@
   "POST /api/public/license": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "action": "get_status"
         },
@@ -131874,7 +133028,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "action": "get_status"
         },
@@ -131889,7 +133043,7 @@
   "POST /api/query/{collection}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [
             {
@@ -131940,6 +133094,7 @@
               "closureReason": null,
               "commandLine": null,
               "computerName": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
                 "@id": "/api/3/people/<uuid>",
@@ -132133,6 +133288,26 @@
               },
               "targetAsset": "www-uat.eseitalia.it",
               "targetProcess": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 1176,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -132154,19 +133329,19 @@
               "vulnerabilitySeverity": null
             }
           ],
-          "hydra:totalItems": 840,
+          "hydra:totalItems": 839,
           "hydra:view": {
             "@id": "/api/query/alerts?%24limit=1&%24page=1",
             "@type": "hydra:PartialCollectionView",
             "hydra:first": "/api/query/alerts?%24limit=1&%24page=1",
-            "hydra:last": "/api/query/alerts?%24limit=1&%24page=840",
+            "hydra:last": "/api/query/alerts?%24limit=1&%24page=839",
             "hydra:next": "/api/query/alerts?%24limit=1&%24page=2"
           }
         },
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [
             {
@@ -132217,37 +133392,24 @@
               "closureReason": null,
               "commandLine": null,
               "computerName": null,
+              "conflict": null,
               "createDate": 1700000000,
               "createUser": {
-                "@id": "/api/3/people/<uuid>",
-                "@settings": "/api/3/user_settings/<uuid>",
-                "@type": "Person",
-                "accessType": "Named",
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
                 "avatar": null,
-                "companyId": null,
                 "createDate": 1700000000,
-                "createUser": "/api/3/people/<uuid>",
-                "csActive": true,
-                "department": null,
-                "description": null,
-                "email": "admin@example.com",
-                "firstname": "CS",
-                "id": 3,
-                "lastname": "Admin",
+                "createUser": null,
+                "id": 1,
                 "modifyDate": 1700000000,
-                "modifyUser": "/api/3/people/<uuid>",
-                "phoneFax": null,
-                "phoneHome": null,
-                "phoneMobile": null,
-                "phoneWork": "+16462759691",
-                "title": "Admin",
-                "type": null,
+                "modifyUser": null,
+                "name": "Playbook",
                 "userId": "<uuid>",
                 "userType": null,
                 "uuid": "<uuid>"
               },
               "decodedCommandLine": null,
-              "description": "<p>FortiRecon EASM has discovered the following certificate issue on the asset:</p>\n<br>\n<table>\n<tbody>\n<tr>\n<th><b>Asset </b></th> <td> www-uat.eseitalia.it</td>\n</tr>\n<tr>\n<th><b>Bucket </b></th> <td>Certificate Issues</td>\n</tr>\n<tr>\n<th><b>Bucket ID </b></th> <td> certificate_issues</td>\n</tr>\n<tr>\n<th><b>Status </b></th> <td> Active</td>\n</tr>\n<tr>\n<th><b>Severity </b></th> <td> High</td>\n</tr>\n<tr>\n<th><b>User Name </b></th> <td> NA</td>\n</tr>\n</tbody>\n</table>",
+              "description": null,
               "destinationID": null,
               "destinationIp": null,
               "destinationPort": null,
@@ -132257,12 +133419,12 @@
               "deviceUID": null,
               "domain": null,
               "dueBy": 1700000000,
-              "emailBody": "",
+              "emailBody": "\n\n<p>Hey Team,\n\nWe stand to win some Bitcoins if we can demonstrate our software on hxxp://demo.gumblar.cn/\n\ncheers,\nRaj\n</p>\n",
               "emailClassification": null,
-              "emailFrom": null,
-              "emailHeaders": null,
-              "emailSubject": null,
-              "emailTo": null,
+              "emailFrom": "Shiv <Shiv@CyberSponse.com>",
+              "emailHeaders": "{\"to\": \"DevOps@CyberSponse.com\", \"date\": \"Fri, 25 Jan 2019 07:25:28 +0100\", \"from\": \"Shiv <Shiv@CyberSponse.com>\", \"list-id\": \"<DevOps.cybersponse.com>\", \"subject\": \"Urgent: Requesting CEO Level Demo Environment\", \"arc-seal\": [\"i=2; a=rsa-sha256; t=1548397533; cv=pass;        d=google.com; s=arc-20160816;        b=VxSWv7HTJI2spGQOPcHGFZeK6VZZQ6bN6NPvrLx1+oxh/AkvLoE+oIvVY6KeUqVapG         E8oQC+tuHOzyI5ZULamwWEvz+h4WIKr0y812ALr30cXtB9W6g6dFbgOgjPUbHgVkqDr4         dQh/Z2I4aL2zvopjYOgkrOlm6ojLayKJ0PQyrq0547hGLy8uTUHKg387/C0jM/0frT/a         lGu5zoGVuwtsQCHIM41w5twN7hJIOu4VG4x8iWQz+9Mn5Gts6BLfVSiirvMIE/I1ttmf         DoIUHL1R7MJ/Su18PYuMCL8iAIZmczZ9rdC4Pqv4BtrwGI6K0aiJDHHQ2y04AwOtMSzs         m+6w==\", \"i=1; a=rsa-sha256; t=1548397532; cv=none;        d=google.com; s=arc-20160816;        b=0pWSMaUY0sWsRjWs/uGp9bZTllm42glorQf4+PNhK259yM2We3CO8G1GyGPmVgT8i5         3tK+4d2uf2am4cWoKRk0Jd1LkH5TLSrIloiLIiqRPEWNTgEN0SS5MrusvdojvLB4qJEe         /cubcaN2VM1zpcPIcowh8XeClxpUI+aKkcABxuR5ZomGMH8HqEe6b9lWAtFGW7GRFPfn         4QL9y4iRH2jnFgNRS9btyNFuousw62zjiySVyur+x4J1dvZ4mAuuJv31PspoxXai9tTG         CKN8iiqsJMQDdk3C/CRW2JRCUSTE4F20g9CXBt37+YY3tM0xMtybkpy2SpTpZXsr9Lxo         m1Qw==\"], \"received\": [\"by 2002:a37:7146:0:0:0:0:0 with SMTP id m67csp2826qkc;        Thu, 24 Jan 2019 22:25:33 -0800 (PST)\", \"from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])        by mx.google.com with SMTPS id t13sor39874615wmt.4.2019.01.24.22.25.32        for <abhishek@cybersponse.com>        (Google Transport Security);        Thu, 24 Jan 2019 22:25:33 -0800 (PST)\", \"by 2002:a7b:ce8d:: with SMTP id q13ls730738wmj.12.canary-gmail; Thu, 24 Jan 2019 22:25:32 -0800 (PST)\", \"from localhost ([2a01:5e0:36:5001::22])        by mx.google.com with ESMTPS id d10si73595096wrj.421.2019.01.24.22.25.32        for <DevOps@cybersponse.com>        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);        Thu, 24 Jan 2019 22:25:32 -0800 (PST)\", \"by localhost (Postfix, from userid 33)\\tid 3D39AD6373; Fri, 25 Jan 2019 07:25:30 +0100 (CET)\"], \"reply-to\": \"Shiv@CyberrSponse.com\", \"errors-to\": \"Shiv@CyberSponse.com\", \"list-help\": \" <https://support.google.com/a/cybersponse.com/bin/topic.py?topic=25838>, <mailto:DevOps+help@cybersponse.com>\", \"list-post\": \"<https://groups.google.com/a/cybersponse.com/group/DevOps/post>, <mailto:DevOps@cybersponse.com>\", \"importance\": \"Normal\", \"message-id\": \"<20190125062531.3D39AD6373@localhost>\", \"precedence\": \"list\", \"x-priority\": \"3 (Normal)\", \"x-received\": [\"by 2002:adf:ec50:: with SMTP id w16mr10331689wrn.171.1548397533034;        Thu, 24 Jan 2019 22:25:33 -0800 (PST)\", \"by 2002:a1c:9cc3:: with SMTP id f186mr528578wme.11.1548397532620;        Thu, 24 Jan 2019 22:25:32 -0800 (PST)\", \"by 2002:a1c:541a:: with SMTP id i26mr5553759wmb.128.1548397532257;        Thu, 24 Jan 2019 22:25:32 -0800 (PST)\"], \"return-path\": \"<devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com>\", \"x-beenthere\": \"devops@cybersponse.com\", \"content-type\": \"text/plain; charset=\\\"utf-8\\\"\", \"delivered-to\": \"abhishek@cybersponse.com\", \"list-archive\": \"<https://groups.google.com/a/cybersponse.com/group/DevOps/>\", \"mailing-list\": \" list DevOps@cybersponse.com; contact DevOps+owners@cybersponse.com\", \"mime-version\": \"1.0\", \"received-spf\": [\"pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) client-ip=209.85.220.69;\", \"softfail (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) client-ip=2a01:5e0:36:5001::22;\"], \"list-unsubscribe\": \" <mailto:googlegroups-manage+787278636190+unsubscribe@googlegroups.com>, <https://groups.google.com/a/cybersponse.com/group/DevOps/subscribe>\", \"x-google-group-id\": \"787278636190\", \"x-original-sender\": \"shiv@cybersponse.com\", \"x-gm-message-state\": \"AJcUukcTalfVsK49MCkkmXfxAAgAjCwJx7azY0YiQwjV6xKdkgTvuwpY\\tVfPdc2eqi1JuoK8RvBczNkE78SQn\", \"x-google-smtp-source\": \"ALg8bN6/mKkreSepRgLYoaD7gcY9o2UYZn3XuIb31HPhBgBxqJdq2ByYUsrub2fvPZBVKwEzmkXF0A==\", \"arc-message-signature\": [\"i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=list-unsubscribe:list-archive:list-help:list-post:list-id         :mailing-list:precedence:date:message-id:reply-to:errors-to         :importance:from:subject:to:mime-version;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=XxaiXr8yDzRMzoiU4s9yFOd7UBBwxJCgoogpo41yx40LaouRQBS3qb4zPHKUI0RrOT         PRsjesSjb3DR+6sT3n7zFFccP/SWsJIuVM9r//ndNhd71SaNk2+ajkVVmN2DP58ansvE         Epv+YSggN3OciTMXMQt/Ov1emvYxBPu9Hz/YdrHNcWnwVVzRw2TL+GQ8e3rUKvjZY0Oe         6e16f02L1AuO73vbgo7PKteS2899OQaS3ZlqJrGZZtcRypHoLyBYqk840/Ykqpqhs8EJ         goYqhWRI4tiRZ3Cc7tbfQlaeUtzXPdclRb/1Jwi/8fG5N33Qx9WLgrrdBulp2cZ7SrG3         f1Fg==\", \"i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=date:message-id:reply-to:errors-to:importance:from:subject:to;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=wE5ScZeiHZKs7Dm2+n4yDXPAIcS6P2MxfK1XHnnIZ7zRblhW4zI6Y67V6Xft46r4mW         gRItru6Ncw2KI5P6vmZ4PetdH2Ym4fQx0GlxJGH4w5zPddSTdVtTRUNMY91Yl0eUIKLU         6V4pWa83SgvmmNUaSELaBwLNIRhx3m5D3ntLneT678x2zEHMNh/6J8t5XfvkPd/SUDr3         IzfQ0fUvUTYMs/dFh2jaQJ+jGL67f8lc6hOOEzrVEO9Rdrv7KhJ6pUhdvcpzb8nHE8i2         7HMDFUBYtQNTHzZ/QnFwIe640JFrlnkoWIkMcbSpGVtwgsDCAs4ohpVZFzzYJcuJCWud         8gCQ==\"], \"authentication-results\": \"mx.google.com;       arc=pass (i=1);       spf=pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com\", \"x-google-dkim-signature\": \"v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20161025;        h=x-gm-message-state:mime-version:to:subject:from:importance         :errors-to:reply-to:message-id:date:x-original-sender         :x-original-authentication-results:precedence:mailing-list:list-id         :x-spam-checked-in-group:list-post:list-help:list-archive         :list-unsubscribe;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=Xjl3LnXhTXQGPLIhyaFQLCbQ/H6X6bLvpAOVEu18MeA4cLiTTpsbfkFvElS5tt4+Wi         gNTcy6QpYQMC98MeOLz0LwKG5f747U+wDhE237W4bifxWI2YtlAk5UETcNVQ7OLhBH5s         TqhUZwpW8OBEa3TGEOqrnHHh+aIPIJMk6tcYWWWVmwkLX8oLKswimX3yIGZxgaeY7x/+         /VPSb68rg3ncNQLK64FS/QYsMrn4v8Arh/NADSr0Gd88XyDDAoOy/T2IaMsusoPDMtjZ         t6Eki0kEnOJeNDUj4KvbK+sA8L5gZqkJBKx0vCnTzKIEemTl3BrH6ijiSr8roRu/1YBj         GSug==\", \"x-spam-checked-in-group\": \"DevOps@cybersponse.com\", \"content-transfer-encoding\": \"quoted-printable\", \"arc-authentication-results\": [\"i=2; mx.google.com;       arc=pass (i=1);       spf=pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com\", \"i=1; mx.google.com;       spf=softfail (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) smtp.mailfrom=Shiv@cybersponse.com\"], \"x-original-authentication-results\": \"mx.google.com;       spf=softfail (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) smtp.mailfrom=Shiv@cybersponse.com\"}",
+              "emailSubject": "Urgent: Requesting CEO Level Demo Environment",
+              "emailTo": "DevOps@CyberSponse.com",
               "epochTime": null,
               "escalatedtoincident": {
                 "@id": "/api/3/picklists/<uuid>",
@@ -132279,14 +133441,14 @@
               "escalationReason": null,
               "eventTime": null,
               "fileEmail": null,
-              "fileHash": null,
+              "fileHash": "",
               "fileHashes": null,
               "fileName": null,
-              "fileNames": null,
+              "fileNames": "NA",
               "filePath": null,
               "fsrQueue": null,
               "iPAddresses": null,
-              "id": 1176,
+              "id": 1238,
               "killChainPhase": null,
               "latestLogin": null,
               "metrics": null,
@@ -132294,34 +133456,20 @@
               "mitreattackid": null,
               "modifyDate": 1700000000,
               "modifyUser": {
-                "@id": "/api/3/people/<uuid>",
-                "@settings": "/api/3/user_settings/<uuid>",
-                "@type": "Person",
-                "accessType": "Named",
+                "@id": "/api/3/appliances/<uuid>",
+                "@type": "Appliance",
                 "avatar": null,
-                "companyId": null,
                 "createDate": 1700000000,
-                "createUser": "/api/3/people/<uuid>",
-                "csActive": true,
-                "department": null,
-                "description": null,
-                "email": "admin@example.com",
-                "firstname": "CS",
-                "id": 3,
-                "lastname": "Admin",
+                "createUser": null,
+                "id": 1,
                 "modifyDate": 1700000000,
-                "modifyUser": "/api/3/people/<uuid>",
-                "phoneFax": null,
-                "phoneHome": null,
-                "phoneMobile": null,
-                "phoneWork": "+16462759691",
-                "title": "Admin",
-                "type": null,
+                "modifyUser": null,
+                "name": "Playbook",
                 "userId": "<uuid>",
                 "userType": null,
                 "uuid": "<uuid>"
               },
-              "name": "Expired Certificate for Asset www-uat.eseitalia.it (1) (1)",
+              "name": "Suspicious Email: Urgent: Requesting CEO Level Demo Environment ",
               "parentProcessCmdLine": null,
               "parentProcessName": null,
               "parentProcessPid": null,
@@ -132330,16 +133478,13 @@
               "processId": null,
               "processName": null,
               "processTree": null,
-              "recipientEmailAddress": null,
-              "recordTags": [
-                "EASM",
-                "FortiRecon"
-              ],
+              "recipientEmailAddress": "DevOps@CyberSponse.com",
+              "recordTags": [],
               "registryKey": null,
               "registryKeyValue": null,
-              "reporter": null,
-              "reporterEmailBody": null,
-              "resolvedAutomatedly": null,
+              "reporter": "reporter@example.com",
+              "reporterEmailBody": "<p><html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" xmlns:m=\"http://schemas.microsoft.com/office/2004/12/omml\" xmlns=\"http://www.w3.org/TR/REC-html40\"><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\r\n<meta name=\"Generator\" content=\"Microsoft Word 15 (filtered medium)\">\r\n<style><!--\r\n/* Font Definitions */\r\n@font-face\r\n\t{font-family:\"Cambria Math\";\r\n\tpanose-1:2 4 5 3 5 4 6 3 2 4;}\r\n@font-face\r\n\t{font-family:Calibri;\r\n\tpanose-1:2 15 5 2 2 2 4 3 2 4;}\r\n/* Style Definitions */\r\np.MsoNormal, li.MsoNormal, div.MsoNormal\r\n\t{margin:0cm;\r\n\tfont-size:12.0pt;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tmso-fareast-language:EN-US;}\r\nspan.EmailStyle17\r\n\t{mso-style-type:personal-compose;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tcolor:windowtext;}\r\n.MsoChpDefault\r\n\t{mso-style-type:export-only;\r\n\tfont-size:12.0pt;\r\n\tfont-family:\"Calibri\",sans-serif;\r\n\tmso-fareast-language:EN-US;}\r\n@page WordSection1\r\n\t{size:612.0pt 792.0pt;\r\n\tmargin:72.0pt 72.0pt 72.0pt 72.0pt;}\r\ndiv.WordSection1\r\n\t{page:WordSection1;}\r\n--></style>\r\n</head>\r\n<body lang=\"EN-IN\" link=\"#0563C1\" vlink=\"#954F72\" style=\"word-wrap:break-word\">\r\n<div class=\"WordSection1\">\r\n<p class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\">CyberSec team \u2013 please can you investigate the attached suspicious email we have received.<o:p></o:p></span></p>\r\n<p class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\"><o:p>&nbsp;</o:p></span></p>\r\n<p class=\"MsoNormal\"><span lang=\"EN-US\" style=\"font-size:11.0pt\">We don\u2019t have anybody name Shiv or Raj in the organization, and moreover, the return address seems to be the spoofed domain.<o:p></o:p></span></p>\r\n</div>\r\n<div><br></div>\n<font bgcolor=\"#ffffff\" color=\"#000000\"><b><br><hr>\n***  Please note that this message and any attachments may contain confidential \nand proprietary material and information and are intended only for the use of \nthe intended recipient(s). If you are not the intended recipient, you are hereby \nnotified that any review, use, disclosure, dissemination, distribution or copying \nof this message and any attachments is strictly prohibited. If you have received \nthis email in error, please immediately notify the sender and destroy this e-mail \nand any attachments and all copies, whether electronic or printed.\nPlease also note that any views, opinions, conclusions or commitments expressed \nin this message are those of the individual sender and do not necessarily reflect \nthe views of Fortinet, Inc., its affiliates, and emails are not binding on \nFortinet and only a writing manually signed by Fortinet's General Counsel can be \na binding commitment of Fortinet to Fortinet's customers or partners. Thank you. ***\n<br><hr></b></font>\n</body>\r\n</html>\r\n</p>",
+              "resolvedAutomatedly": false,
               "resolveddate": null,
               "respDate": null,
               "respDueDate": 1700000000,
@@ -132357,33 +133502,33 @@
                 "uuid": "<uuid>"
               },
               "responseSLAResumeDate": null,
-              "returnPath": null,
+              "returnPath": "devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com",
               "rule": null,
               "scheduledTask": null,
-              "senderDomain": null,
-              "senderEmailAddress": null,
+              "senderDomain": "CyberSponse.com",
+              "senderEmailAddress": "Shiv <Shiv@CyberSponse.com>",
               "servicenowTicketID": null,
               "services": null,
               "severity": {
                 "@id": "/api/3/picklists/<uuid>",
                 "@type": "Picklist",
-                "color": "#DE7A13",
+                "color": "#e31b1d",
                 "icon": null,
-                "id": 442,
+                "id": 444,
                 "importedBy": [],
-                "itemValue": "High",
+                "itemValue": "Critical",
                 "listName": "/api/3/picklist_names/<uuid>",
-                "orderIndex": 3,
+                "orderIndex": 4,
                 "uuid": "<uuid>"
               },
-              "source": "FortiRecon EASM",
-              "sourceId": "69f37f3b758a4f291350b81b (1) (1)",
+              "source": "User Reported",
+              "sourceId": " <20190125062531.3D39AD6373@localhost> ",
               "sourceIp": null,
-              "sourcePort": "443",
+              "sourcePort": null,
               "sourceProcess": null,
               "sourceTool": null,
               "sourceType": null,
-              "sourcedata": "{\"id\": \"69f37f3b758a4f291350b81b\", \"port\": 443, \"tags\": [], \"asset\": \"www-uat.eseitalia.it\", \"bucket\": \"Certificate Issues\", \"groups\": [], \"status\": \"active\", \"country\": null, \"severity\": \"high\", \"bucket_id\": \"certificate_issues\", \"user_name\": null, \"asset_type\": \"sub_domain\", \"created_ts\": \"2026-04-30T16:11:39.430000\", \"issue_name\": \"Expired Certificate\", \"modified_ts\": \"2026-04-30T16:11:39.430000\", \"nvd_severity\": null, \"recon_severity\": \"high\", \"issue_name_identifier\": \"expired_certificate\"}",
+              "sourcedata": "{\"body\": {\"html\": \"\", \"json\": null, \"text\": \"Hey Team,\\n\\nWe stand to win some Bitcoins if we can demonstrate our software on http://demo.gumblar.cn/\\n\\ncheers,\\nRaj\\n\"}, \"file\": \"<self-agent>\", \"headers\": {\"to\": \"DevOps@CyberSponse.com\", \"date\": \"Fri, 25 Jan 2019 07:25:28 +0100\", \"from\": \"Shiv <Shiv@CyberSponse.com>\", \"list-id\": \"<DevOps.cybersponse.com>\", \"subject\": \"Urgent: Requesting CEO Level Demo Environment\", \"arc-seal\": [\"i=2; a=rsa-sha256; t=1548397533; cv=pass;        d=google.com; s=arc-20160816;        b=VxSWv7HTJI2spGQOPcHGFZeK6VZZQ6bN6NPvrLx1+oxh/AkvLoE+oIvVY6KeUqVapG         E8oQC+tuHOzyI5ZULamwWEvz+h4WIKr0y812ALr30cXtB9W6g6dFbgOgjPUbHgVkqDr4         dQh/Z2I4aL2zvopjYOgkrOlm6ojLayKJ0PQyrq0547hGLy8uTUHKg387/C0jM/0frT/a         lGu5zoGVuwtsQCHIM41w5twN7hJIOu4VG4x8iWQz+9Mn5Gts6BLfVSiirvMIE/I1ttmf         DoIUHL1R7MJ/Su18PYuMCL8iAIZmczZ9rdC4Pqv4BtrwGI6K0aiJDHHQ2y04AwOtMSzs         m+6w==\", \"i=1; a=rsa-sha256; t=1548397532; cv=none;        d=google.com; s=arc-20160816;        b=0pWSMaUY0sWsRjWs/uGp9bZTllm42glorQf4+PNhK259yM2We3CO8G1GyGPmVgT8i5         3tK+4d2uf2am4cWoKRk0Jd1LkH5TLSrIloiLIiqRPEWNTgEN0SS5MrusvdojvLB4qJEe         /cubcaN2VM1zpcPIcowh8XeClxpUI+aKkcABxuR5ZomGMH8HqEe6b9lWAtFGW7GRFPfn         4QL9y4iRH2jnFgNRS9btyNFuousw62zjiySVyur+x4J1dvZ4mAuuJv31PspoxXai9tTG         CKN8iiqsJMQDdk3C/CRW2JRCUSTE4F20g9CXBt37+YY3tM0xMtybkpy2SpTpZXsr9Lxo         m1Qw==\"], \"received\": [\"by 2002:a37:7146:0:0:0:0:0 with SMTP id m67csp2826qkc;        Thu, 24 Jan 2019 22:25:33 -0800 (PST)\", \"from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])        by mx.google.com with SMTPS id t13sor39874615wmt.4.2019.01.24.22.25.32        for <abhishek@cybersponse.com>        (Google Transport Security);        Thu, 24 Jan 2019 22:25:33 -0800 (PST)\", \"by 2002:a7b:ce8d:: with SMTP id q13ls730738wmj.12.canary-gmail; Thu, 24 Jan 2019 22:25:32 -0800 (PST)\", \"from localhost ([2a01:5e0:36:5001::22])        by mx.google.com with ESMTPS id d10si73595096wrj.421.2019.01.24.22.25.32        for <DevOps@cybersponse.com>        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);        Thu, 24 Jan 2019 22:25:32 -0800 (PST)\", \"by localhost (Postfix, from userid 33)\\tid 3D39AD6373; Fri, 25 Jan 2019 07:25:30 +0100 (CET)\"], \"reply-to\": \"Shiv@CyberrSponse.com\", \"errors-to\": \"Shiv@CyberSponse.com\", \"list-help\": \" <https://support.google.com/a/cybersponse.com/bin/topic.py?topic=25838>, <mailto:DevOps+help@cybersponse.com>\", \"list-post\": \"<https://groups.google.com/a/cybersponse.com/group/DevOps/post>, <mailto:DevOps@cybersponse.com>\", \"importance\": \"Normal\", \"message-id\": \"<20190125062531.3D39AD6373@localhost>\", \"precedence\": \"list\", \"x-priority\": \"3 (Normal)\", \"x-received\": [\"by 2002:adf:ec50:: with SMTP id w16mr10331689wrn.171.1548397533034;        Thu, 24 Jan 2019 22:25:33 -0800 (PST)\", \"by 2002:a1c:9cc3:: with SMTP id f186mr528578wme.11.1548397532620;        Thu, 24 Jan 2019 22:25:32 -0800 (PST)\", \"by 2002:a1c:541a:: with SMTP id i26mr5553759wmb.128.1548397532257;        Thu, 24 Jan 2019 22:25:32 -0800 (PST)\"], \"return-path\": \"<devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com>\", \"x-beenthere\": \"devops@cybersponse.com\", \"content-type\": \"text/plain; charset=\\\"utf-8\\\"\", \"delivered-to\": \"abhishek@cybersponse.com\", \"list-archive\": \"<https://groups.google.com/a/cybersponse.com/group/DevOps/>\", \"mailing-list\": \" list DevOps@cybersponse.com; contact DevOps+owners@cybersponse.com\", \"mime-version\": \"1.0\", \"received-spf\": [\"pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) client-ip=209.85.220.69;\", \"softfail (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) client-ip=2a01:5e0:36:5001::22;\"], \"list-unsubscribe\": \" <mailto:googlegroups-manage+787278636190+unsubscribe@googlegroups.com>, <https://groups.google.com/a/cybersponse.com/group/DevOps/subscribe>\", \"x-google-group-id\": \"787278636190\", \"x-original-sender\": \"shiv@cybersponse.com\", \"x-gm-message-state\": \"AJcUukcTalfVsK49MCkkmXfxAAgAjCwJx7azY0YiQwjV6xKdkgTvuwpY\\tVfPdc2eqi1JuoK8RvBczNkE78SQn\", \"x-google-smtp-source\": \"ALg8bN6/mKkreSepRgLYoaD7gcY9o2UYZn3XuIb31HPhBgBxqJdq2ByYUsrub2fvPZBVKwEzmkXF0A==\", \"arc-message-signature\": [\"i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=list-unsubscribe:list-archive:list-help:list-post:list-id         :mailing-list:precedence:date:message-id:reply-to:errors-to         :importance:from:subject:to:mime-version;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=XxaiXr8yDzRMzoiU4s9yFOd7UBBwxJCgoogpo41yx40LaouRQBS3qb4zPHKUI0RrOT         PRsjesSjb3DR+6sT3n7zFFccP/SWsJIuVM9r//ndNhd71SaNk2+ajkVVmN2DP58ansvE         Epv+YSggN3OciTMXMQt/Ov1emvYxBPu9Hz/YdrHNcWnwVVzRw2TL+GQ8e3rUKvjZY0Oe         6e16f02L1AuO73vbgo7PKteS2899OQaS3ZlqJrGZZtcRypHoLyBYqk840/Ykqpqhs8EJ         goYqhWRI4tiRZ3Cc7tbfQlaeUtzXPdclRb/1Jwi/8fG5N33Qx9WLgrrdBulp2cZ7SrG3         f1Fg==\", \"i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;        h=date:message-id:reply-to:errors-to:importance:from:subject:to;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=wE5ScZeiHZKs7Dm2+n4yDXPAIcS6P2MxfK1XHnnIZ7zRblhW4zI6Y67V6Xft46r4mW         gRItru6Ncw2KI5P6vmZ4PetdH2Ym4fQx0GlxJGH4w5zPddSTdVtTRUNMY91Yl0eUIKLU         6V4pWa83SgvmmNUaSELaBwLNIRhx3m5D3ntLneT678x2zEHMNh/6J8t5XfvkPd/SUDr3         IzfQ0fUvUTYMs/dFh2jaQJ+jGL67f8lc6hOOEzrVEO9Rdrv7KhJ6pUhdvcpzb8nHE8i2         7HMDFUBYtQNTHzZ/QnFwIe640JFrlnkoWIkMcbSpGVtwgsDCAs4ohpVZFzzYJcuJCWud         8gCQ==\"], \"authentication-results\": \"mx.google.com;       arc=pass (i=1);       spf=pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com\", \"x-google-dkim-signature\": \"v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20161025;        h=x-gm-message-state:mime-version:to:subject:from:importance         :errors-to:reply-to:message-id:date:x-original-sender         :x-original-authentication-results:precedence:mailing-list:list-id         :x-spam-checked-in-group:list-post:list-help:list-archive         :list-unsubscribe;        bh=rJiUnlpMAcKlzu27BZpfD0Zbem3mK4IrKmT/b3DYQcg=;        b=Xjl3LnXhTXQGPLIhyaFQLCbQ/H6X6bLvpAOVEu18MeA4cLiTTpsbfkFvElS5tt4+Wi         gNTcy6QpYQMC98MeOLz0LwKG5f747U+wDhE237W4bifxWI2YtlAk5UETcNVQ7OLhBH5s         TqhUZwpW8OBEa3TGEOqrnHHh+aIPIJMk6tcYWWWVmwkLX8oLKswimX3yIGZxgaeY7x/+         /VPSb68rg3ncNQLK64FS/QYsMrn4v8Arh/NADSr0Gd88XyDDAoOy/T2IaMsusoPDMtjZ         t6Eki0kEnOJeNDUj4KvbK+sA8L5gZqkJBKx0vCnTzKIEemTl3BrH6ijiSr8roRu/1YBj         GSug==\", \"x-spam-checked-in-group\": \"DevOps@cybersponse.com\", \"content-transfer-encoding\": \"quoted-printable\", \"arc-authentication-results\": [\"i=2; mx.google.com;       arc=pass (i=1);       spf=pass (google.com: domain of devops+bncbaabbxgxvlrakgqetcubffq@cybersponse.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=devops+bncBAABBXGXVLRAKGQETCUBFFQ@cybersponse.com\", \"i=1; mx.google.com;       spf=softfail (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) smtp.mailfrom=Shiv@cybersponse.com\"], \"x-original-authentication-results\": \"mx.google.com;       spf=softfail (google.com: domain of transitioning shiv@cybersponse.com does not designate 2a01:5e0:36:5001::22 as permitted sender) smtp.mailfrom=Shiv@cybersponse.com\"}, \"epilogue\": null, \"preamble\": \"\", \"attachments\": [], \"attachment_files\": [], \"reporterEmailBody\": {\"html\": \"<html xmlns:o=\\\"urn:schemas-microsoft-com:office:office\\\" xmlns:w=\\\"urn:schemas-microsoft-com:office:word\\\" xmlns:m=\\\"http://schemas.microsoft.com/office/2004/12/omml\\\" xmlns=\\\"http://www.w3.org/TR/REC-html40\\\"><head>\\r\\n<meta http-equiv=\\\"Content-Type\\\" content=\\\"text/html; charset=utf-8\\\">\\r\\n<meta name=\\\"Generator\\\" content=\\\"Microsoft Word 15 (filtered medium)\\\">\\r\\n<style><!--\\r\\n/* Font Definitions */\\r\\n@font-face\\r\\n\\t{font-family:\\\"Cambria Math\\\";\\r\\n\\tpanose-1:2 4 5 3 5 4 6 3 2 4;}\\r\\n@font-face\\r\\n\\t{font-family:Calibri;\\r\\n\\tpanose-1:2 15 5 2 2 2 4 3 2 4;}\\r\\n/* Style Definitions */\\r\\np.MsoNormal, li.MsoNormal, div.MsoNormal\\r\\n\\t{margin:0cm;\\r\\n\\tfont-size:12.0pt;\\r\\n\\tfont-family:\\\"Calibri\\\",sans-serif;\\r\\n\\tmso-fareast-language:EN-US;}\\r\\nspan.EmailStyle17\\r\\n\\t{mso-style-type:personal-compose;\\r\\n\\tfont-family:\\\"Calibri\\\",sans-serif;\\r\\n\\tcolor:windowtext;}\\r\\n.MsoChpDefault\\r\\n\\t{mso-style-type:export-only;\\r\\n\\tfont-size:12.0pt;\\r\\n\\tfont-family:\\\"Calibri\\\",sans-serif;\\r\\n\\tmso-fareast-language:EN-US;}\\r\\n@page WordSection1\\r\\n\\t{size:612.0pt 792.0pt;\\r\\n\\tmargin:72.0pt 72.0pt 72.0pt 72.0pt;}\\r\\ndiv.WordSection1\\r\\n\\t{page:WordSection1;}\\r\\n--></style>\\r\\n</head>\\r\\n<body lang=\\\"EN-IN\\\" link=\\\"#0563C1\\\" vlink=\\\"#954F72\\\" style=\\\"word-wrap:break-word\\\">\\r\\n<div class=\\\"WordSection1\\\">\\r\\n<p class=\\\"MsoNormal\\\"><span lang=\\\"EN-US\\\" style=\\\"font-size:11.0pt\\\">CyberSec team \\u2013 please can you investigate the attached suspicious email we have received.<o:p></o:p></span></p>\\r\\n<p class=\\\"MsoNormal\\\"><span lang=\\\"EN-US\\\" style=\\\"font-size:11.0pt\\\"><o:p>&nbsp;</o:p></span></p>\\r\\n<p class=\\\"MsoNormal\\\"><span lang=\\\"EN-US\\\" style=\\\"font-size:11.0pt\\\">We don\\u2019t have anybody name Shiv or Raj in the organization, and moreover, the return address seems to be the spoofed domain.<o:p></o:p></span></p>\\r\\n</div>\\r\\n<div><br></div>\\n<font bgcolor=\\\"#ffffff\\\" color=\\\"#000000\\\"><b><br><hr>\\n***  Please note that this message and any attachments may contain confidential \\nand proprietary material and information and are intended only for the use of \\nthe intended recipient(s). If you are not the intended recipient, you are hereby \\nnotified that any review, use, disclosure, dissemination, distribution or copying \\nof this message and any attachments is strictly prohibited. If you have received \\nthis email in error, please immediately notify the sender and destroy this e-mail \\nand any attachments and all copies, whether electronic or printed.\\nPlease also note that any views, opinions, conclusions or commitments expressed \\nin this message are those of the individual sender and do not necessarily reflect \\nthe views of Fortinet, Inc., its affiliates, and emails are not binding on \\nFortinet and only a writing manually signed by Fortinet's General Counsel can be \\na binding commitment of Fortinet to Fortinet's customers or partners. Thank you. ***\\n<br><hr></b></font>\\n</body>\\r\\n</html>\\r\\n\", \"json\": null, \"text\": \"CyberSec team \\u2013 please can you investigate the attached suspicious email we have received.\\r\\n\\r\\nWe don\\u2019t have anybody name Shiv or Raj in the organization, and moreover, the return address seems to be the spoofed domain.\\r\\n\\n\\n***  Please note that this message and any attachments may contain confidential and proprietary material and information and are intended only for the use of the intended recipient(s). If you are not the intended recipient, you are hereby notified that any review, use, disclosure, dissemination, distribution or copying of this message and any attachments is strictly prohibited. If you have received this email in error, please immediately notify the sender and destroy this e-mail and any attachments and all copies, whether electronic or printed. Please also note that any views, opinions, conclusions or commitments expressed in this message are those of the individual sender and do not necessarily reflect the views of Fortinet, Inc., its affiliates, and emails are not binding on Fortinet and only a writing manually signed by Fortinet's General Counsel can be a binding commitment of Fortinet to Fortinet's customers or partners. Thank you. *** \\n\\n\"}, \"reporterEmailAddress\": \"reporter@example.com\", \"parsed_attachment_data\": []}",
               "state": {
                 "@id": "/api/3/picklists/<uuid>",
                 "@type": "Picklist",
@@ -132408,8 +133553,28 @@
                 "orderIndex": 1,
                 "uuid": "<uuid>"
               },
-              "targetAsset": "www-uat.eseitalia.it",
+              "targetAsset": null,
               "targetProcess": null,
+              "tenant": {
+                "@id": "/api/3/tenants/<uuid>",
+                "@type": "Tenant",
+                "allowRemoteMMDModification": true,
+                "createDate": null,
+                "createUser": null,
+                "description": "sample",
+                "id": 1,
+                "industry": null,
+                "isDedicated": true,
+                "license": null,
+                "modifyDate": null,
+                "modifyUser": null,
+                "name": "Self",
+                "region": null,
+                "role": "self",
+                "tenantId": "<self-agent>",
+                "uuid": "<uuid>"
+              },
+              "tenantRecordId": 1238,
               "ticketID": null,
               "tier2Team": null,
               "type": {
@@ -132417,11 +133582,11 @@
                 "@type": "Picklist",
                 "color": null,
                 "icon": null,
-                "id": 5936,
+                "id": 227,
                 "importedBy": [],
-                "itemValue": "Certificate Monitoring",
+                "itemValue": "Suspicious Email",
                 "listName": "/api/3/picklist_names/<uuid>",
-                "orderIndex": 27,
+                "orderIndex": 15,
                 "uuid": "<uuid>"
               },
               "url": null,
@@ -132447,7 +133612,7 @@
   "POST /api/query/{collection}/{queryId}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "$limit": 1,
           "$page": 1
@@ -132456,7 +133621,7 @@
         "response_status": 404
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "$limit": 1,
           "$page": 1
@@ -132469,7 +133634,7 @@
   "POST /api/search": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "index": [
             "alerts",
@@ -132482,7 +133647,7 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "index": [
             "alerts",
@@ -132522,7 +133687,7 @@
   "POST /api/wf/api/jinja-editor/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "template": "{{ name | upper }}",
           "values": {
@@ -132535,7 +133700,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "template": "{{ name | upper }}",
           "values": {
@@ -132552,7 +133717,7 @@
   "POST /api/wf/api/manual-wf-input/list_wfinput/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/manual-wf-input/list_wfinput/context/",
@@ -132589,7 +133754,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/manual-wf-input/list_wfinput/context/",
@@ -132630,7 +133795,7 @@
   "POST /api/wf/api/query/workflow_logs/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [
             {
@@ -132762,7 +133927,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "filters": [
             {
@@ -132898,7 +134063,7 @@
   "POST /api/wf/api/workflows/log_list/": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/workflows/log_list/context/",
@@ -132938,7 +134103,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {},
         "response_body": {
           "@context": "/wf/api/workflows/log_list/context/",
@@ -132982,7 +134147,7 @@
   "POST /auth/authenticate": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "credentials": {
             "loginid": "csadmin",
@@ -132995,7 +134160,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "credentials": {
             "loginid": "csadmin",
@@ -133012,7 +134177,7 @@
   "PUT /api/3/alerts/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -133046,6 +134211,7 @@
           "closureReason": null,
           "commandLine": null,
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -133103,7 +134269,7 @@
           "filePath": null,
           "fsrQueue": null,
           "iPAddresses": null,
-          "id": 1179,
+          "id": 1240,
           "killChainPhase": null,
           "latestLogin": null,
           "metrics": null,
@@ -133212,6 +134378,26 @@
           },
           "targetAsset": null,
           "targetProcess": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1240,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -133235,7 +134421,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -133269,6 +134455,7 @@
           "closureReason": null,
           "commandLine": null,
           "computerName": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -133338,7 +134525,7 @@
           "filePath": null,
           "fsrQueue": null,
           "iPAddresses": null,
-          "id": 1178,
+          "id": 1239,
           "killChainPhase": null,
           "latestLogin": null,
           "metrics": null,
@@ -133459,6 +134646,26 @@
           },
           "targetAsset": null,
           "targetProcess": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 1239,
           "ticketID": null,
           "tier2Team": null,
           "type": {
@@ -133486,12 +134693,12 @@
   "PUT /api/3/api_keys/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "name": "live-<run>-apikey-renamed",
           "roles": [],
@@ -133578,7 +134785,7 @@
   "PUT /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "isImportant": true
         },
@@ -133593,6 +134800,7 @@
           "cVEs": [],
           "campaigns": [],
           "communication": [],
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -133619,7 +134827,7 @@
           "file3": null,
           "file4": null,
           "hunt": [],
-          "id": 28266,
+          "id": 28302,
           "incidents": [
             "/api/3/incidents/<uuid>"
           ],
@@ -133660,6 +134868,26 @@
           "scans": [],
           "scenario": [],
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28302,
           "threatActors": [],
           "threatIntelReports": [],
           "type": {
@@ -133682,7 +134910,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "isImportant": true
         },
@@ -133697,6 +134925,7 @@
           "cVEs": [],
           "campaigns": [],
           "communication": [],
+          "conflict": false,
           "content": "<p>live-<run>-comment linked to incident</p>",
           "createDate": 1700000000,
           "createUser": {
@@ -133735,7 +134964,7 @@
           "file3": null,
           "file4": null,
           "hunt": [],
-          "id": 28265,
+          "id": 28301,
           "incidents": [
             "/api/3/incidents/<uuid>"
           ],
@@ -133793,6 +135022,26 @@
           "scans": [],
           "scenario": [],
           "tasks": [],
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 28301,
           "threatActors": [],
           "threatIntelReports": [],
           "type": {
@@ -133819,7 +135068,7 @@
   "PUT /api/3/incidents/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -133849,6 +135098,7 @@
             "uuid": "<uuid>"
           },
           "confirmationDate": null,
+          "conflict": false,
           "containmentDate": null,
           "containmentTime": null,
           "createDate": 1700000000,
@@ -133892,7 +135142,247 @@
           "fileName": null,
           "filehash": null,
           "fsrQueue": null,
-          "id": 66,
+          "id": 74,
+          "identificationDate": null,
+          "impactAssessments": null,
+          "impactROI": null,
+          "incRemainingAckSLA": null,
+          "incRemainingRespSLA": null,
+          "incidentLead": null,
+          "incidentphase": null,
+          "incidentsummary": null,
+          "metrics": null,
+          "mitreattackid": null,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
+            "avatar": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 5,
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "WEBHOOK",
+            "recordTags": [],
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "name": "live-<run>-incident",
+          "nextsteps": null,
+          "otherLogs": null,
+          "pcapFile": null,
+          "phase": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 357,
+            "importedBy": [],
+            "itemValue": "Detection",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "processName": null,
+          "receipientEmailAddress": null,
+          "recordTags": [],
+          "recoveryDate": null,
+          "recoveryTime": null,
+          "resDate": null,
+          "resDueBy": null,
+          "resPercentSla": null,
+          "resSla": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#808080",
+            "icon": null,
+            "id": 439,
+            "importedBy": [],
+            "itemValue": "Awaiting Action",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 2,
+            "uuid": "<uuid>"
+          },
+          "resolution": null,
+          "resolveddate": null,
+          "respSLApausedon": null,
+          "responseDate": null,
+          "responseSLAResumeDate": null,
+          "senderDomain": null,
+          "senderEmailAddress": null,
+          "severity": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#157DD9",
+            "icon": null,
+            "id": 441,
+            "importedBy": [],
+            "itemValue": "Minimal",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "siemQuery": null,
+          "slaPercentage": null,
+          "slaState": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": "#808080",
+            "icon": null,
+            "id": 439,
+            "importedBy": [],
+            "itemValue": "Awaiting Action",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 2,
+            "uuid": "<uuid>"
+          },
+          "source": "live-test",
+          "sourceIP": null,
+          "sourceId": null,
+          "sourcedata": null,
+          "state": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 196,
+            "importedBy": [],
+            "itemValue": "New",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "status": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 364,
+            "importedBy": [],
+            "itemValue": "Open",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 0,
+            "uuid": "<uuid>"
+          },
+          "targetAsset": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 74,
+          "ticketID": null,
+          "uuid": "<uuid>",
+          "volatileData": null,
+          "wasPersonalDataAffected": null
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-05-27",
+        "request_body": {
+          "description": "updated by live_test"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Incident",
+          "@id": "/api/3/incidents/<uuid>",
+          "@type": "Incident",
+          "ackDate": null,
+          "ackDueDate": null,
+          "ackSLApausedon": null,
+          "affectedHost": null,
+          "affectedUser": null,
+          "aftermathDate": null,
+          "assigneddate": null,
+          "businessImpact": null,
+          "c2server": null,
+          "category": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 377,
+            "importedBy": [],
+            "itemValue": "Malware",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 8,
+            "uuid": "<uuid>"
+          },
+          "confirmationDate": null,
+          "conflict": false,
+          "containmentDate": null,
+          "containmentTime": null,
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "dLLName": null,
+          "dateOfIncident": null,
+          "deliveryVector": null,
+          "description": "updated by live_test",
+          "destinationIP": null,
+          "deviceUID": null,
+          "discoveredOn": null,
+          "dwellTime": null,
+          "eradicationDate": null,
+          "escalated": {
+            "@id": "/api/3/picklists/<uuid>",
+            "@type": "Picklist",
+            "color": null,
+            "icon": null,
+            "id": 459,
+            "importedBy": [],
+            "itemValue": "No",
+            "listName": "/api/3/picklist_names/<uuid>",
+            "orderIndex": 1,
+            "uuid": "<uuid>"
+          },
+          "fileName": null,
+          "filehash": null,
+          "fsrQueue": null,
+          "id": 73,
           "identificationDate": null,
           "impactAssessments": null,
           "impactROI": null,
@@ -134016,237 +135506,26 @@
             "uuid": "<uuid>"
           },
           "targetAsset": null,
-          "ticketID": null,
-          "uuid": "<uuid>",
-          "volatileData": null,
-          "wasPersonalDataAffected": null
-        },
-        "response_status": 200
-      },
-      "jwt": {
-        "captured_at": "2026-05-21",
-        "request_body": {
-          "description": "updated by live_test"
-        },
-        "response_body": {
-          "@context": "/api/3/contexts/Incident",
-          "@id": "/api/3/incidents/<uuid>",
-          "@type": "Incident",
-          "ackDate": null,
-          "ackDueDate": null,
-          "ackSLApausedon": null,
-          "affectedHost": null,
-          "affectedUser": null,
-          "aftermathDate": null,
-          "assigneddate": null,
-          "businessImpact": null,
-          "c2server": null,
-          "category": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": null,
-            "icon": null,
-            "id": 377,
-            "importedBy": [],
-            "itemValue": "Malware",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 8,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
             "uuid": "<uuid>"
           },
-          "confirmationDate": null,
-          "containmentDate": null,
-          "containmentTime": null,
-          "createDate": 1700000000,
-          "createUser": {
-            "@id": "/api/3/people/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "Person",
-            "accessType": "Named",
-            "avatar": null,
-            "companyId": null,
-            "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "csActive": true,
-            "department": null,
-            "description": null,
-            "email": "admin@example.com",
-            "firstname": "CS",
-            "id": 3,
-            "lastname": "Admin",
-            "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "phoneFax": null,
-            "phoneHome": null,
-            "phoneMobile": null,
-            "phoneWork": "+16462759691",
-            "title": "Admin",
-            "type": null,
-            "userId": "<uuid>",
-            "userType": null,
-            "uuid": "<uuid>"
-          },
-          "dLLName": null,
-          "dateOfIncident": null,
-          "deliveryVector": null,
-          "description": "updated by live_test",
-          "destinationIP": null,
-          "deviceUID": null,
-          "discoveredOn": null,
-          "dwellTime": null,
-          "eradicationDate": null,
-          "escalated": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": null,
-            "icon": null,
-            "id": 459,
-            "importedBy": [],
-            "itemValue": "No",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 1,
-            "uuid": "<uuid>"
-          },
-          "fileName": null,
-          "filehash": null,
-          "fsrQueue": null,
-          "id": 25,
-          "identificationDate": null,
-          "impactAssessments": null,
-          "impactROI": null,
-          "incRemainingAckSLA": null,
-          "incRemainingRespSLA": null,
-          "incidentLead": null,
-          "incidentphase": null,
-          "incidentsummary": null,
-          "metrics": null,
-          "mitreattackid": null,
-          "modifyDate": 1700000000,
-          "modifyUser": {
-            "@id": "/api/3/people/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "Person",
-            "accessType": "Named",
-            "avatar": null,
-            "companyId": null,
-            "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "csActive": true,
-            "department": null,
-            "description": null,
-            "email": "admin@example.com",
-            "firstname": "CS",
-            "id": 3,
-            "lastname": "Admin",
-            "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "phoneFax": null,
-            "phoneHome": null,
-            "phoneMobile": null,
-            "phoneWork": "+16462759691",
-            "title": "Admin",
-            "type": null,
-            "userId": "<uuid>",
-            "userType": null,
-            "uuid": "<uuid>"
-          },
-          "name": "live-<run>-incident",
-          "nextsteps": null,
-          "otherLogs": null,
-          "pcapFile": null,
-          "phase": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": null,
-            "icon": null,
-            "id": 357,
-            "importedBy": [],
-            "itemValue": "Detection",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 0,
-            "uuid": "<uuid>"
-          },
-          "processName": null,
-          "receipientEmailAddress": null,
-          "recordTags": [],
-          "recoveryDate": null,
-          "recoveryTime": null,
-          "resDate": null,
-          "resDueBy": null,
-          "resPercentSla": null,
-          "resSla": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": "#808080",
-            "icon": null,
-            "id": 439,
-            "importedBy": [],
-            "itemValue": "Awaiting Action",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 2,
-            "uuid": "<uuid>"
-          },
-          "resolution": null,
-          "resolveddate": null,
-          "respSLApausedon": null,
-          "responseDate": null,
-          "responseSLAResumeDate": null,
-          "senderDomain": null,
-          "senderEmailAddress": null,
-          "severity": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": "#157DD9",
-            "icon": null,
-            "id": 441,
-            "importedBy": [],
-            "itemValue": "Minimal",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 0,
-            "uuid": "<uuid>"
-          },
-          "siemQuery": null,
-          "slaPercentage": null,
-          "slaState": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": "#808080",
-            "icon": null,
-            "id": 439,
-            "importedBy": [],
-            "itemValue": "Awaiting Action",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 2,
-            "uuid": "<uuid>"
-          },
-          "source": "live-test",
-          "sourceIP": null,
-          "sourceId": null,
-          "sourcedata": null,
-          "state": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": null,
-            "icon": null,
-            "id": 196,
-            "importedBy": [],
-            "itemValue": "New",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 0,
-            "uuid": "<uuid>"
-          },
-          "status": {
-            "@id": "/api/3/picklists/<uuid>",
-            "@type": "Picklist",
-            "color": null,
-            "icon": null,
-            "id": 364,
-            "importedBy": [],
-            "itemValue": "Open",
-            "listName": "/api/3/picklist_names/<uuid>",
-            "orderIndex": 0,
-            "uuid": "<uuid>"
-          },
-          "targetAsset": null,
+          "tenantRecordId": 73,
           "ticketID": null,
           "uuid": "<uuid>",
           "volatileData": null,
@@ -134259,7 +135538,7 @@
   "PUT /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -134273,6 +135552,7 @@
           "assignedToPerson": null,
           "assignee": "",
           "completedOnDate": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -134293,7 +135573,7 @@
           "description": "updated by live_test",
           "dueBy": null,
           "fsrQueue": null,
-          "id": 58,
+          "id": 82,
           "modifyDate": 1700000000,
           "modifyUser": {
             "@id": "/api/3/api_keys/<uuid>",
@@ -134331,6 +135611,26 @@
           "submittedBy": null,
           "taskdata": null,
           "tasktype": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 82,
           "type": null,
           "uuid": "<uuid>",
           "workflowid": null
@@ -134338,7 +135638,7 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "updated by live_test"
         },
@@ -134352,6 +135652,7 @@
           "assignedToPerson": null,
           "assignee": "",
           "completedOnDate": null,
+          "conflict": false,
           "createDate": 1700000000,
           "createUser": {
             "@id": "/api/3/people/<uuid>",
@@ -134384,7 +135685,7 @@
           "description": "updated by live_test",
           "dueBy": null,
           "fsrQueue": null,
-          "id": 57,
+          "id": 81,
           "modifyDate": 1700000000,
           "modifyUser": {
             "@id": "/api/3/people/<uuid>",
@@ -134434,6 +135735,26 @@
           "submittedBy": null,
           "taskdata": null,
           "tasktype": null,
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 81,
           "type": null,
           "uuid": "<uuid>",
           "workflowid": null
@@ -134445,12 +135766,23 @@
   "PUT /api/3/{collection}/{uuid}": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
-        "gated_upstream": true,
-        "response_status": null
+        "captured_at": "2026-05-27",
+        "request_body": {
+          "description": "renamed by live_test"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Team",
+          "@id": "/api/3/teams/<uuid>",
+          "@type": "Team",
+          "description": "renamed by live_test",
+          "importedBy": [],
+          "name": "live-<run>-team",
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "description": "renamed by live_test"
         },
@@ -134470,12 +135802,12 @@
   "PUT /api/auth/users": {
     "by_auth": {
       "apikey": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "gated_upstream": true,
         "response_status": null
       },
       "jwt": {
-        "captured_at": "2026-05-21",
+        "captured_at": "2026-05-27",
         "request_body": {
           "api_key_validity": 5,
           "key_type": "API_KEY",
