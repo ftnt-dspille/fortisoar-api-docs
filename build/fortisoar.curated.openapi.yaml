@@ -7267,6 +7267,12 @@ paths:
                 parents: []
                 siblings: []
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       description: "**See:** [Concepts](#description/concepts) - [Pagination & response shape](#description/pagination-response-shape)\n\
         \n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -7908,6 +7914,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert.name, type(alert).__name__))"
       description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
       - apikey
@@ -7945,6 +7957,12 @@ paths:
                 importedBy: []
                 name: live-<run>-team
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -7955,6 +7973,12 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
       description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
       - apikey
