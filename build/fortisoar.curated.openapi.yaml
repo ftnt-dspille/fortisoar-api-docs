@@ -7916,6 +7916,14 @@ paths:
       tags:
       - Records (generic)
       summary: Update a record
+      description: "**See:** [Concepts](#description/concepts)\n\nOrdinary field updates: send the changed fields as a flat\
+        \ JSON object.\n\n**Relationship add/remove without resending the whole record:** send `{\"__link\": {\"<field>\"\
+        : [\"<iri-or-module:uuid>\", ...]}}` to add related records to a relationship field, or `{\"__unlink\": {\"<field>\"\
+        : [...]}}` to remove them \u2014 both leave the rest of the record untouched. Each ref may be a full IRI (`/api/3/assets/<uuid>`)\
+        \ or `<module>:<uuid>` shorthand; a bare uuid is rejected since the related module can't be inferred. Live-verified:\
+        \ linking an `Asset` onto an `Alert`'s `assets` field, confirmed via `GET /api/3/alerts/<uuid>/assets`, then unlinked\
+        \ and reconfirmed empty. See `$relationships` above for the read side of the same relationship fields.\n\n**Auth coverage:**\
+        \ `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       requestBody:
         required: true
         content:
@@ -7937,7 +7945,6 @@ paths:
                 importedBy: []
                 name: live-<run>-team
                 uuid: <uuid>
-      description: "**See:** [Concepts](#description/concepts)\n\n\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
       - apikey
       - jwt

@@ -737,6 +737,18 @@ PATHS["/api/3/{collection}/{uuid}"] = {
     "get": {"tags": ["Records (generic)"], "summary": "Get a record",
             "responses": {"200": _resp("Record."), "404": _err(404, "Not found.")}},
     "put": {"tags": ["Records (generic)"], "summary": "Update a record",
+            "description": (
+                "Ordinary field updates: send the changed fields as a flat JSON object.\n\n"
+                "**Relationship add/remove without resending the whole record:** send "
+                "`{\"__link\": {\"<field>\": [\"<iri-or-module:uuid>\", ...]}}` to add related "
+                "records to a relationship field, or `{\"__unlink\": {\"<field>\": [...]}}` to "
+                "remove them — both leave the rest of the record untouched. Each ref may be a "
+                "full IRI (`/api/3/assets/<uuid>`) or `<module>:<uuid>` shorthand; a bare uuid is "
+                "rejected since the related module can't be inferred. Live-verified: linking an "
+                "`Asset` onto an `Alert`'s `assets` field, confirmed via `GET "
+                "/api/3/alerts/<uuid>/assets`, then unlinked and reconfirmed empty. See "
+                "`$relationships` above for the read side of the same relationship fields."
+            ),
             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
             "responses": {"200": _resp("Updated.")}},
     "delete": {"tags": ["Records (generic)"], "summary": "Delete a record",
