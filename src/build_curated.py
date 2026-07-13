@@ -25,6 +25,8 @@ from pathlib import Path
 
 import yaml
 
+from pyfsr_examples import apply_pyfsr_samples
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "build" / "fortisoar.curated.openapi.yaml"
 
@@ -3951,6 +3953,7 @@ def _auth_coverage_line(by_auth: dict) -> str:
 
 
 def main():
+    pyfsr_applied = apply_pyfsr_samples(PATHS)
     _ensure_examples(SPEC)
     _apply_curated_examples(SPEC)
     _apply_cross_links(SPEC)
@@ -3974,7 +3977,7 @@ def main():
     OUT.write_text(yaml.safe_dump(SPEC, sort_keys=False, default_flow_style=False, width=120))
     op_count = sum(1 for path in PATHS.values() for k in path if k in {"get", "post", "put", "delete", "patch"})
     print(f"Wrote {OUT} ({op_count} operations across {len(PATHS)} paths, "
-          f"{live_applied} live-verified)")
+          f"{live_applied} live-verified, {pyfsr_applied} with a pyfsr sample)")
 
 
 if __name__ == "__main__":
