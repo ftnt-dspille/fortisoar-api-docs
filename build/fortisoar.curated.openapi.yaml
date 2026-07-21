@@ -12931,7 +12931,6 @@ paths:
       responses:
         '200':
           description: Installed connector record (with integer `id`).
-          x-pyfsr-response-model: SolutionPackInstallResponse | InstallJobStatus
           content:
             application/json:
               example:
@@ -12988,12 +12987,6 @@ paths:
                 vendor_version: null
                 version: 1.0.4
                 workspace_connector: false
-      x-codeSamples:
-      - lang: python
-        label: pyfsr
-        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresp = client.solution_packs.install(\"SOAR Framework\"\
-          , \"2.2.1\")\nprint(resp.name)\nprint(resp.version)\nprint(resp.job_id)"
       x-verified-live:
       - apikey
       - jwt
