@@ -2995,6 +2995,44 @@ PATHS["/api/3/import_jobs"] = {
     },
 }
 
+# The /api/import/ namespace (no /3/) is parallel to /api/3/import_jobs above:
+# the CRUD lives at /api/3/import_jobs, but option-generation + run-trigger
+# happen here. Both are async — poll GET /api/3/import_jobs/{job_uuid} to track.
+PATHS["/api/import/{job_uuid}"] = {
+    "parameters": [{"name": "job_uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "get": {
+        "tags": ["Import / export"],
+        "summary": "Kick off async option generation",
+        "description": (
+            "Starts the server walking the uploaded bundle to build the "
+            "import-options tree. **The response body is a progress log, "
+            "not the options** — poll `GET /api/3/import_jobs/{job_uuid}` "
+            "until the job's `options` field is populated (status becomes "
+            "`\"Reviewing\"`)."
+        ),
+        "responses": {"200": _resp("Progress log (not the options — poll the job record).")},
+    },
+    "put": {
+        "tags": ["Import / export"],
+        "summary": "Trigger the import run (async)",
+        "description": (
+            "Triggers the import — the server applies the bundle (an upsert "
+            "keyed by `config_id`). **Async:** poll `GET "
+            "/api/3/import_jobs/{job_uuid}` until `status == \"Import "
+            "Complete\"`. An import carrying module/schema changes drives the "
+            "appliance through a backup + DB-migrate + cache-rebuild cycle "
+            "(ride through transient 5xx / \"System Backup\" / \"Clearing "
+            "Cache\" states)."
+        ),
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {},
+                       "description": "No request body — the job is identified by the path uuid."},
+            "example": {},
+        }}},
+        "responses": {"200": _resp("Import job record (poll until `status == \"Import Complete\"`).")},
+    },
+}
+
 PATHS["/api/3/export_jobs"] = {
     "post": {"tags": ["Import / export"], "summary": "Create an export job",
              "description": (
@@ -4183,6 +4221,21 @@ CURATED_EXAMPLES = {
                               "status": "Queued", "createDate": 1736380800}},
     },
 
+    # --- Tier 3: import alternate namespace ---
+    ("GET", "/api/import/{job_uuid}"): {
+        "response": {"200": {
+            "job_id": _UUID,
+            "status": "InProgress",
+            "progress": [{"step": "Extracting bundle", "status": "done"},
+                         {"step": "Building options tree", "status": "running"}],
+        }},
+    },
+    ("PUT", "/api/import/{job_uuid}"): {
+        "request": {},
+        "response": {"200": {"@id": f"/api/3/import_jobs/{_UUID}", "uuid": _UUID,
+                             "status": "Import In Progress", "createDate": 1736380800}},
+    },
+
 }
 
 
@@ -4225,6 +4278,7 @@ CROSS_LINKS = {
     "/api/triggers/1/notrigger/{workflowId}": "[Workflows & triggers](#description/workflows-triggers) (Triggers)",
     # Imports
     "/api/3/import_jobs": "[Imports & exports](#description/imports-exports)",
+    "/api/import/{job_uuid}": "[Imports & exports](#description/imports-exports)",
     "/api/3/export_jobs": "[Imports & exports](#description/imports-exports)",
     "/api/3/files": "[Imports & exports](#description/imports-exports) (file upload is step 1 of import)",
     # Auth
