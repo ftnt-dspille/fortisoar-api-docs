@@ -49442,6 +49442,60 @@ paths:
                       include: true
                       mergeType: merge_replace
                       includeSchedules: true
+  /api/import/{job_uuid}:
+    parameters:
+    - name: job_uuid
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+    get:
+      tags:
+      - Import / export
+      summary: Kick off async option generation
+      description: "**See:** [Imports & exports](#description/imports-exports)\n\nStarts the server walking the uploaded bundle\
+        \ to build the import-options tree. **The response body is a progress log, not the options** \u2014 poll `GET /api/3/import_jobs/{job_uuid}`\
+        \ until the job's `options` field is populated (status becomes `\"Reviewing\"`)."
+      responses:
+        '200':
+          description: "Progress log (not the options \u2014 poll the job record)."
+          content:
+            application/json:
+              example:
+                job_id: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+                status: InProgress
+                progress:
+                - step: Extracting bundle
+                  status: done
+                - step: Building options tree
+                  status: running
+    put:
+      tags:
+      - Import / export
+      summary: Trigger the import run (async)
+      description: "**See:** [Imports & exports](#description/imports-exports)\n\nTriggers the import \u2014 the server applies\
+        \ the bundle (an upsert keyed by `config_id`). **Async:** poll `GET /api/3/import_jobs/{job_uuid}` until `status ==\
+        \ \"Import Complete\"`. An import carrying module/schema changes drives the appliance through a backup + DB-migrate\
+        \ + cache-rebuild cycle (ride through transient 5xx / \"System Backup\" / \"Clearing Cache\" states)."
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+              description: "No request body \u2014 the job is identified by the path uuid."
+            example: {}
+      responses:
+        '200':
+          description: Import job record (poll until `status == "Import Complete"`).
+          content:
+            application/json:
+              example:
+                '@id': /api/3/import_jobs/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+                status: Import In Progress
+                createDate: 1736380800
   /api/3/export_jobs:
     post:
       tags:
