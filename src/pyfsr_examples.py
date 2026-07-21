@@ -174,7 +174,14 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # System queries / model metadatas
     ("get", "/api/3/model_metadatas"): ("doctest", "pyfsr.api.system_queries:SystemQueriesAPI.model_iri"),
     # Solution packs / import jobs
-    ("post", "/api/3/solutionpacks/install"): ("doctest", "pyfsr.api.solution_packs:SolutionPackAPI.install"),
+    # NOTE: ``POST /api/3/solutionpacks/install`` serves two uses — a
+    # by-name Content-Hub install (``SolutionPackAPI.install``) and a
+    # multipart ``.tgz`` upload (``ConnectorsAPI.install_from_file``). The
+    # spec documents the tgz-upload variant, so the by-name doctest is the
+    # wrong sample and is intentionally omitted here. Restore this entry
+    # once pyfsr grows a doctest on ``ConnectorsAPI.install_from_file``
+    # (the multipart upload), pointing at that doctest instead.
+    # ("post", "/api/3/solutionpacks/install"): ("doctest", "pyfsr.api.solution_packs:SolutionPackAPI.install"),
     ("post", "/api/3/import_jobs"): ("doctest", "pyfsr.api.import_config:ImportConfigAPI.create_job"),
     # System (version / permissions / feature-access)
     ("get", "/api/version"): ("doctest", "pyfsr.api.system:SystemAPI.version"),
