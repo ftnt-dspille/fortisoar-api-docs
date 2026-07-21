@@ -383,6 +383,13 @@ def _err(code, desc):
     }
 
 
+# Placeholder UUIDs used both in PATHS examples below and in the
+# CURATED_EXAMPLES dict (defined up here so both sections can reference them).
+_UUID = "f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91"
+_UUID2 = "a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4"
+_PB_UUID = "c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56"
+_FILE_UUID = "1f9a3c4d-5e6b-4789-a012-3b4c5d6e7f80"
+
 PATHS = {}
 
 
@@ -1720,6 +1727,18 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
             "schema": {"type": "object"}, "example": {"input": {}}}}},
         "responses": {"200": _resp("Record updated (run NOT advanced).")},
     },
+    "delete": {
+        "tags": ["Workflows"],
+        "summary": "Abandon/cancel a pending manual input",
+        "description": (
+            "Removes the waiting input — the paused playbook step is "
+            "abandoned (there is no undo). The PUT above updates the "
+            "record's contents; this DELETE removes it entirely. 204 on "
+            "success."
+        ),
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
+        "responses": {"204": _resp("Deleted.")},
+    },
 }
 
 # --- Scheduled tasks ------------------------------------------------------
@@ -2621,6 +2640,100 @@ PATHS["/api/3/docs.jsonld"] = {
 }
 
 
+# --- Widgets ---------------------------------------------------------------
+# Widget publish, export, and delete. The upload path is shared with
+# connectors (`POST /api/3/solutionpacks/install?$type=widget`, already
+# documented under Connectors) — only these widget-specific ops are new.
+
+PATHS["/api/3/widgets/development/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "get": {
+        "tags": ["Widgets"],
+        "summary": "Read the development-workspace manifest",
+        "description": (
+            "Returns the development-workspace manifest for a widget (the "
+            "draft, not-yet-published copy). Used by the publish step — "
+            "`PUT /api/3/widgets/{uuid}` loads this, strips `tree`, adds "
+            "publish flags, and PUTs it back. Hydra envelope."
+        ),
+        "responses": {"200": _resp("Hydra envelope with the widget development manifest.")},
+    },
+}
+
+PATHS["/api/3/widgets/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "put": {
+        "tags": ["Widgets"],
+        "summary": "Publish a widget",
+        "description": (
+            "Publishes an uploaded widget from the development workspace to "
+            "live. The body is the development manifest (from `GET "
+            "/api/3/widgets/development/{uuid}`) with `tree` stripped, plus "
+            "the publish flags: `draft` (false to go live), `installed` "
+            "(true), `enablePublish` (false), `replace` + `replaceVersions` "
+            "(version-supersede flags), `publishedDate`, and `@id`. This is "
+            "exactly what the Content-Hub UI's Publish button sends."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "properties": {
+                           "@id": {"type": "string", "description": "Widget IRI (`/api/3/widgets/<uuid>`)."},
+                           "draft": {"type": "boolean", "description": "`false` to publish live; `true` for draft-only."},
+                           "installed": {"type": "boolean", "description": "Set `true` on publish."},
+                           "enablePublish": {"type": "boolean", "description": "Publish flag — send `false`."},
+                           "replace": {"type": "boolean", "description": "Supersede the currently-installed version."},
+                           "replaceVersions": {"type": "array", "items": {"type": "string"}, "description": "Versions to replace (usually empty)."},
+                           "publishedDate": {"type": "integer", "description": "Epoch seconds (`int(time.time())`)."},
+                       },
+                       "description": "Development manifest with `tree` removed and publish flags added."},
+        }}},
+        "responses": {"200": _resp("The published widget record.")},
+    },
+}
+
+PATHS["/api/3/widgets/export/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "post": {
+        "tags": ["Widgets"],
+        "summary": "Export a widget to .tgz",
+        "description": (
+            "Exports a widget as a `.tgz` archive. Body `{development: bool}` "
+            "selects the development-workspace copy (`true`) or the "
+            "installed/published one (`false`). Send `Accept: "
+            "application/octet-stream` — the response is the raw archive bytes."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {
+                "development": {"type": "boolean", "default": False, "description": "Export the development-workspace copy instead of the published one."},
+            }},
+            "example": {"development": False},
+        }}},
+        "responses": {"200": {
+            "description": "Widget archive binary.",
+            "content": {"application/octet-stream": {"schema": {"type": "string", "format": "binary"}, "example": "<binary>"}},
+        }},
+    },
+}
+
+PATHS["/api/3/delete/widgets"] = {
+    "delete": {
+        "tags": ["Widgets"],
+        "summary": "Delete widget records",
+        "description": (
+            "Deletes one or more widget records by uuid. **Note the `/delete/` "
+            "infix** in the path — this is not the standard `/api/3/widgets` "
+            "collection. Body `{ids: [<uuid>]}`. 204 on success."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["ids"],
+                       "properties": {"ids": {"type": "array", "items": {"type": "string", "format": "uuid"}, "description": "Widget uuids to delete."}}},
+            "example": {"ids": [_UUID]},
+        }}},
+        "responses": {"204": _resp("Deleted.")},
+    },
+}
+
+
 # --- Files / attachments --------------------------------------------------
 
 PATHS["/api/3/files"] = {
@@ -2897,7 +3010,78 @@ PATHS["/api/3/export_jobs"] = {
                  "example": {"name": "weekly-playbooks", "type": "Export Wizard",
                              "options": {"playbooks": {"include": True}}},
              }}},
-             "responses": {"200": _resp("Export job record.")}},
+              "responses": {"200": _resp("Export job record.")}},
+}
+
+
+# --- Export templates ------------------------------------------------------
+# Templates drive `PUT /api/export` — a reusable selection of what to export
+# (record sets, picklists, connectors, playbooks). Create/delete templates
+# here; trigger + poll via `PUT /api/export` + `GET /api/3/export_jobs/{uuid}`.
+
+PATHS["/api/3/export_templates"] = {
+    "post": {
+        "tags": ["Import / export"],
+        "summary": "Create an export template",
+        "description": (
+            "Creates a reusable export template. Body carries `name`, "
+            "`options` (the selection of what to export — record sets, "
+            "picklists, connectors, playbook collections), and optional "
+            "`metadata` (defaults to `{autoSelectPicklists: true}`). The "
+            "template's uuid is passed to `PUT /api/export?template=<uuid>` "
+            "to trigger an export."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["name"],
+                       "properties": {
+                           "name": {"type": "string", "description": "Template display name."},
+                           "options": {"type": "object", "description": "Export selection: record sets, picklistNames, connectors, playbooks, etc."},
+                           "metadata": {"type": "object", "description": "Template metadata (default: `{autoSelectPicklists: true}`)."},
+                       }},
+            "example": {"name": "Alert backup",
+                        "options": {"recordSets": [{"type": "alerts", "label": "Open alerts", "query": {"type": "alerts", "limit": 500}}]},
+                        "metadata": {"autoSelectPicklists": True}},
+        }}},
+        "responses": {"200": _resp("The created export template record.")},
+    },
+}
+
+PATHS["/api/3/export_templates/{template_uuid}"] = {
+    "parameters": [{"name": "template_uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "delete": {
+        "tags": ["Import / export"],
+        "summary": "Delete an export template",
+        "description": "Deletes one export template by uuid. 204 on success.",
+        "responses": {"204": _resp("Deleted.")},
+    },
+}
+
+PATHS["/api/export"] = {
+    "put": {
+        "tags": ["Import / export"],
+        "summary": "Trigger an export from a template",
+        "description": (
+            "Triggers a configuration export using a pre-created template. "
+            "**Note: `/api/export` (no `/3/`).** The parameters are **query "
+            "params, not a JSON body** — `fileName` (must end in `.zip`) and "
+            "`template` (a template uuid from `POST /api/3/export_templates`). "
+            "Returns the export-job record; poll `GET "
+            "/api/3/export_jobs/{job_uuid}` until `status == \"Export "
+            "Complete\"`, then download the `file` IRI."
+        ),
+        "parameters": [
+            {"name": "fileName", "in": "query", "required": True, "schema": {"type": "string"},
+             "description": "Output filename — must end in `.zip`."},
+            {"name": "template", "in": "query", "required": True, "schema": {"type": "string", "format": "uuid"},
+             "description": "Export template uuid (from `POST /api/3/export_templates`)."},
+        ],
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {},
+                       "description": "No request body — the export is driven by the `fileName` and `template` query params above."},
+            "example": {},
+        }}},
+        "responses": {"200": _resp("Export job record (poll until `status == \"Export Complete\"`).")},
+    },
 }
 
 
@@ -2924,7 +3108,7 @@ TAG_GROUPS = [
     {"name": "Audit", "tags": ["Audit"]},
     {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents"]},
     {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
-    {"name": "Reference", "tags": ["Metadata", "Files", "Import / export"]},
+    {"name": "Reference", "tags": ["Metadata", "Files", "Widgets", "Import / export"]},
 ]
 
 TAG_DESCRIPTIONS = {
@@ -2993,6 +3177,12 @@ TAG_DESCRIPTIONS = {
     ),
     "Metadata": "Module and field definitions, picklist values, type contexts, and the auto-generated full API listing (handy for discovering endpoints not documented here).",
     "Files": "Attachment upload. Required as the first step of import-job ingestion.",
+    "Widgets": (
+        "Widget upload (shared with the connector install path), publish, "
+        "export, and delete. The publish step loads the development manifest "
+        "and PUTs it back with publish flags — the same flow the Content-Hub "
+        "UI's Publish button drives."
+    ),
     "Access management": (
         "API keys, roles, teams.\n\n"
         "**Flow — create → bind → use → lifecycle → revoke:**\n\n"
@@ -3531,11 +3721,6 @@ def _example_from_schema(schema, spec):
 # _merge_verification - this is the floor, not the ceiling.
 # ---------------------------------------------------------------------------
 
-_UUID = "f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91"
-_UUID2 = "a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4"
-_PB_UUID = "c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56"
-_FILE_UUID = "1f9a3c4d-5e6b-4789-a012-3b4c5d6e7f80"
-
 CURATED_EXAMPLES = {
     ("POST", "/api/3/logout"): {"response": {"204": None}},
 
@@ -3944,6 +4129,58 @@ CURATED_EXAMPLES = {
     ("POST", "/api/rule/api/system-notification/purge/"): {
         "request": {},
         "response": {"200": {"result": "System Notification purge started", "status": "started"}},
+    },
+
+    # --- Tier 2: manual-input delete, widget writes, export template mgmt ---
+    ("DELETE", "/api/wf/api/manual-wf-input/{pk}/"): {"response": {"204": None}},
+
+    ("GET", "/api/3/widgets/development/{uuid}"): {
+        "response": {"200": {
+            "hydra:member": [{
+                "@id": f"/api/3/widgets/{_UUID}", "@type": "WidgetRecord",
+                "uuid": _UUID, "name": "accessControl", "version": "2.1.0",
+                "draft": True, "installed": False, "published": False,
+                "tree": {"...": "(stripped on publish)"},
+            }],
+            "hydra:totalItems": 1,
+        }},
+    },
+    ("PUT", "/api/3/widgets/{uuid}"): {
+        "request": {
+            "@id": f"/api/3/widgets/{_UUID}", "name": "accessControl",
+            "version": "2.1.0", "draft": False, "installed": True,
+            "enablePublish": False, "replace": True, "replaceVersions": [],
+            "publishedDate": 1736380800,
+        },
+        "response": {"200": {
+            "@id": f"/api/3/widgets/{_UUID}", "@type": "WidgetRecord",
+            "uuid": _UUID, "name": "accessControl", "version": "2.1.0",
+            "draft": False, "installed": True, "published": True,
+            "publishedDate": 1736380800,
+        }},
+    },
+    ("POST", "/api/3/widgets/export/{uuid}"): {
+        "request": {"development": False},
+    },
+    ("DELETE", "/api/3/delete/widgets"): {
+        "request": {"ids": [_UUID]},
+        "response": {"204": None},
+    },
+    ("POST", "/api/3/export_templates"): {
+        "request": {
+            "name": "Alert backup",
+            "options": {"recordSets": [{"type": "alerts", "label": "Open alerts", "query": {"type": "alerts", "limit": 500}}]},
+            "metadata": {"autoSelectPicklists": True},
+        },
+        "response": {"200": {
+            "@id": f"/api/3/export_templates/{_UUID}", "@type": "ExportTemplate",
+            "uuid": _UUID, "name": "Alert backup",
+        }},
+    },
+    ("DELETE", "/api/3/export_templates/{template_uuid}"): {"response": {"204": None}},
+    ("PUT", "/api/export"): {
+        "response": {"200": {"@id": f"/api/3/export_jobs/{_UUID2}", "uuid": _UUID2,
+                              "status": "Queued", "createDate": 1736380800}},
     },
 
 }
