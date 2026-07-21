@@ -1306,6 +1306,71 @@ PATHS["/api/gateway/audit/activities/ttl"] = {
 }
 
 
+# --- Notifications ---------------------------------------------------------
+# Per-user system (bell-icon) notifications. Note the non-standard
+# `/api/rule/` namespace and that the list endpoint is POST, not GET.
+
+PATHS["/api/rule/api/system-notification/notifications/"] = {
+    "post": {
+        "tags": ["Notifications"],
+        "summary": "List the caller's notifications",
+        "description": (
+            "Returns the caller's system (bell-icon) notifications, newest "
+            "first. **The list is POST, not GET** — the UI posts to this "
+            "endpoint. Filtering is via query parameters only; the request body "
+            "is empty. Returns a Hydra envelope (`hydra:member` + "
+            "`hydra:totalItems` + paging links). Each row is a `Notification` "
+            "(`uuid`, `content` as HTML, `entity_type`, `read`, ...). Use `uuid` "
+            "as the row identity (`id_iri`/`record_type` stay null)."
+        ),
+        "parameters": [
+            {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
+            {"name": "read", "in": "query", "schema": {"type": "boolean"},
+             "description": "Filter by read state — `true` for read only, `false` for unread only, omit for all."},
+            {"name": "entity_type__in", "in": "query", "schema": {"type": "string"},
+             "description": "Comma-joined source entity types to restrict to (e.g. `comments,approvals`)."},
+            {"name": "search", "in": "query", "schema": {"type": "string"},
+             "description": "Free-text filter over notification `content`."},
+            {"name": "limit", "in": "query", "schema": {"type": "integer"},
+             "description": "Page size. Omit to follow `hydra:nextPage` until exhausted."},
+            {"name": "offset", "in": "query", "schema": {"type": "integer", "default": 0}},
+        ],
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {},
+                       "description": "No request body — this is a POST-list endpoint; filter via the query parameters above."},
+            "example": {},
+        }}},
+        "responses": {"200": _resp("Hydra envelope of Notification rows.")},
+    },
+}
+
+PATHS["/api/rule/api/system-notification/purge/"] = {
+    "post": {
+        "tags": ["Notifications"],
+        "summary": "Bulk-purge notifications (asynchronous)",
+        "description": (
+            "Kicks off an **asynchronous** server-side purge and returns "
+            "immediately with an ack (`result` + `status`); rows are removed in "
+            "the background, so a following count may still report the old total "
+            "briefly. Scope via `read`: `true` purges only already-read "
+            "notifications (the UI's \"clear read\" default), `false` purges "
+            "unread, omit purges all. **There is no undo.**"
+        ),
+        "parameters": [
+            {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
+            {"name": "read", "in": "query", "schema": {"type": "boolean"},
+             "description": "Scope — `true` purges read, `false` purges unread, omit purges all."},
+        ],
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object", "properties": {},
+                       "description": "No request body — scope via the `read` query parameter."},
+            "example": {},
+        }}},
+        "responses": {"200": _resp("Purge ack.")},
+    },
+}
+
+
 # --- Workflows / triggers --------------------------------------------------
 
 # Filters and pagination params are shared across recent (`/workflows/`),
@@ -1654,6 +1719,160 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object"}, "example": {"input": {}}}}},
         "responses": {"200": _resp("Record updated (run NOT advanced).")},
+    },
+}
+
+# --- Scheduled tasks ------------------------------------------------------
+# The workflow engine's cron-driven periodic-task scheduler. Each row runs a
+# playbook on a schedule; the row `id` is a per-request Fernet token that
+# rotates between calls, so non-immediate use resolves by `name` (the list
+# endpoint returns every row).
+
+_PATH_PARAM_ID_SCHEDULED = {
+    "name": "id", "in": "path", "required": True, "schema": {"type": "string"},
+    "description": (
+        "Per-request Fernet token (it decrypts to a stable primary key, but the "
+        "token itself rotates on every call). Only safe to use immediately after "
+        "the GET/POST that produced it. For any later use, re-resolve the task by "
+        "`name` via `GET /api/wf/api/scheduled/`."
+    ),
+}
+
+PATHS["/api/wf/api/scheduled/"] = {
+    "get": {
+        "tags": ["Scheduled tasks"],
+        "summary": "List periodic tasks",
+        "description": (
+            "Returns every scheduled periodic task — platform-shipped schedules "
+            "(Reclaim Disk Space, Purge Executed Playbook Logs, Archive Data) plus "
+            "user-created playbook schedules. Send `format=json` with `offset=0` "
+            "and `limit=2147483647` for an unbounded fetch in one call. Each row "
+            "carries a nested `crontab` (`minute`/`hour`/`day_of_week`/"
+            "`day_of_month`/`month_of_year`/`timezone`) and `kwargs` (`wf_iri`, "
+            "`exit_if_running`, `timezone`, `utcOffset`); the server fills `task`, "
+            "`schedule_id`, `crontab.id`, and `kwargs.name`/`description`/`auth`/"
+            "`schedule_entry_name`. Resolve any non-immediate use by `name` — the "
+            "row `id` is a per-request Fernet token that rotates."
+        ),
+        "parameters": [
+            {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
+            {"name": "offset", "in": "query", "schema": {"type": "integer", "default": 0}},
+            {"name": "limit", "in": "query", "schema": {"type": "integer"},
+             "description": "Page size. Send `2147483647` for an unbounded single-call fetch."},
+        ],
+        "responses": {"200": _resp("Hydra envelope of periodic-task rows.")},
+    },
+    "post": {
+        "tags": ["Scheduled tasks"],
+        "summary": "Create a periodic task",
+        "description": (
+            "Creates a periodic task that runs a playbook on a cron schedule. The "
+            "body is a periodic-task record with a nested `crontab` (5-field cron + "
+            "`timezone`) and `kwargs.wf_iri` (the workflow IRI — resolve a "
+            "playbook name with `GET /api/3/workflows/?name=<playbook>`). The "
+            "server fills `task`, `schedule_id`, `crontab.id`, and the "
+            "`kwargs.name`/`description`/`auth`/`schedule_entry_name` fields. "
+            "Returns the created record (its `id` is a fresh Fernet token)."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "required": ["name", "crontab", "kwargs", "enabled"],
+                       "properties": {
+                           "name": {"type": "string", "description": "Schedule display name (the server also uses it as the task description)."},
+                           "crontab": {"type": "object", "description": "5-field cron map plus `timezone`.",
+                                       "properties": {
+                                           "minute": {"type": "string", "example": "7"},
+                                           "hour": {"type": "string", "example": "2"},
+                                           "day_of_week": {"type": "string", "example": "*"},
+                                           "day_of_month": {"type": "string", "example": "*"},
+                                           "month_of_year": {"type": "string", "example": "*"},
+                                           "timezone": {"type": "string", "example": "UTC"},
+                                       }},
+                           "kwargs": {"type": "object", "description": "Workflow binding and runtime options.",
+                                      "properties": {
+                                          "wf_iri": {"type": "string", "description": "Workflow IRI (`/api/3/workflows/<uuid>`)."},
+                                          "exit_if_running": {"type": "boolean", "default": True,
+                                                              "description": "Skip a fire if the previous run is still active (prevents overlap)."},
+                                          "timezone": {"type": "string", "default": "UTC"},
+                                          "utcOffset": {"type": "string", "description": "Display hint like `UTC+00:00`; the crontab `timezone` is what the scheduler honours."},
+                                      }},
+                           "expires": {"type": "string", "nullable": True},
+                           "start_time": {"type": "string", "nullable": True},
+                           "enabled": {"type": "boolean", "default": True},
+                       }},
+        }}},
+        "responses": {"201": _resp("The created periodic-task record.")},
+    },
+}
+
+PATHS["/api/wf/api/scheduled/{id}/"] = {
+    "parameters": [_PATH_PARAM_ID_SCHEDULED],
+    "put": {
+        "tags": ["Scheduled tasks"],
+        "summary": "Replace a periodic task (full-record PUT)",
+        "description": (
+            "Full-record PUT (no PATCH). To toggle `enabled`, read the current "
+            "row via `GET /api/wf/api/scheduled/`, flip the flag, and PUT the "
+            "whole record back. The `{id}` is a per-request Fernet token — use "
+            "the `id` from a fresh GET immediately before this PUT."
+        ),
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "description": "Full periodic-task record (the same shape GET returns). Send back the fields you read; the server re-derives `id`/`task`/`schedule_id`/`crontab.id`.",
+                       "properties": {
+                           "name": {"type": "string"},
+                           "task": {"type": "string", "description": "Server-filled task name (`workflow.tasks.periodic_task`)."},
+                           "enabled": {"type": "boolean", "description": "Cron-scheduler enable flag. Toggle this to pause/resume (does not affect manual `trigger-now`)."},
+                           "crontab": {"type": "object", "properties": {
+                               "minute": {"type": "string"}, "hour": {"type": "string"},
+                               "day_of_week": {"type": "string"}, "day_of_month": {"type": "string"},
+                               "month_of_year": {"type": "string"}, "timezone": {"type": "string"},
+                           }},
+                           "kwargs": {"type": "object", "properties": {
+                               "wf_iri": {"type": "string"}, "exit_if_running": {"type": "boolean"},
+                               "timezone": {"type": "string"}, "utcOffset": {"type": "string"},
+                           }},
+                           "schedule_id": {"type": "integer"},
+                           "expires": {"type": "string", "nullable": True},
+                           "start_time": {"type": "string", "nullable": True},
+                       }},
+        }}},
+        "responses": {"200": _resp("The updated periodic-task record.")},
+    },
+    "delete": {
+        "tags": ["Scheduled tasks"],
+        "summary": "Delete a periodic task",
+        "description": (
+            "Removes the schedule entirely. To merely pause it (keep the row but "
+            "stop it firing), PUT the record back with `enabled: false` instead. "
+            "Returns 204 on success."
+        ),
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
+        "responses": {"204": _resp("Deleted.")},
+    },
+}
+
+PATHS["/api/wf/api/scheduled/trigger-now/"] = {
+    "post": {
+        "tags": ["Scheduled tasks"],
+        "summary": "Force-trigger a periodic task now",
+        "description": (
+            "Fires the task immediately, out-of-band of its cron. The fire is "
+            "asynchronous — the response confirms the trigger was accepted; "
+            "track the resulting run via "
+            "`GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`. "
+            "Fires regardless of the task's `enabled` flag (`enabled` governs the "
+            "cron scheduler, not manual triggers). The `id` is a per-request "
+            "Fernet token — prefer re-resolving by `name` (a fresh GET) over "
+            "holding a stale `id` from an earlier call."
+        ),
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["id"],
+                       "properties": {"id": {"type": "string", "description": "Fernet token from a fresh GET /api/wf/api/scheduled/ or from the POST that created the task."}}},
+        }}},
+        "responses": {"200": _resp("Trigger accepted.")},
     },
 }
 
@@ -2283,6 +2502,31 @@ PATHS["/api/3/model_metadatas"] = {
             "responses": {"200": _resp("Collection of ModelMetadata.")}},
 }
 
+PATHS["/api/3/picklists"] = {
+    "post": {
+        "tags": ["Metadata"],
+        "summary": "Add an option (item) to a picklist",
+        "description": (
+            "Creates one picklist value (an *option*) under an existing taxonomy. "
+            "`listName` is the owning list's IRI (`/api/3/picklist_names/<uuid>`). "
+            "Duplicate `itemValue` within a list is allowed (no unique constraint "
+            "on it). Optional `color` is a hex color; optional `orderIndex` sets "
+            "the position (defaults to appending). The response carries the new "
+            "item's `@id` — that IRI is what a record field stores for this value."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["itemValue", "listName"],
+                       "properties": {
+                           "itemValue": {"type": "string", "description": "The option's friendly label (what a record field points at by IRI)."},
+                           "listName": {"type": "string", "description": "Owning picklist taxonomy IRI (`/api/3/picklist_names/<uuid>`)."},
+                           "color": {"type": "string", "description": "Optional hex color (e.g. `#FF0000`)."},
+                           "orderIndex": {"type": "integer", "description": "Optional position; defaults to appending after the list's current highest index."},
+                       }},
+        }}},
+        "responses": {"201": _resp("The created picklist item record.")},
+    },
+}
+
 PATHS["/api/3/picklists/{uuid}"] = {
     "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
     "get": {"tags": ["Metadata"], "summary": "Picklist value",
@@ -2291,6 +2535,16 @@ PATHS["/api/3/picklists/{uuid}"] = {
                 "(`severity`, `status`, etc.). The owning picklist taxonomy is `GET /api/3/picklist_names/{uuid}`."
             ),
             "responses": {"200": _resp("Picklist record.")}},
+    "delete": {
+        "tags": ["Metadata"],
+        "summary": "Delete a picklist option (item)",
+        "description": (
+            "Deletes one picklist value by uuid. 204 on success. Records still "
+            "pointing at the deleted item's IRI are not cleaned up — resolve "
+            "references before deleting if you need a tidy state."
+        ),
+        "responses": {"204": _resp("Deleted.")},
+    },
 }
 
 PATHS["/api/3/picklist_names"] = {
@@ -2302,6 +2556,26 @@ PATHS["/api/3/picklist_names"] = {
                 "(e.g. `AlertSeverity`, `AlertStatus`, `Severity`)."
             ),
             "responses": {"200": _resp("Hydra collection of picklist taxonomies.")}},
+    "post": {
+        "tags": ["Metadata"],
+        "summary": "Create a picklist taxonomy",
+        "description": (
+            "Creates a new named picklist list (a *taxonomy*). A list `name` is "
+            "unique instance-wide — a duplicate returns 409 "
+            "(`UniqueConstraintViolationException`). Custom lists are created "
+            "with `system: false`; set `system: true` only for platform-managed "
+            "lists (rare). The response carries the new `@id`/`@type`/`uuid`/"
+            "`name`. Add options to the new list with `POST /api/3/picklists`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["name"],
+                       "properties": {
+                           "name": {"type": "string", "description": "Picklist display name (PascalCase, e.g. `AlertStatus`). Unique instance-wide."},
+                           "system": {"type": "boolean", "default": False, "description": "Platform-managed flag. Custom lists are `false`."},
+                       }},
+        }}},
+        "responses": {"201": _resp("The created picklist taxonomy record.")},
+    },
 }
 
 PATHS["/api/3/picklist_names/{uuid}"] = {
@@ -2312,6 +2586,17 @@ PATHS["/api/3/picklist_names/{uuid}"] = {
                 "whose members are exposed via `GET /api/3/picklists/{uuid}`."
             ),
             "responses": {"200": _resp("Picklist name record.")}},
+    "delete": {
+        "tags": ["Metadata"],
+        "summary": "Delete a picklist taxonomy (cascades to its items)",
+        "description": (
+            "Deletes one picklist taxonomy by uuid. 204 on success. **Cascade** "
+            "— the list's option items are removed too. To clear the list's "
+            "contents but keep the taxonomy, delete the individual items via "
+            "`DELETE /api/3/picklists/{uuid}` instead."
+        ),
+        "responses": {"204": _resp("Deleted.")},
+    },
 }
 
 PATHS["/api/3/contexts/{shortName}"] = {
@@ -2633,11 +2918,11 @@ PATHS["/api/product/feature-access"] = {
 # ---------------------------------------------------------------------------
 
 TAG_GROUPS = [
-    {"name": "Auth & system", "tags": ["Authentication", "System", "Access management"]},
+    {"name": "Auth & system", "tags": ["Authentication", "System", "Notifications", "Access management"]},
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Query", "tags": ["Query"]},
     {"name": "Audit", "tags": ["Audit"]},
-    {"name": "Automation", "tags": ["Workflows", "Triggers", "Connectors", "Agents"]},
+    {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents"]},
     {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
     {"name": "Reference", "tags": ["Metadata", "Files", "Import / export"]},
 ]
@@ -2645,6 +2930,11 @@ TAG_GROUPS = [
 TAG_DESCRIPTIONS = {
     "Authentication": "Sign in, sign out, and look up the current user / actor.",
     "System": "Build version, license info, HA cluster health, feature flags, and cache invalidation. The version + public-license endpoints are unauthenticated; the rest require auth.",
+    "Notifications": (
+        "Per-user system (bell-icon) notifications under "
+        "`/api/rule/api/system-notification/`. Note the non-standard `/api/rule/` "
+        "namespace and that the list endpoint is POST, not GET."
+    ),
     "Records (generic)": (
         "Every module that stores records is available at `/api/3/<plural>` with the same list + create / get / "
         "update / delete shape (list responses are wrapped in a `hydra:member` envelope — see "
@@ -2658,6 +2948,14 @@ TAG_DESCRIPTIONS = {
     "Audit": "Audit log search + retention. Returns one page at a time with no total count — call `/count` separately if you need it. Filters are top-level only and accept exactly one value.",
     "Workflows": "Workflow run control, history, and introspection. Lives under `/api/wf/*`.",
     "Triggers": "Fire playbooks - by custom-endpoint name, deferred (async), or by workflow id without firing trigger conditions.",
+    "Scheduled tasks": (
+        "Workflow-engine periodic jobs under `/api/wf/api/scheduled/` — the "
+        "platform-shipped schedules (Reclaim Disk Space, Purge Executed Playbook "
+        "Logs, Archive Data) plus user-created cron schedules that run a playbook. "
+        "Each row is a periodic task with a nested `crontab` and a `kwargs.wf_iri` "
+        "pointing at the workflow. The row `id` is a per-request Fernet token — "
+        "resolve by `name` for any non-immediate use."
+    ),
     "Connectors": (
         "Full connector lifecycle. Per-action request shape comes from each connector's `info.json`.\n\n"
         "**Flow — install → configure → execute → uninstall:**\n\n"
@@ -3525,6 +3823,127 @@ CURATED_EXAMPLES = {
         "request": {"type": "workflow_collections", "data": [{"uuid": _PB_UUID}]},
         "response": {"200": {"@id": f"/api/3/export_jobs/{_UUID}", "uuid": _UUID,
                               "status": "Queued", "createDate": 1736380800}},
+    },
+
+    # --- Scheduled tasks ---
+    ("GET", "/api/wf/api/scheduled/"): {
+        "response": {"200": {
+            "hydra:member": [
+                {
+                    "id": "gAAAAABkXyQ_placeholder_fernet_token",
+                    "name": "nightly-recon",
+                    "task": "workflow.tasks.periodic_task",
+                    "enabled": True,
+                    "crontab": {"id": 42, "minute": "7", "hour": "2",
+                                "day_of_week": "*", "day_of_month": "*",
+                                "month_of_year": "*", "timezone": "UTC"},
+                    "kwargs": {"wf_iri": f"/api/3/workflows/{_PB_UUID}",
+                               "exit_if_running": True, "timezone": "UTC",
+                               "utcOffset": "UTC+00:00", "name": "nightly-recon",
+                               "description": "nightly-recon", "auth": None,
+                               "schedule_entry_name": "nightly-recon"},
+                    "schedule_id": 7, "expires": None, "start_time": None,
+                },
+                "... <2 more rows truncated>",
+            ],
+            "hydra:totalItems": 3,
+        }},
+    },
+    ("POST", "/api/wf/api/scheduled/"): {
+        "request": {
+            "name": "nightly-recon",
+            "crontab": {"minute": "7", "hour": "2", "day_of_week": "*",
+                        "day_of_month": "*", "month_of_year": "*", "timezone": "UTC"},
+            "kwargs": {"exit_if_running": True,
+                       "wf_iri": f"/api/3/workflows/{_PB_UUID}",
+                       "timezone": "UTC", "utcOffset": "UTC+00:00"},
+            "expires": None, "start_time": None, "enabled": True,
+        },
+        "response": {"201": {
+            "id": "gAAAAABkXyQ_placeholder_fernet_token",
+            "name": "nightly-recon",
+            "task": "workflow.tasks.periodic_task",
+            "enabled": True,
+            "crontab": {"id": 42, "minute": "7", "hour": "2",
+                        "day_of_week": "*", "day_of_month": "*",
+                        "month_of_year": "*", "timezone": "UTC"},
+            "kwargs": {"wf_iri": f"/api/3/workflows/{_PB_UUID}",
+                       "exit_if_running": True, "timezone": "UTC",
+                       "utcOffset": "UTC+00:00", "name": "nightly-recon",
+                       "description": "nightly-recon", "auth": None,
+                       "schedule_entry_name": "nightly-recon"},
+            "schedule_id": 7, "expires": None, "start_time": None,
+        }},
+    },
+    ("PUT", "/api/wf/api/scheduled/{id}/"): {
+        "request": {
+            "id": "gAAAAABkXyQ_placeholder_fernet_token",
+            "name": "nightly-recon",
+            "task": "workflow.tasks.periodic_task",
+            "enabled": False,
+            "crontab": {"id": 42, "minute": "7", "hour": "2",
+                        "day_of_week": "*", "day_of_month": "*",
+                        "month_of_year": "*", "timezone": "UTC"},
+            "kwargs": {"wf_iri": f"/api/3/workflows/{_PB_UUID}",
+                       "exit_if_running": True, "timezone": "UTC",
+                       "utcOffset": "UTC+00:00", "name": "nightly-recon",
+                       "description": "nightly-recon", "auth": None,
+                       "schedule_entry_name": "nightly-recon"},
+            "schedule_id": 7, "expires": None, "start_time": None,
+        },
+        "response": {"200": {
+            "id": "gAAAAABkXyQ_placeholder_fernet_token",
+            "name": "nightly-recon", "enabled": False,
+        }},
+    },
+    ("DELETE", "/api/wf/api/scheduled/{id}/"): {"response": {"204": None}},
+    ("POST", "/api/wf/api/scheduled/trigger-now/"): {
+        "request": {"id": "gAAAAABkXyQ_placeholder_fernet_token"},
+        "response": {"200": {"message": "The associated workflow is successfully triggered"}},
+    },
+
+    # --- Picklist writes ---
+    ("POST", "/api/3/picklist_names"): {
+        "request": {"name": "IncidentPhase", "system": False},
+        "response": {"201": {
+            "@context": "/api/3/contexts/PicklistName",
+            "@id": f"/api/3/picklist_names/{_UUID}", "@type": "PicklistName",
+            "uuid": _UUID, "name": "IncidentPhase", "system": False,
+        }},
+    },
+    ("POST", "/api/3/picklists"): {
+        "request": {"itemValue": "Contained",
+                     "listName": f"/api/3/picklist_names/{_UUID}",
+                     "color": "#4CAF50", "orderIndex": 2},
+        "response": {"201": {
+            "@context": "/api/3/contexts/Picklist",
+            "@id": f"/api/3/picklists/{_UUID2}", "@type": "Picklist",
+            "uuid": _UUID2, "itemValue": "Contained",
+            "listName": f"/api/3/picklist_names/{_UUID}",
+            "color": "#4CAF50", "orderIndex": 2,
+        }},
+    },
+    ("DELETE", "/api/3/picklist_names/{uuid}"): {"response": {"204": None}},
+    ("DELETE", "/api/3/picklists/{uuid}"): {"response": {"204": None}},
+
+    # --- Notifications ---
+    ("POST", "/api/rule/api/system-notification/notifications/"): {
+        "request": {},
+        "response": {"200": {
+            "hydra:member": [
+                {"uuid": _UUID,
+                 "content": "<p>A task, Notify asset owner, has been assigned to you.</p>",
+                 "entity_type": "tasks", "read": False, "createDate": 1736380800},
+                {"uuid": _UUID2,
+                 "content": "<p>Approval requested for Phishing Response.</p>",
+                 "entity_type": "approvals", "read": True, "createDate": 1736380900},
+            ],
+            "hydra:totalItems": 2,
+        }},
+    },
+    ("POST", "/api/rule/api/system-notification/purge/"): {
+        "request": {},
+        "response": {"200": {"result": "System Notification purge started", "status": "started"}},
     },
 
 }
