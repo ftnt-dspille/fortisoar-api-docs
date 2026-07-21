@@ -14,6 +14,7 @@ import json
 import sys
 from pathlib import Path
 from unittest import mock
+from urllib.parse import urlparse
 
 import pytest
 import requests
@@ -23,6 +24,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from pyfsr_examples import PYFSR_EXAMPLES, build_pyfsr_sample  # noqa: E402
 
 _ALERT_UUID = "9f0eb603-ac1e-41c3-b47b-444589beed39"
+_AGENT_UUID = "6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f"
+_APIKEY_UUID = "660e8400-e29b-41d4-a716-446655440008"
 _WF_UUID = "c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56"
 _FERNET = "gAAAAABkXyQ_fernet_token_placeholder"
 
@@ -87,6 +90,45 @@ def _fake_request(self, method, url, **kwargs):
     # purge (POST .../purge/?...)
     if method == "POST" and "/api/rule/api/system-notification/purge" in url:
         return _fake_response(200, b'{"result": "System Notification purge started", "status": "started"}')
+    # --- Generic record ops (RecordSet) ---
+    # list (GET /api/3/<module>?$limit=...&$page=...) — the paged collection.
+    # requests passes params in kwargs, so the URL is the bare collection path.
+    # Match before the by-uuid GET; use endswith to exclude /<uuid> suffixes.
+    if method == "GET" and url.endswith("/api/3/alerts"):
+        return _fake_response(200, json.dumps({
+            "@context": "/api/3/contexts/Alert",
+            "@id": "/api/3/alerts",
+            "hydra:member": [
+                {"@id": f"/api/3/alerts/{_ALERT_UUID}", "uuid": _ALERT_UUID,
+                 "name": "Response Capture Test Alert", "severity": "High"},
+            ],
+            "hydra:totalItems": 1,
+        }).encode())
+    # comments (GET /api/3/<module>/<uuid>/comments?...)
+    if method == "GET" and "/comments" in url:
+        return _fake_response(200, json.dumps({
+            "hydra:member": [{"comment": "Investigating this alert.", "uuid": "c1"}],
+            "hydra:totalItems": 1,
+        }).encode())
+    # upsert (POST /api/3/upsert/<module>) — after picklist resolution
+    if method == "POST" and "/api/3/upsert/" in url:
+        return _fake_response(200, json.dumps({
+            "@id": f"/api/3/alerts/{_ALERT_UUID}", "uuid": _ALERT_UUID,
+            "name": "Response Capture Test Alert",
+        }).encode())
+    # bulk_upsert (POST /api/3/bulkupsert/<module>) — multi-status envelope
+    if method == "POST" and "/api/3/bulkupsert/" in url:
+        return _fake_response(200, json.dumps({
+            "success": [{"name": "pyfsr-bulk-doctest-ok"}],
+            "failure": ["row 1: duplicate key"],
+        }).encode())
+    # bulk_insert (POST /api/3/insert/<module>) — all-succeeded bare collection
+    if method == "POST" and "/api/3/insert/" in url:
+        return _fake_response(201, json.dumps({
+            "@context": "/api/3/contexts/Alert",
+            "@id": "/api/3/alerts",
+            "hydra:member": [{"name": "Response Capture Test Alert"}],
+        }).encode())
     # --- Alerts (existing) ---
     if method == "POST" and url.endswith("/api/3/alerts"):
         return _fake_response(
@@ -100,7 +142,7 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(
             200,
             (
-                '{"@id": "/api/3/alerts/%s", "uuid": "%s", '
+                '{"@type": "Alert", "@id": "/api/3/alerts/%s", "uuid": "%s", '
                 '"name": "Response Capture Test Alert", "severity": "High"}' % (_ALERT_UUID, _ALERT_UUID)
             ).encode(),
         )
@@ -111,7 +153,243 @@ def _fake_request(self, method, url, **kwargs):
         )
     if method == "DELETE" and url.endswith(_ALERT_UUID):
         return _fake_response(204, b"")
+    # --- Typed wrappers: system, alerts, comments, routers, roles, teams ---
+    # system.version (GET /api/version)
+    if method == "GET" and url.endswith("/api/version"):
+        return _fake_response(200, json.dumps({"version": "8.0.0-6034"}).encode())
+    # system.permissions (GET /api/permissions/current)
+    if method == "GET" and url.endswith("/api/permissions/current"):
+        return _fake_response(200, json.dumps(
+            {"alerts": {"read": True}, "people": {"create": False}}
+        ).encode())
+    # system.feature_access (GET /api/product/feature-access)
+    if method == "GET" and url.endswith("/api/product/feature-access"):
+        return _fake_response(200, json.dumps(
+            {"automation": True, "endpoint_management": False}
+        ).encode())
+    # model_metadatas (GET /api/3/model_metadatas — NOT staging_model_metadatas)
+    if method == "GET" and "/api/3/model_metadatas" in url and "staging" not in url:
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"type": "threat_intel_feeds",
+             "@id": "/api/3/model_metadatas/acbac353-3593-41d2-af46-67951cfab083"},
+        ]}).encode())
+    # routers.list (GET /api/3/routers) — doctest expects len == 0
+    if method == "GET" and url.endswith("/api/3/routers"):
+        return _fake_response(200, json.dumps({"hydra:member": []}).encode())
+    # roles.list (GET /api/3/roles)
+    if method == "GET" and url.endswith("/api/3/roles"):
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"name": "Agentic AI", "uuid": "r1", "@id": "/api/3/roles/r1"},
+            {"name": "SOC Analyst", "uuid": "r2", "@id": "/api/3/roles/r2"},
+            {"name": "Full App Permissions", "uuid": "r3", "@id": "/api/3/roles/r3"},
+        ]}).encode())
+    # teams.list (GET /api/3/teams)
+    if method == "GET" and url.endswith("/api/3/teams"):
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"name": "SOC Team", "uuid": "t1", "@id": "/api/3/teams/t1"},
+        ]}).encode())
+    # comments.list (GET /api/3/comments)
+    if method == "GET" and url.endswith("/api/3/comments"):
+        return _fake_response(200, json.dumps({
+            "hydra:member": [{"comment": "c1", "uuid": "c1"}, {"comment": "c2", "uuid": "c2"}],
+            "hydra:totalItems": 2,
+        }).encode())
+    # --- Agents ---
+    if method == "GET" and url.endswith("/api/3/agents"):
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"agentId": "edge-1", "name": "edge-1", "uuid": _AGENT_UUID,
+             "active": True, "@id": f"/api/3/agents/{_AGENT_UUID}"},
+        ]}).encode())
+    if method == "GET" and url.endswith(f"/api/3/agents/{_AGENT_UUID}"):
+        return _fake_response(200, json.dumps({
+            "agentId": "edge-1", "name": "edge-1", "uuid": _AGENT_UUID,
+            "active": True, "@id": f"/api/3/agents/{_AGENT_UUID}",
+        }).encode())
+    if method == "POST" and url.endswith("/api/3/agents"):
+        return _fake_response(201, json.dumps({
+            "agentId": "edge-1", "name": "edge-1", "uuid": _AGENT_UUID,
+            "@id": f"/api/3/agents/{_AGENT_UUID}",
+        }).encode())
+    if method == "DELETE" and url.endswith(f"/api/3/agents/{_AGENT_UUID}"):
+        return _fake_response(204, b"")
+    # agents.heartbeat (GET /api/integration/agent-heartbeat/{agent}/)
+    if method == "GET" and "/api/integration/agent-heartbeat/" in url:
+        return _fake_response(200, json.dumps({"status": "alive"}).encode())
+    # agents.installer (POST /api/integration/agent-installer/) — returns bytes
+    if method == "POST" and "/api/integration/agent-installer/" in url:
+        return _fake_response(200, b"\x1f\x8b\x08\x00binary-installer-blob")
+    # agents install/upgrade/uninstall connector (POST/PUT/DELETE install-connector)
+    if method in {"POST", "PUT", "DELETE"} and "/api/integration/install-connector/" in url:
+        return _fake_response(200, json.dumps({"result": "Success"}).encode())
+    # --- API keys ---
+    if method == "GET" and url.endswith("/api/3/api_keys"):
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"name": "api-key-demo", "uuid": _APIKEY_UUID,
+             "userId": "550e8400-e29b-41d4-a716-446655440007",
+             "@id": f"/api/3/api_keys/{_APIKEY_UUID}"},
+        ]}).encode())
+    if method == "GET" and url.endswith(f"/api/3/api_keys/{_APIKEY_UUID}"):
+        return _fake_response(200, json.dumps({
+            "name": "api-key-demo", "uuid": _APIKEY_UUID,
+            "userId": "550e8400-e29b-41d4-a716-446655440007",
+            "@id": f"/api/3/api_keys/{_APIKEY_UUID}",
+        }).encode())
+    if method == "POST" and url.endswith("/api/3/api_keys"):
+        return _fake_response(201, json.dumps({
+            "name": "test-key", "uuid": _APIKEY_UUID,
+            "userId": "550e8400-e29b-41d4-a716-446655440007",
+            "@id": f"/api/3/api_keys/{_APIKEY_UUID}",
+        }).encode())
+    if method == "PUT" and url.endswith(f"/api/3/api_keys/{_APIKEY_UUID}"):
+        return _fake_response(200, json.dumps({
+            "name": "updated-key", "uuid": _APIKEY_UUID,
+            "@id": f"/api/3/api_keys/{_APIKEY_UUID}",
+        }).encode())
+    # --- Solution packs / import jobs ---
+    if method == "POST" and url.endswith("/api/3/solutionpacks/install"):
+        return _fake_response(200, json.dumps({
+            "name": "SOAR Framework", "version": "2.2.1",
+            "job_id": "990e8400-e29b-41d4-a716-446655440012",
+            "uuid": "990e8400-e29b-41d4-a716-446655440012",
+        }).encode())
+    if method == "POST" and url.endswith("/api/3/import_jobs"):
+        return _fake_response(201, json.dumps({
+            "uuid": "aa0e8400-e29b-41d4-a716-446655440013",
+            "@id": "/api/3/import_jobs/aa0e8400-e29b-41d4-a716-446655440013",
+            "status": "InProgress",
+        }).encode())
+    # --- Search ---
+    if method == "POST" and url.endswith("/api/search"):
+        return _fake_response(200, json.dumps({"hits": {
+            "total": 1,
+            "hits": [{"_source": {"severity": "Low"}}],
+        }}).encode())
+    # run_persisted (POST /api/query/{collection}/{queryId}) — BEFORE workflow_logs
+    if method == "POST" and "/api/query/" in url and "/api/3/" not in url and "workflow_logs" not in url:
+        return _fake_response(200, json.dumps({"hydra:totalItems": 1, "hydra:member": []}).encode())
+    # --- Feeds (trigger-bypassing bulk ingest) ---
+    if method == "POST" and "/api/ingest-feeds/" in url:
+        return _fake_response(200, json.dumps({"status": "success", "uuids": ["u1", "u2"]}).encode())
+    # --- TAXII ---
+    if method == "GET" and url.endswith("/api/taxii/1/"):
+        return _fake_response(200, json.dumps({
+            "title": "FortiSOAR TAXII Server", "max_content_length": 10485760,
+        }).encode())
+    if method == "GET" and url.endswith("/api/taxii/1/collections"):
+        return _fake_response(200, json.dumps({"collections": [
+            {"id": "malware-samples", "can_read": True, "title": "Malware Samples"},
+            {"id": "threat-actors", "can_read": True, "title": "Threat Actors"},
+        ]}).encode())
+    if method == "GET" and "/api/taxii/1/collections/" in url:
+        if "/manifest" in url:
+            return _fake_response(200, json.dumps({"objects": [
+                {"media_type": "application/stix+json;version=2.1"},
+            ]}).encode())
+        if "/objects/" in url and url.rstrip("/").split("/")[-1] != "objects":
+            return _fake_response(200, json.dumps({"totalItems": 1, "objects": [
+                {"name": "example-malware"},
+            ]}).encode())
+        if "/objects" in url:
+            return _fake_response(200, json.dumps({"totalItems": 1, "objects": [
+                {"type": "malware"},
+            ]}).encode())
+        # single collection
+        return _fake_response(200, json.dumps({"title": "Malware Samples"}).encode())
+    # --- Audit ---
+    if method == "POST" and url.endswith("/api/gateway/audit/activities/count"):
+        return _fake_response(200, json.dumps({"count": 42}).encode())
+    if method == "POST" and url.endswith("/api/gateway/audit/activities"):
+        return _fake_response(200, json.dumps({"content": [
+            {"user": "admin", "operation": "create", "component": "alerts"},
+        ]}).encode())
+    if method == "GET" and "/api/gateway/audit/activities/" in url and "operations" not in url:
+        return _fake_response(200, json.dumps({
+            "operation": "create", "component": "alerts",
+        }).encode())
+    if method == "GET" and url.endswith("/api/gateway/audit/operations"):
+        return _fake_response(200, json.dumps(["login", "create", "update", "delete"]).encode())
+    if method == "DELETE" and "/api/gateway/audit/activities/ttl" in url:
+        return _fake_response(204, b"")
+    # --- Connectors execute ---
+    # execute() resolves version+config via list_configured() first
+    if method == "GET" and "/api/integration/connectors/" in url:
+        return _fake_response(200, json.dumps({
+            "data": [{"name": "cisa-advisory", "label": "CISA Advisory",
+                      "version": "1.0.0", "id": 1,
+                      "configurations": [{"config_id": "cfg1", "name": "default", "default": True}]}],
+            "totalItems": 1,
+        }).encode())
+    if method == "POST" and "/api/integration/execute/" in url:
+        return _fake_response(200, json.dumps({
+            "status": "Success",
+            "data": {"title": "CISA Advisory", "vulnerabilities": [{"cveID": "CVE-2024-1234"}]},
+        }).encode())
+    # --- Playbooks ---
+    if method == "GET" and url.endswith("/api/wf/api/workflows/count/"):
+        return _fake_response(200, json.dumps({"count": 42}).encode())
+    # Distinguish workflows/{pk}/ (single run) from workflows/ (collection)
+    # using the parsed path segments, not the raw URL.
+    _wf_path = urlparse(url).path
+    if method == "GET" and _wf_path == "/api/wf/api/workflows/":
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"status": "finished", "task_id": "1", "pk": "1",
+             "@id": "/api/wf/api/workflows/1/",
+             "uuid": "a0afba58-9dbe-44dd-a6e6-7227e33990db"},
+        ]}).encode())
+    if method == "GET" and _wf_path.startswith("/api/wf/api/workflows/") and _wf_path != "/api/wf/api/workflows/":
+        # Single run by pk — 404 on live to fall back to historical
+        return _fake_response(404, json.dumps({"detail": "Not found"}).encode())
+    if method == "GET" and _wf_path == "/api/wf/api/historical-workflows/":
+        return _fake_response(200, json.dumps({"hydra:member": []}).encode())
+    if method == "GET" and _wf_path.startswith("/api/wf/api/historical-workflows/") and _wf_path != "/api/wf/api/historical-workflows/":
+        return _fake_response(200, json.dumps({
+            "status": "finished", "task_id": "1",
+            "@id": "/api/wf/api/historical-workflows/1/",
+            "uuid": "a0afba58-9dbe-44dd-a6e6-7227e33990db",
+        }).encode())
+    if method == "POST" and "/api/wf/api/workflows/" in url:
+        if "/start/" in url or "/retry/" in url:
+            return _fake_response(200, json.dumps({"status": "queued"}).encode())
+        if "/log_list/" in url:
+            return _fake_response(200, json.dumps({"hydra:member": [
+                {"status": "running", "@id": "/api/wf/api/workflows/1/"},
+            ]}).encode())
+    if method == "POST" and "/api/wf/api/query/workflow_logs/" in url:
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"status": "finished", "@id": "/api/wf/api/workflows/1/"},
+        ]}).encode())
+    if method == "POST" and "/api/wf/api/jinja-editor/" in url:
+        return _fake_response(200, json.dumps({"result": "Hello World"}).encode())
+    if method == "POST" and "/api/triggers/1/" in url:
+        return _fake_response(200, json.dumps({"task_id": "42"}).encode())
+    # --- Manual input ---
+    if method == "POST" and "/api/wf/api/manual-wf-input/list_wfinput/" in url:
+        return _fake_response(200, json.dumps({
+            "hydra:member": [{"id": 1, "title": "Enter a six digit number",
+                              "is_approval": False, "step_id": 100,
+                              "workflow": "encrypted-token"}],
+            "hydra:totalItems": 1,
+        }).encode())
+    if method == "POST" and "/retrieve_wfinput/" in url:
+        return _fake_response(200, json.dumps({
+            "id": 1, "title": "Enter a six digit number",
+            "is_approval": False, "step_id": 100, "workflow": 1,
+            "input": {"schema": {"title": "Enter a six digit number",
+                                  "inputVariables": [{"name": "num", "type": "number"}]}},
+            "response_mapping": {"options": [
+                {"option": "Submit", "step_iri": "/api/wf/api/workflows/1/steps/100", "primary": True},
+            ]},
+        }).encode())
+    if method == "POST" and "/wfinput_resume/" in url:
+        return _fake_response(200, json.dumps({
+            "task_id": "1", "message": "Awaiting Playbook resumed successfully.",
+        }).encode())
     raise AssertionError(f"unmocked request: {method} {url}")
+
+
+def _is_uuid_like(s: str) -> bool:
+    """True if ``s`` looks like a uuid (used to distinguish /{pk}/ from collection paths)."""
+    return len(s) == 36 and s.count("-") == 4
 
 
 @pytest.fixture
