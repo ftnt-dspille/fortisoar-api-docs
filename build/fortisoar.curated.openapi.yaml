@@ -12413,6 +12413,11 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.manual_input.delete(2)"
   /api/wf/api/scheduled/:
     get:
       tags:
@@ -49711,6 +49716,7 @@ paths:
       responses:
         '200':
           description: API-key user record.
+          x-pyfsr-response-model: ApiKeyUser
           content:
             application/json:
               example:
@@ -49731,6 +49737,12 @@ paths:
                   tenant: null
                   user_type: 9
                   uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nu = client.api_users.get(\"550e8400-e29b-41d4-a716-446655440007\"\
+          )\nprint(u[\"uuid\"])\nprint(u[\"user_type\"])"
       x-verified-live:
       - jwt
     post:
@@ -49782,6 +49794,13 @@ paths:
                   key: <api-key>
                   retrievable: false
                 uuid: <uuid>
+          x-pyfsr-response-model: ApiKeyUser
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nu = client.api_users.create(api_key_validity=365)\nprint(u[\"\
+          uuid\"])\nprint(u[\"user_type\"])\nprint(u[\"status\"])"
       x-verified-live:
       - jwt
     put:
@@ -49829,6 +49848,7 @@ paths:
       responses:
         '200':
           description: Operation applied.
+          x-pyfsr-response-model: ApiKeyUser
           content:
             application/json:
               example:
@@ -49839,6 +49859,12 @@ paths:
                   time_remaining: 5
                   valid_until: 1779733555
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nu = client.api_users.lifecycle(\"550e8400-e29b-41d4-a716-446655440007\"\
+          , \"REVOKE\")\nprint(u[\"uuid\"])"
       x-verified-live:
       - jwt
   /api/auth/query/users:
@@ -49871,6 +49897,7 @@ paths:
       responses:
         '200':
           description: Array of API-key user records.
+          x-pyfsr-response-model: list[ApiKeyUser]
           content:
             application/json:
               example:
@@ -49891,6 +49918,12 @@ paths:
                   tenant: null
                   user_type: 9
                   uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nusers = client.api_users.query([\"550e8400-e29b-41d4-a716-446655440007\"\
+          ])\nprint(len(users))\nprint(users[0][\"uuid\"])"
       x-verified-live:
       - jwt
   /api/auth/config:

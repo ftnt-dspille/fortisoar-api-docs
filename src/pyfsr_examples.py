@@ -42,12 +42,16 @@ _PREAMBLE = (
 )
 
 # pyfsr's replay fixture used inside doctests -- not part of the public API,
-# so it's stripped and replaced by the real construction above.
-_DEMO_CLIENT_LINE_RE = re.compile(r"(?m)^client\s*=\s*demo_client\(\)\s*\n?")
-# Some doctests open with `from pyfsr._testing import demo_client` before the
-# `client = demo_client()` line. The import is also internal-only -- strip it
-# so the rendered sample doesn't show a stray unused import.
-_DEMO_IMPORT_RE = re.compile(r"(?m)^from\s+pyfsr\._testing\s+import\s+demo_client\s*\n?")
+# so it's stripped and replaced by the real construction above. Matches both
+# ``demo_client()`` (API-key auth) and ``demo_client_jwt()`` (JWT auth) -- the
+# rendered preamble uses username/password (JWT) for all samples, which the
+# test mock handles identically regardless of the original auth type.
+_DEMO_CLIENT_LINE_RE = re.compile(r"(?m)^client\s*=\s*demo_client(_jwt)?\(\)\s*\n?")
+# Some doctests open with ``from pyfsr._testing import demo_client`` (or
+# ``demo_client_jwt``) before the ``client = ...`` line. The import is also
+# internal-only -- strip it so the rendered sample doesn't show a stray unused
+# import.
+_DEMO_IMPORT_RE = re.compile(r"(?m)^from\s+pyfsr\._testing\s+import\s+demo_client(_jwt)?\s*\n?")
 # Doctest directives (`# doctest: +SKIP`, `+ELLIPSIS`, ...) are pytest/doctest
 # runner hints, not part of the code a reader would paste.
 _DOCTEST_DIRECTIVE_RE = re.compile(r"[ \t]*#\s*doctest:\s*\+\w+\s*$", re.M)
@@ -166,6 +170,11 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("put", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.upgrade_connector"),
     ("delete", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.uninstall_connector"),
     ("get", "/api/integration/agent-heartbeat/{agent}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.heartbeat"),
+    # API-key users (JWT-only — all four doctests use demo_client_jwt()).
+    ("get", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.get"),
+    ("post", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.create"),
+    ("put", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.lifecycle"),
+    ("post", "/api/auth/query/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.query"),
     # API keys
     ("get", "/api/3/api_keys"): ("doctest", "pyfsr.api.api_keys:ApiKeysAPI.list"),
     ("get", "/api/3/api_keys/{uuid}"): ("doctest", "pyfsr.api.api_keys:ApiKeysAPI.get"),
@@ -235,6 +244,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/wf/api/manual-wf-input/list_wfinput/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.list"),
     ("post", "/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.retrieve"),
     ("post", "/api/wf/api/workflows/{pk}/wfinput_resume/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.resume"),
+    ("delete", "/api/wf/api/manual-wf-input/{pk}/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.delete"),
 }
 
 
