@@ -10657,6 +10657,13 @@ paths:
                   read: true
                   createDate: 1736380900
                 hydra:totalItems: 2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.notifications.list(read=False, entity_type=\"\
+          comments\")\nclient.notifications.list(entity_type=[\"approvals\", \"manualinput\"])\nnotifications = client.notifications.list(limit=10)\n\
+          print(len(notifications))\nprint(notifications[0].entity_type)"
   /api/rule/api/system-notification/purge/:
     post:
       tags:
@@ -10694,6 +10701,11 @@ paths:
               example:
                 result: System Notification purge started
                 status: started
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.notifications.purge(read=True))"
   /api/wf/api/workflows/:
     get:
       tags:
@@ -12202,6 +12214,12 @@ paths:
                 schedule_id: 7
                 expires: null
                 start_time: null
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\niri = client.playbooks.resolve_iri(\"Nightly Recon\"\
+          )\ntask = client.schedules.create(\"nightly-recon\", iri, \"7 2 * * *\")"
   /api/wf/api/scheduled/{id}/:
     parameters:
     - name: id
@@ -12325,6 +12343,11 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.delete(\"nightly-recon\")"
   /api/wf/api/scheduled/trigger-now/:
     post:
       tags:
@@ -12362,6 +12385,12 @@ paths:
             application/json:
               example:
                 message: The associated workflow is successfully triggered
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.schedules.trigger_now(name=\"nightly-recon\"\
+          ))"
   /api/triggers/1/{name}:
     parameters:
     - name: name
