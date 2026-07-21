@@ -174,14 +174,15 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # System queries / model metadatas
     ("get", "/api/3/model_metadatas"): ("doctest", "pyfsr.api.system_queries:SystemQueriesAPI.model_iri"),
     # Solution packs / import jobs
-    # NOTE: ``POST /api/3/solutionpacks/install`` serves two uses — a
-    # by-name Content-Hub install (``SolutionPackAPI.install``) and a
-    # multipart ``.tgz`` upload (``ConnectorsAPI.install_from_file``). The
-    # spec documents the tgz-upload variant, so the by-name doctest is the
-    # wrong sample and is intentionally omitted here. Restore this entry
-    # once pyfsr grows a doctest on ``ConnectorsAPI.install_from_file``
-    # (the multipart upload), pointing at that doctest instead.
-    # ("post", "/api/3/solutionpacks/install"): ("doctest", "pyfsr.api.solution_packs:SolutionPackAPI.install"),
+    # NOTE: ``POST /api/3/solutionpacks/install`` serves three uses — a by-name
+    # Content-Hub install (``SolutionPackAPI.install``, no $type), a multipart
+    # connector ``.tgz`` upload (``ConnectorsAPI.install_from_file``,
+    # ``$type=connector``), and a multipart widget ``.tgz`` upload
+    # (``WidgetsAPI.upload``, ``$type=widget``). The spec documents the
+    # multipart-upload variant, so the connector install_from_file doctest is
+    # the right sample for this op (the by-name SP doctest would mislead a
+    # reader into naming a connector they have on disk as a Content-Hub pack).
+    ("post", "/api/3/solutionpacks/install"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.install_from_file"),
     ("post", "/api/3/import_jobs"): ("doctest", "pyfsr.api.import_config:ImportConfigAPI.create_job"),
     # System (version / permissions / feature-access)
     ("get", "/api/version"): ("doctest", "pyfsr.api.system:SystemAPI.version"),
@@ -209,7 +210,16 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/gateway/audit/activities/{auditId}"): ("doctest", "pyfsr.api.audit:AuditAPI.get"),
     ("get", "/api/gateway/audit/operations"): ("doctest", "pyfsr.api.audit:AuditAPI.operations"),
     ("delete", "/api/gateway/audit/activities/ttl"): ("doctest", "pyfsr.api.audit:AuditAPI.disable_ttl"),
-    # Connectors (execute)
+    # Connectors (lifecycle + execute)
+    # Discovery + health + detail + uninstall + the dedicated configurations
+    # endpoint — the connector surface after record CRUD. Each method's
+    # doctest is focused on its own op so the rendered sample shows just that
+    # call (not the module-level discovery narrative).
+    ("get", "/api/integration/connectors/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.list_configured"),
+    ("get", "/api/integration/connectors/healthcheck/{name}/{version}/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.healthcheck"),
+    ("post", "/api/integration/connectors/{id}/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.connector_detail"),
+    ("delete", "/api/integration/connectors/{id}/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.uninstall"),
+    ("get", "/api/integration/configuration/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.list_configurations"),
     ("post", "/api/integration/execute/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.execute"),
     # Playbooks
     ("get", "/api/wf/api/workflows/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.execution_history"),

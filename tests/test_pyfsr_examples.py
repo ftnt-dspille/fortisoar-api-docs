@@ -246,7 +246,24 @@ def _fake_request(self, method, url, **kwargs):
             "@id": f"/api/3/api_keys/{_APIKEY_UUID}",
         }).encode())
     # --- Solution packs / import jobs ---
+    # POST /api/3/solutionpacks/install serves three callers: by-name
+    # SolutionPack install (SolutionPackAPI.install, no $type), multipart
+    # connector .tgz upload (ConnectorsAPI.install_from_file, $type=connector),
+    # and multipart widget .tgz upload (WidgetsAPI.upload, $type=widget). The
+    # connector upload returns a connector-shaped record (integer id + name);
+    # the by-name SP install returns a SolutionPack record. Disambiguate by the
+    # $type query param so each sample sees the shape its doctest asserts.
     if method == "POST" and url.endswith("/api/3/solutionpacks/install"):
+        params = kwargs.get("params") or {}
+        type_ = params.get("$type")
+        if type_ == "connector":
+            return _fake_response(200, json.dumps({
+                "name": "demo-connector", "version": "1.0.0",
+                "type": "connector", "installed": True,
+                "importJob": {"uuid": "420e8400-e29b-41d4-a716-446655440042",
+                              "status": "import in progress"},
+                "id": 42,
+            }).encode())
         return _fake_response(200, json.dumps({
             "name": "SOAR Framework", "version": "2.2.1",
             "job_id": "990e8400-e29b-41d4-a716-446655440012",
@@ -310,14 +327,63 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps(["login", "create", "update", "delete"]).encode())
     if method == "DELETE" and "/api/gateway/audit/activities/ttl" in url:
         return _fake_response(204, b"")
-    # --- Connectors execute ---
-    # execute() resolves version+config via list_configured() first
+    # --- Connectors (lifecycle + execute) ---
+    # list_configured() / resolve_version() / resolve_connector_id() back onto
+    # GET /api/integration/connectors/. The fixture set (smtp, code-snippet,
+    # mitre-attack, virustotal) matches pyfsr's replay fixture so the same
+    # connector names resolve in both CIs.
+    # Healthcheck GET must be matched BEFORE the bare connectors list since
+    # both contain "/api/integration/connectors/".
+    if method == "GET" and "/api/integration/connectors/healthcheck/" in url:
+        return _fake_response(200, json.dumps({
+            "status": "Available", "name": "mitre-attack", "version": "2.0.2",
+            "message": "Connector is available",
+        }).encode())
     if method == "GET" and "/api/integration/connectors/" in url:
         return _fake_response(200, json.dumps({
-            "data": [{"name": "cisa-advisory", "label": "CISA Advisory",
-                      "version": "1.0.0", "id": 1,
-                      "configurations": [{"config_id": "cfg1", "name": "default", "default": True}]}],
-            "totalItems": 1,
+            "data": [
+                {"name": "smtp", "label": "SMTP", "version": "2.6.0", "id": 3,
+                 "configurations": [{"config_id": "c3", "name": "Demo", "default": True}]},
+                {"name": "code-snippet", "label": "Code Snippet", "version": "2.2.1", "id": 5,
+                 "configurations": [{"config_id": "c5", "name": "Demo", "default": True}]},
+                {"name": "mitre-attack", "label": "MITRE ATT&CK", "version": "2.0.2", "id": 21,
+                 "configurations": [{"config_id": "c21", "name": "Demo", "default": True}]},
+                {"name": "virustotal", "label": "VirusTotal", "version": "3.2.1", "id": 16,
+                 "configurations": []},
+                {"name": "cisa-advisory", "label": "CISA Advisory",
+                 "version": "1.0.0", "id": 1,
+                 "configurations": [{"config_id": "cfg1", "name": "default", "default": True}]},
+            ],
+            "totalItems": 5,
+        }).encode())
+    # connector_detail: POST /api/integration/connectors/<id>/ (the POST-{}
+    # operations-discovery quirk). Returns the connector record with operations[].
+    if method == "POST" and "/api/integration/connectors/" in url:
+        return _fake_response(200, json.dumps({
+            "name": "smtp", "version": "2.6.0",
+            "operations": [
+                {"operation": "send_email_new", "title": "Send Email (Advanced)"},
+                {"operation": "send_email", "title": "Send Email"},
+            ],
+            "configuration": [{"config_id": "c3", "name": "localhost-postfix", "default": True}],
+        }).encode())
+    # uninstall: DELETE /api/integration/connectors/<id>/ returns 204.
+    if method == "DELETE" and "/api/integration/connectors/" in url:
+        return _fake_response(204, b"")
+    # list_configurations: GET /api/integration/configuration/ (the dedicated,
+    # filterable configurations endpoint). Returns the {status, totalItems, data[]}
+    # envelope matching pyfsr's replay fixture.
+    if method == "GET" and "/api/integration/configuration/" in url:
+        return _fake_response(200, json.dumps({
+            "status": "success", "totalItems": 2,
+            "data": [
+                {"id": 1, "config_id": "88c3d39c-2fa9-4731-b00d-29815008f17c",
+                 "name": "localhost-postfix", "default": True, "status": 1,
+                 "connector": 3, "config": {}},
+                {"id": 7, "config_id": "01e4e6b4-c34e-4fc1-b692-bb08591f1fe5",
+                 "name": "Demo", "default": True, "status": 1,
+                 "connector": 21, "config": {}},
+            ],
         }).encode())
     if method == "POST" and "/api/integration/execute/" in url:
         return _fake_response(200, json.dumps({

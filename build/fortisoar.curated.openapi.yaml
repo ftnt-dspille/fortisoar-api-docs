@@ -12987,6 +12987,16 @@ paths:
                 vendor_version: null
                 version: 1.0.4
                 workspace_connector: false
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nimport io, tarfile, tempfile\nfrom pathlib import Path\n\
+          with tempfile.TemporaryDirectory() as tmp:\n    tgz = Path(tmp) / \"demo-connector.tgz\"\n    with tarfile.open(tgz,\
+          \ \"w:gz\") as tar:\n        info = tarfile.TarInfo(\"demo-connector/info.json\")\n        data = b'{\"name\": \"\
+          demo-connector\", \"version\": \"1.0.0\"}'\n        info.size = len(data)\n        tar.addfile(info, io.BytesIO(data))\n\
+          \    resp = client.connectors.install_from_file(str(tgz))\nresult = (resp[\"id\"], resp[\"name\"], resp[\"version\"\
+          ])\nprint(result)"
       x-verified-live:
       - apikey
       - jwt
@@ -13022,6 +13032,7 @@ paths:
       responses:
         '200':
           description: Collection envelope.
+          x-pyfsr-response-model: list[InstalledConnector]
           content:
             application/json:
               example:
@@ -13064,6 +13075,11 @@ paths:
                 previousPage: null
                 status: Success
                 totalItems: 1
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint([c.name for c in client.connectors.list_configured()[:3]])"
       x-verified-live:
       - apikey
       - jwt
@@ -13079,6 +13095,7 @@ paths:
       responses:
         '200':
           description: Collection envelope.
+          x-pyfsr-response-model: list[ConnectorConfig]
           content:
             application/json:
               example:
@@ -13106,6 +13123,12 @@ paths:
                 previousPage: null
                 status: Success
                 totalItems: 48
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nconfigs = client.connectors.list_configurations()\nprint([(c.name,\
+          \ c.connector) for c in configs])"
       x-verified-live:
       - apikey
       - jwt
@@ -13355,6 +13378,12 @@ paths:
                 tags: []
                 vendor_version: null
                 version: 1.0.4
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\ndetail = client.connectors.connector_detail(\"smtp\"\
+          )\nprint((detail[\"name\"], detail[\"version\"]))\nprint([op[\"operation\"] for op in detail[\"operations\"][:2]])"
       x-verified-live:
       - apikey
       - jwt
@@ -13367,6 +13396,11 @@ paths:
       responses:
         '204':
           description: Uninstalled.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.uninstall(\"virustotal\")"
       x-verified-live:
       - apikey
       - jwt
@@ -13477,6 +13511,7 @@ paths:
       responses:
         '200':
           description: 'Health status with `status: Available` on success.'
+          x-pyfsr-response-model: HealthcheckResult
           content:
             application/json:
               example:
@@ -13487,6 +13522,12 @@ paths:
                 request_id: null
                 status: Available
                 version: 1.0.4
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.connectors.healthcheck(\"mitre-attack\"\
+          ).status)"
       x-verified-live:
       - apikey
       - jwt
