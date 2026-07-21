@@ -43,6 +43,18 @@ def _fake_request(self, method, url, **kwargs):
     if "staging_model_metadatas" in url:
         # No picklist-backed fields -- friendly values pass through untouched.
         return _fake_response(200, b'{"hydra:member": [{"type": "alerts", "attributes": []}]}')
+    # --- API-key users (JWT-only) ---
+    # All four ops return the {"usersresp": [user]} envelope. The doctests use
+    # demo_client_jwt() (UserPasswordAuth), which hits /auth/authenticate first
+    # (handled above) before these calls.
+    if url.endswith("/api/auth/users") or url.endswith("/api/auth/query/users"):
+        return _fake_response(200, json.dumps({
+            "usersresp": [{
+                "uuid": "550e8400-e29b-41d4-a716-446655440007",
+                "user_type": 9, "status": 1, "access_type": "Named",
+                "api_key": {"key": "demo-token", "retrievable": True, "status": "Active"},
+            }],
+        }).encode())
     # --- Scheduled tasks ---
     # resolve_iri (GET /api/3/workflows?name=...)
     if method == "GET" and "/api/3/workflows?" in url:
@@ -450,6 +462,9 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps({
             "task_id": "1", "message": "Awaiting Playbook resumed successfully.",
         }).encode())
+    # delete: DELETE /api/wf/api/manual-wf-input/<pk>/ returns 204.
+    if method == "DELETE" and "/api/wf/api/manual-wf-input/" in url:
+        return _fake_response(204, b"")
     raise AssertionError(f"unmocked request: {method} {url}")
 
 
