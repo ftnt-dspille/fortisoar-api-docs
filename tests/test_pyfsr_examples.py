@@ -10,6 +10,7 @@ would show up as a real exception here, not just look plausible on the page.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from unittest import mock
@@ -22,6 +23,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from pyfsr_examples import PYFSR_EXAMPLES, build_pyfsr_sample  # noqa: E402
 
 _ALERT_UUID = "9f0eb603-ac1e-41c3-b47b-444589beed39"
+_WF_UUID = "c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56"
+_FERNET = "gAAAAABkXyQ_fernet_token_placeholder"
 
 
 def _fake_response(status_code: int, body: bytes) -> requests.Response:
@@ -37,6 +40,54 @@ def _fake_request(self, method, url, **kwargs):
     if "staging_model_metadatas" in url:
         # No picklist-backed fields -- friendly values pass through untouched.
         return _fake_response(200, b'{"hydra:member": [{"type": "alerts", "attributes": []}]}')
+    # --- Scheduled tasks ---
+    # resolve_iri (GET /api/3/workflows?name=...)
+    if method == "GET" and "/api/3/workflows?" in url:
+        return _fake_response(200, json.dumps({
+            "hydra:member": [{"uuid": _WF_UUID, "name": "Nightly Recon",
+                              "@id": f"/api/3/workflows/{_WF_UUID}"}],
+        }).encode())
+    # trigger-now (POST .../scheduled/trigger-now/?...) -- check before the
+    # generic scheduled/ POST since the URL contains the same prefix.
+    if method == "POST" and "trigger-now" in url:
+        return _fake_response(200, b'{"message": "The associated workflow is successfully triggered"}')
+    # list (GET /api/wf/api/scheduled/?...)
+    if method == "GET" and "/api/wf/api/scheduled" in url:
+        return _fake_response(200, json.dumps({
+            "hydra:member": [{"id": _FERNET, "name": "nightly-recon", "enabled": True,
+                              "crontab": {"minute": "7", "hour": "2"},
+                              "kwargs": {"wf_iri": f"/api/3/workflows/{_WF_UUID}"}}],
+        }).encode())
+    # create (POST /api/wf/api/scheduled/?...)
+    if method == "POST" and "/api/wf/api/scheduled/" in url:
+        return _fake_response(201, json.dumps({
+            "id": _FERNET, "name": "nightly-recon", "enabled": True,
+            "task": "workflow.tasks.periodic_task",
+            "crontab": {"id": 42, "minute": "7", "hour": "2", "day_of_week": "*",
+                        "day_of_month": "*", "month_of_year": "*", "timezone": "UTC"},
+            "kwargs": {"wf_iri": f"/api/3/workflows/{_WF_UUID}",
+                       "exit_if_running": True, "timezone": "UTC"},
+            "schedule_id": 7,
+        }).encode())
+    # delete (DELETE /api/wf/api/scheduled/{id}/?...)
+    if method == "DELETE" and "/api/wf/api/scheduled/" in url:
+        return _fake_response(204, b"")
+    # --- Notifications ---
+    # list (POST .../notifications/?...)
+    if method == "POST" and "/api/rule/api/system-notification/notifications" in url:
+        return _fake_response(200, json.dumps({
+            "hydra:member": [
+                {"uuid": "n1", "content": "<p>Task assigned.</p>",
+                 "entity_type": "tasks", "read": False},
+                {"uuid": "n2", "content": "<p>Approval requested.</p>",
+                 "entity_type": "approvals", "read": True},
+            ],
+            "hydra:totalItems": 2,
+        }).encode())
+    # purge (POST .../purge/?...)
+    if method == "POST" and "/api/rule/api/system-notification/purge" in url:
+        return _fake_response(200, b'{"result": "System Notification purge started", "status": "started"}')
+    # --- Alerts (existing) ---
     if method == "POST" and url.endswith("/api/3/alerts"):
         return _fake_response(
             201,
