@@ -812,6 +812,11 @@ paths:
             application/json:
               example:
                 version: 7.6.5-5662
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.system.version()[\"version\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -1388,6 +1393,12 @@ paths:
                   fields: []
                   read: true
                   update: true
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nperms = client.system.permissions()\nprint(perms[\"alerts\"\
+          ][\"read\"])\nprint(perms[\"people\"][\"create\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -3598,6 +3609,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npage = client.records(\"alerts\").list(limit=10)\nprint((page.total,\
+          \ len(page.members), page.members[0].name))"
       x-verified-live:
       - apikey
       - jwt
@@ -3923,6 +3940,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -4214,6 +4237,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.alerts.get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert[\"@type\"], alert[\"name\"]))"
       x-verified-live:
       - apikey
       - jwt
@@ -4498,6 +4527,12 @@ paths:
                 userName: null
                 uuid: <uuid>
                 vulnerabilitySeverity: null
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -4517,6 +4552,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
       x-verified-live:
       - apikey
       - jwt
@@ -4974,6 +5015,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npage = client.records(\"alerts\").list(limit=10)\nprint((page.total,\
+          \ len(page.members), page.members[0].name))"
       x-verified-live:
       - apikey
       - jwt
@@ -5259,6 +5306,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -5522,6 +5575,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert.name, type(alert).__name__))"
       x-verified-live:
       - apikey
       - jwt
@@ -5765,6 +5824,12 @@ paths:
                 uuid: <uuid>
                 volatileData: null
                 wasPersonalDataAffected: null
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -5784,6 +5849,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
       x-verified-live:
       - apikey
       - jwt
@@ -5992,6 +6063,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npage = client.records(\"alerts\").list(limit=10)\nprint((page.total,\
+          \ len(page.members), page.members[0].name))"
       x-verified-live:
       - apikey
       - jwt
@@ -6159,6 +6236,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -6301,6 +6384,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert.name, type(alert).__name__))"
       x-verified-live:
       - apikey
       - jwt
@@ -6437,6 +6526,12 @@ paths:
                 type: null
                 uuid: <uuid>
                 workflowid: null
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -6456,6 +6551,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
       x-verified-live:
       - apikey
       - jwt
@@ -6518,6 +6619,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.comments.list()\nprint(len(result.get(\"\
+          hydra:member\", [])))\nprint(result[\"hydra:totalItems\"])"
     post:
       tags:
       - Comments
@@ -6688,6 +6795,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -6824,6 +6937,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert.name, type(alert).__name__))"
       x-verified-live:
       - apikey
       - jwt
@@ -6988,6 +7107,12 @@ paths:
                 vulnerabilities: []
                 warrooms: []
                 workspaces: []
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -7151,6 +7276,12 @@ paths:
                 vulnerabilities: []
                 warrooms: []
                 workspaces: []
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
       x-verified-live:
       - apikey
       - jwt
@@ -7201,6 +7332,12 @@ paths:
                 hydra:view:
                   '@id': /api/3/incidents/<uuid>/comments?%24limit=5
                   '@type': hydra:PartialCollectionView
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\ncomments = client.records(\"alerts\").comments(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((len(comments), comments[0][\"comment\"]))"
       x-verified-live:
       - apikey
       - jwt
@@ -7249,6 +7386,12 @@ paths:
                   hydra:first: /api/3/teams?%24limit=1&%24page=1
                   hydra:last: /api/3/teams?%24limit=1&%24page=6
                   hydra:next: /api/3/teams?%24limit=1&%24page=2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npage = client.records(\"alerts\").list(limit=10)\nprint((page.total,\
+          \ len(page.members), page.members[0].name))"
       x-verified-live:
       - apikey
       - jwt
@@ -8019,6 +8162,7 @@ paths:
       responses:
         '200':
           description: Result envelope (per-record status).
+          x-pyfsr-response-model: BulkUpsertResult
           content:
             application/json:
               example:
@@ -8049,6 +8193,12 @@ paths:
             - name: alert-002
               source: Splunk
               sourceId: spl-1002
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.records(\"alerts\").bulk_insert(\n  \
+          \  [{\"name\": \"Response Capture Test Alert\"}], parse=True\n)\nprint((result.ok, len(result.succeeded)))"
   /api/3/update/{moduleType}:
     parameters:
     - name: moduleType
@@ -8458,6 +8608,12 @@ paths:
               severity: /api/3/picklists/<uuid>
               source: live_test
               status: /api/3/picklists/<uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").upsert({\"name\":\
+          \ \"Response Capture Test Alert\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -8479,6 +8635,7 @@ paths:
       responses:
         '200':
           description: Result envelope (per-record status).
+          x-pyfsr-response-model: BulkUpsertResult
           content:
             application/json:
               example:
@@ -8800,6 +8957,12 @@ paths:
               severity: /api/3/picklists/<uuid>
               source: live_test
               status: /api/3/picklists/<uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.records(\"alerts\").bulk_upsert(\n  \
+          \  [{\"name\": \"pyfsr-bulk-doctest-ok\"}], parse=True\n)\nprint((result.ok, len(result.succeeded), len(result.failed)))"
       x-verified-live:
       - jwt
   /api/ingest-feeds/indicators:
@@ -8835,6 +8998,7 @@ paths:
       responses:
         '200':
           description: Ingest result.
+          x-pyfsr-response-model: FeedIngestResult
           content:
             application/json:
               example:
@@ -8842,6 +9006,13 @@ paths:
                 successCount: 2
                 failureCount: 0
                 skipTriggers: true
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.feeds.indicators([\n    {\"value\": \"\
+          8.8.8.8\", \"typeofindicator\": \"IP Address\"},\n    {\"value\": \"1.1.1.1\", \"typeofindicator\": \"IP Address\"\
+          },\n])\nprint(result.ok)\nprint(result.status)"
   /api/ingest-feeds/observables:
     post:
       tags:
@@ -8864,6 +9035,13 @@ paths:
       responses:
         '200':
           description: Ingest result.
+          x-pyfsr-response-model: FeedIngestResult
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.feeds.observables([\n    {\"name\": \"\
+          test-hash\", \"type\": \"File\", \"value\": \"abc123def456\"}\n])\nprint(result.ok)"
       x-verified-live:
         apikey: 400
         jwt: 400
@@ -8887,6 +9065,14 @@ paths:
       responses:
         '200':
           description: Ingest result.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nbundle = {\n    \"type\": \"bundle\",\n    \"id\": \"\
+          bundle--00000000-0000-0000-0000-000000000000\",\n    \"objects\": [\n        {\"type\": \"malware\", \"id\": \"\
+          malware--00000000-0000-0000-0000-000000000001\"}\n    ]\n}\nresult = client.feeds.stix_bundle(bundle)\nprint(result[\"\
+          status\"])"
       x-verified-live:
         apikey: 400
         jwt: 400
@@ -8911,6 +9097,13 @@ paths:
       responses:
         '200':
           description: Ingest result.
+          x-pyfsr-response-model: FeedIngestResult
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.feeds.threatintel([\n    {\"name\": \"\
+          APT28\", \"type\": \"Threat Actor\"}\n])\nprint(result.ok)"
       x-verified-live:
         apikey: 400
         jwt: 400
@@ -8936,6 +9129,13 @@ paths:
       responses:
         '200':
           description: Ingest result.
+          x-pyfsr-response-model: FeedIngestResult
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.feeds.reputation([\n    {\"value\": \"\
+          8.8.8.8\", \"score\": 75},\n    {\"value\": \"1.1.1.1\", \"score\": 10},\n])\nprint(result.ok)"
       x-verified-live:
         apikey: 400
         jwt: 400
@@ -8993,6 +9193,12 @@ paths:
                 title: TAXII feeds
                 versions:
                 - application/taxii+json;version=2.1
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.taxii.discovery()[\"max_content_length\"\
+          ])"
       x-verified-live:
       - apikey
       - jwt
@@ -9069,6 +9275,12 @@ paths:
                   name: Custom
                   title: Custom
                   uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\ncols = client.taxii.collections()\nprint([c[\"id\"] for\
+          \ c in cols])\nprint(cols[0][\"can_read\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -9101,6 +9313,12 @@ paths:
                 name: Custom
                 title: Custom
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.taxii.collection(\"malware-samples\")[\"\
+          title\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -9217,6 +9435,12 @@ paths:
                   validUntil: null
                   value: demo-value
                 totalItems: 8
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nobjs = client.taxii.objects(\"malware-samples\", limit=50)\n\
+          print(objs[\"totalItems\"])\nprint(objs[\"objects\"][0][\"type\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -9246,6 +9470,12 @@ paths:
               example:
                 objects: []
                 totalItems: 0
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nstix_id = \"malware--31b7aa16-6a19-4d5e-9e1a-3a5c9f6a2b40\"\
+          \nprint(client.taxii.object(\"malware-samples\", stix_id)[\"objects\"][0][\"name\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -9360,6 +9590,12 @@ paths:
                   validUntil: null
                   value: demo-value
                 totalItems: 8
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nmanifest = client.taxii.manifest(\"malware-samples\"\
+          )\nprint(manifest[\"objects\"][0][\"media_type\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -10008,6 +10244,12 @@ paths:
                 hydra:lastPage: example
                 hydra:member: []
                 hydra:search: {}
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nqid = \"6f1c9e2a-6b7a-4b0a-9a1e-2f6a5c9b3d10\"\nprint(client.search.run_persisted(\"\
+          alerts\", qid, limit=50)[\"hydra:totalItems\"])"
       x-verified-live:
         apikey: 404
         jwt: 404
@@ -10138,6 +10380,12 @@ paths:
                   logic: AND
                 resultCacheSeconds: 0
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -10245,6 +10493,12 @@ paths:
                       name: INC-204 phishing campaign
                       status: Investigating
                       modifyDate: 1736294400
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresults = client.search.search(\"8.8.8.8\", index=[\"\
+          alerts\"])\nprint(results[\"hits\"][\"hits\"][0][\"_source\"][\"severity\"])"
       x-verified-live:
         apikey: 400
         jwt: 400
@@ -10405,6 +10659,12 @@ paths:
                   userOwnerIris: []
                 first: true
                 number: 0
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.audit.activities(\"2026-06-01T00:00:00Z\"\
+          , \"2026-06-18T00:00:00Z\")\nprint(len(result[\"content\"]))\nprint(result[\"content\"][0][\"user\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -10443,6 +10703,12 @@ paths:
             application/json:
               example:
                 total: 622936
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.audit.count(\"2026-06-01T00:00:00Z\"\
+          , \"2026-06-18T00:00:00Z\")\nprint(result[\"count\"])"
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
         \ gated` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -10513,6 +10779,12 @@ paths:
                 user: WEBHOOK
                 userId: <uuid>
                 userOwnerIris: []
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrecord = client.audit.get(\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\
+          )\nprint(record[\"operation\"])\nprint(record[\"component\"])"
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
         \ gated` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -10573,6 +10845,12 @@ paths:
               - Pre-Processing(Drop)
               - Pre-Processing(Update)
               - Pre-Processing(Fail)
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nops = client.audit.operations()\nprint(\"login\" in ops)\n\
+          print(\"create\" in ops)"
       description: "**See:** [Audit gateway quirks](#description/audit-gateway-quirks)\n\n\n\n**Auth coverage:** `API-KEY:\
         \ OK` \xB7 `Bearer JWT: OK`"
       x-verified-live:
@@ -10595,6 +10873,11 @@ paths:
             application/json:
               example:
                 ttlEnabled: false
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.audit.disable_ttl()"
   /api/rule/api/system-notification/notifications/:
     post:
       tags:
@@ -10647,6 +10930,7 @@ paths:
       responses:
         '200':
           description: Hydra envelope of Notification rows.
+          x-pyfsr-response-model: list[Notification]
           content:
             application/json:
               example:
@@ -10701,6 +10985,7 @@ paths:
       responses:
         '200':
           description: Purge ack.
+          x-pyfsr-response-model: NotificationPurge
           content:
             application/json:
               example:
@@ -10830,6 +11115,7 @@ paths:
       responses:
         '200':
           description: Hydra collection of recent runs.
+          x-pyfsr-response-model: list[RunSummary]
           content:
             application/json:
               example:
@@ -10851,6 +11137,12 @@ paths:
                 hydra:nextPage: /wf/api/workflows/?limit=1&offset=1&ordering=-modified&parent_wf__isnull=True
                 hydra:previousPage: null
                 hydra:totalItems: 11
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nruns = client.playbooks.execution_history(limit=1)\n\
+          print(len(runs))\nprint(runs[0].status)\nprint(runs[0][\"uuid\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -11074,6 +11366,12 @@ paths:
                 hydra:nextPage: /wf/api/workflows/log_list/?format=json&limit=2&offset=2&ordering=-modified&page=1&parent_wf__isnull=True
                 hydra:previousPage: null
                 hydra:totalItems: 11
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.log_list(limit=1)\nmembers\
+          \ = result.get(\"hydra:member\", [])\nprint(len(members))\nprint(members[0][\"status\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -11299,6 +11597,7 @@ paths:
       responses:
         '200':
           description: Historical run detail.
+          x-pyfsr-response-model: RunSummary
           content:
             application/json:
               example:
@@ -11454,6 +11753,12 @@ paths:
                 tags: system
                 template_iri: /api/3/workflows/<uuid>
                 user: ''
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrun = client.playbooks.get_execution(\"1\")\nprint(run.status)\n\
+          print(run.task_id)"
       x-verified-live:
       - apikey
       - jwt
@@ -11665,6 +11970,12 @@ paths:
                 hydra:nextPage: null
                 hydra:previousPage: null
                 hydra:totalItems: 2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.query_logs()\nmembers = result.get(\"\
+          hydra:member\", [])\nprint(len(members))\nprint(members[0].get(\"status\"))"
       x-verified-live:
       - apikey
       - jwt
@@ -11700,6 +12011,12 @@ paths:
             application/json:
               example:
                 count: 3482
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.count()\nprint(result[\"count\"\
+          ])"
       x-verified-live:
       - apikey
       - jwt
@@ -11737,6 +12054,12 @@ paths:
                 workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
                 executionId: exec-3a8f2c
                 queuedAt: 1736380800
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.start(\"1\")\nprint(result.get(\"\
+          status\"))"
   /api/wf/api/workflows/{pk}/resume/:
     parameters:
     - name: pk
@@ -11799,6 +12122,12 @@ paths:
                 status: retrying
                 workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
                 fromFailedStep: step-http-3
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.retry(\"3\")\nprint(result.get(\"\
+          status\"))"
   /api/wf/api/workflows/{pk}/approval/:
     parameters:
     - name: pk
@@ -11877,6 +12206,12 @@ paths:
             application/json:
               example:
                 result: ALERT-001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\noutput = client.playbooks.render_jinja(\"Hello {{ name\
+          \ }}\", {\"name\": \"World\"})\nprint(output)"
       x-verified-live:
       - apikey
       - jwt
@@ -11900,6 +12235,7 @@ paths:
       responses:
         '200':
           description: Collection of pending inputs.
+          x-pyfsr-response-model: list[ManualInput]
           content:
             application/json:
               example:
@@ -11929,6 +12265,12 @@ paths:
                 hydra:nextPage: null
                 hydra:previousPage: null
                 hydra:totalItems: 1
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npending = client.manual_input.list(assigned_to=\"all\"\
+          )\nprint(len(pending))\nprint(pending[0].title)"
       x-verified-live:
       - apikey
       - jwt
@@ -11956,6 +12298,13 @@ paths:
       responses:
         '200':
           description: Manual-input record with response_mapping.
+          x-pyfsr-response-model: ManualInput
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nmi = client.manual_input.retrieve(1)\nprint(mi.title)\n\
+          print(mi.input[\"schema\"][\"title\"])\nprint(mi.workflow)"
   /api/wf/api/workflows/{pk}/wfinput_resume/:
     parameters:
     - name: pk
@@ -12013,6 +12362,14 @@ paths:
               example:
                 task_id: "\u2026"
                 message: Awaiting Playbook resumed successfully.
+          x-pyfsr-response-model: ManualInputResume
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.manual_input.resume(\n    workflow_id=1,\n\
+          \    step_iri=\"/api/wf/api/workflows/1/steps/100\",\n    step_id=100,\n    manual_input_id=1,\n    user=\"/api/3/people/00000000-0000-0000-0000-000000000001\"\
+          ,\n    input={\"test_var\": \"test_value\"}\n)\nprint(result[\"message\"])"
   /api/wf/api/manual-wf-input/{pk}/:
     parameters:
     - name: pk
@@ -12207,6 +12564,7 @@ paths:
       responses:
         '201':
           description: The created periodic-task record.
+          x-pyfsr-response-model: ScheduledTask
           content:
             application/json:
               example:
@@ -12451,6 +12809,13 @@ paths:
                 status: ok
                 workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
                 executionId: exec-7b1e94
+          x-pyfsr-response-model: TriggerResponse
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.playbooks.trigger_by_name(\"my-hook\").task_id)\n\
+          print(client.playbooks.trigger_by_name(\"my-hook\", deferred=True).task_id)"
   /api/triggers/1/deferred/{name}:
     parameters:
     - name: name
@@ -12566,6 +12931,7 @@ paths:
       responses:
         '200':
           description: Installed connector record (with integer `id`).
+          x-pyfsr-response-model: SolutionPackInstallResponse | InstallJobStatus
           content:
             application/json:
               example:
@@ -12622,6 +12988,12 @@ paths:
                 vendor_version: null
                 version: 1.0.4
                 workspace_connector: false
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresp = client.solution_packs.install(\"SOAR Framework\"\
+          , \"2.2.1\")\nprint(resp.name)\nprint(resp.version)\nprint(resp.job_id)"
       x-verified-live:
       - apikey
       - jwt
@@ -13062,6 +13434,7 @@ paths:
       responses:
         '200':
           description: Action result.
+          x-pyfsr-response-model: ExecuteResult
           content:
             application/json:
               example:
@@ -13071,6 +13444,13 @@ paths:
                 message: ''
                 operation: null
                 status: Success
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.connectors.execute(\n    \"cisa-advisory\"\
+          , \"get_known_exploited_vulnerability_cves\"\n)\nprint(result.ok)\nprint(result.data[\"title\"])\nprint(result.data[\"\
+          vulnerabilities\"][0][\"cveID\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -13331,6 +13711,12 @@ paths:
       responses:
         '200':
           description: Install accepted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.install_connector(\"edge-1\", name=\"\
+          cyops_utilities\", version=\"3.7.1\"))"
     put:
       tags:
       - Connectors
@@ -13360,6 +13746,12 @@ paths:
       responses:
         '200':
           description: Upgrade accepted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.upgrade_connector(\"edge-1\", name=\"\
+          cyops_utilities\", version=\"3.8.0\"))"
     delete:
       tags:
       - Connectors
@@ -13389,6 +13781,12 @@ paths:
       responses:
         '200':
           description: Uninstall accepted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.uninstall_connector(\"edge-1\", name=\"\
+          cyops_utilities\", version=\"3.7.1\"))"
   /api/integration/connectors/agents/{name}/{version}/:
     parameters:
     - name: name
@@ -13432,6 +13830,12 @@ paths:
       responses:
         '200':
           description: Heartbeat reply.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.heartbeat(\"edge-1\")[\"status\"\
+          ])"
   /api/3/agents:
     get:
       tags:
@@ -13445,6 +13849,7 @@ paths:
       responses:
         '200':
           description: Hydra collection of Agent.
+          x-pyfsr-response-model: list[Agent]
           content:
             application/json:
               example:
@@ -14364,6 +14769,11 @@ paths:
                   hydra:first: /api/3/agents?%24limit=5&%24page=1
                   hydra:last: /api/3/agents?%24limit=5&%24page=2
                   hydra:next: /api/3/agents?%24limit=5&%24page=2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nagents = client.agents.list()\nprint(agents[0].agentId)"
       x-verified-live:
       - apikey
       - jwt
@@ -14411,6 +14821,7 @@ paths:
       responses:
         '201':
           description: Agent record with one-shot installer credentials (`encryptionKey`, `username`, `password`, `vhost`).
+          x-pyfsr-response-model: Agent
           content:
             application/json:
               example:
@@ -14620,6 +15031,12 @@ paths:
                 uuid: <uuid>
                 version: 7.6.5
                 vhost: vhost_aa73fb4b2b00ab2249689b43a8a6b98e
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrouter = \"/api/3/routers/3a2b1c0d-9e8f-4a7b-6c5d-4e3f2a1b0c9d\"\
+          \nprint(client.agents.create(\"edge-1\", router=router).agentId)"
       x-verified-live:
       - apikey
       - jwt
@@ -14642,6 +15059,7 @@ paths:
       responses:
         '200':
           description: Agent record.
+          x-pyfsr-response-model: Agent
           content:
             application/json:
               example:
@@ -14841,6 +15259,12 @@ paths:
                 uuid: <uuid>
                 version: 7.6.5
                 vhost: vhost_aa73fb4b2b00ab2249689b43a8a6b98e
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.get(\"6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f\"\
+          ).name)"
       x-verified-live:
       - apikey
       - jwt
@@ -14854,6 +15278,12 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.agents.delete(\"6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f\"\
+          )"
   /api/3/routers:
     get:
       tags:
@@ -14984,6 +15414,11 @@ paths:
                 hydra:view:
                   '@id': /api/3/routers?%24limit=1
                   '@type': hydra:PartialCollectionView
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrouters = client.routers.list()\nprint(len(routers))"
       x-verified-live:
       - apikey
       - jwt
@@ -15054,6 +15489,12 @@ paths:
               schema:
                 type: string
                 format: binary
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nblob = client.agents.installer(\"edge-1\")\nprint(isinstance(blob,\
+          \ bytes))"
   /api/3/model_metadatas:
     get:
       tags:
@@ -15279,6 +15720,12 @@ paths:
                   hydra:first: /api/3/model_metadatas?%24limit=5&%24page=1
                   hydra:last: /api/3/model_metadatas?%24limit=5&%24page=13
                   hydra:next: /api/3/model_metadatas?%24limit=5&%24page=2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.system_queries.model_iri(\"threat_intel_feeds\"\
+          ))"
       x-verified-live:
       - apikey
       - jwt
@@ -15332,6 +15779,12 @@ paths:
                 listName: /api/3/picklist_names/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 color: '#4CAF50'
                 orderIndex: 2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
   /api/3/picklists/{uuid}:
     parameters:
     - name: uuid
@@ -15363,6 +15816,12 @@ paths:
                 listName: /api/3/picklist_names/<uuid>
                 orderIndex: 1
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert.name, type(alert).__name__))"
       x-verified-live:
       - apikey
       - jwt
@@ -15375,6 +15834,12 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
   /api/3/picklist_names:
     get:
       tags:
@@ -15534,6 +15999,12 @@ paths:
                   hydra:first: /api/3/picklist_names?%24limit=1&%24page=1
                   hydra:last: /api/3/picklist_names?%24limit=1&%24page=111
                   hydra:next: /api/3/picklist_names?%24limit=1&%24page=2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npage = client.records(\"alerts\").list(limit=10)\nprint((page.total,\
+          \ len(page.members), page.members[0].name))"
       x-verified-live:
       - apikey
       - jwt
@@ -15576,6 +16047,12 @@ paths:
                 uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 name: IncidentPhase
                 system: false
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
   /api/3/picklist_names/{uuid}:
     parameters:
     - name: uuid
@@ -15730,6 +16207,12 @@ paths:
                   uuid: <uuid>
                 system: false
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )\nprint((alert.name, type(alert).__name__))"
       x-verified-live:
       - apikey
       - jwt
@@ -15743,6 +16226,12 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
   /api/3/contexts/{shortName}:
     parameters:
     - name: shortName
@@ -48362,6 +48851,12 @@ paths:
                 installed: true
                 published: true
                 publishedDate: 1736380800
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
   /api/3/widgets/export/{uuid}:
     parameters:
     - name: uuid
@@ -48467,6 +48962,12 @@ paths:
                 thumbnail: null
                 uploadDate: 1700000000
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -48512,6 +49013,13 @@ paths:
                   hydra:first: /api/3/roles?%24limit=2&%24page=1
                   hydra:last: /api/3/roles?%24limit=2&%24page=7
                   hydra:next: /api/3/roles?%24limit=2&%24page=2
+          x-pyfsr-response-model: list[Role]
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nroles = client.roles.list()\nprint(len(roles))\nprint(roles[0].name)\n\
+          print(roles[1].name)"
       x-verified-live:
       - apikey
       - jwt
@@ -48545,6 +49053,12 @@ paths:
                 modulePermissions: []
                 name: live-<run>-role
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -48587,6 +49101,12 @@ paths:
                   hydra:first: /api/3/teams?%24limit=2&%24page=1
                   hydra:last: /api/3/teams?%24limit=2&%24page=3
                   hydra:next: /api/3/teams?%24limit=2&%24page=2
+          x-pyfsr-response-model: list[Team]
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nteams = client.teams.list()\nprint(len(teams))\nprint(teams[0].name)"
       x-verified-live:
       - apikey
       - jwt
@@ -48623,6 +49143,12 @@ paths:
                 parents: []
                 siblings: []
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-verified-live:
       - apikey
       - jwt
@@ -48786,6 +49312,13 @@ paths:
                   hydra:first: /api/3/api_keys?%24limit=2&%24page=1
                   hydra:last: /api/3/api_keys?%24limit=2&%24page=2
                   hydra:next: /api/3/api_keys?%24limit=2&%24page=2
+          x-pyfsr-response-model: list[ApiKey]
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkeys = client.api_keys.list()\nprint(len(keys))\nprint(keys[0][\"\
+          name\"])"
       x-verified-live:
       - apikey
       - jwt
@@ -48828,6 +49361,7 @@ paths:
       responses:
         '201':
           description: Scope created.
+          x-pyfsr-response-model: ApiKey
           content:
             application/json:
               example:
@@ -48900,6 +49434,12 @@ paths:
                 userId: <uuid>
                 userType: null
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkey = client.api_keys.create(\n    name=\"test-key\"\
+          ,\n    user_uuid=\"550e8400-e29b-41d4-a716-446655440007\"\n)\nprint(key[\"name\"])"
       x-verified-live:
       - jwt
   /api/3/api_keys/{uuid}:
@@ -48920,6 +49460,7 @@ paths:
       responses:
         '200':
           description: Scope record (`name`, `uuid`, `userId`, roles, teams).
+          x-pyfsr-response-model: ApiKey
           content:
             application/json:
               example:
@@ -48990,6 +49531,12 @@ paths:
                 userId: <uuid>
                 userType: null
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkey = client.api_keys.get(\"660e8400-e29b-41d4-a716-446655440008\"\
+          )\nprint(key[\"name\"])\nprint(key[\"userId\"])"
       x-verified-live:
       - jwt
     put:
@@ -49026,6 +49573,7 @@ paths:
       responses:
         '200':
           description: Updated scope.
+          x-pyfsr-response-model: ApiKey
           content:
             application/json:
               example:
@@ -49098,6 +49646,12 @@ paths:
                 userId: <uuid>
                 userType: null
                 uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkey = client.api_keys.update(\"660e8400-e29b-41d4-a716-446655440008\"\
+          , name=\"updated-key\")\nprint(key[\"name\"])"
       x-verified-live:
       - jwt
   /api/auth/users:
@@ -49442,6 +49996,12 @@ paths:
                       include: true
                       mergeType: merge_replace
                       includeSchedules: true
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\njob_uuid = client.import_config.create_job(\"/api/3/files/880e8400-e29b-41d4-a716-446655440010\"\
+          )\nprint(job_uuid)"
   /api/import/{job_uuid}:
     parameters:
     - name: job_uuid
@@ -49536,6 +50096,12 @@ paths:
                 uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 status: Queued
                 createDate: 1736380800
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
   /api/3/export_templates:
     post:
       tags:
@@ -49583,6 +50149,12 @@ paths:
                 '@type': ExportTemplate
                 uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 name: Alert backup
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
+          \ \"Suspicious Activity\"})\nprint(alert.name)"
   /api/3/export_templates/{template_uuid}:
     parameters:
     - name: template_uuid
@@ -49598,6 +50170,12 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
+          )"
   /api/export:
     put:
       tags:
@@ -49657,6 +50235,12 @@ paths:
                 productType: FortiSOAR Enterprise
                 restricted_feature: []
                 restricted_url_states: []
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nfeatures = client.system.feature_access()\nprint(features[\"\
+          automation\"])\nprint(features[\"endpoint_management\"])"
       x-verified-live:
       - apikey
       - jwt
