@@ -42,6 +42,10 @@ _PREAMBLE = (
 # pyfsr's replay fixture used inside doctests -- not part of the public API,
 # so it's stripped and replaced by the real construction above.
 _DEMO_CLIENT_LINE_RE = re.compile(r"(?m)^client\s*=\s*demo_client\(\)\s*\n?")
+# Some doctests open with `from pyfsr._testing import demo_client` before the
+# `client = demo_client()` line. The import is also internal-only -- strip it
+# so the rendered sample doesn't show a stray unused import.
+_DEMO_IMPORT_RE = re.compile(r"(?m)^from\s+pyfsr\._testing\s+import\s+demo_client\s*\n?")
 # Doctest directives (`# doctest: +SKIP`, `+ELLIPSIS`, ...) are pytest/doctest
 # runner hints, not part of the code a reader would paste.
 _DOCTEST_DIRECTIVE_RE = re.compile(r"[ \t]*#\s*doctest:\s*\+\w+\s*$", re.M)
@@ -87,8 +91,9 @@ def extract_doctest_examples(dotted_path: str) -> str:
         lines.append(src)
 
     body = "\n".join(lines)
-    body = _DEMO_CLIENT_LINE_RE.sub("", body).strip("\n")
-    return _PREAMBLE + body
+    body = _DEMO_CLIENT_LINE_RE.sub("", body)
+    body = _DEMO_IMPORT_RE.sub("", body)
+    return _PREAMBLE + body.strip("\n")
 
 
 def manual_example(body: str) -> str:
@@ -106,6 +111,13 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/3/{collection}"): ("doctest", "pyfsr.records:RecordSet.create"),
     ("put", "/api/3/{collection}/{uuid}"): ("doctest", "pyfsr.records:RecordSet.update"),
     ("delete", "/api/3/{collection}/{uuid}"): ("doctest", "pyfsr.records:RecordSet.delete"),
+    # Scheduled tasks (Tier 1a)
+    ("post", "/api/wf/api/scheduled/"): ("doctest", "pyfsr.api.schedules:SchedulesAPI.create"),
+    ("delete", "/api/wf/api/scheduled/{id}/"): ("doctest", "pyfsr.api.schedules:SchedulesAPI.delete"),
+    ("post", "/api/wf/api/scheduled/trigger-now/"): ("doctest", "pyfsr.api.schedules:SchedulesAPI.trigger_now"),
+    # Notifications (Tier 1c)
+    ("post", "/api/rule/api/system-notification/notifications/"): ("doctest", "pyfsr.api.notifications:NotificationsAPI.list"),
+    ("post", "/api/rule/api/system-notification/purge/"): ("doctest", "pyfsr.api.notifications:NotificationsAPI.purge"),
 }
 
 
