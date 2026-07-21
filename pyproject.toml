@@ -9,7 +9,7 @@ dependencies = [
     "genson>=1.2",
     "python-dotenv>=1.0",
     "jsonschema>=4.21",
-    "pyfsr>=0.8.5",
+    "pyfsr>=0.14.0",
 ]
 
 [project.optional-dependencies]
