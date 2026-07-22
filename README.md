@@ -20,7 +20,7 @@ web/index.html              →  Scalar renderer (CDN)
 TODOS.md                    →  what's next: coverage backlog + accuracy work
 ```
 
-Spec at the time of writing: **151 ops, 113 paths, 95 live-verified, 102 with a pyfsr sample, 26 with a pyfsr response model.**
+Spec at the time of writing: **160 ops, 119 paths, 95 live-verified, 115 with a pyfsr sample, 33 with a pyfsr response model, 37 component schemas.**
 
 ---
 
