@@ -15667,9 +15667,78 @@ paths:
       description: "**See:** [Modules](#description/modules)\n\nThe published schema - every module with its committed fields.\
         \ This is the drift-resistant source of truth for what a module actually looks like on this appliance (versus a static\
         \ schema snapshot). Each entry's `@id`/`uuid` is the IRI you pass to `/api/query` `models`, and `attributes` is the\
-        \ field list. Add `?$relationships=true` to populate `attributes` (omitted by default).\n\n**Auth coverage:** `API-KEY:\
-        \ OK` \xB7 `Bearer JWT: OK`"
-      parameters: *id021
+        \ field list. Add `?$relationships=true` to populate `attributes` (omitted by default).\n\n**One module in one request:**\
+        \ `?type=<slug>&$relationships=true`. The `type` filter alone returns the module's header row with an **empty** `attributes`\
+        \ list (~1.6 KB); adding `$relationships=true` populates all fields (~227 KB for `alerts`). The result is identical\
+        \ to the by-uuid GET apart from an added `@context`, so there is no reason to list every module and then fetch by\
+        \ uuid.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT: OK`"
+      parameters: &id040
+      - *id002
+      - *id003
+      - *id004
+      - *id005
+      - *id006
+      - *id007
+      - name: $fields
+        in: query
+        description: 'Comma-separated projection. **Cannot be combined with `$relationships=true` on this endpoint** - the
+          pair returns `500 Internal Server Error` (not a 400). Use one or the other: `$fields` for a cheap module inventory,
+          `$relationships` for full schemas.'
+        schema:
+          type: string
+        example: type,uuid
+      - name: $search
+        in: query
+        description: Accepted but always returns 0 matches here - ModelMetadata declares no searchable fields. Filter on `type`
+          / `type$like` instead.
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: 'Exact-match filter on the module slug. **This is how you fetch one module''s schema without knowing
+          its uuid** - pair it with `$relationships=true` and you get the full definition in a single request instead of listing
+          every module to find the uuid first. Case-sensitive: `alerts` matches, `Alerts` returns 0.'
+        schema:
+          type: string
+        example: alerts
+      - name: module
+        in: query
+        description: Same value as `type` on every stock module; filters identically.
+        schema:
+          type: string
+        example: alerts
+      - name: tableName
+        in: query
+        description: Filter by the underlying table name (usually == `type`; differs after a table rename).
+        schema:
+          type: string
+        example: alerts
+      - name: type$in
+        in: query
+        description: Multi-module fetch, pipe-delimited - one round-trip for several schemas.
+        schema:
+          type: string
+        example: alerts|incidents
+      - name: type$like
+        in: query
+        description: Case-insensitive LIKE on the slug. Use `%` and `_` wildcards.
+        schema:
+          type: string
+        example: '%alert%'
+      - name: system
+        in: query
+        description: '`false` returns only non-system (custom + customised) modules.'
+        schema:
+          type: boolean
+        example: false
+      - name: attributes.name
+        in: query
+        description: 'Dot-notation into the field list: returns every module that HAS a field with this name - the cheap answer
+          to "which modules define `severity`?". Works with or without `$relationships=true`. Note it selects **modules**,
+          not fields: each match still carries its complete `attributes` list, not just the matching field.'
+        schema:
+          type: string
+        example: severity
       responses:
         '200':
           description: Hydra collection of ModelMetadata records.
@@ -15913,7 +15982,11 @@ paths:
 
         One committed module schema record by uuid, with its `attributes` (fields). Add `?$relationships=true` to fully populate
         each attribute''s `dataSource` (picklist binding) and relationship metadata. The published store is what record reads
-        are validated against; a module that exists only in staging is not yet live.'
+        are validated against; a module that exists only in staging is not yet live.
+
+
+        If you have the module slug but not its uuid, prefer `GET /api/3/model_metadatas?type=<slug>&$relationships=true`
+        - same payload, no uuid lookup first.'
       responses:
         '200':
           description: A ModelMetadata record.
@@ -15934,8 +16007,14 @@ paths:
         The editable draft schema. The in-product Module Editor and any staging write target this store; nothing here is live
         until `PUT /api/publish`. On many appliances staging mirrors published, so the two lists match when the appliance
         is fully published. Add `?$relationships=true` to populate `attributes` (required to diff staged vs. published for
-        field-level changes).'
-      parameters: *id021
+        field-level changes).
+
+
+        **One module in one request:** `?type=<slug>&$relationships=true`. The `type` filter alone returns the module''s header
+        row with an **empty** `attributes` list (~1.6 KB); adding `$relationships=true` populates all fields (~227 KB for
+        `alerts`). The result is identical to the by-uuid GET apart from an added `@context`, so there is no reason to list
+        every module and then fetch by uuid.'
+      parameters: *id040
       responses:
         '200':
           description: Hydra collection of staging ModelMetadata records.
@@ -16110,7 +16189,10 @@ paths:
 
 
         One staged module record by uuid, with its draft `attributes`. Add `?$relationships=true` to populate each attribute''s
-        `dataSource`.'
+        `dataSource`.
+
+
+        If you have the module slug but not its uuid, prefer `GET /api/3/staging_model_metadatas?type=<slug>&$relationships=true`.'
       parameters:
       - name: $relationships
         in: query
