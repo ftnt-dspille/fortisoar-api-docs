@@ -2835,6 +2835,76 @@ PATHS["/api/integration/agent-installer/"] = {
 # model (staging draft -> publish -> live) and the storage-vs-display field-type
 # distinction are documented in the "Modules" section of the introduction.
 
+# Filter params for the two metadata COLLECTION endpoints. Same role as
+# RECORD_FILTER_QPARAMS: illustrative, not exhaustive - the URL-param grammar
+# accepts any column on ModelMetadata with any operator. Every entry below was
+# live-verified against 8.0.0 on both /api/3/model_metadatas and
+# /api/3/staging_model_metadatas (identical behaviour on each).
+MODULE_METADATA_FILTER_QPARAMS = [
+    {"name": "type", "in": "query",
+     "description": (
+         "Exact-match filter on the module slug. **This is how you fetch one module's schema "
+         "without knowing its uuid** - pair it with `$relationships=true` and you get the full "
+         "definition in a single request instead of listing every module to find the uuid first. "
+         "Case-sensitive: `alerts` matches, `Alerts` returns 0."
+     ),
+     "schema": {"type": "string"}, "example": "alerts"},
+    {"name": "module", "in": "query",
+     "description": "Same value as `type` on every stock module; filters identically.",
+     "schema": {"type": "string"}, "example": "alerts"},
+    {"name": "tableName", "in": "query",
+     "description": "Filter by the underlying table name (usually == `type`; differs after a table rename).",
+     "schema": {"type": "string"}, "example": "alerts"},
+    {"name": "type$in", "in": "query",
+     "description": "Multi-module fetch, pipe-delimited - one round-trip for several schemas.",
+     "schema": {"type": "string"}, "example": "alerts|incidents"},
+    {"name": "type$like", "in": "query",
+     "description": "Case-insensitive LIKE on the slug. Use `%` and `_` wildcards.",
+     "schema": {"type": "string"}, "example": "%alert%"},
+    {"name": "system", "in": "query",
+     "description": "`false` returns only non-system (custom + customised) modules.",
+     "schema": {"type": "boolean"}, "example": False},
+    {"name": "attributes.name", "in": "query",
+     "description": (
+         "Dot-notation into the field list: returns every module that HAS a field with this name - "
+         "the cheap answer to \"which modules define `severity`?\". Works with or without "
+         "`$relationships=true`. Note it selects **modules**, not fields: each match still carries "
+         "its complete `attributes` list, not just the matching field."
+     ),
+     "schema": {"type": "string"}, "example": "severity"},
+]
+
+# Caveats measured on these two endpoints specifically; spliced in alongside
+# COMMON_QPARAMS so the generic descriptions don't mislead here.
+_MM_FIELDS_CAVEAT = {
+    "name": "$fields", "in": "query",
+    "description": (
+        "Comma-separated projection. **Cannot be combined with `$relationships=true` on this "
+        "endpoint** - the pair returns `500 Internal Server Error` (not a 400). Use one or the "
+        "other: `$fields` for a cheap module inventory, `$relationships` for full schemas."
+    ),
+    "schema": {"type": "string"}, "example": "type,uuid"}
+_MM_SEARCH_CAVEAT = {
+    "name": "$search", "in": "query",
+    "description": (
+        "Accepted but always returns 0 matches here - ModelMetadata declares no searchable "
+        "fields. Filter on `type` / `type$like` instead."
+    ),
+    "schema": {"type": "string"}}
+MODULE_METADATA_QPARAMS = [
+    p for p in COMMON_QPARAMS if p["name"] not in ("$fields", "$search")
+] + [_MM_FIELDS_CAVEAT, _MM_SEARCH_CAVEAT] + MODULE_METADATA_FILTER_QPARAMS
+
+# Shared tail for both collection descriptions - the one-request recipe plus the
+# numbers that justify it (measured on 8.0.0, alerts module, 126 attributes).
+_MM_ONE_SHOT = (
+    "\n\n**One module in one request:** `?type=<slug>&$relationships=true`. The `type` filter "
+    "alone returns the module's header row with an **empty** `attributes` list (~1.6 KB); adding "
+    "`$relationships=true` populates all fields (~227 KB for `alerts`). The result is identical "
+    "to the by-uuid GET apart from an added `@context`, so there is no reason to list every "
+    "module and then fetch by uuid."
+)
+
 PATHS["/api/3/model_metadatas"] = {
     "get": {"tags": ["Modules"], "summary": "List published module definitions",
             "description": (
@@ -2843,8 +2913,9 @@ PATHS["/api/3/model_metadatas"] = {
                 "appliance (versus a static schema snapshot). Each entry's `@id`/`uuid` is the "
                 "IRI you pass to `/api/query` `models`, and `attributes` is the field list. Add "
                 "`?$relationships=true` to populate `attributes` (omitted by default)."
+                + _MM_ONE_SHOT
             ),
-            "parameters": COMMON_QPARAMS,
+            "parameters": MODULE_METADATA_QPARAMS,
             "responses": {"200": _resp("Hydra collection of ModelMetadata records.")}},
 }
 
@@ -2857,6 +2928,9 @@ PATHS["/api/3/model_metadatas/{uuid}"] = {
                 "(picklist binding) and relationship metadata. The published store is what "
                 "record reads are validated against; a module that exists only in staging "
                 "is not yet live."
+                "\n\nIf you have the module slug but not its uuid, prefer "
+                "`GET /api/3/model_metadatas?type=<slug>&$relationships=true` - same payload, "
+                "no uuid lookup first."
             ),
             "responses": {"200": _resp("A ModelMetadata record.")}},
 }
@@ -2869,8 +2943,9 @@ PATHS["/api/3/staging_model_metadatas"] = {
                 "appliances staging mirrors published, so the two lists match when the "
                 "appliance is fully published. Add `?$relationships=true` to populate "
                 "`attributes` (required to diff staged vs. published for field-level changes)."
+                + _MM_ONE_SHOT
             ),
-            "parameters": COMMON_QPARAMS,
+            "parameters": MODULE_METADATA_QPARAMS,
             "responses": {"200": _resp("Hydra collection of staging ModelMetadata records.")}},
     "post": {
         "tags": ["Modules"],
@@ -2931,6 +3006,8 @@ PATHS["/api/3/staging_model_metadatas/{uuid}"] = {
             "description": (
                 "One staged module record by uuid, with its draft `attributes`. Add "
                 "`?$relationships=true` to populate each attribute's `dataSource`."
+                "\n\nIf you have the module slug but not its uuid, prefer "
+                "`GET /api/3/staging_model_metadatas?type=<slug>&$relationships=true`."
             ),
             "parameters": [{"name": "$relationships", "in": "query", "schema": {"type": "boolean"}}],
             "responses": {"200": _resp("A staging ModelMetadata record.")}},
