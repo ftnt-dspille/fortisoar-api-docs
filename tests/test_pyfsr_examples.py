@@ -30,10 +30,14 @@ _WF_UUID = "c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56"
 _FERNET = "gAAAAABkXyQ_fernet_token_placeholder"
 
 
-def _fake_response(status_code: int, body: bytes) -> requests.Response:
+def _fake_response(
+    status_code: int, body: bytes, *, content_type: str | None = None
+) -> requests.Response:
     resp = requests.Response()
     resp.status_code = status_code
     resp._content = body
+    if content_type:
+        resp.headers["Content-Type"] = content_type
     return resp
 
 
@@ -41,8 +45,16 @@ def _fake_request(self, method, url, **kwargs):
     if url.endswith("/auth/authenticate"):
         return _fake_response(200, b'{"token": "fake-token"}')
     if "staging_model_metadatas" in url:
-        # No picklist-backed fields -- friendly values pass through untouched.
-        return _fake_response(200, b'{"hydra:member": [{"type": "alerts", "attributes": []}]}')
+        # Two members: "alerts" (for list_modules) and "incidents" with a
+        # name field (for describe_module — the doctest asserts fields[0]).
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"type": "alerts", "module": "alerts", "attributes": []},
+            {"type": "incidents", "module": "incidents", "attributes": [
+                {"name": "name", "type": "string", "formType": "text",
+                 "descriptions": {"singular": "Name"},
+                 "validation": {"required": True}},
+            ]},
+        ]}).encode())
     # --- API-key users (JWT-only) ---
     # All four ops return the {"usersresp": [user]} envelope. The doctests use
     # demo_client_jwt() (UserPasswordAuth), which hits /auth/authenticate first
@@ -465,6 +477,38 @@ def _fake_request(self, method, url, **kwargs):
     # delete: DELETE /api/wf/api/manual-wf-input/<pk>/ returns 204.
     if method == "DELETE" and "/api/wf/api/manual-wf-input/" in url:
         return _fake_response(204, b"")
+    # --- Export/import ---
+    # create_template: POST /api/3/export_templates — returns the created
+    # template record (name + @id; the doctest asserts both).
+    if method == "POST" and url.endswith("/api/3/export_templates"):
+        return _fake_response(200, json.dumps({
+            "name": "Alert backup",
+            "@id": "/api/3/export_templates/880e8400-e29b-41d4-a716-446655440022",
+        }).encode())
+    # trigger export: PUT /api/export?fileName=...&template=... — query-
+    # param body, not JSON; returns the export job uuid.
+    if method == "PUT" and "/api/export?" in url:
+        return _fake_response(200, json.dumps({"jobUuid": "export-job-001"}).encode())
+    # poll export status: GET /api/3/export_jobs/<uuid> — return "Export
+    # Complete" immediately (doctest uses poll_interval=0) with a file IRI.
+    if method == "GET" and "/api/3/export_jobs/" in url:
+        return _fake_response(200, json.dumps({
+            "status": "Export Complete",
+            "file": {"@id": "/api/3/files/file-001"},
+        }).encode())
+    # download export archive: GET /api/3/files/<uuid> with Accept:
+    # application/octet-stream — raw bytes (client.get() content-type
+    # dispatch returns response.content for octet-stream).
+    if method == "GET" and "/api/3/files/" in url:
+        return _fake_response(200, b"ZIPBYTES", content_type="application/octet-stream")
+    # --- File upload ---
+    # upload: POST /api/3/files (multipart) — returns a FileRecord with
+    # filename + @id (the doctest asserts both).
+    if method == "POST" and url.endswith("/api/3/files"):
+        return _fake_response(201, json.dumps({
+            "filename": "report.csv",
+            "@id": "/api/3/files/880e8400-e29b-41d4-a716-446655440010",
+        }).encode())
     raise AssertionError(f"unmocked request: {method} {url}")
 
 

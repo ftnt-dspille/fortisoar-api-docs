@@ -182,6 +182,11 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("put", "/api/3/api_keys/{uuid}"): ("doctest", "pyfsr.api.api_keys:ApiKeysAPI.update"),
     # System queries / model metadatas
     ("get", "/api/3/model_metadatas"): ("doctest", "pyfsr.api.system_queries:SystemQueriesAPI.model_iri"),
+    # Modules - schema discovery + module editor. ``list_modules``/``describe_module``
+    # read staging_model_metadatas; ``is_published``/``pending_changes`` read the
+    # published store and diff against staging (the "is this module live?" check).
+    ("get", "/api/3/staging_model_metadatas"): ("doctest", "pyfsr.api.modules"),
+    ("get", "/api/3/model_metadatas/{uuid}"): ("doctest", "pyfsr.api.modules_admin"),
     # Solution packs / import jobs
     # NOTE: ``POST /api/3/solutionpacks/install`` serves three uses — a by-name
     # Content-Hub install (``SolutionPackAPI.install``, no $type), a multipart
@@ -193,6 +198,15 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # reader into naming a connector they have on disk as a Content-Hub pack).
     ("post", "/api/3/solutionpacks/install"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.install_from_file"),
     ("post", "/api/3/import_jobs"): ("doctest", "pyfsr.api.import_config:ImportConfigAPI.create_job"),
+    # Export/import — export template create + the export trigger (PUT
+    # /api/export, query-param body not JSON). The trigger is JWT-only; the
+    # doctest for export_by_template_uuid exercises the full trigger→poll→
+    # download flow. create_template is open to any auth.
+    ("post", "/api/3/export_templates"): ("doctest", "pyfsr.api.export_config:ExportConfigAPI.create_template"),
+    ("put", "/api/export"): ("doctest", "pyfsr.api.export_config:ExportConfigAPI.export_by_template_uuid"),
+    # File upload — the /api/3/files upload primitive import/export/widgets
+    # all build on. Returns a FileRecord (filename + @id).
+    ("post", "/api/3/files"): ("doctest", "pyfsr.utils.file_operations:FileOperations.upload"),
     # System (version / permissions / feature-access)
     ("get", "/api/version"): ("doctest", "pyfsr.api.system:SystemAPI.version"),
     ("get", "/api/permissions/current"): ("doctest", "pyfsr.api.system:SystemAPI.permissions"),
@@ -409,14 +423,20 @@ def response_model_for(http_method: str, path: str) -> str | None:
     return _ann_to_model(ann)
 
 
-def apply_pyfsr_response_models(paths: dict) -> int:
+def apply_pyfsr_response_models(paths: dict, schemas: dict | None = None) -> int:
     """Attach ``x-pyfsr-response-model`` to each op's first 2xx response.
 
     The extension names the pyfsr Pydantic class that ``x-codeSamples`` would
     parse the response into, so readers see what typed object they get back.
     Skips ops with no pyfsr entry, no doctest (manual samples), or an
     untyped return (``dict[str, Any]`` / ``bytes`` / ``None`` / ``Any``).
-    Returns the count attached.
+
+    When ``schemas`` is given (the spec's ``components.schemas`` dict), also
+    wires the matching ``$ref`` onto the 2xx response's content schema so the
+    model renders as a linked, expandable response shape — not just a name.
+    ``list[Model]`` is wrapped as an array of the model; unions (``A | B``)
+    are skipped (too ambiguous to pick one). Never overwrites an existing
+    ``schema.$ref``. Returns the count of ``x-pyfsr-response-model`` tags set.
     """
     applied = 0
     for path, path_item in paths.items():
@@ -432,5 +452,21 @@ def apply_pyfsr_response_models(paths: dict) -> int:
                 if str(code) in {"200", "201", "202", "204"}:
                     resp["x-pyfsr-response-model"] = model
                     applied += 1
+                    # Wire the $ref so the model renders as a linked response
+                    # schema (only when we have it and nothing is already set).
+                    if schemas is not None and "|" not in model:
+                        inner = model
+                        is_list = inner.startswith("list[") and inner.endswith("]")
+                        if is_list:
+                            inner = inner[5:-1]
+                        if inner in schemas:
+                            ct = resp.setdefault("content", {}).setdefault("application/json", {})
+                            existing = ct.get("schema")
+                            if not (isinstance(existing, dict) and "$ref" in existing):
+                                if is_list:
+                                    ct["schema"] = {"type": "array",
+                                                    "items": {"$ref": f"#/components/schemas/{inner}"}}
+                                else:
+                                    ct["schema"] = {"$ref": f"#/components/schemas/{inner}"}
                     break
     return applied
