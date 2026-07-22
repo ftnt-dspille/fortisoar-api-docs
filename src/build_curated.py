@@ -295,6 +295,322 @@ SCHEMAS = {
 # cardinality + picklist taxonomy hints; regenerate via src/module_to_schema.py.
 SCHEMAS.update(_GENERATED_SCHEMAS)
 
+# --- Curated typed-model schemas (pyfsr response models) -------------------
+# Hand-shaped from the Pydantic models pyfsr parses API responses into (the
+# same classes surfaced on ops as `x-pyfsr-response-model`). These are the
+# platform-owned, fixed-schema entities (agents, API keys, connectors, playbook
+# runs, notifications, scheduled tasks) that the record-module generator
+# doesn't cover. Curated to the most-used fields, not every internal key; the
+# live wire shape is dict-compatible and tolerates extras.
+
+SCHEMAS.update({
+    "FileRecord": {
+        "type": "object",
+        "description": "A file upload record (`/api/3/files`). The `@id` is the IRI import/export jobs reference as their `file` field.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "File"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "filename": {"type": ["string", "null"], "description": "Original filename."},
+            "mimeType": {"type": ["string", "null"]},
+            "size": {"type": ["integer", "null"], "description": "Bytes."},
+            "uploadDate": {"type": ["number", "null"], "description": "Epoch seconds."},
+            "createUser": {"type": ["string", "object", "null"]},
+            "createDate": {"type": ["number", "null"]},
+            "modifyDate": {"type": ["number", "null"]},
+        },
+    },
+    "ApiKey": {
+        "type": "object",
+        "description": "An API-key binding record (`/api/3/api_keys`). Binds a key user to roles and teams.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "ApiKey"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": "string", "description": "Binding display name."},
+            "title": {"type": ["string", "null"]},
+            "userId": {"type": ["string", "null"], "description": "IRI of the owning API-key user (`/api/3/people/<uuid>`)."},
+            "roles": {"type": "array", "items": {"$ref": "#/components/schemas/IRI"},
+                      "description": "Role IRIs granted to this key."},
+            "teams": {"type": "array", "items": {"$ref": "#/components/schemas/IRI"},
+                      "description": "Team IRIs this key belongs to."},
+            "createUser": {"type": ["string", "object", "null"]},
+            "createDate": {"type": ["number", "null"], "description": "Epoch seconds."},
+            "modifyUser": {"type": ["string", "object", "null"]},
+            "modifyDate": {"type": ["number", "null"]},
+        },
+    },
+    "ApiKeyUser": {
+        "type": "object",
+        "description": "An API-key user account (`/api/auth/users` with `type=9`). The `api_key` block is returned only on create/regenerate.",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "user_type": {"type": ["integer", "null"], "description": "Account type (9 = API key)."},
+            "status": {"type": ["integer", "null"], "description": "1 = active, 0 = inactive."},
+            "access_type": {"type": ["string", "null"]},
+            "loginid": {"type": ["string", "null"], "description": "Login id for the key user."},
+            "api_key": {"$ref": "#/components/schemas/ApiKeyMaterial"},
+            "bind_name": {"type": ["string", "null"]},
+            "domain": {"type": ["string", "null"]},
+            "is_logged_in": {"type": ["boolean", "null"]},
+        },
+    },
+    "ApiKeyMaterial": {
+        "type": "object",
+        "description": "The plaintext key material, returned only on create/regenerate (never on read).",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "key": {"type": ["string", "null"], "description": "The plaintext API key. Shown once."},
+            "retrievable": {"type": ["boolean", "null"], "description": "Whether the key can be re-read later."},
+            "status": {"type": ["string", "null"]},
+            "valid_until": {"type": ["integer", "null"], "description": "Epoch the key expires."},
+            "time_remaining": {"type": ["integer", "null"], "description": "Seconds until expiry."},
+        },
+    },
+    "Agent": {
+        "type": "object",
+        "description": "A remote-agent record (`/api/3/agents`). The self-agent is hardcoded at uuid `973c17df-...` on every install.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "Agent"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "agentId": {"type": ["string", "null"], "description": "Runtime SME bus id (varies per appliance)."},
+            "name": {"type": ["string", "null"]},
+            "active": {"type": ["boolean", "null"]},
+            "description": {"type": ["string", "null"]},
+            "created": {"type": ["string", "null"]},
+            "modified": {"type": ["string", "null"]},
+            "router": {"type": ["string", "object", "null"], "description": "Router IRI or expanded record."},
+            "installerType": {"type": ["string", "null"], "description": "Picklist IRI: bash or docker."},
+            "configurationHealth": {"type": ["string", "null"], "description": "Picklist IRI; `Remote Node Connected` once paired."},
+        },
+    },
+    "FeedIngestResult": {
+        "type": "object",
+        "description": "Result of a trigger-bypassing feed ingest (`/api/ingest-feeds/*`).",
+        "properties": {
+            "status": {"type": "string", "description": "Success / failure indicator."},
+            "uuids": {"type": "array", "items": {"type": "string"}, "description": "UUIDs of ingested records."},
+        },
+        "required": ["status"],
+    },
+    "BulkUpsertResult": {
+        "type": "object",
+        "description": "Outcome of `POST /api/3/bulkupsert/{moduleType}` - per-record succeeded/failed split.",
+        "properties": {
+            "succeeded": {"type": "array", "items": {"type": "object"},
+                          "description": "Records that upserted cleanly."},
+            "failed": {"type": "array", "items": {"type": "object"},
+                       "description": "Records that failed, with error details."},
+        },
+        "required": ["succeeded", "failed"],
+    },
+    "RunSummary": {
+        "type": "object",
+        "description": "A playbook execution summary (from `/api/wf/api/workflows/` or `historical-workflows`).",
+        "properties": {
+            "task_id": {"type": ["string", "null"], "description": "The run's task id - used to poll logs."},
+            "name": {"type": ["string", "null"], "description": "Playbook name."},
+            "status": {"type": ["string", "null"], "description": "success / failed / awaiting / running."},
+            "error_message": {"type": ["string", "null"]},
+            "modified": {"type": ["string", "null"]},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "pk": {"type": ["string", "null"], "description": "Primary key for the execution record."},
+            "source": {"type": ["string", "null"]},
+        },
+    },
+    "ManualInput": {
+        "type": "object",
+        "description": "A pending manual-input / approval step awaiting user action (`/api/wf/api/manual-wf-input/`).",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "id": {"type": ["integer", "null"]},
+            "record": {"type": ["string", "null"], "description": "IRI of the record the workflow paused on."},
+            "type": {"type": ["string", "null"]},
+            "title": {"type": ["string", "null"]},
+            "assignment_type": {"type": ["string", "null"]},
+            "created": {"type": ["string", "null"]},
+            "step_id": {"type": ["integer", "null"]},
+            "unauthenticated_input": {"type": ["boolean", "null"]},
+            "agent_id": {"type": ["string", "null"]},
+            "is_approval": {"type": ["boolean", "null"], "description": "True for approval steps, false for manual input."},
+            "workflow": {"type": ["string", "integer", "null"], "description": "IRI or pk of the paused workflow."},
+        },
+    },
+    "ManualInputResume": {
+        "type": "object",
+        "description": "Response from resuming a manual-input step.",
+        "properties": {
+            "task_id": {"type": ["string", "null"]},
+            "message": {"type": ["string", "null"]},
+        },
+    },
+    "Notification": {
+        "type": "object",
+        "description": "A per-user system (bell-icon) notification (`/api/rule/api/system-notification/notifications/`).",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "content": {"type": ["string", "null"], "description": "Notification body text."},
+            "entity_type": {"type": ["string", "null"]},
+            "event_type": {"type": ["string", "null"]},
+            "entity_id": {"type": ["string", "null"]},
+            "read": {"type": ["boolean", "null"]},
+            "dismissible": {"type": ["boolean", "null"]},
+            "created_on": {"type": ["string", "null"]},
+            "user": {"type": ["string", "null"], "description": "User IRI."},
+        },
+    },
+    "NotificationPurge": {
+        "type": "object",
+        "description": "Response from purging notifications.",
+        "properties": {
+            "result": {"type": ["string", "null"]},
+            "status": {"type": ["string", "null"]},
+        },
+    },
+    "CrontabScheduleModel": {
+        "type": "object",
+        "description": "Crontab fields for a scheduled task.",
+        "properties": {
+            "minute": {"type": ["string", "null"], "example": "0"},
+            "hour": {"type": ["string", "null"], "example": "9"},
+            "day_of_month": {"type": ["string", "null"], "example": "*"},
+            "month_of_year": {"type": ["string", "null"], "example": "*"},
+            "day_of_week": {"type": ["string", "null"], "example": "1-5"},
+            "timezone": {"type": ["string", "null"], "example": "UTC"},
+        },
+    },
+    "ScheduledTask": {
+        "type": "object",
+        "description": "A periodic task under `/api/wf/api/scheduled/` - a nested crontab + a `kwargs.wf_iri` pointing at the workflow.",
+        "properties": {
+            "id": {"type": ["string", "null"], "description": "Per-request Fernet token - resolve by `name`."},
+            "name": {"type": ["string", "null"]},
+            "crontab": {"$ref": "#/components/schemas/CrontabScheduleModel"},
+            "task": {"type": ["string", "null"], "description": "Celery task path."},
+            "kwargs": {"type": "object", "description": "Carries `wf_iri` (the workflow IRI to run)."},
+            "enabled": {"type": ["boolean", "null"]},
+            "one_off": {"type": ["boolean", "null"]},
+            "last_run_at": {"type": ["string", "null"]},
+            "total_run_count": {"type": ["integer", "null"]},
+            "description": {"type": ["string", "null"]},
+        },
+    },
+    "TriggerResponse": {
+        "type": "object",
+        "description": "Response from triggering a playbook - carries the `task_id` to poll.",
+        "properties": {
+            "task_id": {"type": ["string", "array", "null"],
+                        "description": "The run's task id (or ids for fan-out). May be absent on a misconfigured trigger."},
+        },
+    },
+    "ConnectorConfigSummary": {
+        "type": "object",
+        "description": "A lightweight connector-config reference (one entry per config on an installed connector).",
+        "properties": {
+            "id": {"type": ["integer", "null"]},
+            "config_id": {"type": ["string", "null"], "description": "UUID of the config."},
+            "name": {"type": ["string", "null"]},
+            "default": {"type": "boolean"},
+        },
+    },
+    "InstalledConnector": {
+        "type": "object",
+        "description": "An installed connector listing from `/api/integration/connectors/`.",
+        "properties": {
+            "id": {"type": ["integer", "null"], "description": "Integer connector id (used in config + execute bodies)."},
+            "name": {"type": ["string", "null"]},
+            "version": {"type": ["string", "null"]},
+            "label": {"type": ["string", "null"]},
+            "active": {"type": ["boolean", "null"]},
+            "system": {"type": ["boolean", "null"]},
+            "config_count": {"type": ["integer", "null"]},
+            "status": {"type": ["string", "null"]},
+            "configurations": {"type": "array", "items": {"$ref": "#/components/schemas/ConnectorConfigSummary"}},
+            "ingestion_supported": {"type": ["boolean", "null"]},
+            "agent": {"type": ["string", "null"], "description": "Agent id if installed on a remote agent."},
+            "development": {"type": ["boolean", "null"]},
+            "created": {"type": ["string", "null"]},
+            "modified": {"type": ["string", "null"]},
+        },
+    },
+    "ConnectorConfig": {
+        "type": "object",
+        "description": "A connector configuration record (from `/api/integration/configuration/`).",
+        "properties": {
+            "id": {"type": ["integer", "null"]},
+            "config_id": {"type": ["string", "null"], "description": "UUID - the `config` value passed to execute."},
+            "name": {"type": ["string", "null"]},
+            "default": {"type": "boolean"},
+            "status": {"type": ["integer", "null"]},
+            "config": {"type": "object", "description": "The connector's field values."},
+            "connector": {"type": ["integer", "null"], "description": "Integer connector id."},
+            "agent": {"type": ["string", "null"], "description": "Agent id for remote-agent configs."},
+        },
+    },
+    "ExecuteResult": {
+        "type": "object",
+        "description": "Result of `POST /api/integration/execute/`.",
+        "properties": {
+            "operation": {"type": ["string", "null"], "description": "The connector action that ran."},
+            "status": {"type": ["string", "null"], "description": "Success / failure."},
+            "message": {"type": ["string", "null"]},
+            "data": {"type": "object", "description": "Action output payload."},
+        },
+    },
+    "HealthcheckResult": {
+        "type": "object",
+        "description": "Result of a connector health check.",
+        "properties": {
+            "status": {"type": ["string", "null"]},
+            "message": {"type": ["string", "null"]},
+            "name": {"type": ["string", "null"], "description": "Connector name."},
+            "version": {"type": ["string", "null"]},
+            "config_id": {"type": ["string", "null"]},
+            "request_id": {"type": ["string", "null"]},
+            "http_status": {"type": ["integer", "null"]},
+            "ok": {"type": ["boolean", "null"], "description": "True if the config is healthy."},
+        },
+    },
+    "ModulePermission": {
+        "type": "object",
+        "description": "Per-module CRUD+execute grant on a role.",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "canCreate": {"type": ["boolean", "null"]},
+            "canRead": {"type": ["boolean", "null"]},
+            "canUpdate": {"type": ["boolean", "null"]},
+            "canDelete": {"type": ["boolean", "null"]},
+            "canExecute": {"type": ["boolean", "null"]},
+            "module": {"type": ["string", "null"], "description": "Module type the grant covers."},
+        },
+    },
+    "Role": {
+        "type": "object",
+        "description": "An RBAC role (`/api/3/roles`).",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "Role"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "description": {"type": ["string", "null"]},
+            "modulePermissions": {"type": "array", "items": {"$ref": "#/components/schemas/ModulePermission"}},
+        },
+    },
+    "Team": {
+        "type": "object",
+        "description": "A team / ownership group (`/api/3/teams`).",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "Team"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "description": {"type": ["string", "null"]},
+            "actors": {"type": "array", "items": {"type": ["string", "object"]},
+                       "description": "Member IRIs (users / appliances / API keys)."},
+        },
+    },
+})
 
 # Standard query parameters reused across /api/3/*
 COMMON_QPARAMS = [
@@ -2513,13 +2829,222 @@ PATHS["/api/integration/agent-installer/"] = {
 }
 
 
-# --- Modules / metadata ----------------------------------------------------
+# --- Modules ---------------------------------------------------------------
+# Module + field schema: discovery (model_metadatas / staging_model_metadatas)
+# and the module editor (staging CRUD + appliance-wide publish). The two-store
+# model (staging draft -> publish -> live) and the storage-vs-display field-type
+# distinction are documented in the "Modules" section of the introduction.
 
 PATHS["/api/3/model_metadatas"] = {
-    "get": {"tags": ["Metadata"], "summary": "List module / model definitions",
-            "description": "Drift-resistant alternative to a static schema snapshot.",
-            "responses": {"200": _resp("Collection of ModelMetadata.")}},
+    "get": {"tags": ["Modules"], "summary": "List published module definitions",
+            "description": (
+                "The published schema - every module with its committed fields. This is the "
+                "drift-resistant source of truth for what a module actually looks like on this "
+                "appliance (versus a static schema snapshot). Each entry's `@id`/`uuid` is the "
+                "IRI you pass to `/api/query` `models`, and `attributes` is the field list. Add "
+                "`?$relationships=true` to populate `attributes` (omitted by default)."
+            ),
+            "parameters": COMMON_QPARAMS,
+            "responses": {"200": _resp("Hydra collection of ModelMetadata records.")}},
 }
+
+PATHS["/api/3/model_metadatas/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "get": {"tags": ["Modules"], "summary": "Published module definition",
+            "description": (
+                "One committed module schema record by uuid, with its `attributes` (fields). "
+                "Add `?$relationships=true` to fully populate each attribute's `dataSource` "
+                "(picklist binding) and relationship metadata. The published store is what "
+                "record reads are validated against; a module that exists only in staging "
+                "is not yet live."
+            ),
+            "responses": {"200": _resp("A ModelMetadata record.")}},
+}
+
+PATHS["/api/3/staging_model_metadatas"] = {
+    "get": {"tags": ["Modules"], "summary": "List staged module definitions (drafts)",
+            "description": (
+                "The editable draft schema. The in-product Module Editor and any staging write "
+                "target this store; nothing here is live until `PUT /api/publish`. On many "
+                "appliances staging mirrors published, so the two lists match when the "
+                "appliance is fully published. Add `?$relationships=true` to populate "
+                "`attributes` (required to diff staged vs. published for field-level changes)."
+            ),
+            "parameters": COMMON_QPARAMS,
+            "responses": {"200": _resp("Hydra collection of staging ModelMetadata records.")}},
+    "post": {
+        "tags": ["Modules"],
+        "summary": "Create a module (staged)",
+        "description": (
+            "Stages a new module. Nothing is live until `PUT /api/publish` commits it. "
+            "`type`/`module`/`tableName` are the module's API slug (lowercase, "
+            "`[a-z][a-z0-9_]*`); they are usually identical. `attributes` is the field list - "
+            "each field needs both a storage `type` and a display `formType` (see "
+            "[Modules](#description/modules)). A field whose `type` is a display type (e.g. "
+            "`text`) fails the publish validator with \"Attribute type 'text' does not exist\" - "
+            "store `string` for text-like fields.\n\n"
+            "`?$relationships=true` is conventional on the POST so the response includes the "
+            "staged `attributes`. Creating a module does **not** create its list/detail/form "
+            "view layouts - post those to `/api/3/bulkupsert/system_view_templates` separately, "
+            "or the module has no grid/detail render in the UI."
+        ),
+        "parameters": [{"name": "$relationships", "in": "query", "schema": {"type": "boolean"},
+                       "description": "Populate `attributes` in the response."}],
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "required": ["type", "module", "attributes"],
+                       "properties": {
+                           "type": {"type": "string", "description": "Module slug (also the record `@type`)."},
+                           "module": {"type": "string", "description": "Collection name used in `/api/3/<module>`."},
+                           "tableName": {"type": "string", "description": "Underlying table name (usually == `type`)."},
+                           "displayName": {"type": "string", "description": "Display template, e.g. `{{ name }}`."},
+                           "descriptions": {"type": "object",
+                                            "description": "Singular/plural labels.",
+                                            "properties": {"singular": {"type": "string"}, "plural": {"type": "string"}}},
+                           "ownable": {"type": "boolean", "default": False},
+                           "taggable": {"type": "boolean", "default": False},
+                           "queueable": {"type": "boolean", "default": False},
+                           "softDeleteable": {"type": "boolean", "default": False, "description": "Recycle-bin on delete."},
+                           "peerReplicable": {"type": "boolean", "default": False, "description": "Multi-tenancy."},
+                           "system": {"type": "boolean", "default": False},
+                           "uniqueConstraint": {"type": "array", "description": "Record uniqueness, as `[{<table>_unique: {columns: [..]}}]`."},
+                           "defaultSort": {"type": "array"},
+                           "attributes": {"type": "array",
+                                          "description": "Field list. Each field needs `name`, `type`, `formType`.",
+                                          "items": {"type": "object", "properties": {
+                                              "name": {"type": "string"},
+                                              "type": {"type": "string", "description": "Storage type (`string`/`integer`/`float`/`boolean`/`picklists`/`object`/`array`/target module)."},
+                                              "formType": {"type": "string", "description": "Display type (`text`/`textarea`/`datetime`/`picklist`/`lookup`/...)."},
+                                              "descriptions": {"type": "object"},
+                                              "validation": {"type": "object", "properties": {"required": {"type": ["boolean", "object"]}}},
+                                          }},
+                           },
+                        }},
+        }}},
+        "responses": {"201": _resp("The staged module metadata record.")},
+    },
+}
+
+PATHS["/api/3/staging_model_metadatas/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
+    "get": {"tags": ["Modules"], "summary": "Staged module definition (draft)",
+            "description": (
+                "One staged module record by uuid, with its draft `attributes`. Add "
+                "`?$relationships=true` to populate each attribute's `dataSource`."
+            ),
+            "parameters": [{"name": "$relationships", "in": "query", "schema": {"type": "boolean"}}],
+            "responses": {"200": _resp("A staging ModelMetadata record.")}},
+    "put": {
+        "tags": ["Modules"],
+        "summary": "Update a module's staged fields / settings",
+        "description": (
+            "Edits the staged draft. A full-record PUT is rejected - the GET payload carries "
+            "read-only `@id`/`@context` keys - so PUT only the changed keys. To add or remove a "
+            "field, PUT `{\"attributes\": [...]}` with the full attribute list (append or remove "
+            "the entry). To change module settings, PUT the changed keys (e.g. "
+            "`{\"ownable\": true, \"userOwnable\": true}`). Change is staged until "
+            "`PUT /api/publish`."
+        ),
+        "parameters": [{"name": "$relationships", "in": "query", "schema": {"type": "boolean"}}],
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "properties": {
+                           "attributes": {"type": "array", "description": "Full field list (replace).",
+                                          "items": {"type": "object"}},
+                           "ownable": {"type": "boolean"},
+                           "taggable": {"type": "boolean"},
+                           "queueable": {"type": "boolean"},
+                           "softDeleteable": {"type": "boolean"},
+                           "displayName": {"type": "string"},
+                           "defaultSort": {"type": "array"},
+                           "uniqueConstraint": {"type": "array"},
+                        }},
+        }}},
+        "responses": {"200": _resp("The updated staging ModelMetadata record.")},
+    },
+    "delete": {
+        "tags": ["Modules"],
+        "summary": "Discard a module's staging draft",
+        "description": (
+            "Deletes the staged draft for a module (the in-product editor's \"Revert\" for an "
+            "unpublished module). This is **not** a module delete on its own: if the module was "
+            "never published it removes it; if it was published, the published record remains and "
+            "on the **next** `PUT /api/publish` that record is deleted (the module disappears "
+            "from the API). To delete a published module safely, remove its reverse "
+            "relationships first. 204 on success."
+        ),
+        "responses": {"204": _resp("Draft discarded.")},
+    },
+}
+
+PATHS["/api/publish"] = {
+    "put": {
+        "tags": ["Modules"],
+        "summary": "Publish all staged schema changes (appliance-wide)",
+        "description": (
+            "Promotes **every** pending staged change across the whole instance to live - not "
+            "just modules you touched. The PUT only *starts* the publish; the backup + migrate "
+            "then runs server-side, during which some surfaces may be briefly unavailable (see "
+            "[Modules -> Publish blast radius](#description/publish-blast-radius)). Poll "
+            "`GET /api/publish/error` until `last_publish_time` advances and `status` reads "
+            "`Success`.\n\n"
+            "A no-op publish (nothing staged) returns right away with no migrate. One "
+            "illegally-named draft anywhere can fail the whole migrate with a cryptic error that "
+            "does not name the offender - validate drafts before publishing. Schema validation "
+            "errors (e.g. a relationship with no matching reverse field) are returned "
+            "synchronously on the PUT itself."
+        ),
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object"}, "example": {},
+        }}},
+        "responses": {
+            "200": _resp("Publish started.", example={"status": "started"}),
+            "400": _err(400, "Schema validation rejected the publish."),
+        },
+    },
+}
+
+PATHS["/api/publish/revert"] = {
+    "put": {
+        "tags": ["Modules"],
+        "summary": "Discard all staged schema changes (appliance-wide)",
+        "description": (
+            "The inverse of `PUT /api/publish`: drops every uncommitted staged change across "
+            "the whole instance so staging matches the published schema again. Use it to "
+            "abandon a half-built change or clear a wedged draft. Appliance-wide - not scoped to "
+            "modules you touched. Unlike publish there is no migrate, so it returns "
+            "synchronously."
+        ),
+        "requestBody": {"required": False, "content": {"application/json": {
+            "schema": {"type": "object"}, "example": {},
+        }}},
+        "responses": {"200": _resp("Staging reverted.", example={"status": "Success"})},
+    },
+}
+
+PATHS["/api/publish/error"] = {
+    "get": {
+        "tags": ["Modules"],
+        "summary": "Last publish status / error",
+        "description": (
+            "Reports the outcome of the most recent `PUT /api/publish`: "
+            "`{\"status\": \"Success\"|\"Failed\"|..., \"last_publish_time\": <epoch>, \"errors\": ...}`. "
+            "A fresh `last_publish_time` with `status == \"Success\"` means the publish committed. "
+            "**Returns HTTP 400 (not 200)** when a prior publish error is on record - the body "
+            "still carries the same `status`/`last_publish_time` fields, so read it "
+            "status-agnostically. Useful as the readiness probe when polling a publish to "
+            "completion."
+        ),
+        "responses": {
+            "200": _resp("Last publish status.", example={"status": "Success", "last_publish_time": 1736380800}),
+            "400": _err(400, "A prior publish error is on record (body still carries status fields)."),
+        },
+    },
+}
+
+# --- Metadata --------------------------------------------------------------
+# Picklist taxonomies + values, Hydra @context docs, and the auto-generated
+# full API listing. Module definitions live under the Modules tag above.
 
 PATHS["/api/3/picklists"] = {
     "post": {
@@ -3142,6 +3667,7 @@ PATHS["/api/product/feature-access"] = {
 TAG_GROUPS = [
     {"name": "Auth & system", "tags": ["Authentication", "System", "Notifications", "Access management"]},
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
+    {"name": "Modules", "tags": ["Modules"]},
     {"name": "Query", "tags": ["Query"]},
     {"name": "Audit", "tags": ["Audit"]},
     {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents"]},
@@ -3213,7 +3739,17 @@ TAG_DESCRIPTIONS = {
         "`b3a700f7-00be-4ef9-90c6-3c8fe6e1be63`). Its `agentId` — the runtime `masterId` — varies "
         "per appliance; read it from `GET /api/3/agents/{self-uuid}`."
     ),
-    "Metadata": "Module and field definitions, picklist values, type contexts, and the auto-generated full API listing (handy for discovering endpoints not documented here).",
+    "Modules": (
+        "Module and field schema: discover the published data model (`model_metadatas`), edit "
+        "drafts in staging (`staging_model_metadatas`), and commit changes appliance-wide with "
+        "`PUT /api/publish`. Each module is a staging record with an `attributes` list; every "
+        "field has a storage `type` (the column kind) and a display `formType` (the editor "
+        "widget) - two distinct axes. Publish is **appliance-wide**, not per-module: one "
+        "`PUT /api/publish` promotes every pending staged change across the whole instance. See "
+        "the [Modules](#description/modules) introduction for the staging/publish model and "
+        "field-type rules."
+    ),
+    "Metadata": "Picklist taxonomies + values, Hydra `@context` type docs, and the auto-generated full API listing (handy for discovering endpoints not documented here).",
     "Files": "Attachment upload. Required as the first step of import-job ingestion.",
     "Widgets": (
         "Widget upload (shared with the connector install path), publish, "
@@ -3552,7 +4088,66 @@ If the last step produced no output, `result` is `null` even on `status: finishe
 - **Poll interval.** 5 s is a sensible floor; the executor batches log writes. Tighter polling just multiplies the request count without buying any latency.
 - **No `task_id` in response.** Usually means the trigger name is wrong (404 was masked by a redirect) or the playbook is inactive. The endpoint returns 200 with an empty body in some edge cases - always check before subscripting.
 - **`parent_wf__isnull=True` is required** for playbooks that fan out via `Execute Sub Playbook`. Without it the first match may be a child run that finishes before the parent.
-- **API-KEY vs Bearer.** API-KEY tokens don't expire, so they're the right choice for long-running tracker scripts; JWTs typically die after ~30 minutes mid-poll.
+ - **API-KEY vs Bearer.** API-KEY tokens don't expire, so they're the right choice for long-running tracker scripts; JWTs typically die after ~30 minutes mid-poll.
+
+## Modules
+
+A **module** is FortiSOAR's unit of schema: a named table with a list of fields
+("attributes"). Every record collection (`alerts`, `incidents`, custom modules) is
+backed by a module definition. The schema lives in two stores, and a third endpoint
+moves changes between them:
+
+- **Staging** (`/api/3/staging_model_metadatas`) - the editable draft. Creating a module
+  or changing a field edits staging only; nothing is live yet.
+- **Published** (`/api/3/model_metadatas`) - the committed schema records are read from.
+  `GET /api/3/model_metadatas` is the drift-resistant source of truth for what fields a
+  module actually has on this appliance.
+- **Publish** is a single appliance-wide `PUT /api/publish` that promotes *all* pending
+  staged changes to live. It is **not per-module** - one illegally-named draft anywhere
+  can fail the whole migrate, so validate drafts before publishing.
+
+### Field types - two axes
+
+Every field (attribute) carries a **storage type** (`type`) and a **display type**
+(`formType`). These are different axes and a correct field needs both:
+
+- `type` is the column kind the platform stores: `string`, `integer`, `float`,
+  `boolean`, `picklists`, `object`, `array`, or a target module type for a relationship.
+  There is **no `text` storage type** - text-like fields store `string`. Publishing a
+  field whose `type` is `text` fails validation ("Attribute type 'text' does not
+  exist").
+- `formType` is the editor widget: `text`, `textarea`, `richtext`, `html`, `email`,
+  `url`, `phone`, `password`, `filehash`, `ipv4`, `ipv6`, `domain`, `file`, `integer`,
+  `decimal`, `datetime`, `checkbox`, `json`, `object`, `picklist`,
+  `multiselectpicklist`, `lookup`, `manyToMany`, `oneToMany`.
+
+A `lookup` is a one-directional many-to-one pointer (no reverse field is created). A
+`manyToMany` is a collection relationship; with the **default** inverse the platform
+auto-creates the reverse field, with a **custom** `inversedField` you create the mirror
+yourself. A `oneToMany` needs a matching `lookup` on its target - it will not publish
+without one.
+
+### Publish blast radius
+
+Publish is synchronous in effect but asynchronous in execution - the PUT only *starts*
+the migrate; the backup + commit then runs server-side, during which some surfaces may
+be briefly unavailable. The impact is version- and change-dependent:
+
+- On older builds every publish - even a no-op - runs the full backup + migrate + cache
+  rebuild, during which the entire `/api/3` surface returns 503 for the whole window
+  (~50-57s observed).
+- On newer builds the impact is greatly reduced. A minor field-only edit (toggling
+  *visibility* or setting *required-by-condition*) commits in ~3s with no observable
+  outage. A **structural** change (adding a field/module) takes longer (~30s) and
+  disrupts only the *record/query layer*: record-list endpoints return transient 404
+  for ~13s and `/api/query` returns 400/401 for ~2.5s while the migrate runs - **not** a
+  global 503. Module-metadata, view-resolve, and picklist surfaces stay available
+  throughout. That record-layer blip is instance-wide, not scoped to the changed module.
+
+`GET /api/publish/error` reports the last publish's status
+(`{"status": "Success"|"Failed"|..., "last_publish_time": <epoch>}`) - it returns HTTP
+400 (rather than 200) when a prior error is on record, with the same JSON body, so poll
+it status-agnostically until `last_publish_time` advances.
 
 ## Imports & exports
 
@@ -4236,6 +4831,34 @@ CURATED_EXAMPLES = {
                              "status": "Import In Progress", "createDate": 1736380800}},
     },
 
+    # --- Module editor: create a module in staging (staged until PUT /api/publish) ---
+    ("POST", "/api/3/staging_model_metadatas"): {
+        "request": {
+            "type": "reconciliation_result",
+            "module": "reconciliation_result",
+            "tableName": "reconciliation_result",
+            "displayName": "{{ name }}",
+            "descriptions": {"singular": "Reconciliation Result",
+                             "plural": "Reconciliation Results"},
+            "ownable": True, "userOwnable": True,
+            "system": False,
+            "attributes": [
+                {"name": "name", "type": "string", "formType": "text",
+                 "descriptions": {"singular": "Name"}, "displayName": "{{ name }}",
+                 "validation": {"required": True, "minlength": 0, "maxlength": 10485760},
+                 "collection": False, "searchable": True, "gridColumn": True,
+                 "readable": True, "writeable": True},
+                {"name": "status", "type": "picklists", "formType": "picklist",
+                 "descriptions": {"singular": "Status"},
+                 "dataSource": {"model": "picklists", "query": {"logic": "AND",
+                  "filters": [{"field": "listName__name", "operator": "eq",
+                               "value": "ReconciliationStatus"}]}},
+                 "collection": False, "gridColumn": True,
+                 "readable": True, "writeable": True},
+            ],
+        },
+    },
+
 }
 
 
@@ -4253,6 +4876,14 @@ CROSS_LINKS = {
     "/api/3/bulkupsert/{moduleType}": "[Concepts](#description/concepts)",
     "/api/ingest-feeds/indicators": "[Concepts](#description/concepts) (trigger-bypass)",
     "/api/insert-feeds/{recordType}": "[Concepts](#description/concepts) (trigger-bypass)",
+    # Modules - schema discovery + module editor + publish
+    "/api/3/model_metadatas": "[Modules](#description/modules)",
+    "/api/3/model_metadatas/{uuid}": "[Modules](#description/modules)",
+    "/api/3/staging_model_metadatas": "[Modules](#description/modules)",
+    "/api/3/staging_model_metadatas/{uuid}": "[Modules](#description/modules)",
+    "/api/publish": "[Publish blast radius](#description/publish-blast-radius)",
+    "/api/publish/revert": "[Modules](#description/modules)",
+    "/api/publish/error": "[Publish blast radius](#description/publish-blast-radius)",
     # Query
     "/api/query/{collection}": "[Query reference](#description/query-reference)",
     "/api/query/{collection}/{queryId}": "[Persisted queries](#description/query-reference) (Query reference -> Persisted queries)",
@@ -4664,7 +5295,7 @@ def _auth_coverage_line(by_auth: dict) -> str:
 
 def main():
     pyfsr_applied = apply_pyfsr_samples(PATHS)
-    pyfsr_models_applied = apply_pyfsr_response_models(PATHS)
+    pyfsr_models_applied = apply_pyfsr_response_models(PATHS, SCHEMAS)
     _ensure_examples(SPEC)
     _apply_curated_examples(SPEC)
     _apply_cross_links(SPEC)
