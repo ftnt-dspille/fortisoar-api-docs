@@ -346,6 +346,11 @@ tags:
     \ `manifest/` is `{totalItems, objects: []}` \u2014 a FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next`\
     \ cursor. Paginate with `?limit=` and `?added_after=<ISO-8601>`.\n\nAll responses use `Content-Type: application/taxii+json;version=2.1`;\
     \ collection `media_types` advertise `application/stix+json;version=2.1`."
+- name: AI
+  description: '**AI services** (8.0+). Agent configuration, LLM management, triage, enrichment, insight generation, and prompt
+    validation.'
+- name: MCP
+  description: '**MCP tools** (8.0+). Server registration, tool catalog management, and connector-to-MCP gateway hosting.'
 - name: AI Insight
   description: "Generate and execute multi-step investigation plans. The classic flow is `POST /ai/insight/plan` \u2192 `POST\
     \ /ai/insight/plan/execute` \u2192 poll `GET /ai/insight/plan/{task_id}/status` \u2192 `GET /ai/insight/plan/{task_id}/result`.\
@@ -429,8 +434,9 @@ x-tagGroups:
   - Files
   - Widgets
   - Import / export
-- name: AI (8.0+)
+- name: AI & MCP (8.0+)
   tags:
+  - AI
   - AI Insight
   - AI Agents
   - AI Chat
@@ -439,8 +445,7 @@ x-tagGroups:
   - AI Prompts
   - AI MCP Registry
   - AI Activity
-- name: MCP (8.0+)
-  tags:
+  - MCP
   - MCP Admin
   - MCP Configurations
   - MCP Gateway
