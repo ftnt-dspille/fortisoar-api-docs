@@ -425,15 +425,6 @@ x-tagGroups:
   - Scheduled tasks
   - Connectors
   - Agents
-- name: Threat intel
-  tags:
-  - Threat intel (TAXII)
-- name: Reference
-  tags:
-  - Metadata
-  - Files
-  - Widgets
-  - Import / export
 - name: AI & MCP (8.0+)
   tags:
   - AI
@@ -450,6 +441,15 @@ x-tagGroups:
   - MCP Configurations
   - MCP Gateway
   - MCP Tools
+- name: Threat intel
+  tags:
+  - Threat intel (TAXII)
+- name: Reference
+  tags:
+  - Metadata
+  - Files
+  - Widgets
+  - Import / export
 paths:
   /auth/authenticate:
     post:
