@@ -509,6 +509,75 @@ def _fake_request(self, method, url, **kwargs):
             "filename": "report.csv",
             "@id": "/api/3/files/880e8400-e29b-41d4-a716-446655440010",
         }).encode())
+    # --- AI / MCP endpoints ---
+    # AI agents
+    if method == "GET" and "/ai/agent/" == url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "GET" and "/ai/agent/" in url and "/config" not in url:
+        return _fake_response(200, json.dumps({"name": "test", "version": "1.0"}).encode())
+    if method == "POST" and "/ai/agent/import" in url:
+        return _fake_response(200, json.dumps({"status": "ok"}).encode())
+    if method == "POST" and "/ai/agent/export/" in url:
+        return _fake_response(200, json.dumps({}).encode())
+    if method == "POST" and "/ai/agent/activate" in url:
+        return _fake_response(200, json.dumps({"status": "activated"}).encode())
+    # AI agent config
+    if method == "GET" and "/ai/agent/config/" in url:
+        return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
+    if method == "POST" and "/ai/agent/config" in url and "/default" not in url:
+        return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
+    # AI default agent config
+    if "/agent/config/default" in url:
+        return _fake_response(200, json.dumps({"name": "default", "config": {}}).encode())
+    # AI triage
+    if method == "POST" and "/ai/triage/alert" in url:
+        return _fake_response(200, json.dumps({"task_id": "abc123-def456"}).encode())
+    # AI agents trigger/status/result
+    if method == "POST" and "/ai/agents/" in url and "/trigger" in url:
+        return _fake_response(200, json.dumps({"task_id": "abc123-def456"}).encode())
+    if method == "GET" and "/ai/agents/" in url and "/status" in url:
+        return _fake_response(200, json.dumps({"status": "completed"}).encode())
+    if method == "GET" and "/ai/agents/" in url and "/result" in url:
+        return _fake_response(200, json.dumps({"status": "success", "result": {}}).encode())
+    if method == "POST" and "/ai/agents/" in url and "/acceptance" in url:
+        return _fake_response(200, json.dumps({"status": "ok"}).encode())
+    # AI LLM config
+    if method == "GET" and "/api/ai/llm/config" in url and "/verify" not in url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "GET" and "/ai/llm/config/" in url:
+        return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
+    if method == "POST" and "/ai/llm/config" in url and "/verify" not in url:
+        return _fake_response(200, json.dumps({"status": "created"}).encode())
+    if method == "DELETE" and "/ai/llm/config/" in url:
+        return _fake_response(204, b"")
+    # AI MCP
+    if method == "GET" and "/ai/mcp" == url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "GET" and "/api/ai/mcp" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "POST" and "/ai/mcp/validate" in url:
+        return _fake_response(200, json.dumps({"valid": True}).encode())
+    # MCP configurations
+    if method == "GET" and "/api/3/mcp_configurations" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "POST" and "/api/3/mcp_configurations" in url:
+        return _fake_response(200, json.dumps({"name": "my-server", "url": "http://example.com/mcp"}).encode())
+    if method == "PUT" and "/api/3/mcp_configurations/" in url:
+        return _fake_response(200, json.dumps({"name": "my-server", "url": "http://example.com/mcp"}).encode())
+    if method == "DELETE" and "/api/3/mcp_configurations/" in url:
+        return _fake_response(204, b"")
+    # MCP connector candidates
+    if method == "GET" and "/mcp/servers/connector" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    # MCP config export
+    if method == "POST" and "/mcp/config/export" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    # MCP tools delete
+    if method == "DELETE" and "/mcp/tools/delete" in url:
+        return _fake_response(204, b"")
+    # AI activity logs
+    if method == "GET" and "/api/3/llm_activity_logs" in url:
+        return _fake_response(200, json.dumps([]).encode())
     raise AssertionError(f"unmocked request: {method} {url}")
 
 
@@ -519,8 +588,25 @@ def _is_uuid_like(s: str) -> bool:
 
 @pytest.fixture
 def mocked_fortisoar():
-    with mock.patch("requests.Session.request", _fake_request):
+    import pathlib
+    _tmpzip = pathlib.Path("/tmp/_test_agent.zip")
+    _tmpzip.write_bytes(b"PK")
+    _real_open = open
+
+    def _smart_open(*args, **kwargs):
+        first = str(args[0]) if args else ""
+        if any(kw in first for kw in ("test_agent", "agent.zip", "_test_agent")):
+            return _real_open(_tmpzip, *args[1:], **kwargs)
+        return _real_open(*args, **kwargs)
+
+    with mock.patch("requests.Session.request", _fake_request), \
+         mock.patch.object(pathlib.Path, "exists", return_value=True), \
+         mock.patch.object(pathlib.Path, "is_dir", return_value=False), \
+         mock.patch.object(pathlib.Path, "suffix", new_callable=lambda: property(lambda self: ".zip")), \
+         mock.patch.object(pathlib.Path, "name", new_callable=lambda: property(lambda self: "test_agent")), \
+         mock.patch("builtins.open", side_effect=_smart_open):
         yield
+    _tmpzip.unlink(missing_ok=True)
 
 
 @pytest.mark.parametrize("key", list(PYFSR_EXAMPLES))
