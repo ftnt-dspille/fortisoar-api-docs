@@ -378,6 +378,14 @@ def _ai_tag(path: str) -> str:
 # ---------------------------------------------------------------------------
 
 AI_MCP_TAG_DESCRIPTIONS = {
+    "AI": (
+        "**AI services** (8.0+). Agent configuration, LLM management, triage, "
+        "enrichment, insight generation, and prompt validation."
+    ),
+    "MCP": (
+        "**MCP tools** (8.0+). Server registration, tool catalog management, "
+        "and connector-to-MCP gateway hosting."
+    ),
     "AI Insight": (
         "Generate and execute multi-step investigation plans. The classic flow is "
         "`POST /ai/insight/plan` → `POST /ai/insight/plan/execute` → poll "
@@ -454,8 +462,9 @@ AI_MCP_TAG_DESCRIPTIONS = {
 
 AI_MCP_TAG_GROUPS = [
     {
-        "name": "AI (8.0+)",
+        "name": "AI & MCP (8.0+)",
         "tags": [
+            "AI",
             "AI Insight",
             "AI Agents",
             "AI Chat",
@@ -464,11 +473,12 @@ AI_MCP_TAG_GROUPS = [
             "AI Prompts",
             "AI MCP Registry",
             "AI Activity",
+            "MCP",
+            "MCP Admin",
+            "MCP Configurations",
+            "MCP Gateway",
+            "MCP Tools",
         ],
-    },
-    {
-        "name": "MCP (8.0+)",
-        "tags": ["MCP Admin", "MCP Configurations", "MCP Gateway", "MCP Tools"],
     },
 ]
 
