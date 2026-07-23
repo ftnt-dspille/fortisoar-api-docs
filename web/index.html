@@ -26,14 +26,33 @@
       color: #7aa2ff !important;
       opacity: 1 !important;
       padding: 8px 10px 6px !important;
-      cursor: default !important;
+      cursor: pointer !important;
       background: transparent !important;
       border-bottom: 1px solid var(--scalar-border-color, rgba(127,127,127,0.2)) !important;
       margin-bottom: 4px !important;
       border-radius: 0 !important;
+      position: relative !important;
     }
     .fsr-group-header:hover { background: transparent !important; }
+    .fsr-group-header:hover .fsr-group-caret { opacity: 1 !important; }
     .fsr-group-header svg { display: none !important; }
+    /* Collapse caret we inject on each group header. Rotates when open. */
+    .fsr-group-caret {
+      position: absolute !important;
+      right: 10px !important;
+      top: 8px !important;
+      font-size: 10px !important;
+      line-height: 1.4 !important;
+      opacity: 0.7 !important;
+      transition: transform 0.12s ease !important;
+      pointer-events: none !important;
+    }
+    li.fsr-group-open > .fsr-group-caret,
+    li.fsr-group-open .fsr-group-header .fsr-group-caret { transform: rotate(90deg) !important; }
+    /* Collapsed: hide the nested tag list(s) under a group li. Broad
+       descendant match — every ul inside a group li is a tag/operation
+       list, so hiding them all folds the whole group. */
+    li.fsr-group-collapsed ul { display: none !important; }
     [data-sidebar-id*="tag-group/"] { margin-top: 22px !important; }
     [data-sidebar-id*="tag-group/"]:first-of-type { margin-top: 6px !important; }
 
@@ -334,6 +353,33 @@
        MutationObserver re-runs both on every Scalar re-render. */
     (function () {
       let introOpened = false;
+
+      // ---- Collapsible x-tagGroups ----------------------------------------
+      // Scalar has no native nested-group folding, so we make each group
+      // header toggle its nested tag list. Collapse state persists per group
+      // name in localStorage. The "AI & MCP (8.0+)" group is collapsed by
+      // default so its 14 tags don't dominate the sidebar.
+      const FSR_GROUPS_KEY = 'fsr-collapsed-groups';
+      const DEFAULT_COLLAPSED = ['AI & MCP (8.0+)'];
+      function loadCollapsed() {
+        const raw = localStorage.getItem(FSR_GROUPS_KEY);
+        if (raw === null) return new Set(DEFAULT_COLLAPSED);
+        try { return new Set(JSON.parse(raw)); } catch (e) { return new Set(DEFAULT_COLLAPSED); }
+      }
+      function saveCollapsed(set) {
+        localStorage.setItem(FSR_GROUPS_KEY, JSON.stringify([...set]));
+      }
+      const collapsedGroups = loadCollapsed();
+      function groupName(li) {
+        const h = li.querySelector('.fsr-group-header') || li.querySelector('[aria-selected]');
+        return ((h && (h.innerText || h.textContent)) || '').trim().split('\n')[0];
+      }
+
+      function applyCollapse(li, collapsed) {
+        li.classList.toggle('fsr-group-collapsed', collapsed);
+        li.classList.toggle('fsr-group-open', !collapsed);
+      }
+
       function decorate() {
         for (const el of document.querySelectorAll('button, a')) {
           if (/^\s*ask\s*ai\s*$/i.test(el.innerText || '')) el.classList.add('fsr-hidden');
@@ -341,6 +387,26 @@
         for (const li of document.querySelectorAll('li[data-sidebar-id*="tag-group/"]')) {
           const header = li.querySelector('[aria-selected]');
           if (header) header.classList.add('fsr-group-header');
+          if (header && !header.dataset.fsrCaret) {
+            header.dataset.fsrCaret = '1';
+            const caret = document.createElement('span');
+            caret.className = 'fsr-group-caret';
+            caret.textContent = '▶'; // ▶
+            header.appendChild(caret);
+            header.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const name = groupName(li);
+              const nowCollapsed = !li.classList.contains('fsr-group-collapsed');
+              if (nowCollapsed) collapsedGroups.add(name); else collapsedGroups.delete(name);
+              saveCollapsed(collapsedGroups);
+              applyCollapse(li, nowCollapsed);
+            }, true);
+          }
+          // Apply persisted / default collapse state on every (re)render.
+          // Always stamp the state class so the caret always reflects reality
+          // (open groups get fsr-group-open → caret points down).
+          applyCollapse(li, collapsedGroups.has(groupName(li)));
         }
         // First render only: auto-expand the Introduction section so the
         // landing page exposes the prose subnav (Query reference, etc.)
