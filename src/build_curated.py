@@ -5371,7 +5371,29 @@ def _auth_coverage_line(by_auth: dict) -> str:
 
 
 def main():
+    from merge_ai_mcp import merge_ai_mcp
+    ai_paths, ai_op_keys = merge_ai_mcp(SPEC)
+    print(f"[AI/MCP] merged {ai_paths} AI/MCP paths")
+
     pyfsr_applied = apply_pyfsr_samples(PATHS)
+    # AI/MCP paths are merged after PATHS is built so we need to apply
+    # samples to them separately.
+    from pyfsr_examples import build_pyfsr_sample
+    ai_sampled = 0
+    for http_method, path in ai_op_keys:
+        try:
+            spec_path = path
+            sample = build_pyfsr_sample(http_method, spec_path)
+            op = SPEC["paths"].get(path, {}).get(http_method)
+            if op and "x-codeSamples" not in op:
+                op["x-codeSamples"] = [sample]
+                ai_sampled += 1
+        except (KeyError, ValueError):
+            # No sample for this path — skip silently.
+            pass
+    if ai_sampled:
+        print(f"  [AI/MCP] applied {ai_sampled} pyfsr code samples")
+
     pyfsr_models_applied = apply_pyfsr_response_models(PATHS, SCHEMAS)
     _ensure_examples(SPEC)
     _apply_curated_examples(SPEC)
@@ -5397,7 +5419,7 @@ def main():
     op_count = sum(1 for path in PATHS.values() for k in path if k in {"get", "post", "put", "delete", "patch"})
     print(f"Wrote {OUT} ({op_count} operations across {len(PATHS)} paths, "
           f"{live_applied} live-verified, {pyfsr_applied} with a pyfsr sample, "
-          f"{pyfsr_models_applied} with a pyfsr response model)")
+          f"{pyfsr_models_applied} with a pyfsr response model, {ai_paths} AI/MCP paths)")
 
 
 if __name__ == "__main__":
