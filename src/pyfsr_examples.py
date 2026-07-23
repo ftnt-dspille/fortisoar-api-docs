@@ -259,6 +259,41 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.retrieve"),
     ("post", "/api/wf/api/workflows/{pk}/wfinput_resume/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.resume"),
     ("delete", "/api/wf/api/manual-wf-input/{pk}/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.delete"),
+    # AI Agents — management
+    ("get", "/ai/agent/"): ("manual", "client.ai.list_agents()"),
+    ("get", "/ai/agent/{name}/{version}"): ("manual", 'client.ai.get_agent("ioc-enrichment", "latest")'),
+    ("post", "/ai/agent/import"): ("manual", 'client.ai.import_agent("/path/to/agent.zip")'),
+    ("post", "/ai/agent/export/{agent_id}"): ("manual", 'client.ai.export_agent("ioc-enrichment", "/tmp/agent.zip")'),
+    ("get", "/ai/agent/config/{agent_name}/{version}"): ("manual", 'client.ai.get_agent_config("ioc-enrichment", "latest")'),
+    ("post", "/ai/agent/config"): ("manual", 'client.ai.update_agent_config("ioc-enrichment", "latest", {"model": "gpt-4"})'),
+    ("get", "/ai/llm/config/default"): ("manual", "client.ai.get_default_agent_config()"),
+    ("post", "/ai/llm/config/default"): ("manual", 'client.ai.update_default_agent_config({"model": "gpt-4"})'),
+    ("post", "/ai/agent/activate"): ("manual", 'client.ai.activate_agent(["123e4567-e89b-12d3-a456-426614174000"])'),
+    # AI Agents — execution
+    ("post", "/ai/triage/alert"): ("manual", 'client.ai.start_alert_investigation({"name": "123e4567-e89b-12d3-a456-426614174000"})'),
+    ("post", "/ai/agents/{agent_name}/trigger"): ("doctest", "pyfsr.api.ai:AIApi.run_agent"),
+    ("get", "/ai/agents/{task_id}/status"): ("manual", 'client.ai.get_status("abc123-def456")'),
+    ("get", "/ai/agents/{task_id}/result"): ("manual", 'client.ai.get_result("abc123-def456")'),
+    ("post", "/ai/agents/{task_id}/acceptance"): ("manual", 'client.ai.submit_feedback("abc123-def456", {"accepted": True})'),
+    # AI LLM
+    ("get", "/ai/llm/config"): ("manual", "client.ai.list_llm_configs()"),
+    ("get", "/ai/llm/config/{uuid}"): ("manual", 'client.ai.get_llm_config("abc123-def456")'),
+    ("post", "/ai/llm/config"): ("manual", 'client.ai.create_llm_config([{"name": "test", "provider": "openai"}])'),
+    ("delete", "/ai/llm/config/{uuid}"): ("manual", 'client.ai.delete_llm_config("abc123-def456")'),
+    # AI MCP Registry
+    ("get", "/ai/mcp"): ("manual", "client.ai.list_mcp_servers()"),
+    ("post", "/ai/mcp/validate"): ("manual", 'client.ai.validate_mcp_server({"name": "...", "url": "..."})'),
+    # MCP Configurations (pyfsr-only CRUD module)
+    ("get", "/api/3/mcp_configurations"): ("manual", "client.ai.mcp_configs()"),
+    ("post", "/api/3/mcp_configurations"): ("manual", 'client.ai.register_mcp_server({"name": "my-server", "url": "http://example.com/mcp"})'),
+    ("put", "/api/3/mcp_configurations/{uuid}"): ("manual", 'client.ai.update_mcp_server("123e4567-e89b-12d3-a456-426614174000", {"name": "my-server"})'),
+    ("delete", "/api/3/mcp_configurations/{uuid}"): ("manual", 'client.ai.delete_mcp_server("123e4567-e89b-12d3-a456-426614174000")'),
+    # MCP Gateway (pyfsr-only)
+    ("get", "/mcp/servers/connector"): ("manual", "client.ai.mcp_connector_candidates()"),
+    ("post", "/mcp/config/export"): ("manual", 'client.ai.export_mcp_server_tools([{"name": "my-server"}])'),
+    ("delete", "/mcp/tools/delete"): ("manual", 'client.ai.delete_mcp_tools([{"name": "my-tool"}])'),
+    # AI Activity (pyfsr-only)
+    ("get", "/api/3/llm_activity_logs"): ("manual", "client.ai.tool_usage()"),
 }
 
 

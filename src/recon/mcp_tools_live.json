@@ -1,0 +1,848 @@
+{
+  "module": [
+    {
+      "name": "fetch_record",
+      "title": "Fetch Record",
+      "description": "Get record from database as per filter query.",
+      "tags": [
+        "module_tool",
+        "fetch_record"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "FetchRecordRequest": {
+            "description": "Retrieve records from a main module, leveraging interlinked modules as needed.\nUse get_module_list or get_module_fields to latest module and fields.\n\nExample:\n{\n  \"module_id\": \"module_name\",\n  \"filters\": [\n    {\"type\":\"field\",\"field\":\"field_name\",\"operator\":\"gt\",\"value\":100},\n    {\"type\":\"field\",\"linked_module_id\":\"field_name\",\"linked_field_id\":\"field_name\",\"operator\":\"eq\",\"value\":\"Active\"},\n    {\n      \"logic\":\"OR\",\"filters\":[\n        {\"type\":\"field\",\"field\":\"field_name\",\"operator\":\"like\",\"value\":\"S%\"},\n        {\"type\":\"field\",\"linked_module_id\":\"field_name\",\"linked_field_id\":\"linked_field_name\",\"operator\":\"in\",\"value\":[1,2,3]}\n      ]\n    }\n  ],\n  \"logic\": \"AND\",\n  \"limit\": 50,\n  \"select\": [\"field_name\",\"field_name\",\"field_name\"],\n  \"sort\": [\n    {\"field\":\"field_name\",\"direction\":\"DESC\"}\n  ]\n}",
+            "properties": {
+              "module_id": {
+                "description": "Main module ID to retrieve records from (e.g., 'module_id').",
+                "type": "string"
+              },
+              "filters": {
+                "description": "Field/group filters. FieldFilter supports main or linked targets.",
+                "items": {
+                  "$ref": "#/$defs/FilterExpression"
+                },
+                "type": "array"
+              },
+              "logic": {
+                "default": "AND",
+                "description": "Top-level logic for combining filters at the root level.",
+                "enum": [
+                  "AND",
+                  "OR"
+                ],
+                "type": "string"
+              },
+              "limit": {
+                "anyOf": [
+                  {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": 30,
+                "description": "Maximum number of records to return."
+              },
+              "sort": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "$ref": "#/$defs/SortRule"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional sort rules by main or linked fields."
+              },
+              "select": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Main module field IDs to include in results (e.g., ['field_name','field_name'])."
+              }
+            },
+            "required": [
+              "module_id",
+              "filters"
+            ],
+            "type": "object"
+          },
+          "FieldFilter": {
+            "description": "Unified filter supporting either:\n- Main field filter: field='field_name'\n- Linked field filter: linked_module_id='linked_module_id' and linked_field_id='linked_field_name'\n\nExactly one mode must be used at a time.\n\nExamples:\n  Main:   field='field_name', operator='gt', value=100\n  Linked: linked_module_id='linked_module_id', linked_field_id='linked_field_name', operator='eq', value='Active'",
+            "properties": {
+              "type": {
+                "const": "field",
+                "default": "field",
+                "description": "Discriminator for a field-based filter (main or linked).",
+                "type": "string"
+              },
+              "field": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Main module field ID (e.g., 'field_name'). Use this for main-field filtering."
+              },
+              "linked_module_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Linked module ID for linked-field filtering (e.g., 'linked_module_id')."
+              },
+              "linked_field_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Linked module field ID (e.g., 'linked_field_name') used with linked_module_id."
+              },
+              "operator": {
+                "description": "Comparison operator. 'like'/'notlike' use % and _. 'isnull' checks for nulls.",
+                "enum": [
+                  "eq",
+                  "neq",
+                  "gt",
+                  "lt",
+                  "gte",
+                  "lte",
+                  "like",
+                  "notlike",
+                  "in",
+                  "nin",
+                  "isnull"
+                ],
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "type": "array"
+                  }
+                ],
+                "description": "Value to compare against. For 'in'/'nin', provide a list. For 'like', use %/_. "
+              }
+            },
+            "required": [
+              "operator",
+              "value"
+            ],
+            "type": "object"
+          },
+          "FilterExpression": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FieldFilter"
+              },
+              {
+                "$ref": "#/$defs/FilterGroup"
+              }
+            ],
+            "description": "A single filter expression: either a field filter (main/linked) or a logical group."
+          },
+          "FilterGroup": {
+            "description": "Group multiple filters using a logical operator. Supports recursive nesting.",
+            "properties": {
+              "logic": {
+                "description": "How to combine the nested filters.",
+                "enum": [
+                  "AND",
+                  "OR"
+                ],
+                "type": "string"
+              },
+              "filters": {
+                "description": "Nested filter expressions or further groups.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/FilterExpression"
+                    },
+                    {
+                      "$ref": "#/$defs/FilterGroup"
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "logic",
+              "filters"
+            ],
+            "type": "object"
+          },
+          "SortRule": {
+            "description": "Sorting rule for results.\n- For main-field sort: set field='F#'\n- For linked-field sort: set linked_module_id='linked_module_id' and linked_field_id='field_name'\nExactly one mode must be used.",
+            "properties": {
+              "field": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Main module field ID to sort by (e.g., 'field_name'). Not valid with linked_* fields."
+              },
+              "direction": {
+                "default": "ASC",
+                "description": "Sort direction: 'ASC' or 'DESC'. Default 'ASC'.",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ],
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/FetchRecordRequest"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_module_list",
+      "title": "Get Module List",
+      "description": "Gets/ Retrieves/ Loads module list.",
+      "tags": [
+        "module_tool",
+        "get_module_list"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_module_fields",
+      "title": "Get Module Fields",
+      "description": "Gets/ Retrieves/ Loads module fields.",
+      "tags": [
+        "module_tool",
+        "get_module_fields"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "ModuleFieldRequest": {
+            "properties": {
+              "module_id": {
+                "description": "Placeholder name for module.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "module_id"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/ModuleFieldRequest"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_alert",
+      "title": "Get Alert",
+      "description": "Gets/Retrieve alert with uuid.",
+      "tags": [
+        "get_alert",
+        "module_tool"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uuid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_alerts_indicator",
+      "title": "Get Alert Indicator",
+      "description": "Retrieves indicators that are associated with a given alert UUID.",
+      "tags": [
+        "get_alert",
+        "module_tool"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uuid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_indicator",
+      "title": "Get Indicator",
+      "description": "Retrieves threat intelligence enrichment for a given list of indicators (IP, domain, URL, hash, email) by querying configured FortiSOAR intelligence sources.Returns reputation",
+      "tags": [
+        "get_alert",
+        "module_tool"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_indicator_alerts",
+      "title": "Get Indicator Alerts",
+      "description": "Retrieves alerts associated with a given list of indicators (IP, domain, URL, hash, email).",
+      "tags": [
+        "module_tool",
+        "get_indicator_alerts"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "indicators": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "indicators"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_alert_ai_analysis",
+      "title": "Update Alert AI Analysis",
+      "description": "Update the AI-generated alert severity and summary based on the investigation results.",
+      "tags": [
+        "module_tool",
+        "update_alert_ai_analysis"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "ai_severity": {
+            "type": "string"
+          },
+          "ai_summary": {
+            "type": "string"
+          },
+          "ai_verdict": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uuid",
+          "ai_severity",
+          "ai_summary",
+          "ai_verdict"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "playbooks": [
+    {
+      "name": "list_playbooks",
+      "title": "List Playbooks",
+      "description": "List all available playbooks.",
+      "tags": [
+        "list_playbooks",
+        "playbook_tool"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "trigger_playbook",
+      "title": "Trigger Playbooks",
+      "description": "Trigger a playbook.",
+      "tags": [
+        "playbook_tool",
+        "trigger_playbook"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "input_param": {
+            "title": "Input Param"
+          },
+          "trigger_type": {
+            "title": "Trigger Type"
+          }
+        },
+        "required": [
+          "uuid",
+          "input_param",
+          "trigger_type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "playbook_execution_result",
+      "title": "Playbook Execution Result",
+      "description": "Get the status of a triggered playbook using its execution ID.",
+      "tags": [
+        "playbook_execution_result",
+        "playbook_tool"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "PlaybookStatusParams": {
+            "properties": {
+              "task_id": {
+                "description": "Unique task ID of the playbook instance to check status for.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "task_id"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/PlaybookStatusParams"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "block_indicator",
+      "title": "Block Indicator",
+      "description": "Block the indicatorIOC as per their type.",
+      "tags": [
+        "block_indicator",
+        "playbook_tool"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "BlockIOCParams": {
+            "properties": {
+              "indicator_value": {
+                "description": "The Indicator/IOC value to be enriched.",
+                "type": "string"
+              },
+              "indicator_type": {
+                "description": "Type of Indicator/IOC",
+                "enum": [
+                  "IP Address",
+                  "Domain",
+                  "Email Address",
+                  "Host",
+                  "FileHash-MD5",
+                  "FileHash-SHA1",
+                  "FileHash-SHA256",
+                  "URL",
+                  "User",
+                  "File"
+                ],
+                "type": "string"
+              },
+              "block_reason": {
+                "description": "Reason to block the Indicator/IOC",
+                "type": "string"
+              },
+              "indicator_IRI": {
+                "default": null,
+                "description": "Must be explicitly set, can be None",
+                "type": "string"
+              }
+            },
+            "required": [
+              "indicator_value",
+              "indicator_type",
+              "block_reason"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/BlockIOCParams"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "enrich_indicator",
+      "title": "Enrich Indicator",
+      "description": "Enrich indicator reputation.",
+      "tags": [
+        "enrich_indicator",
+        "playbook_tool"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "enrich_indicator": {
+            "properties": {
+              "indicator_value": {
+                "default": null,
+                "description": "The Indicator/IOC value to be enriched.",
+                "type": "string"
+              },
+              "indicator_type": {
+                "default": null,
+                "description": "Type of Indicator/IOC",
+                "enum": [
+                  "IP Address",
+                  "Domain",
+                  "Email Address",
+                  "Host",
+                  "FileHash-MD5",
+                  "FileHash-SHA1",
+                  "FileHash-SHA256",
+                  "URL",
+                  "User",
+                  "File"
+                ],
+                "type": "string"
+              },
+              "indicator_IRI": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Must be explicitly set, can be None"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/enrich_indicator"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "enrich_asset",
+      "title": "Enrich Asset",
+      "description": "Enrich Asset details.",
+      "tags": [
+        "enrich_asset",
+        "playbook_tool"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "enrich_asset": {
+            "properties": {
+              "indicator_value": {
+                "default": null,
+                "description": "The Indicator/IOC value to be enriched.",
+                "type": "string"
+              },
+              "indicator_type": {
+                "default": null,
+                "description": "Type of Indicator/IOC",
+                "enum": [
+                  "IP Address",
+                  "Domain",
+                  "Email Address",
+                  "Host",
+                  "FileHash-MD5",
+                  "FileHash-SHA1",
+                  "FileHash-SHA256",
+                  "URL",
+                  "User",
+                  "File"
+                ],
+                "type": "string"
+              },
+              "indicator_IRI": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Must be explicitly set, can be None"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/enrich_asset"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_process_details",
+      "title": "Get Process Details",
+      "description": "Get Process details of provided host or ip address.",
+      "tags": [
+        "playbook_tool",
+        "get_process_details"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "get_process_details": {
+            "properties": {
+              "indicator_value": {
+                "default": null,
+                "description": "The Indicator/IOC value to be enriched.",
+                "type": "string"
+              },
+              "indicator_type": {
+                "default": null,
+                "description": "Type of Indicator/IOC",
+                "enum": [
+                  "IP Address",
+                  "Domain",
+                  "Email Address",
+                  "Host",
+                  "FileHash-MD5",
+                  "FileHash-SHA1",
+                  "FileHash-SHA256",
+                  "URL",
+                  "User",
+                  "File"
+                ],
+                "type": "string"
+              },
+              "indicator_IRI": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Must be explicitly set, can be None"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/get_process_details"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_user_details",
+      "title": "Get User Details",
+      "description": "Get details of provided user",
+      "tags": [
+        "get_user_details",
+        "playbook_tool"
+      ],
+      "inputSchema": {
+        "$defs": {
+          "get_user_details": {
+            "properties": {
+              "indicator_value": {
+                "default": null,
+                "description": "The Indicator/IOC value to be enriched.",
+                "type": "string"
+              },
+              "indicator_type": {
+                "default": null,
+                "description": "Type of Indicator/IOC",
+                "enum": [
+                  "IP Address",
+                  "Domain",
+                  "Email Address",
+                  "Host",
+                  "FileHash-MD5",
+                  "FileHash-SHA1",
+                  "FileHash-SHA256",
+                  "URL",
+                  "User",
+                  "File"
+                ],
+                "type": "string"
+              },
+              "indicator_IRI": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Must be explicitly set, can be None"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/get_user_details"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "utility": [
+    {
+      "name": "get_current_datetime",
+      "title": "Get Current Datetime",
+      "description": "Retrieves current date and time as local time zone",
+      "tags": [
+        "utility",
+        "get_current_datetime"
+      ],
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      }
+    }
+  ]
+}
