@@ -3746,9 +3746,9 @@ TAG_GROUPS = [
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Modules", "tags": ["Modules"]},
     {"name": "Query", "tags": ["Query"]},
-    {"name": "Audit", "tags": ["Audit"]},
     {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents"]},
     {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
+    {"name": "Audit", "tags": ["Audit"]},
     {"name": "Reference", "tags": ["Metadata", "Files", "Widgets", "Import / export"]},
 ]
 

@@ -415,9 +415,6 @@ x-tagGroups:
 - name: Query
   tags:
   - Query
-- name: Audit
-  tags:
-  - Audit
 - name: Automation
   tags:
   - Workflows
@@ -444,6 +441,9 @@ x-tagGroups:
 - name: Threat intel
   tags:
   - Threat intel (TAXII)
+- name: Audit
+  tags:
+  - Audit
 - name: Reference
   tags:
   - Metadata
