@@ -743,7 +743,14 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
     for name, desc in AI_MCP_TAG_DESCRIPTIONS.items():
         if name not in existing_tag_names:
             spec.setdefault("tags", []).append({"name": name, "description": desc})
-    spec.setdefault("x-tagGroups", []).extend(AI_MCP_TAG_GROUPS)
+    # Insert AI & MCP right after the "Automation" group (it's automation-
+    # adjacent) rather than appending it below the utility "Reference" group.
+    tag_groups = spec.setdefault("x-tagGroups", [])
+    insert_at = next(
+        (i + 1 for i, g in enumerate(tag_groups) if g.get("name") == "Automation"),
+        len(tag_groups),
+    )
+    tag_groups[insert_at:insert_at] = AI_MCP_TAG_GROUPS
 
     # ---- 6. Components schemas --------------------------------------------
     spec.setdefault("components", {}).setdefault("schemas", {}).update(EXTRA_SCHEMAS)
