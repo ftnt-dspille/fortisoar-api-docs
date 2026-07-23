@@ -384,8 +384,11 @@ def sweep(s: Session) -> int:
     Add a branch here when a new scenario starts creating a new entity type.
     """
     removed = 0
-    removed += _sweep_api_key_scopes(s)
-    removed += _sweep_api_key_users(s)
+    try:
+        removed += _sweep_api_key_scopes(s)
+        removed += _sweep_api_key_users(s)
+    except AssertionError:
+        pass  # API-key auth not available on this box
     removed += _sweep_connector_configs(s)
     removed += _sweep_hello_world_connectors(s)
     removed += _sweep_query_objects(s)
@@ -759,6 +762,30 @@ def scenario_smoke(s: Session) -> None:
             if uuid_:
                 s.call("GET", "/api/3/{collection}/{uuid}", want=200,
                        path_params={"collection": "alerts", "uuid": uuid_})
+
+
+@scenario("ai")
+def scenario_ai(s: Session) -> None:
+    """Exercise 8.0+ AI / MCP surface (GETs + safe POSTs).
+    """
+    print("[ai] agent list + LLM config + MCP server list")
+    s.call("GET", "/api/ai/agent/", want=(200, 401, 403))
+    s.call("GET", "/api/ai/llm/config", want=(200, 401, 403))
+    s.call("GET", "/api/ai/mcp", want=(200, 201, 401, 403))
+
+    print("[ai] MCP CRUD store + connector candidates + activity")
+    s.call("GET", "/api/3/mcp_configurations", want=(200, 401, 403))
+    s.call("GET", "/mcp/servers/connector", want=(200, 401, 403), params={"restricted": "true"})
+    s.call("GET", "/api/3/llm_activity_logs", want=(200, 401, 403))
+
+    print("[ai] insight list + default agent config")
+    s.call("GET", "/api/ai/insight/", want=(200, 401, 403))
+    s.call("GET", "/api/ai/agent/config/default", want=(200, 401, 403))
+
+    print("[ai] agent activate + prompt validate + triage")
+    s.call("POST", "/api/ai/agent/activate", want=(200, 401, 403), json={"uuids": [], "active": True})
+    s.call("POST", "/api/ai/prompt/validate", want=(200, 201, 401, 403), json={})
+    s.call("POST", "/api/ai/triage/alert", want=(202, 400, 401, 403), json={})
 
 
 @scenario("queries")
