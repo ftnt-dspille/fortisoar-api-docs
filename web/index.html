@@ -53,6 +53,17 @@
        descendant match — every ul inside a group li is a tag/operation
        list, so hiding them all folds the whole group. */
     li.fsr-group-collapsed ul { display: none !important; }
+    /* Scalar's sidebar row containers carry a 16px base and rely on the
+       label span to override to 14px. The merged AI/MCP tags sometimes
+       render without that override (their operation rows / badges inherit
+       16px), so the section reads a size larger. Pin every sidebar row and
+       its label to 14px so no section can render bigger than another. */
+    aside [class*="group/item"],
+    aside [class*="button-label"],
+    aside .text-base { font-size: 14px !important; }
+    /* Keep our uppercase group headers at their smaller 11px. */
+    aside .fsr-group-header,
+    aside .fsr-group-header [class*="button-label"] { font-size: 11px !important; }
     [data-sidebar-id*="tag-group/"] { margin-top: 22px !important; }
     [data-sidebar-id*="tag-group/"]:first-of-type { margin-top: 6px !important; }
 
