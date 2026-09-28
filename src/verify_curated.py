@@ -37,6 +37,7 @@ import requests
 import urllib3
 import yaml
 from dotenv import load_dotenv
+from pyfsr.pagination import extract_members
 
 try:
     from jsonschema import Draft202012Validator
@@ -321,7 +322,7 @@ def _harvest_picklists(env, headers) -> dict[str, str]:
             params={"listName.name": listname, "$limit": 1},
         )
         if 200 <= code < 300 and isinstance(data, dict):
-            members = data.get("hydra:member") or []
+            members = extract_members(data)
             if members and members[0].get("@id"):
                 out[listname] = members[0]["@id"]
                 print(f"  fixture {listname}: {members[0]['@id']}")
@@ -336,7 +337,7 @@ def _harvest_record_uuid(env, headers, collection: str) -> str | None:
         headers, None, params={"$limit": 1},
     )
     if 200 <= code < 300 and isinstance(data, dict):
-        members = data.get("hydra:member") or []
+        members = extract_members(data)
         if members:
             cand = members[0].get("uuid") or (members[0].get("@id") or "").rsplit("/", 1)[-1]
             if cand and re.match(r"^[0-9a-f-]{36}$", cand):
@@ -434,7 +435,7 @@ def main():
             code, _, data = _send(env, "get", f"/api/3/{col}",
                                   prefetch_hdrs, None, params={"$limit": 1})
             if 200 <= code < 300 and isinstance(data, dict):
-                members = data.get("hydra:member") or []
+                members = extract_members(data)
                 if members:
                     cand = members[0].get("uuid") or (members[0].get("@id") or "").rsplit("/", 1)[-1]
                     if cand and re.match(r"^[0-9a-f-]{36}$", cand):
@@ -524,7 +525,7 @@ def main():
                 # Try to harvest a uuid from list responses for downstream ops.
                 if (method == "get" and 200 <= code < 300
                         and isinstance(data, dict)):
-                    members = data.get("hydra:member") or []
+                    members = extract_members(data)
                     if isinstance(members, list) and members:
                         candidate = members[0].get("uuid") or (members[0].get("@id") or "").rsplit("/", 1)[-1]
                         if candidate and re.match(r"^[0-9a-f-]{36}$", candidate):

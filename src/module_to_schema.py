@@ -25,7 +25,7 @@ Usage:
     python src/module_to_schema.py --raw incidents          # dump raw attribute list
 
 Prints a Python literal suitable for pasting into SCHEMAS in build_curated.py.
-The script intentionally emits *every* field — hand-curate the output down to
+The script intentionally emits *every* field -- hand-curate the output down to
 the most-used 15-25 fields before committing, in the same spirit as the
 existing `Alert` schema.
 """
@@ -41,6 +41,7 @@ from typing import Any
 import requests
 import urllib3
 from dotenv import load_dotenv
+from pyfsr.pagination import extract_members
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -101,7 +102,7 @@ def fetch_all_metadata(s: requests.Session, base: str, timeout: int) -> list[dic
         timeout=max(timeout, 60),
     )
     r.raise_for_status()
-    return r.json().get("hydra:member", [])
+    return extract_members(r.json())
 
 
 def _picklist_taxonomy(attr: dict) -> str | None:
