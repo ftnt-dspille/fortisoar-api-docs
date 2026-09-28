@@ -6,7 +6,7 @@ the real uuids, and then cleaning up.
 
 **Naming contract.** Every record we create has its `name` (or equivalent
 identifier) prefixed with `LIVE_PREFIX` ("live-"). On startup we sweep any
-records matching that prefix — so a crashed prior run gets cleaned up
+records matching that prefix -- so a crashed prior run gets cleaned up
 automatically on the next start.
 
 Run:
@@ -33,6 +33,7 @@ from typing import Any, Callable
 import requests
 import urllib3
 from dotenv import load_dotenv
+from pyfsr.pagination import extract_members
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -48,13 +49,13 @@ _AGENT_HASH_RE = re.compile(r"\b[0-9a-f]{32}\b", re.I)
 _JWT_RE = re.compile(r"eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
 # `live-<run_id>-<slug>` shows up wherever a scenario-created record's `name`
 # is echoed in a response. The 8-hex run_id changes every run and is pure
-# diff churn — strip it so only the stable `live-<run>-<slug>` shape persists.
+# diff churn -- strip it so only the stable `live-<run>-<slug>` shape persists.
 _LIVE_RUN_RE = re.compile(r"\blive-[0-9a-f]{8}-", re.I)
 
 # Server-side timestamps that vary record-by-record and run-by-run. Normalized
 # to a fixed epoch in `_scrub` so observation files diff only when shape /
 # content changes, not when the appliance has had time pass since the last
-# capture. Placeholder is 2023-11-14T22:13:20Z — recognisably epoch-seconds,
+# capture. Placeholder is 2023-11-14T22:13:20Z -- recognisably epoch-seconds,
 # stable forever. The per-observation `captured_at` field carries the real
 # date the op was validated; that one is intentionally preserved.
 _TIMESTAMP_PLACEHOLDER = 1700000000
@@ -112,7 +113,7 @@ def _scrub(value: Any) -> Any:
         return [_scrub(v) for v in value]
     return value
 
-# Dict keys whose VALUES are runtime-polymorphic — their inner shape depends on
+# Dict keys whose VALUES are runtime-polymorphic -- their inner shape depends on
 # which playbook step ran, which audit row was returned, etc. Treated as shape-
 # equal whenever both sides are dicts (or both are not), so the freeze logic
 # doesn't refresh the whole captured body every time the appliance happens to
@@ -139,13 +140,13 @@ def _same_shape(a: Any, b: Any, parent_key: str = "") -> bool:
     Two values have the same shape when:
       - They are the same primitive type (int and float treated as numeric).
       - Dicts have identical key sets and each value has the same shape.
-      - Lists have shape-matching elements; element order is ignored — we
+      - Lists have shape-matching elements; element order is ignored -- we
         compare the *set* of element shapes so a list rotating its members
         (audit log, workflow runs) does not register as a shape change. A
         list whose elements differ in shape *between* prior and current is
         treated as changed (new field on one of the records).
 
-    Primitive values are NOT compared — only their types — so a `"name"`
+    Primitive values are NOT compared -- only their types -- so a `"name"`
     that changed from `"Foo"` to `"Bar"` keeps the same shape. This is what
     lets us freeze examples whose content drifts but whose schema is
     stable, while still surfacing genuinely new fields.
@@ -165,7 +166,7 @@ def _same_shape(a: Any, b: Any, parent_key: str = "") -> bool:
         if not a and not b:
             return True
         if not a or not b:
-            # one empty, one not — shape ambiguous; treat as same if either
+            # one empty, one not -- shape ambiguous; treat as same if either
             # side has a homogeneous shape we can confirm against. Empty
             # list -> assume same as non-empty's element shape.
             return True
@@ -195,7 +196,7 @@ def _same_shape(a: Any, b: Any, parent_key: str = "") -> bool:
         return True
     # `None` on one side and a primitive on the other is the common "nullable
     # field" pattern (parent_wf_id is null for root workflows, int for child
-    # runs; closureNotes null until set). Treat as shape-compatible — a real
+    # runs; closureNotes null until set). Treat as shape-compatible -- a real
     # schema change shows up as a type *flip* between two non-None types, or
     # as a key set difference one level up.
     if a is None or b is None:
@@ -272,7 +273,7 @@ class Session:
         `(method, template)` becomes the key under which the request/response are
         stored for `build_curated.py` to consume.
 
-        When `files` is given, the request is sent as `multipart/form-data` —
+        When `files` is given, the request is sent as `multipart/form-data` --
         `Content-Type` is omitted from headers so requests picks the right
         boundary. The captured "request body" then summarizes the multipart
         parts rather than echoing the raw binary.
@@ -280,7 +281,7 @@ class Session:
         path = template.format(**(path_params or {}))
         if files is not None:
             # Strip Content-Type so requests sets multipart/form-data with the
-            # right boundary. Don't mutate self.headers — copy.
+            # right boundary. Don't mutate self.headers -- copy.
             hdrs = {k: v for k, v in self.headers.items() if k.lower() != "content-type"}
             timeout = kw.pop("timeout", self.timeout)
             url = f"{self.base}{path}"
@@ -349,7 +350,7 @@ def open_session() -> Session:
     user = os.environ.get("FSR_USERNAME", "")
     pw = os.environ.get("FSR_PASSWORD", "")
 
-    # Try to acquire BOTH auth modes — every scenario then runs once per mode
+    # Try to acquire BOTH auth modes -- every scenario then runs once per mode
     # so the docs can surface "JWT only" / "API-KEY only" / "both" per op.
     modes: dict[str, str] = {}
     if user and pw:
@@ -409,7 +410,7 @@ def _sweep_live_comments(s: Session) -> int:
     if not r.ok:
         return 0
     try:
-        members = r.json().get("hydra:member", [])
+        members = extract_members(r.json())
     except ValueError:
         return 0
     for m in members:
@@ -432,7 +433,7 @@ def _sweep_named(s: Session, collection_url: str, kind: str) -> int:
     if not r.ok:
         return 0
     try:
-        members = r.json().get("hydra:member", [])
+        members = extract_members(r.json())
     except ValueError:
         return 0
     for m in members:
@@ -455,7 +456,7 @@ def _sweep_alerts(s: Session) -> int:
     if not r.ok:
         return 0
     try:
-        members = r.json().get("hydra:member", [])
+        members = extract_members(r.json())
     except ValueError:
         return 0
     for m in members:
@@ -477,7 +478,7 @@ def _sweep_query_objects(s: Session) -> int:
     if not r.ok:
         return 0
     try:
-        members = r.json().get("hydra:member", [])
+        members = extract_members(r.json())
     except ValueError:
         return 0
     for m in members:
@@ -545,7 +546,7 @@ def _sweep_connector_configs(s: Session) -> int:
     if not r.ok:
         return 0
     try:
-        members = r.json().get("hydra:member", [])
+        members = extract_members(r.json())
     except ValueError:
         return 0
     for m in members:
@@ -637,7 +638,7 @@ def scenario_api_keys(s: Session) -> None:
 def scenario_smoke(s: Session) -> None:
     """Read-only smoke calls to populate response examples on stable ops.
 
-    No record creation — every call is either a GET or a side-effect-free POST.
+    No record creation -- every call is either a GET or a side-effect-free POST.
     """
     print("[smoke] credential login (captures /auth/authenticate)")
     # Mint a fresh JWT explicitly so the operation gets recorded under the
@@ -754,7 +755,7 @@ def scenario_smoke(s: Session) -> None:
     r = s.request("GET", "/api/3/alerts?$limit=1")
     if r.ok:
         try:
-            members = r.json().get("hydra:member", [])
+            members = extract_members(r.json())
         except ValueError:
             members = []
         if members:
@@ -818,7 +819,7 @@ def scenario_queries(s: Session) -> None:
     model_iri = None
     r = s.request("GET", "/api/3/model_metadatas?module=alerts&$limit=1")
     if r.ok:
-        m = r.json().get("hydra:member", [])
+        m = extract_members(r.json())
         if m:
             model_iri = m[0].get("@id")
     qid = None
@@ -903,12 +904,12 @@ def scenario_connector_lifecycle(s: Session) -> None:
     s.call("POST", "/api/integration/connectors/{id}/", want=200,
            path_params={"id": connector_id}, json={})
     # `page_size` (not `limit`) is the pagination param for the integration
-    # collections — Django REST style, distinct from the Hydra `limit` used
+    # collections -- Django REST style, distinct from the Hydra `limit` used
     # under `/api/3/`. Capping to 1 keeps the captured example readable.
     s.call("GET", "/api/integration/configuration/", want=200, params={"page_size": 1})
 
     print("[connector] step 3: create configuration")
-    # `agent` is intentionally omitted — it's only required when delegating
+    # `agent` is intentionally omitted -- it's only required when delegating
     # execution to a remote agent. Self-agent (default) is used implicitly.
     config_name = s.live_name("hwcfg")
     _, cfg = s.call("POST", "/api/integration/configuration/", want=(200, 201),
@@ -974,7 +975,7 @@ def scenario_alerts_crud(s: Session) -> None:
     sev_iri = status_iri = None
     r = s.request("GET", "/api/3/picklist_names?$limit=200")
     if r.ok:
-        for m in (r.json().get("hydra:member") or []):
+        for m in (extract_members(r.json())):
             name = (m.get("name") or "")
             if name == "Severity" and not sev_iri:
                 sev_iri = _first_value(m.get("@id"))
@@ -1049,7 +1050,7 @@ def scenario_bulk_crud(s: Session) -> None:
     sev_iri = status_iri = None
     r = s.request("GET", "/api/3/picklist_names?$limit=200")
     if r.ok:
-        for m in (r.json().get("hydra:member") or []):
+        for m in (extract_members(r.json())):
             if m.get("name") == "Severity" and not sev_iri:
                 sev_iri = _first_value(m["@id"])
             elif m.get("name") == "AlertStatus" and not status_iri:
@@ -1370,7 +1371,7 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
            path_params={"uuid": cid}, params={"limit": 2})
 
     # FortiSOAR's TAXII server is read-only on this build: POST returns 404
-    # (no route), not 405 — so we don't claim a POST operation in the spec.
+    # (no route), not 405 -- so we don't claim a POST operation in the spec.
 
     print("[feed-ingest] sibling POSTs (observables / stix-bundle / threatintel / reputation)")
     # The existing `/api/ingest-feeds/indicators` is exercised elsewhere; the
@@ -1405,18 +1406,18 @@ def scenario_agents_lifecycle(s: Session) -> None:
     """Routers + agent record + installer download, then cleanup.
 
     The flow mirrors what the lab-agent provisioner does:
-      1. GET /api/3/routers          — read the SME router IRI + CA PEM.
-      2. GET /api/3/agents/{self}    — read the appliance's Self agent
+      1. GET /api/3/routers          -- read the SME router IRI + CA PEM.
+      2. GET /api/3/agents/{self}    -- read the appliance's Self agent
          (uuid is a hardcoded Doctrine fixture).
-      3. POST /api/3/agents          — create a throwaway lab record.
-      4. GET /api/3/agents/{uuid}    — poll health.
-      5. POST /api/integration/agent-installer/ — request the .bin (probe).
-      6. DELETE /api/3/agents/{uuid} — cleanup.
+      3. POST /api/3/agents          -- create a throwaway lab record.
+      4. GET /api/3/agents/{uuid}    -- poll health.
+      5. POST /api/integration/agent-installer/ -- request the .bin (probe).
+      6. DELETE /api/3/agents/{uuid} -- cleanup.
 
     Skipped (not failed) on appliances where SME isn't enabled: the routers
     list is empty, so there is no IRI to pass to POST /api/3/agents. The
     installer download is exercised with the response binary read but not
-    persisted — scenarios that download large blobs would otherwise blow
+    persisted -- scenarios that download large blobs would otherwise blow
     out the captured-examples store.
     """
     SELF_AGENT_UUID = "973c17df-bb4b-41e5-b59c-a408666fdf27"
@@ -1426,7 +1427,7 @@ def scenario_agents_lifecycle(s: Session) -> None:
     _, routers = s.call("GET", "/api/3/routers", want=200, params={"$limit": 1})
     members = (routers or {}).get("hydra:member") or []
     if not members:
-        print("[agents] no SME router configured — skipping create/delete probes")
+        print("[agents] no SME router configured -- skipping create/delete probes")
         return
     router_iri = members[0].get("@id")
     assert router_iri, f"router has no @id: {members[0]}"
@@ -1523,7 +1524,7 @@ def main() -> int:
             jobs.append((name, fn, mode))
 
     if args.parallel <= 1 or len(jobs) <= 1:
-        # Sequential path — preserves the inter-job sweep that catches any
+        # Sequential path -- preserves the inter-job sweep that catches any
         # records a crashed scenario left behind before the next one starts.
         for name, fn, mode in jobs:
             s.set_auth(mode)
@@ -1537,7 +1538,7 @@ def main() -> int:
                 failed.append(f"{name}[{mode}]")
             sweep(s)
     else:
-        # Parallel path — each job gets its own cloned Session so the auth
+        # Parallel path -- each job gets its own cloned Session so the auth
         # header / observations / created-records list don't race. Results
         # merge back into `s` on the main thread via `as_completed`, so no
         # locking is needed around the shared dicts.
@@ -1584,7 +1585,7 @@ def main() -> int:
     # Fill in `gated_upstream` markers: if an op was touched under one auth
     # mode but not another, the other auth was blocked upstream (the scenario
     # aborted before reaching this call). For documentation purposes we treat
-    # that as "unavailable under that auth" — a caller using that mode cannot
+    # that as "unavailable under that auth" -- a caller using that mode cannot
     # practically reach this endpoint via the documented flow.
     today = _dt.date.today().isoformat()
     for op_key, op_rec in s.observations.items():
@@ -1609,8 +1610,8 @@ def main() -> int:
         # update the metadata (`captured_at`, `response_status`). This stops
         # ops that capture inherently-time-varying records (the latest
         # workflow run, the tail of the audit log, cpu metrics) from churning
-        # the diff every run. If the shape *does* change — new field appears,
-        # field type flips, list element gains keys — we replace the body so
+        # the diff every run. If the shape *does* change -- new field appears,
+        # field type flips, list element gains keys -- we replace the body so
         # docs reflect the new contract.
         prior: dict = {}
         if OBSERVATIONS_PATH.exists():
