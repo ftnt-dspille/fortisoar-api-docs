@@ -73,6 +73,8 @@ yarn-error.log*
 # example license keys / node IDs / hashes that trigger secret scanners.
 # Keep locally to drive the build; do not commit.
 FortiSOAR-API-Guide.md
+FortiSOAR-7.6.5-API_Guide.txt
+FortiSOAR-7.6.5-API_Guide.pdf
 
 # --- Unused renderer alternative -----------------------------------------
 # Earlier exploration of a Svelte-based renderer; superseded by the
