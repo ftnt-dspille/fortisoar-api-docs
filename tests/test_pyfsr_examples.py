@@ -328,7 +328,8 @@ def _fake_request(self, method, url, **kwargs):
             ]}).encode())
         if "/objects/" in url and url.rstrip("/").split("/")[-1] != "objects":
             return _fake_response(200, json.dumps({"totalItems": 1, "objects": [
-                {"name": "example-malware"},
+                {"type": "malware", "name": "example-malware",
+                 "id": "malware--31b7aa16-6a19-4d5e-9e1a-3a5c9f6a2b40"},
             ]}).encode())
         if "/objects" in url:
             return _fake_response(200, json.dumps({"totalItems": 1, "objects": [
@@ -338,7 +339,7 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps({"title": "Malware Samples"}).encode())
     # --- Audit ---
     if method == "POST" and url.endswith("/api/gateway/audit/activities/count"):
-        return _fake_response(200, json.dumps({"count": 42}).encode())
+        return _fake_response(200, json.dumps({"total": 4}).encode())
     if method == "POST" and url.endswith("/api/gateway/audit/activities"):
         return _fake_response(200, json.dumps({"content": [
             {"user": "admin", "operation": "create", "component": "alerts"},
@@ -511,8 +512,11 @@ def _fake_request(self, method, url, **kwargs):
         }).encode())
     # --- AI / MCP endpoints ---
     # AI agents
-    if method == "GET" and "/ai/agent/" == url:
-        return _fake_response(200, json.dumps([]).encode())
+    if method == "GET" and url.endswith("/api/ai/agent/"):
+        return _fake_response(200, json.dumps([
+            {"id": 1, "uuid": "6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f",
+             "name": "ioc-enrichment", "version": "1.0", "active": True},
+        ]).encode())
     if method == "GET" and "/ai/agent/" in url and "/config" not in url:
         return _fake_response(200, json.dumps({"name": "test", "version": "1.0"}).encode())
     if method == "POST" and "/ai/agent/import" in url:
