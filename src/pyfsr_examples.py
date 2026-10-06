@@ -125,11 +125,11 @@ def manual_example(body: str) -> str:
 #
 # Generic template entries (e.g. ``/api/3/{collection}``) also serve as the
 # fallback for concrete collection paths (``/api/3/alerts``, ``/api/3/agents``)
-# via ``_generic_fallback`` in ``apply_pyfsr_samples`` — no per-module entry
+# via ``_generic_fallback`` in ``apply_pyfsr_samples`` - no per-module entry
 # needed unless a typed wrapper in ``pyfsr.api.<module>`` has a richer
 # doctest for that specific path.
 PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
-    # Generic record CRUD (pyfsr.records) — covers every concrete collection
+    # Generic record CRUD (pyfsr.records) - covers every concrete collection
     # path via fallback (alerts, incidents, tasks, comments, agents, ...).
     ("get", "/api/3/{collection}"): ("doctest", "pyfsr.records:RecordSet.list"),
     ("get", "/api/3/{collection}/{uuid}"): ("doctest", "pyfsr.records"),
@@ -145,11 +145,13 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/wf/api/scheduled/"): ("doctest", "pyfsr.api.schedules:SchedulesAPI.create"),
     ("delete", "/api/wf/api/scheduled/{id}/"): ("doctest", "pyfsr.api.schedules:SchedulesAPI.delete"),
     ("post", "/api/wf/api/scheduled/trigger-now/"): ("doctest", "pyfsr.api.schedules:SchedulesAPI.trigger_now"),
+    ("get", "/api/wf/api/scheduled/"): ("manual", "client.schedules.list()"),
+    ("put", "/api/wf/api/scheduled/{id}/"): ("manual", 'client.schedules.set_enabled("nightly-recon", False)'),
     # Notifications (Tier 1c)
     ("post", "/api/rule/api/system-notification/notifications/"): ("doctest", "pyfsr.api.notifications:NotificationsAPI.list"),
     ("post", "/api/rule/api/system-notification/purge/"): ("doctest", "pyfsr.api.notifications:NotificationsAPI.purge"),
     # ------------------------------------------------------------------
-    # Typed wrappers — one per (method, path). These take precedence over
+    # Typed wrappers - one per (method, path). These take precedence over
     # the generic RecordSet fallback above for their specific path, so a
     # reader sees the typed surface (client.alerts.get(...)) rather than
     # the generic one (client.records("alerts").get(...)) where both exist.
@@ -170,7 +172,8 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("put", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.upgrade_connector"),
     ("delete", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.uninstall_connector"),
     ("get", "/api/integration/agent-heartbeat/{agent}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.heartbeat"),
-    # API-key users (JWT-only — all four doctests use demo_client_jwt()).
+    ("get", "/api/integration/connectors/agents/{name}/{version}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.connector_install_status"),
+    # API-key users (JWT-only - all four doctests use demo_client_jwt()).
     ("get", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.get"),
     ("post", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.create"),
     ("put", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.lifecycle"),
@@ -187,8 +190,15 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # published store and diff against staging (the "is this module live?" check).
     ("get", "/api/3/staging_model_metadatas"): ("doctest", "pyfsr.api.modules"),
     ("get", "/api/3/model_metadatas/{uuid}"): ("doctest", "pyfsr.api.modules_admin"),
+    # Module admin - publish, revert, staging CRUD
+    ("put", "/api/publish"): ("manual", 'client.put("/api/publish")'),
+    ("put", "/api/publish/revert"): ("manual", 'client.put("/api/publish/revert")'),
+    ("get", "/api/publish/error"): ("manual", 'client.get("/api/publish/error", raise_on_status=False)'),
+    ("post", "/api/3/staging_model_metadatas"): ("manual", 'client.modules_admin.create_module("my_module")'),
+    ("get", "/api/3/staging_model_metadatas/{uuid}"): ("manual", 'client.modules_admin.get_staging("alerts")'),
+    ("delete", "/api/3/staging_model_metadatas/{uuid}"): ("manual", 'client.modules_admin.discard_staging_draft("alerts")'),
     # Solution packs / import jobs
-    # NOTE: ``POST /api/3/solutionpacks/install`` serves three uses — a by-name
+    # NOTE: ``POST /api/3/solutionpacks/install`` serves three uses - a by-name
     # Content-Hub install (``SolutionPackAPI.install``, no $type), a multipart
     # connector ``.tgz`` upload (``ConnectorsAPI.install_from_file``,
     # ``$type=connector``), and a multipart widget ``.tgz`` upload
@@ -198,15 +208,21 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # reader into naming a connector they have on disk as a Content-Hub pack).
     ("post", "/api/3/solutionpacks/install"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.install_from_file"),
     ("post", "/api/3/import_jobs"): ("doctest", "pyfsr.api.import_config:ImportConfigAPI.create_job"),
-    # Export/import — export template create + the export trigger (PUT
+    ("get", "/api/import/{job_uuid}"): ("manual", 'client.import_config.generate_options("job-uuid")'),
+    ("put", "/api/import/{job_uuid}"): ("manual", 'client.import_config.trigger("job-uuid")'),
+    # Export/import - export template create + the export trigger (PUT
     # /api/export, query-param body not JSON). The trigger is JWT-only; the
     # doctest for export_by_template_uuid exercises the full trigger→poll→
     # download flow. create_template is open to any auth.
     ("post", "/api/3/export_templates"): ("doctest", "pyfsr.api.export_config:ExportConfigAPI.create_template"),
     ("put", "/api/export"): ("doctest", "pyfsr.api.export_config:ExportConfigAPI.export_by_template_uuid"),
-    # File upload — the /api/3/files upload primitive import/export/widgets
+    # File upload - the /api/3/files upload primitive import/export/widgets
     # all build on. Returns a FileRecord (filename + @id).
     ("post", "/api/3/files"): ("doctest", "pyfsr.utils.file_operations:FileOperations.upload"),
+    # Widgets - export, publish (GET dev manifest then PUT), delete
+    ("post", "/api/3/widgets/export/{uuid}"): ("manual", 'client.widgets.export("widget-uuid", "/tmp/widget.zip")'),
+    ("get", "/api/3/widgets/development/{uuid}"): ("manual", 'client.widgets.publish("widget-uuid")'),
+    ("delete", "/api/3/delete/widgets"): ("manual", 'client.widgets.remove("widget-uuid")'),
     # System (version / permissions / feature-access)
     ("get", "/api/version"): ("doctest", "pyfsr.api.system:SystemAPI.version"),
     ("get", "/api/permissions/current"): ("doctest", "pyfsr.api.system:SystemAPI.permissions"),
@@ -220,6 +236,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/ingest-feeds/reputation"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.reputation"),
     ("post", "/api/ingest-feeds/threatintel"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.threatintel"),
     ("post", "/api/ingest-feeds/stix-bundle"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.stix_bundle"),
+    ("post", "/api/insert-feeds/{recordType}"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.insert"),
     # TAXII 2.1
     ("get", "/api/taxii/1/"): ("doctest", "pyfsr.api.taxii:TaxiiAPI.discovery"),
     ("get", "/api/taxii/1/collections"): ("doctest", "pyfsr.api.taxii:TaxiiAPI.collections"),
@@ -235,7 +252,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("delete", "/api/gateway/audit/activities/ttl"): ("doctest", "pyfsr.api.audit:AuditAPI.disable_ttl"),
     # Connectors (lifecycle + execute)
     # Discovery + health + detail + uninstall + the dedicated configurations
-    # endpoint — the connector surface after record CRUD. Each method's
+    # endpoint - the connector surface after record CRUD. Each method's
     # doctest is focused on its own op so the rendered sample shows just that
     # call (not the module-level discovery narrative).
     ("get", "/api/integration/connectors/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.list_configured"),
@@ -243,10 +260,14 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/integration/connectors/{id}/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.connector_detail"),
     ("delete", "/api/integration/connectors/{id}/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.uninstall"),
     ("get", "/api/integration/configuration/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.list_configurations"),
+    ("post", "/api/integration/configuration/"): ("manual", 'client.connectors.create_configuration("mitre-attack", {"api_key": "..."}, name="prod")'),
+    ("delete", "/api/integration/configuration/{config_id}/"): ("manual", 'client.connectors.delete_configuration("c21")'),
     ("post", "/api/integration/execute/"): ("doctest", "pyfsr.api.connectors:ConnectorsAPI.execute"),
     # Playbooks
     ("get", "/api/wf/api/workflows/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.execution_history"),
     ("get", "/api/wf/api/historical-workflows/{pk}/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.get_execution"),
+    ("get", "/api/wf/api/historical-workflows/"): ("manual", 'client.get("/api/wf/api/historical-workflows/")'),
+    ("get", "/api/wf/api/workflows/{pk}/"): ("manual", 'client.get("/api/wf/api/workflows/123/")'),
     ("post", "/api/wf/api/workflows/{pk}/start/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.start"),
     ("post", "/api/wf/api/workflows/{pk}/retry/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.retry"),
     ("get", "/api/wf/api/workflows/count/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.count"),
@@ -254,22 +275,25 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/wf/api/query/workflow_logs/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.query_logs"),
     ("post", "/api/wf/api/jinja-editor/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.render_jinja"),
     ("post", "/api/triggers/1/{name}"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.trigger_by_name"),
+    ("post", "/api/triggers/1/deferred/{name}"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.trigger_by_name"),
+    ("post", "/api/triggers/1/notrigger/{workflowId}"): ("manual", 'client.playbooks.trigger("nightly-recon")'),
     # Manual input
     ("post", "/api/wf/api/manual-wf-input/list_wfinput/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.list"),
     ("post", "/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.retrieve"),
     ("post", "/api/wf/api/workflows/{pk}/wfinput_resume/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.resume"),
     ("delete", "/api/wf/api/manual-wf-input/{pk}/"): ("doctest", "pyfsr.api.manual_input:ManualInputAPI.delete"),
-    # AI Agents — management
+    # AI Agents - management
     ("get", "/ai/agent/"): ("manual", "client.ai.list_agents()"),
     ("get", "/ai/agent/{name}/{version}"): ("manual", 'client.ai.get_agent("ioc-enrichment", "latest")'),
+    ("delete", "/ai/agent/{name}/{version}"): ("manual", 'client.ai.uninstall_agent("ioc-enrichment")'),
     ("post", "/ai/agent/import"): ("manual", 'client.ai.import_agent("/path/to/agent.zip")'),
     ("post", "/ai/agent/export/{agent_id}"): ("manual", 'client.ai.export_agent("ioc-enrichment", "/tmp/agent.zip")'),
     ("get", "/ai/agent/config/{agent_name}/{version}"): ("manual", 'client.ai.get_agent_config("ioc-enrichment", "latest")'),
     ("post", "/ai/agent/config"): ("manual", 'client.ai.update_agent_config("ioc-enrichment", "latest", {"model": "gpt-4"})'),
-    ("get", "/ai/llm/config/default"): ("manual", "client.ai.get_default_agent_config()"),
-    ("post", "/ai/llm/config/default"): ("manual", 'client.ai.update_default_agent_config({"model": "gpt-4"})'),
+    ("get", "/ai/agent/config/default"): ("manual", "client.ai.get_default_agent_config()"),
+    ("post", "/ai/agent/config/default"): ("manual", 'client.ai.update_default_agent_config({"model": "gpt-4"})'),
     ("post", "/ai/agent/activate"): ("manual", 'client.ai.activate_agent(["123e4567-e89b-12d3-a456-426614174000"])'),
-    # AI Agents — execution
+    # AI Agents - execution
     ("post", "/ai/triage/alert"): ("manual", 'client.ai.start_alert_investigation({"name": "123e4567-e89b-12d3-a456-426614174000"})'),
     ("post", "/ai/agents/{agent_name}/trigger"): ("doctest", "pyfsr.api.ai:AIApi.run_agent"),
     ("get", "/ai/agents/{task_id}/status"): ("manual", 'client.ai.get_status("abc123-def456")'),
@@ -278,6 +302,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # AI LLM
     ("get", "/ai/llm/config"): ("manual", "client.ai.list_llm_configs()"),
     ("get", "/ai/llm/config/{uuid}"): ("manual", 'client.ai.get_llm_config("abc123-def456")'),
+    ("get", "/ai/llm/config/{uuid}/verify"): ("manual", 'client.ai.verify_llm_config("abc123-def456")'),
     ("post", "/ai/llm/config"): ("manual", 'client.ai.create_llm_config([{"name": "test", "provider": "openai"}])'),
     ("delete", "/ai/llm/config/{uuid}"): ("manual", 'client.ai.delete_llm_config("abc123-def456")'),
     # AI MCP Registry
@@ -285,15 +310,58 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/ai/mcp/validate"): ("manual", 'client.ai.validate_mcp_server({"name": "...", "url": "..."})'),
     # MCP Configurations (pyfsr-only CRUD module)
     ("get", "/api/3/mcp_configurations"): ("manual", "client.ai.mcp_configs()"),
+    ("get", "/api/3/mcp_configurations/{uuid}"): ("manual", 'client.ai.get_mcp_config("123e4567-e89b-12d3-a456-426614174000")'),
     ("post", "/api/3/mcp_configurations"): ("manual", 'client.ai.register_mcp_server({"name": "my-server", "url": "http://example.com/mcp"})'),
     ("put", "/api/3/mcp_configurations/{uuid}"): ("manual", 'client.ai.update_mcp_server("123e4567-e89b-12d3-a456-426614174000", {"name": "my-server"})'),
     ("delete", "/api/3/mcp_configurations/{uuid}"): ("manual", 'client.ai.delete_mcp_server("123e4567-e89b-12d3-a456-426614174000")'),
     # MCP Gateway (pyfsr-only)
+    ("get", "/mcp/servers/{mcp_type}"): ("manual", "client.ai.mcp_connector_candidates()"),
     ("get", "/mcp/servers/connector"): ("manual", "client.ai.mcp_connector_candidates()"),
     ("post", "/mcp/config/export"): ("manual", 'client.ai.export_mcp_server_tools([{"name": "my-server"}])'),
     ("delete", "/mcp/tools/delete"): ("manual", 'client.ai.delete_mcp_tools([{"name": "my-tool"}])'),
+    ("post", "/mcp/add/tools"): ("manual", 'client.post("/mcp/add/tools", data={"mcp_configuration": {"name": "my-server", "uuid": "abc123"}, "tools": []})'),
+    ("put", "/mcp/tools/{uuid}"): ("manual", 'client.put("/mcp/tools/abc123", data={"uuid": "abc123", "tools": []})'),
     # AI Activity (pyfsr-only)
     ("get", "/api/3/llm_activity_logs"): ("manual", "client.ai.tool_usage()"),
+    # AI Traces (pyfsr-only - observability surface)
+    ("get", "/ai/traces/"): ("manual", "client.ai.traces.list()"),
+    ("get", "/ai/traces/health"): ("manual", "client.ai.traces.health()"),
+    ("get", "/ai/traces/{trace_id}"): ("manual", 'client.ai.traces.get("abc123")'),
+    ("get", "/ai/traces/{trace_id}/execution-tree"): ("manual", 'client.ai.traces.execution_tree("abc123")'),
+    ("get", "/ai/traces/{trace_id}/spans"): ("manual", 'client.ai.traces.spans("abc123")'),
+    ("get", "/ai/traces/spans/{span_id}"): ("manual", 'client.ai.traces.span("span-xyz")'),
+    ("get", "/ai/traces/spans/{span_id}/children"): ("manual", 'client.ai.traces.span_children("span-xyz")'),
+    ("get", "/ai/traces/spans/{span_id}/lineage"): ("manual", 'client.ai.traces.span_lineage("span-xyz")'),
+    ("get", "/ai/traces/spans/{span_id}/tree"): ("manual", 'client.ai.traces.span_subtree("span-xyz")'),
+    ("get", "/ai/traces/tokens/{trace_id}"): ("manual", 'client.ai.traces.tokens("abc123")'),
+    ("get", "/ai/traces/tokens/session/{session_id}"): ("manual", 'client.ai.traces.session_tokens("sess-xyz")'),
+    ("delete", "/ai/traces/delete"): ("manual", 'client.ai.traces.purge_older_than(days=30)'),
+    # Connector internals (pyfsr-discovered)
+    ("post", "/api/integration/connectors/{connector}/{version}/"): ("manual", 'client.connectors.definition("mitre-attack", version="1.0.0")'),
+    ("get", "/api/integration/connectors/dependencies_check/{connector}/{version}/"): ("manual", 'client.connectors.dependencies_status("mitre-attack", version="1.0.0")'),
+    ("post", "/api/integration/connectors/dependencies_check/{connector}/{version}/"): ("manual", 'client.connectors.install_dependencies("mitre-attack", version="1.0.0")'),
+    ("post", "/api/integration/connector_output_schema/{connector}/{version}/"): ("manual", 'client.connectors.output_schema("mitre-attack", "get_indicators", version="1.0.0")'),
+    ("post", "/api/integration/connector_details/"): ("manual", "client.connectors.ingestion_sources()"),
+    ("get", "/api/integration/data-import/"): ("manual", 'client.connectors.ingestion_metadata("config-123")'),
+    ("post", "/api/integration/data-import/"): ("manual", 'client.connectors.save_ingestion_metadata("config-123", connector="mitre-attack", version="1.0.0", name="prod")'),
+    ("get", "/api/integration/configuration/{config_id}/"): ("manual", 'client.connectors.set_default_configuration("mitre-attack", "Demo")'),
+    ("put", "/api/integration/configuration/{config_id}/"): ("manual", 'client.connectors.update_configuration("mitre-attack", "c21", {"api_key": "..."}, name="prod")'),
+    # Views & view templates (pyfsr-discovered)
+    ("get", "/api/views/1/app"): ("manual", "client.views.app()"),
+    ("get", "/api/views/1/{name}"): ("manual", 'client.view_templates.get_template("Custom Detail Layout")'),
+    ("post", "/api/views/1/{name}"): ("manual", 'client.view_templates.create_template("My View", {"rows": []}, module="alerts", viewOptions="detail")'),
+    ("put", "/api/views/1/{name}"): ("manual", 'client.view_templates.update_template("My View", config={"rows": []})'),
+    # Dynamic variables (pyfsr-discovered)
+    ("get", "/api/wf/api/dynamic-variable/"): ("manual", "client.wf_tools.dynamic_variables()"),
+    ("post", "/api/wf/api/dynamic-variable/"): ("manual", 'client.wf_tools.set_dynamic_variable("My_Var", "value123")'),
+    # Playbook execution internals (pyfsr-discovered)
+    ("get", "/api/wf/api/historical-steps/"): ("manual", 'client.playbooks.historical_steps("abc123")'),
+    ("get", "/api/wf/api/manual-wf-input/"): ("manual", 'client.get("/api/wf/api/manual-wf-input/")'),
+    ("put", "/api/wf/api/manual-wf-input/{pk}/"): ("manual", 'client.playbooks.update_manual_input("123", status="done")'),
+    # System: daily action count (pyfsr-discovered)
+    ("get", "/api/wf/workflow/config/"): ("manual", "client.system.daily_action_count()"),
+    # Change password (pyfsr-discovered)
+    ("put", "/api/3/changepassword"): ("manual", 'client.users.change_password("old-pass", "new-pass")'),
 }
 
 
@@ -468,7 +536,7 @@ def apply_pyfsr_response_models(paths: dict, schemas: dict | None = None) -> int
 
     When ``schemas`` is given (the spec's ``components.schemas`` dict), also
     wires the matching ``$ref`` onto the 2xx response's content schema so the
-    model renders as a linked, expandable response shape — not just a name.
+    model renders as a linked, expandable response shape - not just a name.
     ``list[Model]`` is wrapped as an array of the model; unions (``A | B``)
     are skipped (too ambiguous to pick one). Never overwrites an existing
     ``schema.$ref``. Returns the count of ``x-pyfsr-response-model`` tags set.

@@ -44,16 +44,16 @@ def _fake_response(
 def _fake_request(self, method, url, **kwargs):
     if url.endswith("/auth/authenticate"):
         return _fake_response(200, b'{"token": "fake-token"}')
-    if "staging_model_metadatas" in url:
+    if method == "GET" and "staging_model_metadatas" in url:
         # Two members: "alerts" (for list_modules) and "incidents" with a
-        # name field (for describe_module — the doctest asserts fields[0]).
+        # name field (for describe_module - the doctest asserts fields[0]).
         return _fake_response(200, json.dumps({"hydra:member": [
-            {"type": "alerts", "module": "alerts", "attributes": []},
+            {"type": "alerts", "module": "alerts", "attributes": [], "uuid": "alert-uuid-1234"},
             {"type": "incidents", "module": "incidents", "attributes": [
                 {"name": "name", "type": "string", "formType": "text",
                  "descriptions": {"singular": "Name"},
                  "validation": {"required": True}},
-            ]},
+            ], "uuid": "incident-uuid-1234"},
         ]}).encode())
     # --- API-key users (JWT-only) ---
     # All four ops return the {"usersresp": [user]} envelope. The doctests use
@@ -63,6 +63,7 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps({
             "usersresp": [{
                 "uuid": "550e8400-e29b-41d4-a716-446655440007",
+                "loginid": "csadmin",
                 "user_type": 9, "status": 1, "access_type": "Named",
                 "api_key": {"key": "demo-token", "retrievable": True, "status": "Active"},
             }],
@@ -99,6 +100,9 @@ def _fake_request(self, method, url, **kwargs):
     # delete (DELETE /api/wf/api/scheduled/{id}/?...)
     if method == "DELETE" and "/api/wf/api/scheduled/" in url:
         return _fake_response(204, b"")
+    # set_enabled (PUT /api/wf/api/scheduled/{id}/?...)
+    if method == "PUT" and "/api/wf/api/scheduled/" in url:
+        return _fake_response(200, json.dumps({"id": _FERNET, "name": "nightly-recon", "enabled": False}).encode())
     # --- Notifications ---
     # list (POST .../notifications/?...)
     if method == "POST" and "/api/rule/api/system-notification/notifications" in url:
@@ -115,7 +119,7 @@ def _fake_request(self, method, url, **kwargs):
     if method == "POST" and "/api/rule/api/system-notification/purge" in url:
         return _fake_response(200, b'{"result": "System Notification purge started", "status": "started"}')
     # --- Generic record ops (RecordSet) ---
-    # list (GET /api/3/<module>?$limit=...&$page=...) — the paged collection.
+    # list (GET /api/3/<module>?$limit=...&$page=...) - the paged collection.
     # requests passes params in kwargs, so the URL is the bare collection path.
     # Match before the by-uuid GET; use endswith to exclude /<uuid> suffixes.
     if method == "GET" and url.endswith("/api/3/alerts"):
@@ -134,19 +138,19 @@ def _fake_request(self, method, url, **kwargs):
             "hydra:member": [{"comment": "Investigating this alert.", "uuid": "c1"}],
             "hydra:totalItems": 1,
         }).encode())
-    # upsert (POST /api/3/upsert/<module>) — after picklist resolution
+    # upsert (POST /api/3/upsert/<module>) - after picklist resolution
     if method == "POST" and "/api/3/upsert/" in url:
         return _fake_response(200, json.dumps({
             "@id": f"/api/3/alerts/{_ALERT_UUID}", "uuid": _ALERT_UUID,
             "name": "Response Capture Test Alert",
         }).encode())
-    # bulk_upsert (POST /api/3/bulkupsert/<module>) — multi-status envelope
+    # bulk_upsert (POST /api/3/bulkupsert/<module>) - multi-status envelope
     if method == "POST" and "/api/3/bulkupsert/" in url:
         return _fake_response(200, json.dumps({
             "success": [{"name": "pyfsr-bulk-doctest-ok"}],
             "failure": ["row 1: duplicate key"],
         }).encode())
-    # bulk_insert (POST /api/3/insert/<module>) — all-succeeded bare collection
+    # bulk_insert (POST /api/3/insert/<module>) - all-succeeded bare collection
     if method == "POST" and "/api/3/insert/" in url:
         return _fake_response(201, json.dumps({
             "@context": "/api/3/contexts/Alert",
@@ -191,13 +195,13 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps(
             {"automation": True, "endpoint_management": False}
         ).encode())
-    # model_metadatas (GET /api/3/model_metadatas — NOT staging_model_metadatas)
+    # model_metadatas (GET /api/3/model_metadatas - NOT staging_model_metadatas)
     if method == "GET" and "/api/3/model_metadatas" in url and "staging" not in url:
         return _fake_response(200, json.dumps({"hydra:member": [
             {"type": "threat_intel_feeds",
              "@id": "/api/3/model_metadatas/acbac353-3593-41d2-af46-67951cfab083"},
         ]}).encode())
-    # routers.list (GET /api/3/routers) — doctest expects len == 0
+    # routers.list (GET /api/3/routers) - doctest expects len == 0
     if method == "GET" and url.endswith("/api/3/routers"):
         return _fake_response(200, json.dumps({"hydra:member": []}).encode())
     # roles.list (GET /api/3/roles)
@@ -239,7 +243,7 @@ def _fake_request(self, method, url, **kwargs):
     # agents.heartbeat (GET /api/integration/agent-heartbeat/{agent}/)
     if method == "GET" and "/api/integration/agent-heartbeat/" in url:
         return _fake_response(200, json.dumps({"status": "alive"}).encode())
-    # agents.installer (POST /api/integration/agent-installer/) — returns bytes
+    # agents.installer (POST /api/integration/agent-installer/) - returns bytes
     if method == "POST" and "/api/integration/agent-installer/" in url:
         return _fake_response(200, b"\x1f\x8b\x08\x00binary-installer-blob")
     # agents install/upgrade/uninstall connector (POST/PUT/DELETE install-connector)
@@ -305,7 +309,7 @@ def _fake_request(self, method, url, **kwargs):
             "total": 1,
             "hits": [{"_source": {"severity": "Low"}}],
         }}).encode())
-    # run_persisted (POST /api/query/{collection}/{queryId}) — BEFORE workflow_logs
+    # run_persisted (POST /api/query/{collection}/{queryId}) - BEFORE workflow_logs
     if method == "POST" and "/api/query/" in url and "/api/3/" not in url and "workflow_logs" not in url:
         return _fake_response(200, json.dumps({"hydra:totalItems": 1, "hydra:member": []}).encode())
     # --- Feeds (trigger-bypassing bulk ingest) ---
@@ -383,7 +387,8 @@ def _fake_request(self, method, url, **kwargs):
         }).encode())
     # connector_detail: POST /api/integration/connectors/<id>/ (the POST-{}
     # operations-discovery quirk). Returns the connector record with operations[].
-    if method == "POST" and "/api/integration/connectors/" in url:
+    # Must NOT match /agents/ (connector_install_status) or /dependencies_check/.
+    if method == "POST" and "/api/integration/connectors/" in url and "/agents/" not in url and "/dependencies_check/" not in url:
         return _fake_response(200, json.dumps({
             "name": "smtp", "version": "2.6.0",
             "operations": [
@@ -398,7 +403,8 @@ def _fake_request(self, method, url, **kwargs):
     # list_configurations: GET /api/integration/configuration/ (the dedicated,
     # filterable configurations endpoint). Returns the {status, totalItems, data[]}
     # envelope matching pyfsr's replay fixture.
-    if method == "GET" and "/api/integration/configuration/" in url:
+    # Must NOT match /api/integration/configuration/{config_id}/ (single record).
+    if method == "GET" and url.endswith("/api/integration/configuration/"):
         return _fake_response(200, json.dumps({
             "status": "success", "totalItems": 2,
             "data": [
@@ -428,7 +434,9 @@ def _fake_request(self, method, url, **kwargs):
              "uuid": "a0afba58-9dbe-44dd-a6e6-7227e33990db"},
         ]}).encode())
     if method == "GET" and _wf_path.startswith("/api/wf/api/workflows/") and _wf_path != "/api/wf/api/workflows/":
-        # Single run by pk — 404 on live to fall back to historical
+        if _wf_path == "/api/wf/api/workflows/123/":
+            return _fake_response(200, json.dumps({"name": "test-wf", "status": "finished", "@id": "/api/wf/api/workflows/123/"}).encode())
+        # Single run by pk - 404 on live to fall back to historical
         return _fake_response(404, json.dumps({"detail": "Not found"}).encode())
     if method == "GET" and _wf_path == "/api/wf/api/historical-workflows/":
         return _fake_response(200, json.dumps({"hydra:member": []}).encode())
@@ -478,19 +486,22 @@ def _fake_request(self, method, url, **kwargs):
     # delete: DELETE /api/wf/api/manual-wf-input/<pk>/ returns 204.
     if method == "DELETE" and "/api/wf/api/manual-wf-input/" in url:
         return _fake_response(204, b"")
+    # update_manual_input: PUT /api/wf/api/manual-wf-input/<pk>/
+    if method == "PUT" and "/api/wf/api/manual-wf-input/" in url:
+        return _fake_response(200, json.dumps({"id": 123, "status": "done"}).encode())
     # --- Export/import ---
-    # create_template: POST /api/3/export_templates — returns the created
+    # create_template: POST /api/3/export_templates - returns the created
     # template record (name + @id; the doctest asserts both).
     if method == "POST" and url.endswith("/api/3/export_templates"):
         return _fake_response(200, json.dumps({
             "name": "Alert backup",
             "@id": "/api/3/export_templates/880e8400-e29b-41d4-a716-446655440022",
         }).encode())
-    # trigger export: PUT /api/export?fileName=...&template=... — query-
+    # trigger export: PUT /api/export?fileName=...&template=... - query-
     # param body, not JSON; returns the export job uuid.
     if method == "PUT" and "/api/export?" in url:
         return _fake_response(200, json.dumps({"jobUuid": "export-job-001"}).encode())
-    # poll export status: GET /api/3/export_jobs/<uuid> — return "Export
+    # poll export status: GET /api/3/export_jobs/<uuid> - return "Export
     # Complete" immediately (doctest uses poll_interval=0) with a file IRI.
     if method == "GET" and "/api/3/export_jobs/" in url:
         return _fake_response(200, json.dumps({
@@ -498,12 +509,12 @@ def _fake_request(self, method, url, **kwargs):
             "file": {"@id": "/api/3/files/file-001"},
         }).encode())
     # download export archive: GET /api/3/files/<uuid> with Accept:
-    # application/octet-stream — raw bytes (client.get() content-type
+    # application/octet-stream - raw bytes (client.get() content-type
     # dispatch returns response.content for octet-stream).
     if method == "GET" and "/api/3/files/" in url:
         return _fake_response(200, b"ZIPBYTES", content_type="application/octet-stream")
     # --- File upload ---
-    # upload: POST /api/3/files (multipart) — returns a FileRecord with
+    # upload: POST /api/3/files (multipart) - returns a FileRecord with
     # filename + @id (the doctest asserts both).
     if method == "POST" and url.endswith("/api/3/files"):
         return _fake_response(201, json.dumps({
@@ -519,20 +530,22 @@ def _fake_request(self, method, url, **kwargs):
         ]).encode())
     if method == "GET" and "/ai/agent/" in url and "/config" not in url:
         return _fake_response(200, json.dumps({"name": "test", "version": "1.0"}).encode())
+    if method == "DELETE" and "/ai/agent/" in url and "/config" not in url:
+        return _fake_response(200, json.dumps({"status": "deleted"}).encode())
     if method == "POST" and "/ai/agent/import" in url:
         return _fake_response(200, json.dumps({"status": "ok"}).encode())
     if method == "POST" and "/ai/agent/export/" in url:
         return _fake_response(200, json.dumps({}).encode())
     if method == "POST" and "/ai/agent/activate" in url:
         return _fake_response(200, json.dumps({"status": "activated"}).encode())
+    # AI default agent config (check before the general config patterns)
+    if "/agent/config/default" in url:
+        return _fake_response(200, json.dumps({"name": "default", "config": {}}).encode())
     # AI agent config
     if method == "GET" and "/ai/agent/config/" in url:
         return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
     if method == "POST" and "/ai/agent/config" in url and "/default" not in url:
         return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
-    # AI default agent config
-    if "/agent/config/default" in url:
-        return _fake_response(200, json.dumps({"name": "default", "config": {}}).encode())
     # AI triage
     if method == "POST" and "/ai/triage/alert" in url:
         return _fake_response(200, json.dumps({"task_id": "abc123-def456"}).encode())
@@ -548,6 +561,8 @@ def _fake_request(self, method, url, **kwargs):
     # AI LLM config
     if method == "GET" and "/api/ai/llm/config" in url and "/verify" not in url:
         return _fake_response(200, json.dumps([]).encode())
+    if method == "GET" and "/ai/llm/config/" in url and "/verify" in url:
+        return _fake_response(200, json.dumps({"status": "verified"}).encode())
     if method == "GET" and "/ai/llm/config/" in url:
         return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
     if method == "POST" and "/ai/llm/config" in url and "/verify" not in url:
@@ -562,6 +577,8 @@ def _fake_request(self, method, url, **kwargs):
     if method == "POST" and "/ai/mcp/validate" in url:
         return _fake_response(200, json.dumps({"valid": True}).encode())
     # MCP configurations
+    if method == "GET" and "/api/3/mcp_configurations/" in url:
+        return _fake_response(200, json.dumps({"name": "my-server", "url": "http://example.com/mcp", "uuid": "123e4567-e89b-12d3-a456-426614174000"}).encode())
     if method == "GET" and "/api/3/mcp_configurations" in url:
         return _fake_response(200, json.dumps([]).encode())
     if method == "POST" and "/api/3/mcp_configurations" in url:
@@ -579,9 +596,146 @@ def _fake_request(self, method, url, **kwargs):
     # MCP tools delete
     if method == "DELETE" and "/mcp/tools/delete" in url:
         return _fake_response(204, b"")
+    # MCP add tools (host_connector_as_mcp_server POST /mcp/add/tools)
+    if method == "POST" and "/mcp/add/tools" in url:
+        return _fake_response(200, json.dumps({"status": "ok"}).encode())
+    # MCP update tools (PUT /mcp/tools/{uuid})
+    if method == "PUT" and "/mcp/tools/" in url and "/delete" not in url:
+        return _fake_response(200, json.dumps({"status": "ok"}).encode())
     # AI activity logs
     if method == "GET" and "/api/3/llm_activity_logs" in url:
         return _fake_response(200, json.dumps([]).encode())
+    # --- AI Traces ---
+    if "/api/ai/traces" in url:
+        # health
+        if url.rstrip("/").endswith("/api/ai/traces/health"):
+            return _fake_response(200, b'"ok"')
+        # delete (purge)
+        if method == "DELETE" and url.rstrip("/").endswith("/api/ai/traces/delete"):
+            return _fake_response(200, json.dumps({"deleted": 5}).encode())
+        # tokens
+        if "/tokens/" in url:
+            return _fake_response(200, json.dumps({"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}).encode())
+        # span subtree - calls span() then get(); span needs trace_id, get needs root
+        if method == "GET" and "/spans/" in url and "/tree" in url:
+            # span_subtree calls span(span_id) first, then get(trace_id)
+            # The mock for span() below returns trace_id="abc123",
+            # and the mock for get() returns root with span_id.
+            # But we need to know which call this is. The span_subtree
+            # method catches and retries, so we handle span() first.
+            pass  # fall through to span handler
+        if method == "GET" and "/spans/" in url and "/children" in url:
+            return _fake_response(200, json.dumps([]).encode())
+        if method == "GET" and "/spans/" in url and "/lineage" in url:
+            return _fake_response(200, json.dumps({"upstream": [], "downstream": []}).encode())
+        if method == "GET" and "/spans/" in url and "/tree" not in url:
+            # single span - needs span_id + trace_id for span_subtree
+            return _fake_response(200, json.dumps({"span_id": "span-xyz", "trace_id": "abc123", "name": "test"}).encode())
+        # execution-tree - ExecutionTree has no required fields
+        if "/execution-tree" in url:
+            return _fake_response(200, json.dumps({"root_trace_id": "abc123", "traces": [], "root": {"span_id": "abc123"}}).encode())
+        # spans list for a trace - needs {"spans": [{"span_id": ...}]}
+        if method == "GET" and "/spans" in url and "/spans/" not in url:
+            return _fake_response(200, json.dumps({"spans": [{"span_id": "s1", "trace_id": "abc123"}]}).encode())
+        # single trace - needs {"root": {"span_id": ...}}
+        if method == "GET" and "/api/ai/traces/" in url:
+            # Could be list or single trace. List has /traces/ at end.
+            if url.rstrip("/").endswith("/api/ai/traces"):
+                # list - needs {"traces": [{"trace_id": ...}]}
+                return _fake_response(200, json.dumps({"traces": [{"trace_id": "abc123", "status": "OK"}]}).encode())
+            # single trace - needs {"root": {"span_id": ...}}
+            return _fake_response(200, json.dumps({"root": {"span_id": "abc123", "name": "root"}}).encode())
+    # --- Connector internals ---
+    # dependencies_check POST (install_dependencies) - check before generic connectors POST
+    if method == "POST" and "/dependencies_check/" in url:
+        return _fake_response(200, json.dumps({"status": "retrying"}).encode())
+    if method == "GET" and "/dependencies_check/" in url:
+        return _fake_response(200, json.dumps({"dependencies_installed": True}).encode())
+    if method == "POST" and "/connector_output_schema/" in url:
+        return _fake_response(200, json.dumps({"type": "object", "properties": {}}).encode())
+    if method == "POST" and "/connector_details/" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    # definition - POST /api/integration/connectors/{connector}/{version}/
+    if method == "POST" and "/api/integration/connectors/" in url and "/dependencies_check/" not in url and "/healthcheck/" not in url and "/agents/" not in url:
+        return _fake_response(200, json.dumps({"name": "test", "operations": [], "config_schema": {}}).encode())
+    if method == "GET" and "/api/integration/data-import/" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "POST" and "/api/integration/data-import/" in url:
+        return _fake_response(200, json.dumps({"job_id": "test"}).encode())
+    # Connector configuration GET/PUT - set_default_configuration calls GET then PUT
+    if method == "GET" and "/api/integration/configuration/" in url and not url.endswith("/api/integration/configuration/"):
+        return _fake_response(200, json.dumps({"id": 7, "config_id": "c21", "name": "Demo", "config": {"key": "val"}, "connector": 21, "default": True}).encode())
+    if method == "PUT" and "/api/integration/configuration/" in url and not url.endswith("/api/integration/configuration/"):
+        return _fake_response(200, json.dumps({"id": 7, "config_id": "c21", "name": "prod", "config": {"key": "val"}, "connector": 21, "default": True}).encode())
+    if method == "DELETE" and "/api/integration/configuration/" in url and not url.endswith("/api/integration/configuration/"):
+        return _fake_response(204, b"")
+    # --- Views ---
+    if method == "GET" and url.endswith("/api/views/1/app"):
+        return _fake_response(200, json.dumps({"name": "app", "config": {"navigation": []}}).encode())
+    if method == "GET" and "/api/views/1/" in url:
+        return _fake_response(200, json.dumps({"name": "Custom Detail Layout", "config": {}}).encode())
+    if method == "POST" and "/api/views/1/" in url:
+        return _fake_response(201, json.dumps({"name": "My View", "config": {}}).encode())
+    if method == "PUT" and "/api/views/1/" in url:
+        return _fake_response(200, json.dumps({"name": "My View", "config": {"rows": []}}).encode())
+    # --- Dynamic variables ---
+    if method == "GET" and "/api/wf/api/dynamic-variable/" in url:
+        return _fake_response(200, json.dumps([{"id": 1, "name": "Demo_mode", "value": "true"}]).encode())
+    if method == "POST" and "/api/wf/api/dynamic-variable/" in url:
+        return _fake_response(201, json.dumps({"id": 2, "name": "My_Var", "value": "value123"}).encode())
+    # --- Playbook execution internals ---
+    if method == "GET" and "/api/wf/api/historical-steps/" in url:
+        return _fake_response(200, json.dumps([]).encode())
+    if method == "GET" and "/api/wf/api/manual-wf-input/" in url:
+        return _fake_response(200, json.dumps({"hydra:member": []}).encode())
+    # --- System: daily action count ---
+    if method == "GET" and "/api/wf/workflow/config/" in url:
+        return _fake_response(200, json.dumps({"daily_action_limit": 10000, "remaining_actions": 9500}).encode())
+    # --- Change password (calls whoami first) ---
+    if method == "GET" and url.endswith("/api/3/actors/current"):
+        return _fake_response(200, json.dumps({"userId": "test-uuid", "uuid": "person-uuid-123", "firstname": "Test", "lastname": "User"}).encode())
+    if method == "PUT" and url.endswith("/api/3/changepassword"):
+        return _fake_response(200, json.dumps({"status": "success"}).encode())
+    # --- Module admin: publish, revert, staging ---
+    if method == "PUT" and url.endswith("/api/publish"):
+        return _fake_response(200, json.dumps({"status": "started"}).encode())
+    if method == "PUT" and url.endswith("/api/publish/revert"):
+        return _fake_response(200, json.dumps({"status": "started"}).encode())
+    if method == "GET" and url.endswith("/api/publish/error"):
+        return _fake_response(200, json.dumps({"status": "Success"}).encode())
+    if method == "POST" and url.endswith("/api/3/staging_model_metadatas"):
+        return _fake_response(201, json.dumps({"type": "my_module", "module": "my_module", "attributes": []}).encode())
+    if method == "GET" and "/api/3/staging_model_metadatas/" in url:
+        return _fake_response(200, json.dumps({"type": "alerts", "module": "alerts", "attributes": [], "uuid": "alert-uuid-1234"}).encode())
+    if method == "DELETE" and "/api/3/staging_model_metadatas/" in url:
+        return _fake_response(204, b"")
+    # view templates lookup (discard_staging_draft calls get_view_templates)
+    if method == "GET" and "/api/3/system_view_templates" in url:
+        return _fake_response(200, json.dumps({"hydra:member": []}).encode())
+    # --- Connector create configuration ---
+    if method == "POST" and url.endswith("/api/integration/configuration/"):
+        return _fake_response(200, json.dumps({"config_id": "new-config-uuid", "name": "prod", "connector": 21}).encode())
+    # --- Connector agents install status (for connector_install_status doctest
+    # and create_configuration's _install_id) - uses POST not GET ---
+    if method == "POST" and "/api/integration/connectors/agents/" in url:
+        return _fake_response(200, json.dumps({"data": [{"id": 21, "name": "mitre-attack", "version": "2.0.2", "agent_id": "self"}]}).encode())
+    # --- Playbook trigger (notrigger) - resolves name first (already mocked) ---
+    if method == "POST" and "/api/triggers/1/notrigger/" in url:
+        return _fake_response(200, json.dumps({"task_id": "abc123-def456"}).encode())
+    # --- Import generate_options + trigger ---
+    if method == "GET" and "/api/import/" in url and "/api/3/" not in url:
+        return _fake_response(200, json.dumps({"options": []}).encode())
+    if method == "PUT" and "/api/import/" in url and "/api/3/" not in url:
+        return _fake_response(200, json.dumps({"status": "triggered"}).encode())
+    # --- Widget export/publish/remove ---
+    if method == "POST" and "/api/3/widgets/export/" in url:
+        return _fake_response(200, json.dumps({"@id": "/api/3/widgets/widget-uuid"}).encode())
+    if method == "GET" and "/api/3/widgets/development/" in url:
+        return _fake_response(200, json.dumps({"@id": "/api/3/widgets/widget-uuid", "name": "test", "tree": {}}).encode())
+    if method == "PUT" and "/api/3/widgets/" in url and "/development/" not in url and "/export/" not in url:
+        return _fake_response(200, json.dumps({"@id": "/api/3/widgets/widget-uuid", "name": "test"}).encode())
+    if method == "DELETE" and "/api/3/delete/widgets" in url:
+        return _fake_response(204, b"")
     raise AssertionError(f"unmocked request: {method} {url}")
 
 

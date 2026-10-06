@@ -1,22 +1,22 @@
 """Merge the FortiSOAR 8.0 AI + MCP surface into the curated OpenAPI spec.
 
-Wired permanently into `build_curated.py` — called unconditionally.
+Wired permanently into `build_curated.py` - called unconditionally.
 Sources: vendored live OpenAPI dumps + MCP tool introspection in
 `src/recon/`.  Refresh: re-pull from an 8.0+ appliance, overwrite the
 JSONs, and re-run `build_curated.py`.
 
 Four surfaces are folded in:
 
-  1. `/ai/*` — filtered from `fsr_ai_openapi.json` (55 ops, ~14 unreachable
+  1. `/ai/*` - filtered from `fsr_ai_openapi.json` (55 ops, ~14 unreachable
      through the front-door proxy). Hand-grouped into 7 AI tags.
-  2. `/mcp/* REST admin` — 6 endpoints from `mcp_server_openapi.json`,
+  2. `/mcp/* REST admin` - 6 endpoints from `mcp_server_openapi.json`,
      tagged "MCP Admin".
-  3. `/mcp/{modules,playbooks,utility,connector/{name}}/` — MCP streamable-HTTP
+  3. `/mcp/{modules,playbooks,utility,connector/{name}}/` - MCP streamable-HTTP
      endpoints, not OpenAPI. Synthesized into placeholder POST operations,
      tagged "MCP Tools".
-  4. Pyfsr-only surfaces — `/api/3/mcp_configurations`, `/mcp/servers/connector`,
+  4. Pyfsr-only surfaces - `/api/3/mcp_configurations`, `/mcp/servers/connector`,
      `/mcp/config/export`, `/mcp/add/tools`, `/mcp/tools/{uuid}`,
-     `/api/3/llm_activity_logs` — absent from the AI service OpenAPI, must be
+     `/api/3/llm_activity_logs` - absent from the AI service OpenAPI, must be
      hand-authored from pyfsr's typed wrappers.
 """
 from __future__ import annotations
@@ -25,7 +25,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-# Vendored recon sources — live OpenAPI + MCP tool dumps from 8.0.0.
+# Vendored recon sources - live OpenAPI + MCP tool dumps from 8.0.0.
 _RECON_DIR = Path(__file__).resolve().parent / "recon"
 
 
@@ -41,7 +41,7 @@ def _recon_dir() -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Reachability filter — the PHP proxy (ProxyController) only authorises
+# Reachability filter - the PHP proxy (ProxyController) only authorises
 # certain route-regex patterns in `parameters.yaml` (`app_proxy.handlers.ai`).
 # Operations matching no group return a bare `Access Denied` 403, regardless
 # of role.  The list below is the complement: ops the service OpenAPI exposes
@@ -49,28 +49,28 @@ def _recon_dir() -> Path:
 #
 # The `/ai/triage` vs `/ai/agents` trap: the service mounts one router under
 # both prefixes so its OpenAPI lists both as equals, but only
-# `^agents?/(.*)/trigger` is authorised.  Note the asymmetry —
+# `^agents?/(.*)/trigger` is authorised.  Note the asymmetry -
 # `POST /ai/triage/alert` IS authorised, so the prefix is not uniformly wrong,
 # which is exactly why this bites.  We keep `/ai/triage/alert` and drop the
 # four /ai/triage/{task_id}/* routes.
 # ---------------------------------------------------------------------------
 
 UNREACHABLE_OPS = {
-    # LLM model/provider catalogue — no matching permission group (live-verified 8.0.0).
+    # LLM model/provider catalogue - no matching permission group (live-verified 8.0.0).
     ("get", "/ai/llm/model"),
     ("get", "/ai/llm/model/{model_id}"),
     ("get", "/ai/llm/provider"),
     ("get", "/ai/llm/provider/{provider_id}"),
     ("get", "/ai/llm/provider/model/{provider_id}"),
-    # Agent config write — permission group is `agent/config` for POST only.
+    # Agent config write - permission group is `agent/config` for POST only.
     ("put", "/ai/agent/config"),
-    # Agent LLM config (POST) — 403 Access Denied on 8.0.0 (live-verified).
+    # Agent LLM config (POST) - 403 Access Denied on 8.0.0 (live-verified).
     ("post", "/ai/agent/llm/config"),
     # LLM config verify (POST form is unauthorised; GET form per-uuid is OK).
     ("post", "/ai/llm/config/verify"),
-    # Agents alert triage (POST) — unauthorised despite appearing in service spec.
+    # Agents alert triage (POST) - unauthorised despite appearing in service spec.
     ("post", "/ai/agents/alert"),
-    # Triage task routes — the service re-mounts /ai/agents under /ai/triage,
+    # Triage task routes - the service re-mounts /ai/agents under /ai/triage,
     # but only `agents?/(.*)/trigger` is authorised.  The four task routes
     # under /ai/triage match nothing; POST /ai/triage/alert is authorised.
     ("post", "/ai/triage/{agent_name}/trigger"),
@@ -83,7 +83,7 @@ UNREACHABLE_OPS = {
 
 
 # ---------------------------------------------------------------------------
-# FastAPI summary overrides — the upstream OpenAPI ships auto-generated
+# FastAPI summary overrides - the upstream OpenAPI ships auto-generated
 # summaries that are wrong or misleading.  Keyed by (method, path).
 # ---------------------------------------------------------------------------
 
@@ -179,7 +179,7 @@ SUMMARY_OVERRIDES = {
 
 
 # ---------------------------------------------------------------------------
-# Pyfsr-only surfaces — paths pyfsr wraps that are absent from the AI service
+# Pyfsr-only surfaces - paths pyfsr wraps that are absent from the AI service
 # OpenAPI.  Hand-authored from pyfsr's typed wrappers and live captures.
 # ---------------------------------------------------------------------------
 
@@ -193,14 +193,14 @@ def _ai_resp(desc, content_type="application/json"):
 def _build_pyfsr_only_paths():
     """Populate PYFSR_ONLY_PATHS dict.  Separated into a function to keep global scope clean."""
 
-    # --- /api/3/mcp_configurations — CRUD module (pyfsr-only) ---------------
+    # --- /api/3/mcp_configurations - CRUD module (pyfsr-only) ---------------
     PYFSR_ONLY_PATHS["/api/3/mcp_configurations"] = {
         "get": {
             "tags": ["MCP Configurations"],
             "summary": "List registered MCP server configurations",
             "description": (
                 "Returns full MCP server records including URL, auth type, and status. "
-                "This is the authoritative CRUD store — the AI service only *reads and "
+                "This is the authoritative CRUD store - the AI service only *reads and "
                 "validates* registered servers via `/ai/mcp`. Use `?$limit`, `?$page` for pagination."
             ),
             "x-fsr-version": "8.0+",
@@ -252,7 +252,7 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    # --- /mcp/servers/connector — appliance MCP gateway (pyfsr-only) --------
+    # --- /mcp/servers/connector - appliance MCP gateway (pyfsr-only) --------
     PYFSR_ONLY_PATHS["/mcp/servers/connector"] = {
         "get": {
             "tags": ["MCP Gateway"],
@@ -327,13 +327,13 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    # --- /api/3/llm_activity_logs — audit module (pyfsr-only) ---------------
+    # --- /api/3/llm_activity_logs - audit module (pyfsr-only) ---------------
     PYFSR_ONLY_PATHS["/api/3/llm_activity_logs"] = {
         "get": {
             "tags": ["AI Activity"],
             "summary": "List LLM activity logs (tool-usage evidence)",
             "description": (
-                "Returns tool-call evidence from agent investigations — the raw data behind "
+                "Returns tool-call evidence from agent investigations - the raw data behind "
                 "a verdict. Filter by `task_id`, time range, or module. "
                 "pyfsr: `client.ai.tool_usage()` for direct access, "
                 "`client.ai.find_investigations(alert)` for alert-scoped lookup, "
@@ -344,12 +344,243 @@ def _build_pyfsr_only_paths():
         },
     }
 
+    # --- /ai/traces - AI trace observability (pyfsr-only, not in service OpenAPI) ---
+    _t = "AI Traces"
+    PYFSR_ONLY_PATHS["/ai/traces/"] = {
+        "get": {
+            "tags": [_t],
+            "summary": "List AI execution traces",
+            "description": (
+                "One page of top-level traces, newest first. Query params: `status` "
+                "(`OK`, `ERROR`, `RUNNING`), `session_id` (chat session filter), `limit` "
+                "(page size, default 50), `cursor` (start-time cursor for paging). "
+                "pyfsr: `client.ai.traces.list()`."
+            ),
+            "x-fsr-version": "8.0+",
+            "parameters": [
+                {"name": "status", "in": "query", "schema": {"type": "string"},
+                 "description": "Filter by trace status: `OK`, `ERROR`, `RUNNING`."},
+                {"name": "session_id", "in": "query", "schema": {"type": "string"},
+                 "description": "Filter by chat session id."},
+                {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 50},
+                 "description": "Page size."},
+                {"name": "cursor", "in": "query", "schema": {"type": "string"},
+                 "description": "Start-time cursor for paging (from the previous page's last item)."},
+            ],
+            "responses": {"200": _ai_resp("Array of trace summaries with id, status, start_time, session_id.")},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/health"] = {
+        "get": {
+            "tags": [_t],
+            "summary": "Check tracer store health",
+            "description": "Returns 200 when the trace store is reachable and serving queries.",
+            "x-fsr-version": "8.0+",
+            "responses": {"200": _ai_resp("Health status.")},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/{trace_id}"] = {
+        "parameters": [
+            {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Trace id (also the `task_id` from an agent run)."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Get a single trace as a span tree",
+            "description": (
+                "Returns one trace with its own spans as a tree. Use "
+                "`GET /ai/traces/{trace_id}/execution-tree` for the full nested run "
+                "including sub-traces. Query params: `depth` (tree depth, default 3), "
+                "`io` (`summary` or `full` - full includes span input/output payloads). "
+                "pyfsr: `client.ai.traces.get(trace_id)`."
+            ),
+            "x-fsr-version": "8.0+",
+            "parameters": [
+                {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 3},
+                 "description": "Maximum tree depth."},
+                {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"},
+                 "description": "`summary` (default) or `full` (includes I/O payloads)."},
+            ],
+            "responses": {"200": _ai_resp("Trace span tree."), "404": {"description": "Trace not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/{trace_id}/execution-tree"] = {
+        "parameters": [
+            {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Root trace id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Get the full execution tree for a run",
+            "description": (
+                "Stitches in every sub-trace (agent-to-agent calls, tool sub-runs) into one "
+                "tree - the same structure the Trace Flow panel renders. Query params: `depth` "
+                "(default 10), `io` (`summary` or `full`), `max_traces` (cap on sub-traces, "
+                "default 25). pyfsr: `client.ai.traces.execution_tree(trace_id)`."
+            ),
+            "x-fsr-version": "8.0+",
+            "parameters": [
+                {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 10}},
+                {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"}},
+                {"name": "max_traces", "in": "query", "schema": {"type": "integer", "default": 25}},
+            ],
+            "responses": {"200": _ai_resp("Full execution tree."), "404": {"description": "Trace not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/{trace_id}/spans"] = {
+        "parameters": [
+            {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Trace id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "List all spans in a trace (flat)",
+            "description": (
+                "Every span of one trace, flat, with full I/O. Use "
+                "`GET /ai/traces/{trace_id}` for the tree view, or "
+                "`GET /ai/traces/spans/{span_id}` for a single span's details. "
+                "pyfsr: `client.ai.traces.spans(trace_id)`."
+            ),
+            "x-fsr-version": "8.0+",
+            "responses": {"200": _ai_resp("Flat array of spans."), "404": {"description": "Trace not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}"] = {
+        "parameters": [
+            {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Span id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Get a single span with full I/O",
+            "description": (
+                "One span with full input/output - the Step Details panel. "
+                "pyfsr: `client.ai.traces.span(span_id)`."
+            ),
+            "x-fsr-version": "8.0+",
+            "responses": {"200": _ai_resp("Span detail."), "404": {"description": "Span not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}/children"] = {
+        "parameters": [
+            {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Span id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "List direct children of a span",
+            "description": "Returns the immediate child spans (one level deep).",
+            "x-fsr-version": "8.0+",
+            "responses": {"200": _ai_resp("Array of child spans."), "404": {"description": "Span not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}/lineage"] = {
+        "parameters": [
+            {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Span id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Data lineage around a span",
+            "description": (
+                "Which spans fed this span and which consumed its output. Query params: "
+                "`direction` (`upstream`, `downstream`, or `both` - default `both`), "
+                "`max_hops` (default 5). Always fails on fsr-ai 8.0.1 (HTTP 500)."
+            ),
+            "x-fsr-version": "8.0+",
+            "parameters": [
+                {"name": "direction", "in": "query", "schema": {"type": "string", "default": "both"}},
+                {"name": "max_hops", "in": "query", "schema": {"type": "integer", "default": 5}},
+            ],
+            "responses": {"200": _ai_resp("Lineage graph."), "404": {"description": "Span not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}/tree"] = {
+        "parameters": [
+            {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Span id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Get the subtree rooted at a span",
+            "description": (
+                "The subtree rooted at one span, e.g. a single agent's work inside a larger "
+                "run. Query params: `depth` (default 10), `io` (`summary` or `full`). "
+                "On fsr-ai 8.0.1 `GET .../tree` redirects to `.../subtree`."
+            ),
+            "x-fsr-version": "8.0+",
+            "parameters": [
+                {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 10}},
+                {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"}},
+            ],
+            "responses": {"200": _ai_resp("Span subtree."), "404": {"description": "Span not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/tokens/{trace_id}"] = {
+        "parameters": [
+            {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Trace id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Token totals for a trace",
+            "description": "Prompt, completion, and total token counts for all LLM calls in the trace.",
+            "x-fsr-version": "8.0+",
+            "responses": {"200": _ai_resp("Token totals."), "404": {"description": "Trace not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/tokens/session/{session_id}"] = {
+        "parameters": [
+            {"name": "session_id", "in": "path", "required": True, "schema": {"type": "string"},
+             "description": "Chat session id."},
+        ],
+        "get": {
+            "tags": [_t],
+            "summary": "Token totals across a chat session",
+            "description": "Aggregate token usage for every trace in a chat session.",
+            "x-fsr-version": "8.0+",
+            "responses": {"200": _ai_resp("Session token totals."), "404": {"description": "Session not found."}},
+        },
+    }
+
+    PYFSR_ONLY_PATHS["/ai/traces/delete"] = {
+        "delete": {
+            "tags": [_t],
+            "summary": "Purge traces older than a cutoff",
+            "description": (
+                "Delete every trace older than a cutoff. There is no per-trace delete: "
+                "the endpoint only accepts a bulk cutoff. Body: `{\"days\": 30}` or "
+                "`{\"before\": \"2026-01-01T00:00:00Z\"}`. pyfsr: "
+                "`client.ai.traces.purge_older_than(days=30)`."
+            ),
+            "x-fsr-version": "8.0+",
+            "requestBody": {"required": True, "content": {"application/json": {"schema": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer", "description": "Delete traces older than N days."},
+                    "before": {"type": "string", "description": "ISO-8601 cutoff timestamp."},
+                },
+            }}}},
+            "responses": {"200": _ai_resp("Purge result."), "400": {"description": "Invalid cutoff."}},
+        },
+    }
+
 
 _build_pyfsr_only_paths()
 
 
 # ---------------------------------------------------------------------------
-# fsr-ai tag mapping — upstream uses one FastAPI tag per router; we regroup
+# fsr-ai tag mapping - upstream uses one FastAPI tag per router; we regroup
 # by prefix so the surface reads cleanly in the rendered docs.
 # ---------------------------------------------------------------------------
 
@@ -358,6 +589,7 @@ AI_TAG_FOR_PREFIX = [
     ("/ai/agents",   "AI Agents"),
     ("/ai/triage",   "AI Agents"),   # /ai/triage is a re-mount of /ai/agents
     ("/ai/agent",    "AI Agents"),
+    ("/ai/traces",   "AI Traces"),
     ("/ai/chat",     "AI Chat"),
     ("/ai/llm",      "AI LLM"),
     ("/ai/enrich",   "AI Enrichment"),
@@ -396,7 +628,7 @@ AI_MCP_TAG_DESCRIPTIONS = {
         "Agent execution + management. `POST /ai/agents/{agent_name}/trigger` "
         "and `POST /ai/triage/alert` kick off an agent run; "
         "`/ai/agents/{task_id}/{status,result,acceptance}` track it. "
-        "`/ai/agent/*` (singular) is the agent **catalog** — import, export, "
+        "`/ai/agent/*` (singular) is the agent **catalog** - import, export, "
         "activate, configure.\n\n"
         "**The `/ai/triage` vs `/ai/agents` trap:** the AI service mounts one "
         "router under both prefixes, so the raw service OpenAPI lists both as "
@@ -404,7 +636,7 @@ AI_MCP_TAG_DESCRIPTIONS = {
         "`^agents?/(.*)/trigger` (the generic trigger) and "
         "`POST /ai/triage/alert` specifically.  The four `/ai/triage/{task_id}/*` "
         "routes return 403.  Always use `/ai/agents/` for status, result, and "
-        "acceptance — never `/ai/triage/` for those."
+        "acceptance - never `/ai/triage/` for those."
     ),
     "AI Chat": "Conversational investigation. `POST /ai/chat/` starts or continues a thread.",
     "AI LLM": (
@@ -414,7 +646,7 @@ AI_MCP_TAG_DESCRIPTIONS = {
         "lists available solution packs.\n\n"
         "**Note:** The LLM model and provider catalogue endpoints "
         "(`GET /ai/llm/model`, `GET /ai/llm/provider`) are exposed by the AI "
-        "service but return 403 through the front-door proxy — no matching "
+        "service but return 403 through the front-door proxy - no matching "
         "permission group exists.  They are omitted from this spec."
     ),
     "AI Enrichment": (
@@ -446,7 +678,7 @@ AI_MCP_TAG_DESCRIPTIONS = {
     "MCP Configurations": (
         "Full CRUD store for registered MCP servers. This is where servers are "
         "actually created (`/api/3/mcp_configurations`). The AI service only reads "
-        "and validates them via `/ai/mcp`. Keep these tags distinct — conflating "
+        "and validates them via `/ai/mcp`. Keep these tags distinct - conflating "
         "MCP Configurations with AI MCP Registry is the most common source of confusion."
     ),
     "MCP Gateway": (
@@ -456,6 +688,17 @@ AI_MCP_TAG_DESCRIPTIONS = {
     "AI Activity": (
         "LLM activity audit logs. Tool-call evidence from agent investigations, "
         "useful for understanding what an agent did to reach its verdict."
+    ),
+    "AI Traces": (
+        "OpenTelemetry-style trace observability for AI agent runs. Each run "
+        "produces a trace with spans (LLM calls, tool calls, sub-agent steps). "
+        "Use `GET /ai/traces/` to list, `GET /ai/traces/{trace_id}` to inspect a "
+        "single trace, `GET /ai/traces/{trace_id}/execution-tree` for the full "
+        "nested run tree, and `GET /ai/traces/{trace_id}/spans` for a flat span "
+        "list. Per-span detail: `GET /ai/traces/spans/{span_id}`. Token usage: "
+        "`GET /ai/traces/tokens/{trace_id}` (per-trace) or "
+        "`GET /ai/traces/tokens/session/{session_id}` (per-chat-session). "
+        "`DELETE /ai/traces/delete` purges traces older than a cutoff."
     ),
 }
 
@@ -473,6 +716,7 @@ AI_MCP_TAG_GROUPS = [
             "AI Prompts",
             "AI MCP Registry",
             "AI Activity",
+            "AI Traces",
             "MCP",
             "MCP Admin",
             "MCP Configurations",
@@ -503,7 +747,7 @@ Wire flow:
 1. `POST` an `initialize` JSON-RPC envelope. Response is `200 OK` SSE; capture the
    `mcp-session-id` response header.
 2. `POST` a `notifications/initialized` envelope (no `id`) with the session header.
-3. `POST` `tools/list`, `tools/call`, `prompts/list`, etc. — every call must carry
+3. `POST` `tools/list`, `tools/call`, `prompts/list`, etc. - every call must carry
    `mcp-session-id`.
 
 The request/response schemas below are MCP-protocol envelopes, not endpoint-specific.
@@ -518,8 +762,8 @@ def _mcp_protocol_op(tag: str, summary: str, tool_names: list[str], tools_json: 
         title = t.get("title") or name
         desc = (t.get("description") or "").splitlines()[0]
         req = t.get("inputSchema", {}).get("required", []) or []
-        req_s = ", ".join(req) if req else "—"
-        tool_lines.append(f"- `{name}` ({title}) — required: {req_s}. {desc}".rstrip())
+        req_s = ", ".join(req) if req else "-"
+        tool_lines.append(f"- `{name}` ({title}) - required: {req_s}. {desc}".rstrip())
     desc = MCP_PROTOCOL_DESC + "\n**Tools exposed on a stock 8.0 appliance:**\n\n" + "\n".join(tool_lines)
     return {
         "summary": summary,
@@ -575,7 +819,7 @@ def _mcp_protocol_op(tag: str, summary: str, tool_names: list[str], tools_json: 
 
 
 # ---------------------------------------------------------------------------
-# Schemas added when the merge runs (minimal — full tool inputSchemas live
+# Schemas added when the merge runs (minimal - full tool inputSchemas live
 # in the MCP tool dump for now; we surface only the protocol envelope).
 # ---------------------------------------------------------------------------
 
@@ -647,7 +891,7 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
                     "description": "uuid of the LLM reasoning profile.",
                 })
 
-            # Reachability filter — drop ops the PHP proxy rejects.
+            # Reachability filter - drop ops the PHP proxy rejects.
             if (method, path) in UNREACHABLE_OPS:
                 filtered += 1
                 continue
@@ -666,7 +910,7 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
             spec["paths"][path] = new_methods
             added += 1
         else:
-            # Path existed but all methods filtered — still count it
+            # Path existed but all methods filtered - still count it
             added += 1
 
     # ---- 2. mcp-server REST admin -----------------------------------------
@@ -709,7 +953,7 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
         added += 1
         ops.append(("post", path))
 
-    # Connector gateway — dynamic per-connector mount.
+    # Connector gateway - dynamic per-connector mount.
     spec["paths"]["/mcp/connector/{connector_name}/"] = {
         "post": _mcp_protocol_op(
             tag="MCP Tools",

@@ -620,7 +620,7 @@ COMMON_QPARAMS = [
      "schema": {"type": "integer", "default": 1, "minimum": 1}},
     {"name": "$orderby", "in": "query", "description": "Sort field; prefix `-` for descending. Example: `-createDate`.",
      "schema": {"type": "string", "example": "-createDate"}},
-    {"name": "$relationships", "in": "query", "description": "Controls whether linked modules are included in the response. When `true`, related collections (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false` (default), those collections are left out of the response entirely — not returned as empty arrays. Single-value links like `severity`, `status`, `createUser` are always returned as full record objects regardless of this flag.",
+    {"name": "$relationships", "in": "query", "description": "Controls whether linked modules are included in the response. When `true`, related collections (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false` (default), those collections are left out of the response entirely - not returned as empty arrays. Single-value links like `severity`, `status`, `createUser` are always returned as full record objects regardless of this flag.",
      "schema": {"type": "boolean", "default": False}},
     {"name": "$export", "in": "query", "description": "Strip identity fields so the result re-imports cleanly.",
      "schema": {"type": "boolean", "default": False}},
@@ -1067,7 +1067,7 @@ PATHS["/api/3/{collection}/{uuid}"] = {
                 "**Relationship add/remove without resending the whole record:** send "
                 "`{\"__link\": {\"<field>\": [\"<iri-or-module:uuid>\", ...]}}` to add related "
                 "records to a relationship field, or `{\"__unlink\": {\"<field>\": [...]}}` to "
-                "remove them — both leave the rest of the record untouched. Each ref may be a "
+                "remove them - both leave the rest of the record untouched. Each ref may be a "
                 "full IRI (`/api/3/assets/<uuid>`) or `<module>:<uuid>` shorthand; a bare uuid is "
                 "rejected since the related module can't be inferred. Live-verified: linking an "
                 "`Asset` onto an `Alert`'s `assets` field, confirmed via `GET "
@@ -1096,7 +1096,7 @@ for verb, op_method, op_summary, op_desc, body_shape in [
      "Delete records individually via `DELETE /api/3/{collection}/{uuid}`.", "array_str"),
     ("upsert",     "post",   "Upsert by natural key",
      "Insert-or-update **a single record** keyed on the module's identifier field. Body is a JSON object, "
-     "not an array — use `/api/3/bulkupsert/{moduleType}` for the array variant.", "object"),
+     "not an array - use `/api/3/bulkupsert/{moduleType}` for the array variant.", "object"),
     ("bulkupsert", "post",   "Bulk upsert",
      "Array-input version of upsert. Body must be a JSON array. Works under JWT auth on FSR 7.6.x; "
      "under API-KEY auth the server fans out to its own credentials and may report "
@@ -1140,7 +1140,7 @@ PATHS["/api/ingest-feeds/observables"] = {
         "description": (
             "Bulk-insert observables (the lower-level \"anything that can be seen on the wire\" record type "
             "that sits below indicators). Same trigger-bypass behavior as `/api/ingest-feeds/indicators`. "
-            "Payload field names follow the `observables` module schema — see `GET /api/3/contexts/Observable`."
+            "Payload field names follow the `observables` module schema - see `GET /api/3/contexts/Observable`."
         ),
         "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
         "responses": {"200": _resp("Ingest result.")},
@@ -1169,7 +1169,7 @@ PATHS["/api/ingest-feeds/threatintel"] = {
         "tags": ["Bulk operations"],
         "summary": "Threat-intel records bulk ingest",
         "description": (
-            "Bulk-insert records into the `threat_intel` module — the top-level container that links "
+            "Bulk-insert records into the `threat_intel` module - the top-level container that links "
             "indicators, campaigns, threat actors, and reports together. Field names match the "
             "`threat_intel` module schema (see `GET /api/3/contexts/ThreatIntel`). Trigger-bypass applies."
         ),
@@ -1185,7 +1185,7 @@ PATHS["/api/ingest-feeds/reputation"] = {
         "description": (
             "Bulk-upsert reputation scores for indicators / observables. Used by enrichment pipelines "
             "that score IOCs from multiple sources and need to write the result back without firing "
-            "playbook triggers. Field names match the reputation record type — see "
+            "playbook triggers. Field names match the reputation record type - see "
             "`GET /api/3/contexts/Reputation` for the schema."
         ),
         "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
@@ -1221,7 +1221,7 @@ PATHS["/api/taxii/1/"] = {
         "summary": "TAXII server info",
         "description": (
             "Returns the server descriptor: title, supported TAXII versions, and the maximum content "
-            "length the server accepts for client uploads. This is the TAXII entry point — clients "
+            "length the server accepts for client uploads. This is the TAXII entry point - clients "
             "typically call this first to confirm protocol compatibility."
         ),
         "responses": {"200": _resp("TAXII server descriptor.")},
@@ -1235,8 +1235,8 @@ PATHS["/api/taxii/1/collections"] = {
         "description": (
             "Lists every TAXII collection the caller is allowed to see. Each entry carries `can_read` / "
             "`can_write` permissions and the media types the collection accepts.\n\n"
-            "The seven default collections shipped with FortiSOAR — FortiGuard Outbreak / Phishing / "
-            "Threat Intel feeds, Block List (Domain / URL / IP), and **Custom** — are all read-only. "
+            "The seven default collections shipped with FortiSOAR - FortiGuard Outbreak / Phishing / "
+            "Threat Intel feeds, Block List (Domain / URL / IP), and **Custom** - are all read-only. "
             "Writable collections need to be provisioned explicitly."
         ),
         "responses": {"200": _resp("Collections list.")},
@@ -1249,7 +1249,7 @@ PATHS["/api/taxii/1/collections/{uuid}"] = {
         "tags": ["Threat intel (TAXII)"],
         "summary": "Get one TAXII collection",
         "description": (
-            "Returns metadata for a single TAXII collection — name, title, read/write permissions, "
+            "Returns metadata for a single TAXII collection - name, title, read/write permissions, "
             "supported media types."
         ),
         "responses": {"200": _resp("Collection descriptor.")},
@@ -1263,7 +1263,7 @@ PATHS["/api/taxii/1/collections/{uuid}/objects"] = {
         "summary": "Fetch STIX objects from a collection",
         "description": (
             "Returns STIX 2.1 objects from the collection. The response envelope is "
-            "`{totalItems, objects: []}` — a FortiSOAR-specific shape, not the standard TAXII 2.1 "
+            "`{totalItems, objects: []}` - a FortiSOAR-specific shape, not the standard TAXII 2.1 "
             "`more` / `next` cursor. Use `limit` + `added_after` to paginate."
         ),
         "parameters": [
@@ -1289,7 +1289,7 @@ PATHS["/api/taxii/1/collections/{uuid}/objects/{stixId}"] = {
             "Returns the same `{totalItems, objects: []}` envelope as the collection-level `objects/` "
             "endpoint, filtered to the single object whose STIX id matches.\n\n"
             "**Known issue (FSR 7.6.5):** this route returns an empty envelope "
-            "(`{totalItems: 0, objects: []}`) for every form of `stixId` we tested — bare record "
+            "(`{totalItems: 0, objects: []}`) for every form of `stixId` we tested - bare record "
             "uuid, `indicator--<uuid>`, the listing's own `id` field, with or without `?stix=2.1`. "
             "The collection-level `objects/` endpoint works; use it and filter client-side until "
             "this is fixed upstream."
@@ -1304,7 +1304,7 @@ PATHS["/api/taxii/1/collections/{uuid}/manifest"] = {
         "tags": ["Threat intel (TAXII)"],
         "summary": "Fetch the collection manifest",
         "description": (
-            "Returns one entry per object in the collection — id, date added, version, media type — "
+            "Returns one entry per object in the collection - id, date added, version, media type - "
             "without the object bodies. Useful for cheap \"what's new since X\" polls before pulling "
             "full STIX content."
         ),
@@ -1639,7 +1639,7 @@ PATHS["/api/rule/api/system-notification/notifications/"] = {
         "summary": "List the caller's notifications",
         "description": (
             "Returns the caller's system (bell-icon) notifications, newest "
-            "first. **The list is POST, not GET** — the UI posts to this "
+            "first. **The list is POST, not GET** - the UI posts to this "
             "endpoint. Filtering is via query parameters only; the request body "
             "is empty. Returns a Hydra envelope (`hydra:member` + "
             "`hydra:totalItems` + paging links). Each row is a `Notification` "
@@ -1649,7 +1649,7 @@ PATHS["/api/rule/api/system-notification/notifications/"] = {
         "parameters": [
             {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
             {"name": "read", "in": "query", "schema": {"type": "boolean"},
-             "description": "Filter by read state — `true` for read only, `false` for unread only, omit for all."},
+             "description": "Filter by read state - `true` for read only, `false` for unread only, omit for all."},
             {"name": "entity_type__in", "in": "query", "schema": {"type": "string"},
              "description": "Comma-joined source entity types to restrict to (e.g. `comments,approvals`)."},
             {"name": "search", "in": "query", "schema": {"type": "string"},
@@ -1660,7 +1660,7 @@ PATHS["/api/rule/api/system-notification/notifications/"] = {
         ],
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object", "properties": {},
-                       "description": "No request body — this is a POST-list endpoint; filter via the query parameters above."},
+                       "description": "No request body - this is a POST-list endpoint; filter via the query parameters above."},
             "example": {},
         }}},
         "responses": {"200": _resp("Hydra envelope of Notification rows.")},
@@ -1682,11 +1682,11 @@ PATHS["/api/rule/api/system-notification/purge/"] = {
         "parameters": [
             {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
             {"name": "read", "in": "query", "schema": {"type": "boolean"},
-             "description": "Scope — `true` purges read, `false` purges unread, omit purges all."},
+             "description": "Scope - `true` purges read, `false` purges unread, omit purges all."},
         ],
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object", "properties": {},
-                       "description": "No request body — scope via the `read` query parameter."},
+                       "description": "No request body - scope via the `read` query parameter."},
             "example": {},
         }}},
         "responses": {"200": _resp("Purge ack.")},
@@ -1742,15 +1742,15 @@ PATHS["/api/wf/api/workflows/"] = {
             "For runs older than that, use `GET /api/wf/api/historical-workflows/`. To combine both stores in "
             "a single query, use `POST /api/wf/api/query/workflow_logs/?logs=all`.\n\n"
             "Common patterns:\n\n"
-            "- `task_id=<uuid>` (with `parent_wf__isnull=True`) — look up the run created by a trigger POST, "
+            "- `task_id=<uuid>` (with `parent_wf__isnull=True`) - look up the run created by a trigger POST, "
             "  skipping sub-playbook children.\n"
-            "- `ordering=-modified` + `limit=1` — newest run first.\n"
-            "- `template_iri=/api/3/workflows/<uuid>` — runs of a specific playbook.\n"
-            "- `records=/api/3/alerts/<uuid>` — runs executed against a specific record.\n"
-            "- `status=failed&created_after=2024-11-08&created_before=2024-11-10` — failed runs in a window.\n"
-            "- `tags_include=ingestion,critical&tags_exclude=system` — tag allow/deny lists.\n\n"
+            "- `ordering=-modified` + `limit=1` - newest run first.\n"
+            "- `template_iri=/api/3/workflows/<uuid>` - runs of a specific playbook.\n"
+            "- `records=/api/3/alerts/<uuid>` - runs executed against a specific record.\n"
+            "- `status=failed&created_after=2024-11-08&created_before=2024-11-10` - failed runs in a window.\n"
+            "- `tags_include=ingestion,critical&tags_exclude=system` - tag allow/deny lists.\n\n"
             "Each `hydra:member` entry has `status` (one of `incipient`, `active`, `pending`, `running`, "
-            "`finished`, `failed`, `awaiting`, `skipped`, `terminated`, `paused`) and `@id` — the trailing "
+            "`finished`, `failed`, `awaiting`, `skipped`, `terminated`, `paused`) and `@id` - the trailing "
             "segment is the workflow pk used by the per-run detail GET."
         ),
         "parameters": _WF_LIST_PARAMS,
@@ -1766,7 +1766,7 @@ PATHS["/api/wf/api/workflows/{pk}/"] = {
         "summary": "Recent run detail",
         "description": (
             "Full execution record for one recent playbook run. `result` is a dict keyed by step UUID with "
-            "each step's output — this is where playbook return values live. Use after polling the list "
+            "each step's output - this is where playbook return values live. Use after polling the list "
             "endpoint by `task_id` and seeing a terminal `status`.\n\n"
             "If the run has been moved to historical storage, this returns 404. Refetch from "
             "`GET /api/wf/api/historical-workflows/{pk}/` in that case."
@@ -1809,7 +1809,7 @@ PATHS["/api/wf/api/historical-workflows/"] = {
         ),
         "parameters": _WF_LIST_PARAMS + [
             {"name": "parent__isnull", "in": "query", "schema": {"type": "boolean"},
-             "description": "Historical-only equivalent of `parent_wf__isnull` — `True` filters out sub-playbook children."},
+             "description": "Historical-only equivalent of `parent_wf__isnull` - `True` filters out sub-playbook children."},
         ],
         "responses": {"200": _resp("Hydra collection of historical runs.")},
     },
@@ -1822,7 +1822,7 @@ PATHS["/api/wf/api/historical-workflows/{pk}/"] = {
         "tags": ["Workflows"],
         "summary": "Historical run detail",
         "description": (
-            "Detail view for one historical playbook run. Shape mirrors `/api/wf/api/workflows/{pk}/` — "
+            "Detail view for one historical playbook run. Shape mirrors `/api/wf/api/workflows/{pk}/` - "
             "`result` per-step output, `template_iri` to the source playbook, `created`/`modified` timestamps, "
             "`env` snapshot."
         ),
@@ -1839,7 +1839,7 @@ PATHS["/api/wf/api/query/workflow_logs/"] = {
             "POST-body query against the playbook log store. `?logs=all` (default) combines recent and "
             "historical; `?logs=recent` or `?logs=historical` restrict to one source.\n\n"
             "If the request body is `{\"query\": {}}` (or any non-empty body), filtering uses the body's "
-            "grammar (`logic`, `filters`, `sort`, `aggregates`) — same shape as `POST /api/query/{collection}`. "
+            "grammar (`logic`, `filters`, `sort`, `aggregates`) - same shape as `POST /api/query/{collection}`. "
             "Otherwise URL query params drive the result set.\n\n"
             "Supported leaf operators for `filters`: `eq`, `neq`, `contains`, `ncontains`, `gte`, `lte`. "
             "Filterable fields include `status`, `user`, `tags`, `modified`, `name`. `aggregates` supports "
@@ -1990,7 +1990,7 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/"] = {
 # The REAL resume path for an `awaiting` (manual-input) run. Verified live
 # end-to-end 2026-05-29: the run advances to `finished` afterward.
 # CORRECTION: an earlier note here called this a decoy and claimed
-# `PUT /api/wf/api/manual-wf-input/{id}/` was canonical. That is WRONG —
+# `PUT /api/wf/api/manual-wf-input/{id}/` was canonical. That is WRONG -
 # the PUT returns 200 but does NOT advance the run. wfinput_resume is the
 # path the FortiSOAR UI and the e2e runner both use.
 PATHS["/api/wf/api/workflows/{pk}/wfinput_resume/"] = {
@@ -2026,7 +2026,7 @@ PATHS["/api/wf/api/workflows/{pk}/wfinput_resume/"] = {
 }
 
 # Documented for completeness: this PUT exists and 200s but does NOT
-# advance an awaiting run — use wfinput_resume instead.
+# advance an awaiting run - use wfinput_resume instead.
 PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
     "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "manual_input_id (`list_wfinput[].id`)."}],
@@ -2034,7 +2034,7 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
         "tags": ["Workflows"],
         "summary": "Update a manual-input record (does NOT resume the run)",
         "description": (
-            "Returns 200 and updates the record, but **does not advance an `awaiting` run** — a common trap. "
+            "Returns 200 and updates the record, but **does not advance an `awaiting` run** - a common trap. "
             "To actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live 2026-05-29: "
             "PUT here left the run in `awaiting`."
         ),
@@ -2047,7 +2047,7 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
         "tags": ["Workflows"],
         "summary": "Abandon/cancel a pending manual input",
         "description": (
-            "Removes the waiting input — the paused playbook step is "
+            "Removes the waiting input - the paused playbook step is "
             "abandoned (there is no undo). The PUT above updates the "
             "record's contents; this DELETE removes it entirely. 204 on "
             "success."
@@ -2078,7 +2078,7 @@ PATHS["/api/wf/api/scheduled/"] = {
         "tags": ["Scheduled tasks"],
         "summary": "List periodic tasks",
         "description": (
-            "Returns every scheduled periodic task — platform-shipped schedules "
+            "Returns every scheduled periodic task - platform-shipped schedules "
             "(Reclaim Disk Space, Purge Executed Playbook Logs, Archive Data) plus "
             "user-created playbook schedules. Send `format=json` with `offset=0` "
             "and `limit=2147483647` for an unbounded fetch in one call. Each row "
@@ -2086,7 +2086,7 @@ PATHS["/api/wf/api/scheduled/"] = {
             "`day_of_month`/`month_of_year`/`timezone`) and `kwargs` (`wf_iri`, "
             "`exit_if_running`, `timezone`, `utcOffset`); the server fills `task`, "
             "`schedule_id`, `crontab.id`, and `kwargs.name`/`description`/`auth`/"
-            "`schedule_entry_name`. Resolve any non-immediate use by `name` — the "
+            "`schedule_entry_name`. Resolve any non-immediate use by `name` - the "
             "row `id` is a per-request Fernet token that rotates."
         ),
         "parameters": [
@@ -2103,7 +2103,7 @@ PATHS["/api/wf/api/scheduled/"] = {
         "description": (
             "Creates a periodic task that runs a playbook on a cron schedule. The "
             "body is a periodic-task record with a nested `crontab` (5-field cron + "
-            "`timezone`) and `kwargs.wf_iri` (the workflow IRI — resolve a "
+            "`timezone`) and `kwargs.wf_iri` (the workflow IRI - resolve a "
             "playbook name with `GET /api/3/workflows/?name=<playbook>`). The "
             "server fills `task`, `schedule_id`, `crontab.id`, and the "
             "`kwargs.name`/`description`/`auth`/`schedule_entry_name` fields. "
@@ -2148,7 +2148,7 @@ PATHS["/api/wf/api/scheduled/{id}/"] = {
         "description": (
             "Full-record PUT (no PATCH). To toggle `enabled`, read the current "
             "row via `GET /api/wf/api/scheduled/`, flip the flag, and PUT the "
-            "whole record back. The `{id}` is a per-request Fernet token — use "
+            "whole record back. The `{id}` is a per-request Fernet token - use "
             "the `id` from a fresh GET immediately before this PUT."
         ),
         "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
@@ -2194,12 +2194,12 @@ PATHS["/api/wf/api/scheduled/trigger-now/"] = {
         "summary": "Force-trigger a periodic task now",
         "description": (
             "Fires the task immediately, out-of-band of its cron. The fire is "
-            "asynchronous — the response confirms the trigger was accepted; "
+            "asynchronous - the response confirms the trigger was accepted; "
             "track the resulting run via "
             "`GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`. "
             "Fires regardless of the task's `enabled` flag (`enabled` governs the "
             "cron scheduler, not manual triggers). The `id` is a per-request "
-            "Fernet token — prefer re-resolving by `name` (a fresh GET) over "
+            "Fernet token - prefer re-resolving by `name` (a fresh GET) over "
             "holding a stale `id` from an earlier call."
         ),
         "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}}],
@@ -2310,7 +2310,7 @@ PATHS["/api/integration/configuration/"] = {
             "responses": {"200": _resp("Collection envelope.")}},
     "post": {"tags": ["Connectors"], "summary": "Create connector configuration",
              "description": (
-                 "Required body fields: `name`, `connector` (integer connector id — not the name), `config` "
+                 "Required body fields: `name`, `connector` (integer connector id - not the name), `config` "
                  "(map of the connector's configuration field values). `default`, `status`, and `teams` "
                  "are optional.\n\n"
                  "**`agent` is optional.** Set it only when delegating execution to a **remote agent**; "
@@ -2379,18 +2379,18 @@ PATHS["/api/integration/execute/"] = {
             "(operations + configurations for the installed connector). There is no separate "
             "`/operations/` route - that POST is the operations-discovery endpoint.\n\n"
             "**Body fields:**\n"
-            "- `connector` (required) — connector `name` (e.g. `hello-world`).\n"
-            "- `operation` (required) — operation key from the connector's `info.json` "
+            "- `connector` (required) - connector `name` (e.g. `hello-world`).\n"
+            "- `operation` (required) - operation key from the connector's `info.json` "
             "  (e.g. `reverse_text`). Discover available operations via "
             "  `POST /api/integration/connectors/{id}/` (response `operations[].operation`).\n"
-            "- `config` (required when the operation needs a configuration) — accepts **either** "
+            "- `config` (required when the operation needs a configuration) - accepts **either** "
             "  the configuration uuid (`config_id`) **or** the configuration `name`. "
             "  Stateless operations (e.g. `cyops_utilities` formatters) still accept the field "
             "  but ignore its value. Omitting or `null` returns `INTEGRATION-12: Could not find a connector "
             "  configuration matching the given configuration id or name`.\n"
-            "- `version` (optional) — connector version. If omitted, the appliance resolves the "
+            "- `version` (optional) - connector version. If omitted, the appliance resolves the "
             "  installed default version. Provide it explicitly when multiple versions are installed.\n"
-            "- `params` (required when the operation declares required parameters) — the action's "
+            "- `params` (required when the operation declares required parameters) - the action's "
             "  input payload as defined by the connector's `info.json`. Discover required params via "
             "  the same connector-detail endpoint (`operations[].parameters[]` with `required: true`).\n\n"
             "Errors surface as 400 with an `INTEGRATION-*` or `CS-INTEGRATION-*` code in `message`."
@@ -2417,7 +2417,7 @@ PATHS["/api/integration/execute/"] = {
     },
 }
 
-# Step 5a: healthcheck — GET form using an existing config (cheap).
+# Step 5a: healthcheck - GET form using an existing config (cheap).
 PATHS["/api/integration/connectors/healthcheck/{name}/{version}/"] = {
     "parameters": [
         {"name": "name", "in": "path", "required": True, "schema": {"type": "string"},
@@ -2439,18 +2439,44 @@ PATHS["/api/integration/connectors/healthcheck/{name}/{version}/"] = {
 # FSR 7.6.x returned 404. The GET form above is the only working variant
 # and has been retained.
 
-# Step 6a: delete the configuration.
+# Step 6a: delete / get / update the configuration.
 PATHS["/api/integration/configuration/{config_id}/"] = {
     "parameters": [{"name": "config_id", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
                     "description": "Configuration uuid (the `config_id` field, not the integer `id`)."}],
+    "get": {"tags": ["Connectors"], "summary": "Get a connector configuration",
+            "description": (
+                "Fetch a single configuration record by its uuid (`config_id`). "
+                "Trailing slash is mandatory (same HMAC trap as DELETE). "
+                "pyfsr: `client.connectors.set_default_configuration(connector, config_id)` "
+                "calls this internally to read the current config before updating."
+            ),
+            "responses": {"200": _resp("Configuration record."), "404": {"description": "Not found."}}},
+    "put": {"tags": ["Connectors"], "summary": "Update a connector configuration",
+             "description": (
+                 "Replace a configuration's fields. The body is the full configuration object "
+                 "(same shape as `POST /api/integration/configuration/`). To change only the "
+                 "default flag, send the full body with the updated `default` field - there is "
+                 "no flag-only route. Trailing slash is mandatory. "
+                 "pyfsr: `client.connectors.update_configuration(connector, config_id, config, name=...)`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "properties": {
+                     "name": {"type": "string"},
+                     "config": {"type": "object"},
+                     "default": {"type": "boolean"},
+                     "status": {"type": "integer"},
+                     "teams": {"type": "array", "items": {"type": "string"}},
+                 }},
+             }}},
+             "responses": {"200": _resp("Updated configuration."), "404": {"description": "Not found."}}},
     "delete": {"tags": ["Connectors"], "summary": "Delete a connector configuration",
-               "description": (
-                   "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not "
-                   "the integer DB id (which returns 500), and the **trailing slash is mandatory** — "
-                   "without it the request is routed to an HMAC-gated handler that returns the misleading "
-                   "`403 Could not validate HMAC fingerprint`."
-               ),
-               "responses": {"204": {"description": "Deleted."}}},
+                "description": (
+                    "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not "
+                    "the integer DB id (which returns 500), and the **trailing slash is mandatory** - "
+                    "without it the request is routed to an HMAC-gated handler that returns the misleading "
+                    "`403 Could not validate HMAC fingerprint`."
+                ),
+                "responses": {"204": {"description": "Deleted."}}},
 }
 
 # Step 6b: uninstall the connector. POST returns connector detail + operations.
@@ -2567,19 +2593,19 @@ PATHS["/api/integration/connector/development/entity/{id}/publish/"] = {
             "stale code cached in the integrations service (publish triggers a service refresh "
             "that the standard `$replace=true` install path does not). `replace=true` overwrites an existing "
             "installed version of the same name + version. `discard` controls the dev-workspace "
-            "twin's lifecycle, NOT whether edits are published — see the field description. "
+            "twin's lifecycle, NOT whether edits are published - see the field description. "
             "Verified empirically 2026-05-27 against ghost-handler v5.0.0."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
                 "discard": {"type": "boolean", "default": False,
                             "description": "Controls the dev-workspace twin after a successful "
-                                           "publish, scoped to THIS connector only — other "
+                                           "publish, scoped to THIS connector only - other "
                                            "connectors' dev workspaces are untouched. `true` "
                                            "destroys this connector's dev twin (one-shot "
                                            "publish), `false` keeps it (`development=true` row "
                                            "remains for further editing). Both values publish the "
-                                           "staged edits to the installed connector dir — the "
+                                           "staged edits to the installed connector dir - the "
                                            "flag does NOT mean 'don't publish'."},
                 "replace": {"type": "boolean", "default": False,
                             "description": "If true, overwrite an existing same-name+version install."},
@@ -2692,6 +2718,129 @@ PATHS["/api/integration/agent-heartbeat/{agent}/"] = {
                 "probe surfaces the current state of the SME bus to the agent."
             ),
             "responses": {"200": _resp("Heartbeat reply.")}},
+}
+
+
+# --- Connector internals (pyfsr-discovered) --------------------------------
+#
+# These endpoints are not in the API guide but pyfsr wraps them. They cover
+# connector definition fetching, dependency checking, output schema lookup,
+# ingestion metadata, and ingestion source listing.
+
+PATHS["/api/integration/connectors/{connector}/{version}/"] = {
+    "parameters": [
+        {"name": "connector", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector name (e.g. `mitre-attack`)."},
+        {"name": "version", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector version (e.g. `1.0.0`)."},
+    ],
+    "post": {"tags": ["Connectors"],
+             "summary": "Fetch a connector's full definition (config schema + operations)",
+             "description": (
+                 "Returns the connector's complete definition including `config_schema`, "
+                 "`configuration`, and typed `operations` (each with `operation`, `title`, "
+                 "`parameters`, `output_schema`). GET is forbidden on this endpoint - "
+                 "use POST with `?format=json`. pyfsr: "
+                 "`client.connectors.definition(connector, version)`."
+             ),
+             "parameters": [
+                {"name": "format", "in": "query", "schema": {"type": "string", "enum": ["json"]},
+                 "description": "Must be `json`."},
+             ],
+             "requestBody": {"required": False, "content": {"application/json": {"schema": {"type": "object"}}}},
+             "responses": {"200": _resp("Connector definition with operations and config schema.")}},
+}
+
+PATHS["/api/integration/connectors/dependencies_check/{connector}/{version}/"] = {
+    "parameters": [
+        {"name": "connector", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector name."},
+        {"name": "version", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector version."},
+    ],
+    "get": {"tags": ["Connectors"],
+            "summary": "Check if connector Python dependencies are installed",
+            "description": (
+                "Returns the dependency-install status for the connector - whether the "
+                "Python packages the connector needs are present on the appliance (or a "
+                "named remote agent). The response includes `dependencies_installed` "
+                "(bool). pyfsr: `client.connectors.dependencies_status(connector, version)`."
+            ),
+            "parameters": [
+                {"name": "agent", "in": "query", "schema": {"type": "string"},
+                 "description": "Remote agent identifier. Omit for the self-agent."},
+            ],
+            "responses": {"200": _resp("Dependency status.")}},
+    "post": {"tags": ["Connectors"],
+             "summary": "Retry connector dependency installation",
+             "description": (
+                 "Triggers a retry of the Python-dependency install for a connector - "
+                 "the Retry button next to a failed Requirements badge. Pass `agent` to "
+                 "install dependencies on a remote agent instead of the appliance. "
+                 "pyfsr: `client.connectors.install_dependencies(connector, version)`."
+             ),
+             "parameters": [
+                {"name": "agent", "in": "query", "schema": {"type": "string"},
+                 "description": "Remote agent identifier. Omit for the self-agent."},
+             ],
+             "responses": {"200": _resp("Install retry accepted.")}},
+}
+
+PATHS["/api/integration/connector_output_schema/{connector}/{version}/"] = {
+    "parameters": [
+        {"name": "connector", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector name."},
+        {"name": "version", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Connector version."},
+    ],
+    "post": {"tags": ["Connectors"],
+             "summary": "Get a connector operation's output schema",
+             "description": (
+                 "Returns the output schema for a connector operation - the shape of "
+                 "the data the operation returns. pyfsr: "
+                 "`client.connectors.output_schema(connector, version, operation)`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "properties": {
+                     "operation": {"type": "string", "description": "Operation key."},
+                 }},
+             }}},
+             "responses": {"200": _resp("Output schema for the operation.")}},
+}
+
+PATHS["/api/integration/connector_details/"] = {
+    "post": {"tags": ["Connectors"],
+             "summary": "List ingestion sources for a connector",
+             "description": (
+                 "Returns the ingestion source configurations (data sources) for a "
+                 "connector - the entries visible in the connector's Data Source tab. "
+                 "pyfsr: `client.connectors.ingestion_sources(connector)`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "properties": {
+                     "connector": {"type": "string", "description": "Connector name."},
+                 }},
+             }}},
+             "responses": {"200": _resp("Ingestion sources.")}},
+}
+
+PATHS["/api/integration/data-import/"] = {
+    "get": {"tags": ["Connectors"],
+            "summary": "List ingestion metadata records",
+            "description": (
+                "Returns the metadata records for data-import jobs - the ingestion "
+                "tracking entries created by connector data-source configurations. "
+                "pyfsr: `client.connectors.ingestion_metadata()`."
+            ),
+            "responses": {"200": _resp("Array of ingestion metadata records.")}},
+    "post": {"tags": ["Connectors"],
+             "summary": "Save ingestion metadata",
+             "description": (
+                 "Create or update an ingestion metadata record. pyfsr: "
+                 "`client.connectors.save_ingestion_metadata(metadata)`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
+             "responses": {"200": _resp("Saved metadata record.")}},
 }
 
 
@@ -3133,7 +3282,7 @@ PATHS["/api/3/picklists"] = {
             "Duplicate `itemValue` within a list is allowed (no unique constraint "
             "on it). Optional `color` is a hex color; optional `orderIndex` sets "
             "the position (defaults to appending). The response carries the new "
-            "item's `@id` — that IRI is what a record field stores for this value."
+            "item's `@id` - that IRI is what a record field stores for this value."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "required": ["itemValue", "listName"],
@@ -3161,7 +3310,7 @@ PATHS["/api/3/picklists/{uuid}"] = {
         "summary": "Delete a picklist option (item)",
         "description": (
             "Deletes one picklist value by uuid. 204 on success. Records still "
-            "pointing at the deleted item's IRI are not cleaned up — resolve "
+            "pointing at the deleted item's IRI are not cleaned up - resolve "
             "references before deleting if you need a tidy state."
         ),
         "responses": {"204": _resp("Deleted.")},
@@ -3182,7 +3331,7 @@ PATHS["/api/3/picklist_names"] = {
         "summary": "Create a picklist taxonomy",
         "description": (
             "Creates a new named picklist list (a *taxonomy*). A list `name` is "
-            "unique instance-wide — a duplicate returns 409 "
+            "unique instance-wide - a duplicate returns 409 "
             "(`UniqueConstraintViolationException`). Custom lists are created "
             "with `system: false`; set `system: true` only for platform-managed "
             "lists (rare). The response carries the new `@id`/`@type`/`uuid`/"
@@ -3212,7 +3361,7 @@ PATHS["/api/3/picklist_names/{uuid}"] = {
         "summary": "Delete a picklist taxonomy (cascades to its items)",
         "description": (
             "Deletes one picklist taxonomy by uuid. 204 on success. **Cascade** "
-            "— the list's option items are removed too. To clear the list's "
+            "- the list's option items are removed too. To clear the list's "
             "contents but keep the taxonomy, delete the individual items via "
             "`DELETE /api/3/picklists/{uuid}` instead."
         ),
@@ -3245,7 +3394,7 @@ PATHS["/api/3/docs.jsonld"] = {
 # --- Widgets ---------------------------------------------------------------
 # Widget publish, export, and delete. The upload path is shared with
 # connectors (`POST /api/3/solutionpacks/install?$type=widget`, already
-# documented under Connectors) — only these widget-specific ops are new.
+# documented under Connectors) - only these widget-specific ops are new.
 
 PATHS["/api/3/widgets/development/{uuid}"] = {
     "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
@@ -3254,7 +3403,7 @@ PATHS["/api/3/widgets/development/{uuid}"] = {
         "summary": "Read the development-workspace manifest",
         "description": (
             "Returns the development-workspace manifest for a widget (the "
-            "draft, not-yet-published copy). Used by the publish step — "
+            "draft, not-yet-published copy). Used by the publish step - "
             "`PUT /api/3/widgets/{uuid}` loads this, strips `tree`, adds "
             "publish flags, and PUTs it back. Hydra envelope."
         ),
@@ -3282,7 +3431,7 @@ PATHS["/api/3/widgets/{uuid}"] = {
                            "@id": {"type": "string", "description": "Widget IRI (`/api/3/widgets/<uuid>`)."},
                            "draft": {"type": "boolean", "description": "`false` to publish live; `true` for draft-only."},
                            "installed": {"type": "boolean", "description": "Set `true` on publish."},
-                           "enablePublish": {"type": "boolean", "description": "Publish flag — send `false`."},
+                           "enablePublish": {"type": "boolean", "description": "Publish flag - send `false`."},
                            "replace": {"type": "boolean", "description": "Supersede the currently-installed version."},
                            "replaceVersions": {"type": "array", "items": {"type": "string"}, "description": "Versions to replace (usually empty)."},
                            "publishedDate": {"type": "integer", "description": "Epoch seconds (`int(time.time())`)."},
@@ -3302,7 +3451,7 @@ PATHS["/api/3/widgets/export/{uuid}"] = {
             "Exports a widget as a `.tgz` archive. Body `{development: bool}` "
             "selects the development-workspace copy (`true`) or the "
             "installed/published one (`false`). Send `Accept: "
-            "application/octet-stream` — the response is the raw archive bytes."
+            "application/octet-stream` - the response is the raw archive bytes."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
@@ -3323,7 +3472,7 @@ PATHS["/api/3/delete/widgets"] = {
         "summary": "Delete widget records",
         "description": (
             "Deletes one or more widget records by uuid. **Note the `/delete/` "
-            "infix** in the path — this is not the standard `/api/3/widgets` "
+            "infix** in the path - this is not the standard `/api/3/widgets` "
             "collection. Body `{ids: [<uuid>]}`. 204 on success."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
@@ -3433,7 +3582,7 @@ PATHS["/api/3/api_keys/{uuid}"] = {
     "put": {
         "tags": ["Access management"],
         "summary": "Update scope (name / roles / teams)",
-        "description": "**Replaces** the listed fields — values not in the payload that were previously set are overwritten with the new payload's values, so resend the full roles/teams lists you want to keep.",
+        "description": "**Replaces** the listed fields - values not in the payload that were previously set are overwritten with the new payload's values, so resend the full roles/teams lists you want to keep.",
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
                 "name": {"type": "string"},
@@ -3456,7 +3605,7 @@ PATHS["/api/auth/users"] = {
     "get": {
         "tags": ["Access management"],
         "summary": "Get a specific API-key user (optionally with the unmasked key)",
-        "description": "Lookup by the API-key user's uuid (the `userId` from `GET /api/3/api_keys`). Default response masks the key; pass `show_api_key=true` to retrieve the plaintext — only works when the key was created with `retrievable_mode` enabled.",
+        "description": "Lookup by the API-key user's uuid (the `userId` from `GET /api/3/api_keys`). Default response masks the key; pass `show_api_key=true` to retrieve the plaintext - only works when the key was created with `retrievable_mode` enabled.",
         "parameters": [
             {"name": "uuid", "in": "query", "required": True, "schema": {"type": "string"},
              "description": "API-key user uuid."},
@@ -3496,10 +3645,10 @@ PATHS["/api/auth/users"] = {
         "description": (
             "Single endpoint for all five lifecycle ops, discriminated by the `operation` field. "
             "`uuid` here is the API-key user uuid (the `userId` returned by `GET /api/3/api_keys`).\n\n"
-            "- `REVOKE` — permanent deactivation.\n"
-            "- `ACTIVATE` / `DEACTIVATE` — toggle status.\n"
-            "- `REGENERATE` — issue a fresh key; requires `api_key_validity`.\n"
-            "- `RESET_VALIDITY` — extend/shorten validity; requires `api_key_validity`."
+            "- `REVOKE` - permanent deactivation.\n"
+            "- `ACTIVATE` / `DEACTIVATE` - toggle status.\n"
+            "- `REGENERATE` - issue a fresh key; requires `api_key_validity`.\n"
+            "- `RESET_VALIDITY` - extend/shorten validity; requires `api_key_validity`."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "required": ["uuid", "key_type", "operation"], "properties": {
@@ -3545,7 +3694,7 @@ PATHS["/api/auth/config"] = {
         "tags": ["Access management"],
         "summary": "Update an auth config option",
         "description": (
-            "Toggle a single option by name/value. The notable API-key option is `retrievable_mode` — when "
+            "Toggle a single option by name/value. The notable API-key option is `retrievable_mode` - when "
             "**enabled at the time a key is created**, that key stays retrievable for its lifetime even if "
             "the global flag is flipped off later. Keys created while it was off can never be retrieved."
         ),
@@ -3599,7 +3748,7 @@ PATHS["/api/3/import_jobs"] = {
 
 # The /api/import/ namespace (no /3/) is parallel to /api/3/import_jobs above:
 # the CRUD lives at /api/3/import_jobs, but option-generation + run-trigger
-# happen here. Both are async — poll GET /api/3/import_jobs/{job_uuid} to track.
+# happen here. Both are async - poll GET /api/3/import_jobs/{job_uuid} to track.
 PATHS["/api/import/{job_uuid}"] = {
     "parameters": [{"name": "job_uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
     "get": {
@@ -3608,17 +3757,17 @@ PATHS["/api/import/{job_uuid}"] = {
         "description": (
             "Starts the server walking the uploaded bundle to build the "
             "import-options tree. **The response body is a progress log, "
-            "not the options** — poll `GET /api/3/import_jobs/{job_uuid}` "
+            "not the options** - poll `GET /api/3/import_jobs/{job_uuid}` "
             "until the job's `options` field is populated (status becomes "
             "`\"Reviewing\"`)."
         ),
-        "responses": {"200": _resp("Progress log (not the options — poll the job record).")},
+        "responses": {"200": _resp("Progress log (not the options - poll the job record).")},
     },
     "put": {
         "tags": ["Import / export"],
         "summary": "Trigger the import run (async)",
         "description": (
-            "Triggers the import — the server applies the bundle (an upsert "
+            "Triggers the import - the server applies the bundle (an upsert "
             "keyed by `config_id`). **Async:** poll `GET "
             "/api/3/import_jobs/{job_uuid}` until `status == \"Import "
             "Complete\"`. An import carrying module/schema changes drives the "
@@ -3628,7 +3777,7 @@ PATHS["/api/import/{job_uuid}"] = {
         ),
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object", "properties": {},
-                       "description": "No request body — the job is identified by the path uuid."},
+                       "description": "No request body - the job is identified by the path uuid."},
             "example": {},
         }}},
         "responses": {"200": _resp("Import job record (poll until `status == \"Import Complete\"`).")},
@@ -3655,7 +3804,7 @@ PATHS["/api/3/export_jobs"] = {
 
 
 # --- Export templates ------------------------------------------------------
-# Templates drive `PUT /api/export` — a reusable selection of what to export
+# Templates drive `PUT /api/export` - a reusable selection of what to export
 # (record sets, picklists, connectors, playbooks). Create/delete templates
 # here; trigger + poll via `PUT /api/export` + `GET /api/3/export_jobs/{uuid}`.
 
@@ -3665,7 +3814,7 @@ PATHS["/api/3/export_templates"] = {
         "summary": "Create an export template",
         "description": (
             "Creates a reusable export template. Body carries `name`, "
-            "`options` (the selection of what to export — record sets, "
+            "`options` (the selection of what to export - record sets, "
             "picklists, connectors, playbook collections), and optional "
             "`metadata` (defaults to `{autoSelectPicklists: true}`). The "
             "template's uuid is passed to `PUT /api/export?template=<uuid>` "
@@ -3703,7 +3852,7 @@ PATHS["/api/export"] = {
         "description": (
             "Triggers a configuration export using a pre-created template. "
             "**Note: `/api/export` (no `/3/`).** The parameters are **query "
-            "params, not a JSON body** — `fileName` (must end in `.zip`) and "
+            "params, not a JSON body** - `fileName` (must end in `.zip`) and "
             "`template` (a template uuid from `POST /api/3/export_templates`). "
             "Returns the export-job record; poll `GET "
             "/api/3/export_jobs/{job_uuid}` until `status == \"Export "
@@ -3711,17 +3860,180 @@ PATHS["/api/export"] = {
         ),
         "parameters": [
             {"name": "fileName", "in": "query", "required": True, "schema": {"type": "string"},
-             "description": "Output filename — must end in `.zip`."},
+             "description": "Output filename - must end in `.zip`."},
             {"name": "template", "in": "query", "required": True, "schema": {"type": "string", "format": "uuid"},
              "description": "Export template uuid (from `POST /api/3/export_templates`)."},
         ],
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object", "properties": {},
-                       "description": "No request body — the export is driven by the `fileName` and `template` query params above."},
+                       "description": "No request body - the export is driven by the `fileName` and `template` query params above."},
             "example": {},
         }}},
         "responses": {"200": _resp("Export job record (poll until `status == \"Export Complete\"`).")},
     },
+}
+
+
+# --- Views & view templates (pyfsr-discovered) -----------------------------
+#
+# The FortiSOAR UI renders module list/detail pages from named "view templates"
+# stored at /api/views/1/{name}. The "app" view is the left-hand navigation.
+
+PATHS["/api/views/1/app"] = {
+    "get": {"tags": ["Views"], "summary": "Get the app navigation view",
+            "description": (
+                "Returns the single view record describing the left-hand navigation. "
+                "`config.navigation` holds the top-level sections. pyfsr: "
+                "`client.views.app()`."
+            ),
+            "responses": {"200": _resp("Navigation view record.")}},
+}
+
+PATHS["/api/views/1/{name}"] = {
+    "parameters": [
+        {"name": "name", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Template name (e.g. `Custom Detail Layout`)."},
+    ],
+    "get": {"tags": ["Views"], "summary": "Get a named view template",
+            "description": (
+                "Fetch a view template by name. The record carries `name`, `config`, "
+                "`module`, `viewOptions`, `uuid`, `type`, `isDefault`. pyfsr: "
+                "`client.view_templates.get_template(name)`."
+            ),
+            "responses": {"200": _resp("View template record."), "404": {"description": "Not found."}}},
+    "post": {"tags": ["Views"], "summary": "Create a named view template",
+             "description": (
+                 "Create a new view template. Required body fields: `name`, `config`, "
+                 "`module`, `viewOptions`. Optional: `type` (default `rows`), `isDefault` "
+                 "(default false). pyfsr: `client.view_templates.create_template(...)`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
+             "responses": {"201": _resp("Created."), "400": {"description": "Invalid template."}}},
+    "put": {"tags": ["Views"], "summary": "Update a named view template",
+            "description": (
+                "Update an existing view template. Send only the fields to change. "
+                "pyfsr: `client.view_templates.update_template(name, config=..., ...)`."
+            ),
+            "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
+            "responses": {"200": _resp("Updated."), "404": {"description": "Not found."}}},
+}
+
+
+# --- Dynamic variables (pyfsr-discovered) ----------------------------------
+#
+# Global variables referenced in playbooks as {{ globalVars.<name> }}.
+
+PATHS["/api/wf/api/dynamic-variable/"] = {
+    "get": {"tags": ["Workflow tools"], "summary": "List global dynamic variables",
+            "description": (
+                "Returns every FortiSOAR global (\"dynamic\") variable. Each entry has "
+                "`id`, `name`, `value`, `default_value`. Referenced in playbooks as "
+                "`{{ globalVars.<name> }}`. pyfsr: `client.wf_tools.dynamic_variables()`."
+            ),
+            "responses": {"200": _resp("Array of variable records.")}},
+    "post": {"tags": ["Workflow tools"], "summary": "Create a global dynamic variable",
+             "description": (
+                 "Create a new global variable. POSTing a name that already exists is an "
+                 "error - use PUT to update. pyfsr: "
+                 "`client.wf_tools.set_dynamic_variable(name, value)` (handles the "
+                 "create-or-update upsert)."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "required": ["name", "value"], "properties": {
+                     "name": {"type": "string"},
+                     "value": {"type": "string"},
+                     "default_value": {"type": "string"},
+                 }},
+             }}},
+             "responses": {"201": _resp("Created."), "409": {"description": "Name already exists."}}},
+}
+
+
+# --- Playbook execution internals (pyfsr-discovered) ----------------------
+#
+# Per-step execution records and the modern approval gate list endpoint.
+
+PATHS["/api/wf/api/historical-steps/"] = {
+    "get": {"tags": ["Workflows"], "summary": "List per-step execution records for a run",
+            "description": (
+                "Fetch per-step execution records for a playbook run, keyed by `task_id` "
+                "(what `POST /api/wf/api/workflows/{pk}/start/` returns). Steps are ordered "
+                "by creation time (oldest first). Only populates after a run completes. "
+                "Query params: `limit` (default 200), `status`, `name`. pyfsr: "
+                "`client.playbooks.historical_steps(task_id)`."
+            ),
+            "parameters": [
+                {"name": "task_id", "in": "query", "schema": {"type": "string"},
+                 "description": "Run task id."},
+                {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 200}},
+                {"name": "status", "in": "query", "schema": {"type": "string"}},
+                {"name": "name", "in": "query", "schema": {"type": "string"}},
+            ],
+            "responses": {"200": _resp("Array of step records.")}},
+}
+
+PATHS["/api/wf/api/manual-wf-input/"] = {
+    "get": {"tags": ["Workflows"], "summary": "List pending manual-input / approval gates",
+            "description": (
+                "Returns all pending manual-wf-input records - the modern, resumable "
+                "approval gates. Each record represents a paused playbook step awaiting "
+                "a decision (approve/reject or manual data input). pyfsr: "
+                "`client.playbooks.approval(run_pk)` resolves the pending input for a "
+                "specific run."
+            ),
+            "responses": {"200": _resp("Array of pending manual-input records.")}},
+}
+
+
+# --- System: daily action count (pyfsr-discovered) ------------------------
+#
+# The workflow engine's license usage counter - the endpoint the UI's
+# "Actions Remaining" badge reads.
+
+PATHS["/api/wf/workflow/config/"] = {
+    "get": {"tags": ["System"], "summary": "Daily action-count license usage",
+            "description": (
+                "Returns the workflow engine's decrypted license counters: "
+                "`daily_action_limit`, `remaining_actions`, `reset_time`, "
+                "`last_update_time`. `daily_action_limit` is the per-day cap "
+                "(e.g. 10000 on FortiFlex Starter; `-1` means unlimited/unenforced). "
+                "Counted steps are Create/Update Record, Connector Action, Set "
+                "Variable, etc.; Wait/Approval/Loops/Reference-a-Playbook are not "
+                "counted. pyfsr: `client.system.daily_action_count()`. "
+                "Query param: `section=license` (the endpoint also serves other "
+                "workflow config sections, but `license` is the useful one)."
+            ),
+            "parameters": [
+                {"name": "section", "in": "query", "schema": {"type": "string", "enum": ["license"]},
+                 "description": "Must be `license` to get the action-count data."},
+            ],
+            "responses": {"200": _resp("Daily action count record.")}},
+}
+
+
+# --- Change password (pyfsr-discovered) ------------------------------------
+
+PATHS["/api/3/changepassword"] = {
+    "put": {"tags": ["Access management"], "summary": "Change the calling user's password",
+            "description": (
+                "Changes the calling user's own application password. Body requires "
+                "`uuid`, `loginId`, `oldPassword`, `newPassword` - `uuid` and `loginId` "
+                "must be the caller's own (looked up via `GET /api/3/actors/current`). "
+                "The new password must differ from the old one and pass the password "
+                "policy. LDAP/SAML users cannot change their password through this "
+                "endpoint. pyfsr: `client.users.change_password(old, new)` handles the "
+                "whoami lookup automatically."
+            ),
+            "requestBody": {"required": True, "content": {"application/json": {
+                "schema": {"type": "object", "required": ["uuid", "loginId", "oldPassword", "newPassword"],
+                 "properties": {
+                     "uuid": {"type": "string", "format": "uuid"},
+                     "loginId": {"type": "string"},
+                     "oldPassword": {"type": "string", "format": "password"},
+                     "newPassword": {"type": "string", "format": "password"},
+                 }},
+            }}},
+            "responses": {"200": _resp("Password changed."), "400": {"description": "Policy violation or same password."}}},
 }
 
 
@@ -3746,10 +4058,10 @@ TAG_GROUPS = [
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Modules", "tags": ["Modules"]},
     {"name": "Query", "tags": ["Query"]},
-    {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents"]},
+    {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents", "Workflow tools"]},
     {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
     {"name": "Audit", "tags": ["Audit"]},
-    {"name": "Reference", "tags": ["Metadata", "Files", "Widgets", "Import / export"]},
+    {"name": "Reference", "tags": ["Metadata", "Files", "Widgets", "Views", "Import / export"]},
 ]
 
 TAG_DESCRIPTIONS = {
@@ -3762,33 +4074,33 @@ TAG_DESCRIPTIONS = {
     ),
     "Records (generic)": (
         "Every module that stores records is available at `/api/3/<plural>` with the same list + create / get / "
-        "update / delete shape (list responses are wrapped in a `hydra:member` envelope — see "
-        "[Pagination & response shape](#description/pagination-response-shape)). The operations below — list / create "
-        "on `/api/3/{collection}` and get / update / delete on `/api/3/{collection}/{uuid}` — document that shared "
+        "update / delete shape (list responses are wrapped in a `hydra:member` envelope - see "
+        "[Pagination & response shape](#description/pagination-response-shape)). The operations below - list / create "
+        "on `/api/3/{collection}` and get / update / delete on `/api/3/{collection}/{uuid}` - document that shared "
         "shape. The **Alerts** endpoints are a worked example."
     ),
     "Alerts": "Concrete CRUD on the `alerts` collection - representative of every record module (`incidents`, `indicators`, `tasks`, `assets`, `people`, ...).",
     "Bulk operations": "High-throughput insert/update/delete/upsert and feed-ingest paths. Note: `/api/ingest-feeds/*` and `/api/insert-feeds/*` skip on-create playbook triggers; `POST /api/3/insert/*` does not.",
     "Query": "Three search surfaces: URL-param (AND only), POST `/api/query/*` body grammar (full AND/OR + aggregates), and global Elasticsearch (`/api/search`). See operation descriptions for when to use which.",
-    "Audit": "Audit log search + retention. Returns one page at a time with no total count — call `/count` separately if you need it. Filters are top-level only and accept exactly one value.",
+    "Audit": "Audit log search + retention. Returns one page at a time with no total count - call `/count` separately if you need it. Filters are top-level only and accept exactly one value.",
     "Workflows": "Workflow run control, history, and introspection. Lives under `/api/wf/*`.",
     "Triggers": "Fire playbooks - by custom-endpoint name, deferred (async), or by workflow id without firing trigger conditions.",
     "Scheduled tasks": (
-        "Workflow-engine periodic jobs under `/api/wf/api/scheduled/` — the "
+        "Workflow-engine periodic jobs under `/api/wf/api/scheduled/` - the "
         "platform-shipped schedules (Reclaim Disk Space, Purge Executed Playbook "
         "Logs, Archive Data) plus user-created cron schedules that run a playbook. "
         "Each row is a periodic task with a nested `crontab` and a `kwargs.wf_iri` "
-        "pointing at the workflow. The row `id` is a per-request Fernet token — "
+        "pointing at the workflow. The row `id` is a per-request Fernet token - "
         "resolve by `name` for any non-immediate use."
     ),
     "Connectors": (
         "Full connector lifecycle. Per-action request shape comes from each connector's `info.json`.\n\n"
-        "**Flow — install → configure → execute → uninstall:**\n\n"
-        "1. **Install from `.tgz`** — `POST /api/3/solutionpacks/install?$type=connector&$replace=true` (multipart, field `file` = the binary). Response carries the integer connector `id`.\n"
-        "2. **Create a config** — `POST /api/integration/configuration/` with `name`, `connector` (integer id from step 1), and `config` (the connector's field values). Add `agent` only if you want the connector to run on a **remote agent**; omit it to use the appliance's self-agent. Response carries `config_id` (uuid).\n"
-        "3. **Execute an action** — `POST /api/integration/execute/` with `connector` name, `version`, `operation`, `config` (the uuid from step 2), and `params`.\n"
-        "4. **Health-check** — `GET /api/integration/connectors/healthcheck/{name}/{version}/?config=<uuid>` for the cheap variant (uses an existing config), or the POST form when re-sending a full config inline.\n"
-        "5. **Cleanup** — `DELETE /api/integration/configuration/{config_id}/` (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing slash is mandatory — without it you'll see `403 Could not validate HMAC fingerprint`.\n\n"
+        "**Flow - install → configure → execute → uninstall:**\n\n"
+        "1. **Install from `.tgz`** - `POST /api/3/solutionpacks/install?$type=connector&$replace=true` (multipart, field `file` = the binary). Response carries the integer connector `id`.\n"
+        "2. **Create a config** - `POST /api/integration/configuration/` with `name`, `connector` (integer id from step 1), and `config` (the connector's field values). Add `agent` only if you want the connector to run on a **remote agent**; omit it to use the appliance's self-agent. Response carries `config_id` (uuid).\n"
+        "3. **Execute an action** - `POST /api/integration/execute/` with `connector` name, `version`, `operation`, `config` (the uuid from step 2), and `params`.\n"
+        "4. **Health-check** - `GET /api/integration/connectors/healthcheck/{name}/{version}/?config=<uuid>` for the cheap variant (uses an existing config), or the POST form when re-sending a full config inline.\n"
+        "5. **Cleanup** - `DELETE /api/integration/configuration/{config_id}/` (uuid + trailing slash), then `DELETE /api/integration/connectors/{id}/` (integer id + trailing slash). The trailing slash is mandatory - without it you'll see `403 Could not validate HMAC fingerprint`.\n\n"
         "**Targeting a remote agent:** to run a connector on a remote agent instead of the self-agent, "
         "either include `agent` in the `POST /api/integration/configuration/` body (existing config on a "
         "remote agent), or use the dedicated remote-install routes: "
@@ -3800,20 +4112,20 @@ TAG_DESCRIPTIONS = {
     ),
     "Agents": (
         "Remote-agent records, SME router discovery, and the per-agent installer download.\n\n"
-        "**Flow — discover router → create agent → download installer → verify:**\n\n"
-        "1. **Find the router** — `GET /api/3/routers` and read the first member's `@id` (router IRI) "
+        "**Flow - discover router → create agent → download installer → verify:**\n\n"
+        "1. **Find the router** - `GET /api/3/routers` and read the first member's `@id` (router IRI) "
         "and `certificate` (CA PEM for the agent VM). Empty collection means SME is not enabled on "
         "the master; run `sudo csadm secure-message-exchange enable` first.\n"
-        "2. **Create the record** — `POST /api/3/agents` with `name`, `router` (IRI from step 1), and "
+        "2. **Create the record** - `POST /api/3/agents` with `name`, `router` (IRI from step 1), and "
         "`installerType` (bash or docker picklist IRI). Response carries `uuid`, `agentId`, "
-        "`encryptionKey`, `username`, `password`, `vhost` — **the secrets are returned only once**.\n"
-        "3. **Download the installer** — `POST /api/integration/agent-installer/` with the `agentId` "
+        "`encryptionKey`, `username`, `password`, `vhost` - **the secrets are returned only once**.\n"
+        "3. **Download the installer** - `POST /api/integration/agent-installer/` with the `agentId` "
         "from step 2. Response is a binary installer (`application/octet-stream`).\n"
-        "4. **Verify** — poll `GET /api/3/agents/{uuid}` until `configurationHealth.itemValue` reaches "
+        "4. **Verify** - poll `GET /api/3/agents/{uuid}` until `configurationHealth.itemValue` reaches "
         "`Remote Node Connected`. New records start in `Awaiting Remote Node Connection`.\n\n"
         "**Self-agent constants:** the appliance's own Self agent record is hardcoded at uuid "
         "`973c17df-bb4b-41e5-b59c-a408666fdf27` on every install (the parent tenant uuid is "
-        "`b3a700f7-00be-4ef9-90c6-3c8fe6e1be63`). Its `agentId` — the runtime `masterId` — varies "
+        "`b3a700f7-00be-4ef9-90c6-3c8fe6e1be63`). Its `agentId` - the runtime `masterId` - varies "
         "per appliance; read it from `GET /api/3/agents/{self-uuid}`."
     ),
     "Modules": (
@@ -3831,17 +4143,27 @@ TAG_DESCRIPTIONS = {
     "Widgets": (
         "Widget upload (shared with the connector install path), publish, "
         "export, and delete. The publish step loads the development manifest "
-        "and PUTs it back with publish flags — the same flow the Content-Hub "
+        "and PUTs it back with publish flags - the same flow the Content-Hub "
         "UI's Publish button drives."
+    ),
+    "Views": (
+        "View templates that control how module list and detail pages render. "
+        "`GET /api/views/1/app` returns the left-hand navigation; "
+        "`/api/views/1/{name}` is the per-template CRUD surface."
+    ),
+    "Workflow tools": (
+        "Global (\"dynamic\") variables referenced in playbooks as "
+        "`{{ globalVars.<name> }}`. List and create via "
+        "`/api/wf/api/dynamic-variable/`."
     ),
     "Access management": (
         "API keys, roles, teams.\n\n"
-        "**Flow — create → bind → use → lifecycle → revoke:**\n\n"
-        "1. **Create the API-key user** — `POST /api/auth/users` with body `{\"type\": 9, \"status\": 1, \"api_key_validity\": <1..365>}`. All three are integers — the published PDF shows quoted strings, which the appliance rejects with 400. Response carries the user `uuid` and the plaintext key.\n"
-        "2. **Bind it to roles and teams** — `POST /api/3/api_keys` with `name`, `roles` (IRIs), `teams` (IRIs), and `userId` (the uuid from step 1). Required to make the key actually usable.\n"
-        "3. **Read the scope** — `GET /api/3/api_keys/{uuid}` for one binding, or `GET /api/3/api_keys` for the full list.\n"
-        "4. **Lifecycle operations** — `PUT /api/auth/users` with `uuid`, `key_type: API_KEY`, and `operation` ∈ `{REVOKE, ACTIVATE, DEACTIVATE, REGENERATE, RESET_VALIDITY}`. `REGENERATE` and `RESET_VALIDITY` also need `api_key_validity`.\n"
-        "5. **Bulk fetch with plaintext** — `POST /api/auth/query/users` with `{users: [<uuid>, ...], show_api_key: true}` (only returns plaintext for keys whose user was created with `retrievable_mode` enabled in `/api/auth/config`)."
+        "**Flow - create → bind → use → lifecycle → revoke:**\n\n"
+        "1. **Create the API-key user** - `POST /api/auth/users` with body `{\"type\": 9, \"status\": 1, \"api_key_validity\": <1..365>}`. All three are integers - the published PDF shows quoted strings, which the appliance rejects with 400. Response carries the user `uuid` and the plaintext key.\n"
+        "2. **Bind it to roles and teams** - `POST /api/3/api_keys` with `name`, `roles` (IRIs), `teams` (IRIs), and `userId` (the uuid from step 1). Required to make the key actually usable.\n"
+        "3. **Read the scope** - `GET /api/3/api_keys/{uuid}` for one binding, or `GET /api/3/api_keys` for the full list.\n"
+        "4. **Lifecycle operations** - `PUT /api/auth/users` with `uuid`, `key_type: API_KEY`, and `operation` ∈ `{REVOKE, ACTIVATE, DEACTIVATE, REGENERATE, RESET_VALIDITY}`. `REGENERATE` and `RESET_VALIDITY` also need `api_key_validity`.\n"
+        "5. **Bulk fetch with plaintext** - `POST /api/auth/query/users` with `{users: [<uuid>, ...], show_api_key: true}` (only returns plaintext for keys whose user was created with `retrievable_mode` enabled in `/api/auth/config`)."
     ),
     "Import / export": "Configuration import/export. Read the `import_jobs` description carefully - the inline-envelope shape is a silent no-op.",
     "Threat intel (TAXII)": (
@@ -3851,7 +4173,7 @@ TAG_DESCRIPTIONS = {
         "The server is **read-only**: every default collection advertises `can_write: false` and "
         "`POST` to `objects/` is not routed. To push STIX into FortiSOAR, use "
         "`POST /api/ingest-feeds/stix-bundle` instead.\n\n"
-        "Response envelope for `objects/` and `manifest/` is `{totalItems, objects: []}` — a "
+        "Response envelope for `objects/` and `manifest/` is `{totalItems, objects: []}` - a "
         "FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next` cursor. Paginate with "
         "`?limit=` and `?added_after=<ISO-8601>`.\n\n"
         "All responses use `Content-Type: application/taxii+json;version=2.1`; collection "
@@ -3877,9 +4199,9 @@ Schemas (`Alert`, `RecordLog`, ...) are validated against captured responses whe
 
 ## Concepts
 
-Responses follow the **JSON-LD + Hydra** convention. In practice that means every record has an `@id` URL you can copy and reuse as a reference, plus an `@type` (the module name) and `@context` (model URL). List endpoints wrap their results in a `hydra:member` envelope — see [Pagination & response shape](#description/pagination-response-shape).
+Responses follow the **JSON-LD + Hydra** convention. In practice that means every record has an `@id` URL you can copy and reuse as a reference, plus an `@type` (the module name) and `@context` (model URL). List endpoints wrap their results in a `hydra:member` envelope - see [Pagination & response shape](#description/pagination-response-shape).
 
-- **IRI** — a relative URL like `/api/3/alerts/<uuid>`. Treat it as a foreign-key pointer: wherever JSON references another record, that's what you'll see. The server generates `@id` on insert; clients should not send it.
+- **IRI** - a relative URL like `/api/3/alerts/<uuid>`. Treat it as a foreign-key pointer: wherever JSON references another record, that's what you'll see. The server generates `@id` on insert; clients should not send it.
 - **UUID** - 36-character hex w/ hyphens. Optional on POST: send your own to retain it for cross-system reference, or omit and read it back from the response IRI.
 - **CamelCase** - every key is camelCase (`sourceId`, `dueDate`, `hydra:variableRepresentation`). Use the same convention for any custom modules.
 - **Picklist values are IRIs from 7.5.0+.** Posting `"severity": "High"` is rejected; you must post `"severity": "/api/3/picklists/<value-uuid>"`. Fetch the value's IRI from `GET /api/3/picklists?listName.name=AlertSeverity&itemValue=High`. Bulk-feed paths are an exception (no validation).
@@ -3927,7 +4249,7 @@ Every `GET /api/3/<plural>` returns a Hydra paged collection:
 | `$limit` | 30 | Max **5000** (server-enforced cap). |
 | `$page` | 1 | 1-indexed. |
 | `$orderby` | - | `field` or `-field` for desc. Body `sort[]` is the equivalent on `/api/query`. |
-| `$relationships` | `false` | Controls whether linked modules appear in the response. When `true`, related collections (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false`, those collections are **left out entirely** — not returned as empty arrays. Single-value links (`severity`, `status`, `createUser`, etc.) are always returned as full record objects regardless of this flag. |
+| `$relationships` | `false` | Controls whether linked modules appear in the response. When `true`, related collections (e.g. an alert's `tasks`, `indicators`, `assets`) are populated. When `false`, those collections are **left out entirely** - not returned as empty arrays. Single-value links (`severity`, `status`, `createUser`, etc.) are always returned as full record objects regardless of this flag. |
 | `$export` | `false` | Strips identity fields so the result re-imports cleanly. Used by export UI. |
 | `$partial` | `false` | When `true`, `hydra:totalItems` is omitted (skips `COUNT(*)`). Useful when paging blindly. |
 | `$search` | - | See [Query reference](#description/query-reference) - top-level token, distinct from the per-field `search` operator. |
@@ -4340,7 +4662,7 @@ def _ensure_examples(spec):
       A schema'd shape is honest signal; an empty schema yields `{}`.
     - **2xx responses**: only stamp when we can derive a real shape from a
       declared `schema` (a `$ref` or inline `properties`). When we have no
-      schema and no curated example, leave the response example unset — we
+      schema and no curated example, leave the response example unset - we
       don't fabricate `@context`/Hydra envelopes, because that misleads readers
       into thinking we've verified the wire shape. Live captures (from
       `_apply_live_observations`) fill these in later when available.
@@ -5111,7 +5433,7 @@ def _merge_verification(spec):
 
             # If this op was already touched by `live_test.py` (its description
             # carries an "Auth coverage:" line and `x-verified-live` is set),
-            # skip the verifier's badge — the live-observations source is
+            # skip the verifier's badge - the live-observations source is
             # richer (real captured request + response per auth) and we don't
             # want to duplicate.
             if "x-verified-live" in op or "**Auth coverage:**" in (op.get("description") or ""):
@@ -5219,7 +5541,7 @@ LEAK_PATTERNS = [
         r"\bnginx\b",
         r"\bDAS:\d+\b",          # internal service:port leak (e.g. DAS:8443)
         # Note: bare 'das' is a legitimate audit-log `component` enum
-        # value, so we don't ban it — only the service:port form.
+        # value, so we don't ban it - only the service:port form.
     ]
 ]
 
@@ -5319,7 +5641,7 @@ def _apply_live_observations(spec: dict) -> int:
                       if r.get("response_status") is not None
                       and 200 <= r["response_status"] < 300}
         if not successful:
-            # No mode succeeded — still record coverage so docs say so.
+            # No mode succeeded - still record coverage so docs say so.
             op["x-verified-live"] = {m: r.get("response_status") for m, r in by_auth.items()}
             op["description"] = (op.get("description", "") + _auth_coverage_line(by_auth)).strip()
             applied += 1
@@ -5345,10 +5667,10 @@ def _apply_live_observations(spec: dict) -> int:
 def _auth_coverage_line(by_auth: dict) -> str:
     """Format an Auth coverage markdown line summarizing per-mode statuses.
 
-    Three states are surfaced (no emojis — labels only):
-      `<auth>: OK`     — 2xx response observed.
-      `<auth>: NNN`    — request reached the server and was rejected.
-      `<auth>: gated`  — an upstream gate blocked us before this op was
+    Three states are surfaced (no emojis - labels only):
+      `<auth>: OK`     - 2xx response observed.
+      `<auth>: NNN`    - request reached the server and was rejected.
+      `<auth>: gated`  - an upstream gate blocked us before this op was
                          reached; treat as unavailable under that auth.
     """
     if not by_auth:
@@ -5389,7 +5711,7 @@ def main():
                 op["x-codeSamples"] = [sample]
                 ai_sampled += 1
         except (KeyError, ValueError):
-            # No sample for this path — skip silently.
+            # No sample for this path - skip silently.
             pass
     if ai_sampled:
         print(f"  [AI/MCP] applied {ai_sampled} pyfsr code samples")
@@ -5400,7 +5722,7 @@ def main():
     _apply_cross_links(SPEC)
     # Live observations from `src/live_test.py` are the authoritative source
     # for verification badges. The older `_merge_verification` (from the
-    # stateless verifier) is intentionally not invoked here — it produced a
+    # stateless verifier) is intentionally not invoked here - it produced a
     # parallel "Live-verified" line that duplicated the per-auth coverage
     # surfaced by `_apply_live_observations`.
     live_applied = _apply_live_observations(SPEC)

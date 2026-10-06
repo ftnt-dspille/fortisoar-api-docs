@@ -324,6 +324,11 @@ tags:
   description: "Widget upload (shared with the connector install path), publish, export, and delete. The publish step loads\
     \ the development manifest and PUTs it back with publish flags \u2014 the same flow the Content-Hub UI's Publish button\
     \ drives."
+- name: Views
+  description: View templates that control how module list and detail pages render. `GET /api/views/1/app` returns the left-hand
+    navigation; `/api/views/1/{name}` is the per-template CRUD surface.
+- name: Workflow tools
+  description: Global ("dynamic") variables referenced in playbooks as `{{ globalVars.<name> }}`. List and create via `/api/wf/api/dynamic-variable/`.
 - name: Access management
   description: "API keys, roles, teams.\n\n**Flow \u2014 create \u2192 bind \u2192 use \u2192 lifecycle \u2192 revoke:**\n\
     \n1. **Create the API-key user** \u2014 `POST /api/auth/users` with body `{\"type\": 9, \"status\": 1, \"api_key_validity\"\
@@ -397,6 +402,13 @@ tags:
 - name: AI Activity
   description: LLM activity audit logs. Tool-call evidence from agent investigations, useful for understanding what an agent
     did to reach its verdict.
+- name: AI Traces
+  description: 'OpenTelemetry-style trace observability for AI agent runs. Each run produces a trace with spans (LLM calls,
+    tool calls, sub-agent steps). Use `GET /ai/traces/` to list, `GET /ai/traces/{trace_id}` to inspect a single trace, `GET
+    /ai/traces/{trace_id}/execution-tree` for the full nested run tree, and `GET /ai/traces/{trace_id}/spans` for a flat span
+    list. Per-span detail: `GET /ai/traces/spans/{span_id}`. Token usage: `GET /ai/traces/tokens/{trace_id}` (per-trace) or
+    `GET /ai/traces/tokens/session/{session_id}` (per-chat-session). `DELETE /ai/traces/delete` purges traces older than a
+    cutoff.'
 x-tagGroups:
 - name: Auth & system
   tags:
@@ -422,6 +434,7 @@ x-tagGroups:
   - Scheduled tasks
   - Connectors
   - Agents
+  - Workflow tools
 - name: AI & MCP (8.0+)
   tags:
   - AI
@@ -433,6 +446,7 @@ x-tagGroups:
   - AI Prompts
   - AI MCP Registry
   - AI Activity
+  - AI Traces
   - MCP
   - MCP Admin
   - MCP Configurations
@@ -449,6 +463,7 @@ x-tagGroups:
   - Metadata
   - Files
   - Widgets
+  - Views
   - Import / export
 paths:
   /auth/authenticate:
@@ -8921,13 +8936,22 @@ paths:
       responses:
         '200':
           description: Ingest result.
+          x-pyfsr-response-model: FeedIngestResult
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/FeedIngestResult'
               example:
                 totalCount: 1
                 successCount: 1
                 failureCount: 0
                 skipTriggers: true
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.feeds.insert(\"alerts\", [\n    {\"name\"\
+          : \"Alert from Feed\", \"severity\": \"Medium\"}\n])\nprint(result.ok)"
       x-verified-live:
         apikey: 404
         jwt: 404
@@ -10794,6 +10818,11 @@ paths:
                 tags: system
                 template_iri: /api/3/workflows/<uuid>
                 user: ''
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/wf/api/workflows/123/\")"
       x-verified-live:
       - apikey
       - jwt
@@ -11053,6 +11082,11 @@ paths:
                 hydra:nextPage: /wf/api/historical-workflows/?format=json&limit=1&offset=1&ordering=-created
                 hydra:previousPage: null
                 hydra:totalItems: 3471
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/wf/api/historical-workflows/\")"
       x-verified-live:
       - apikey
       - jwt
@@ -11895,6 +11929,12 @@ paths:
       responses:
         '200':
           description: Record updated (run NOT advanced).
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.playbooks.update_manual_input(\"123\", status=\"\
+          done\")"
     delete:
       tags:
       - Workflows
@@ -11993,6 +12033,11 @@ paths:
                 hydra:nextPage: /wf/api/scheduled/?limit=1&offset=1
                 hydra:previousPage: null
                 hydra:totalItems: 42
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.list()"
       x-verified-live:
       - apikey
       - jwt
@@ -12235,6 +12280,11 @@ paths:
                 id: gAAAAABkXyQ_placeholder_fernet_token
                 name: nightly-recon
                 enabled: false
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.set_enabled(\"nightly-recon\", False)"
     delete:
       tags:
       - Scheduled tasks
@@ -12375,12 +12425,21 @@ paths:
       responses:
         '202':
           description: Accepted.
+          x-pyfsr-response-model: TriggerResponse
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerResponse'
               example:
                 status: accepted
                 executionId: exec-9d2f17
                 deferred: true
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.playbooks.trigger_by_name(\"my-hook\").task_id)\n\
+          print(client.playbooks.trigger_by_name(\"my-hook\", deferred=True).task_id)"
       x-verified-live:
         apikey: 404
         jwt: 404
@@ -12421,6 +12480,11 @@ paths:
                 status: ok
                 workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
                 executionId: exec-2c8a06
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.playbooks.trigger(\"nightly-recon\")"
   /api/3/solutionpacks/install:
     post:
       tags:
@@ -12736,6 +12800,12 @@ paths:
                   message: Connector hello-world version 1.0.4 as been configured successfully
                   status: finished
                 teams: []
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.create_configuration(\"mitre-attack\"\
+          , {\"api_key\": \"...\"}, name=\"prod\")"
       x-verified-live:
       - apikey
       - jwt
@@ -12937,6 +13007,68 @@ paths:
       schema:
         $ref: '#/components/schemas/UUID'
       description: Configuration uuid (the `config_id` field, not the integer `id`).
+    get:
+      tags:
+      - Connectors
+      summary: Get a connector configuration
+      description: 'Fetch a single configuration record by its uuid (`config_id`). Trailing slash is mandatory (same HMAC
+        trap as DELETE). pyfsr: `client.connectors.set_default_configuration(connector, config_id)` calls this internally
+        to read the current config before updating.'
+      responses:
+        '200':
+          description: Configuration record.
+        '404':
+          description: Not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.set_default_configuration(\"mitre-attack\"\
+          , \"Demo\")"
+    put:
+      tags:
+      - Connectors
+      summary: Update a connector configuration
+      description: "Replace a configuration's fields. The body is the full configuration object (same shape as `POST /api/integration/configuration/`).\
+        \ To change only the default flag, send the full body with the updated `default` field \u2014 there is no flag-only\
+        \ route. Trailing slash is mandatory. pyfsr: `client.connectors.update_configuration(connector, config_id, config,\
+        \ name=...)`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                config:
+                  type: object
+                default:
+                  type: boolean
+                status:
+                  type: integer
+                teams:
+                  type: array
+                  items:
+                    type: string
+            example:
+              name: example
+              config: {}
+              default: false
+              status: 0
+              teams: []
+      responses:
+        '200':
+          description: Updated configuration.
+        '404':
+          description: Not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.update_configuration(\"mitre-attack\"\
+          , \"c21\", {\"api_key\": \"...\"}, name=\"prod\")"
     delete:
       tags:
       - Connectors
@@ -12948,6 +13080,11 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.delete_configuration(\"c21\")"
       x-verified-live:
       - apikey
       - jwt
@@ -13244,6 +13381,13 @@ paths:
       responses:
         '200':
           description: Per-agent install records.
+          x-pyfsr-response-model: list[AgentConnectorStatus]
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrows = client.agents.connector_install_status(\"cyops_utilities\"\
+          , \"3.7.1\")\nprint(rows[0].status)"
       x-verified-live:
         apikey: null
         jwt: 405
@@ -13275,6 +13419,213 @@ paths:
       x-verified-live:
         apikey: 500
         jwt: 500
+  /api/integration/connectors/{connector}/{version}/:
+    parameters:
+    - name: connector
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector name (e.g. `mitre-attack`).
+    - name: version
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector version (e.g. `1.0.0`).
+    post:
+      tags:
+      - Connectors
+      summary: Fetch a connector's full definition (config schema + operations)
+      description: "Returns the connector's complete definition including `config_schema`, `configuration`, and typed `operations`\
+        \ (each with `operation`, `title`, `parameters`, `output_schema`). GET is forbidden on this endpoint \u2014 use POST\
+        \ with `?format=json`. pyfsr: `client.connectors.definition(connector, version)`."
+      parameters:
+      - name: format
+        in: query
+        schema:
+          type: string
+          enum:
+          - json
+        description: Must be `json`.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '200':
+          description: Connector definition with operations and config schema.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.definition(\"mitre-attack\", version=\"\
+          1.0.0\")"
+  /api/integration/connectors/dependencies_check/{connector}/{version}/:
+    parameters:
+    - name: connector
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector name.
+    - name: version
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector version.
+    get:
+      tags:
+      - Connectors
+      summary: Check if connector Python dependencies are installed
+      description: "Returns the dependency-install status for the connector \u2014 whether the Python packages the connector\
+        \ needs are present on the appliance (or a named remote agent). The response includes `dependencies_installed` (bool).\
+        \ pyfsr: `client.connectors.dependencies_status(connector, version)`."
+      parameters:
+      - name: agent
+        in: query
+        schema:
+          type: string
+        description: Remote agent identifier. Omit for the self-agent.
+      responses:
+        '200':
+          description: Dependency status.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.dependencies_status(\"mitre-attack\"\
+          , version=\"1.0.0\")"
+    post:
+      tags:
+      - Connectors
+      summary: Retry connector dependency installation
+      description: "Triggers a retry of the Python-dependency install for a connector \u2014 the Retry button next to a failed\
+        \ Requirements badge. Pass `agent` to install dependencies on a remote agent instead of the appliance. pyfsr: `client.connectors.install_dependencies(connector,\
+        \ version)`."
+      parameters:
+      - name: agent
+        in: query
+        schema:
+          type: string
+        description: Remote agent identifier. Omit for the self-agent.
+      responses:
+        '200':
+          description: Install retry accepted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.install_dependencies(\"mitre-attack\"\
+          , version=\"1.0.0\")"
+  /api/integration/connector_output_schema/{connector}/{version}/:
+    parameters:
+    - name: connector
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector name.
+    - name: version
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Connector version.
+    post:
+      tags:
+      - Connectors
+      summary: Get a connector operation's output schema
+      description: "Returns the output schema for a connector operation \u2014 the shape of the data the operation returns.\
+        \ pyfsr: `client.connectors.output_schema(connector, version, operation)`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operation:
+                  type: string
+                  description: Operation key.
+            example:
+              operation: example
+      responses:
+        '200':
+          description: Output schema for the operation.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.output_schema(\"mitre-attack\", \"\
+          get_indicators\", version=\"1.0.0\")"
+  /api/integration/connector_details/:
+    post:
+      tags:
+      - Connectors
+      summary: List ingestion sources for a connector
+      description: "Returns the ingestion source configurations (data sources) for a connector \u2014 the entries visible\
+        \ in the connector's Data Source tab. pyfsr: `client.connectors.ingestion_sources(connector)`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                connector:
+                  type: string
+                  description: Connector name.
+            example:
+              connector: example
+      responses:
+        '200':
+          description: Ingestion sources.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.ingestion_sources()"
+  /api/integration/data-import/:
+    get:
+      tags:
+      - Connectors
+      summary: List ingestion metadata records
+      description: "Returns the metadata records for data-import jobs \u2014 the ingestion tracking entries created by connector\
+        \ data-source configurations. pyfsr: `client.connectors.ingestion_metadata()`."
+      responses:
+        '200':
+          description: Array of ingestion metadata records.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.ingestion_metadata(\"config-123\")"
+    post:
+      tags:
+      - Connectors
+      summary: Save ingestion metadata
+      description: 'Create or update an ingestion metadata record. pyfsr: `client.connectors.save_ingestion_metadata(metadata)`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '200':
+          description: Saved metadata record.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.save_ingestion_metadata(\"config-123\"\
+          , connector=\"mitre-attack\", version=\"1.0.0\", name=\"prod\")"
   /api/3/agents:
     get:
       tags:
@@ -15470,6 +15821,11 @@ paths:
       responses:
         '201':
           description: The staged module metadata record.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.create_module(\"my_module\")"
       x-verified-live:
         apikey: 400
         jwt: 400
@@ -15533,6 +15889,11 @@ paths:
                 userOwnable: true
                 uuid: <uuid>
                 writable: true
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.get_staging(\"alerts\")"
       x-verified-live:
       - apikey
       - jwt
@@ -15604,6 +15965,12 @@ paths:
       responses:
         '204':
           description: Draft discarded.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.discard_staging_draft(\"alerts\"\
+          )"
   /api/publish:
     put:
       tags:
@@ -15642,6 +16009,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/api/publish\")"
   /api/publish/revert:
     put:
       tags:
@@ -15666,6 +16038,11 @@ paths:
               example:
                 '@type': Publish
                 status: reverted
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/api/publish/revert\")"
       x-verified-live:
       - apikey
       - jwt
@@ -15696,6 +16073,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example: *id001
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/publish/error\", raise_on_status=False)"
       x-verified-live:
       - apikey
       - jwt
@@ -48786,6 +49168,11 @@ paths:
                       setting: true
                       type: folder
                 hydra:totalItems: 1
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.publish(\"widget-uuid\")"
       x-verified-live:
       - apikey
       - jwt
@@ -48901,6 +49288,12 @@ paths:
                 type: string
                 format: binary
               example: <binary>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.export(\"widget-uuid\", \"/tmp/widget.zip\"\
+          )"
       x-verified-live:
       - apikey
       - jwt
@@ -48932,6 +49325,11 @@ paths:
       responses:
         '204':
           description: Deleted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.remove(\"widget-uuid\")"
   /api/3/files:
     post:
       tags:
@@ -50163,6 +50561,11 @@ paths:
                   status: done
                 - step: Building options tree
                   status: running
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.import_config.generate_options(\"job-uuid\")"
     put:
       tags:
       - Import / export
@@ -50190,6 +50593,11 @@ paths:
                 uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 status: Import In Progress
                 createDate: 1736380800
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.import_config.trigger(\"job-uuid\")"
   /api/3/export_jobs:
     post:
       tags:
@@ -50509,6 +50917,271 @@ paths:
           \ needs JWT (API keys are rejected)\nwith tempfile.TemporaryDirectory() as tmp:\n    out = client.export_config.export_by_template_uuid(\n\
           \        template_uuid=\"123e4567-e89b-12d3-a456-426655440000\",\n        output_path=str(Path(tmp) / \"config.zip\"\
           ),\n        poll_interval=0,\n    )\n    archive = Path(out).read_bytes()\nprint(archive)"
+  /api/views/1/app:
+    get:
+      tags:
+      - Views
+      summary: Get the app navigation view
+      description: 'Returns the single view record describing the left-hand navigation. `config.navigation` holds the top-level
+        sections. pyfsr: `client.views.app()`.'
+      responses:
+        '200':
+          description: Navigation view record.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.views.app()"
+  /api/views/1/{name}:
+    parameters:
+    - name: name
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Template name (e.g. `Custom Detail Layout`).
+    get:
+      tags:
+      - Views
+      summary: Get a named view template
+      description: 'Fetch a view template by name. The record carries `name`, `config`, `module`, `viewOptions`, `uuid`, `type`,
+        `isDefault`. pyfsr: `client.view_templates.get_template(name)`.'
+      responses:
+        '200':
+          description: View template record.
+        '404':
+          description: Not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.view_templates.get_template(\"Custom Detail Layout\"\
+          )"
+    post:
+      tags:
+      - Views
+      summary: Create a named view template
+      description: 'Create a new view template. Required body fields: `name`, `config`, `module`, `viewOptions`. Optional:
+        `type` (default `rows`), `isDefault` (default false). pyfsr: `client.view_templates.create_template(...)`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '201':
+          description: Created.
+        '400':
+          description: Invalid template.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.view_templates.create_template(\"My View\", {\"\
+          rows\": []}, module=\"alerts\", viewOptions=\"detail\")"
+    put:
+      tags:
+      - Views
+      summary: Update a named view template
+      description: 'Update an existing view template. Send only the fields to change. pyfsr: `client.view_templates.update_template(name,
+        config=..., ...)`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {}
+      responses:
+        '200':
+          description: Updated.
+        '404':
+          description: Not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.view_templates.update_template(\"My View\", config={\"\
+          rows\": []})"
+  /api/wf/api/dynamic-variable/:
+    get:
+      tags:
+      - Workflow tools
+      summary: List global dynamic variables
+      description: 'Returns every FortiSOAR global ("dynamic") variable. Each entry has `id`, `name`, `value`, `default_value`.
+        Referenced in playbooks as `{{ globalVars.<name> }}`. pyfsr: `client.wf_tools.dynamic_variables()`.'
+      responses:
+        '200':
+          description: Array of variable records.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.wf_tools.dynamic_variables()"
+    post:
+      tags:
+      - Workflow tools
+      summary: Create a global dynamic variable
+      description: "Create a new global variable. POSTing a name that already exists is an error \u2014 use PUT to update.\
+        \ pyfsr: `client.wf_tools.set_dynamic_variable(name, value)` (handles the create-or-update upsert)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - value
+              properties:
+                name:
+                  type: string
+                value:
+                  type: string
+                default_value:
+                  type: string
+            example:
+              name: example
+              value: example
+              default_value: example
+      responses:
+        '201':
+          description: Created.
+        '409':
+          description: Name already exists.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.wf_tools.set_dynamic_variable(\"My_Var\", \"value123\"\
+          )"
+  /api/wf/api/historical-steps/:
+    get:
+      tags:
+      - Workflows
+      summary: List per-step execution records for a run
+      description: 'Fetch per-step execution records for a playbook run, keyed by `task_id` (what `POST /api/wf/api/workflows/{pk}/start/`
+        returns). Steps are ordered by creation time (oldest first). Only populates after a run completes. Query params: `limit`
+        (default 200), `status`, `name`. pyfsr: `client.playbooks.historical_steps(task_id)`.'
+      parameters:
+      - name: task_id
+        in: query
+        schema:
+          type: string
+        description: Run task id.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 200
+      - name: status
+        in: query
+        schema:
+          type: string
+      - name: name
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Array of step records.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.playbooks.historical_steps(\"abc123\")"
+  /api/wf/api/manual-wf-input/:
+    get:
+      tags:
+      - Workflows
+      summary: List pending manual-input / approval gates
+      description: "Returns all pending manual-wf-input records \u2014 the modern, resumable approval gates. Each record represents\
+        \ a paused playbook step awaiting a decision (approve/reject or manual data input). pyfsr: `client.playbooks.approval(run_pk)`\
+        \ resolves the pending input for a specific run."
+      responses:
+        '200':
+          description: Array of pending manual-input records.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/wf/api/manual-wf-input/\")"
+  /api/wf/workflow/config/:
+    get:
+      tags:
+      - System
+      summary: Daily action-count license usage
+      description: 'Returns the workflow engine''s decrypted license counters: `daily_action_limit`, `remaining_actions`,
+        `reset_time`, `last_update_time`. `daily_action_limit` is the per-day cap (e.g. 10000 on FortiFlex Starter; `-1` means
+        unlimited/unenforced). Counted steps are Create/Update Record, Connector Action, Set Variable, etc.; Wait/Approval/Loops/Reference-a-Playbook
+        are not counted. pyfsr: `client.system.daily_action_count()`. Query param: `section=license` (the endpoint also serves
+        other workflow config sections, but `license` is the useful one).'
+      parameters:
+      - name: section
+        in: query
+        schema:
+          type: string
+          enum:
+          - license
+        description: Must be `license` to get the action-count data.
+      responses:
+        '200':
+          description: Daily action count record.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.system.daily_action_count()"
+  /api/3/changepassword:
+    put:
+      tags:
+      - Access management
+      summary: Change the calling user's password
+      description: "Changes the calling user's own application password. Body requires `uuid`, `loginId`, `oldPassword`, `newPassword`\
+        \ \u2014 `uuid` and `loginId` must be the caller's own (looked up via `GET /api/3/actors/current`). The new password\
+        \ must differ from the old one and pass the password policy. LDAP/SAML users cannot change their password through\
+        \ this endpoint. pyfsr: `client.users.change_password(old, new)` handles the whoami lookup automatically."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - uuid
+              - loginId
+              - oldPassword
+              - newPassword
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                loginId:
+                  type: string
+                oldPassword:
+                  type: string
+                  format: password
+                newPassword:
+                  type: string
+                  format: password
+            example:
+              uuid: example
+              loginId: example
+              oldPassword: example
+              newPassword: example
+      responses:
+        '200':
+          description: Password changed.
+        '400':
+          description: Policy violation or same password.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.users.change_password(\"old-pass\", \"new-pass\"\
+          )"
   /api/product/feature-access:
     get:
       tags:
@@ -51174,6 +51847,11 @@ paths:
               example: *id001
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.uninstall_agent(\"ioc-enrichment\")"
     get:
       tags:
       - AI Agents
@@ -51319,6 +51997,11 @@ paths:
                 name: null
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_default_agent_config()"
       x-verified-live:
       - jwt
     post:
@@ -51359,6 +52042,12 @@ paths:
               example: *id001
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.update_default_agent_config({\"model\": \"\
+          gpt-4\"})"
       x-verified-live:
       - jwt
   /ai/agent/{name}/{version}/relationships:
@@ -54726,6 +55415,11 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
               example: *id001
       x-fsr-version: 8.0+
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.verify_llm_config(\"abc123-def456\")"
       x-verified-live:
         apikey: null
         jwt: 500
@@ -54993,6 +55687,12 @@ paths:
             application/json: {}
         '400':
           description: Connector not found or no tools.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.post(\"/mcp/add/tools\", data={\"mcp_configuration\"\
+          : {\"name\": \"my-server\", \"uuid\": \"abc123\"}, \"tools\": []})"
       x-verified-live:
         apikey: 500
         jwt: 500
@@ -55157,6 +55857,11 @@ paths:
       description: "Return the list of available tools for a given MCP server type (e.g. `modules`, `playbooks`, `utility`).\
         \ Each tool entry includes name, description, and input schema.\n\n**Auth coverage:** `API-KEY: OK` \xB7 `Bearer JWT:\
         \ OK`"
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.mcp_connector_candidates()"
       x-verified-live:
       - apikey
       - jwt
@@ -55795,6 +56500,12 @@ paths:
                 uuid: <uuid>
         '404':
           description: Not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_mcp_config(\"123e4567-e89b-12d3-a456-426614174000\"\
+          )"
       x-verified-live:
       - apikey
       - jwt
@@ -55899,6 +56610,12 @@ paths:
           description: Tools updated.
           content:
             application/json: {}
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/mcp/tools/abc123\", data={\"uuid\": \"\
+          abc123\", \"tools\": []})"
   /api/3/llm_activity_logs:
     get:
       tags:
@@ -62614,6 +63331,391 @@ paths:
       x-verified-live:
       - apikey
       - jwt
+  /ai/traces/:
+    get:
+      tags:
+      - AI Traces
+      summary: List AI execution traces
+      description: 'One page of top-level traces, newest first. Query params: `status` (`OK`, `ERROR`, `RUNNING`), `session_id`
+        (chat session filter), `limit` (page size, default 50), `cursor` (start-time cursor for paging). pyfsr: `client.ai.traces.list()`.'
+      x-fsr-version: 8.0+
+      parameters:
+      - name: status
+        in: query
+        schema:
+          type: string
+        description: 'Filter by trace status: `OK`, `ERROR`, `RUNNING`.'
+      - name: session_id
+        in: query
+        schema:
+          type: string
+        description: Filter by chat session id.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+        description: Page size.
+      - name: cursor
+        in: query
+        schema:
+          type: string
+        description: Start-time cursor for paging (from the previous page's last item).
+      responses:
+        '200':
+          description: Array of trace summaries with id, status, start_time, session_id.
+          content:
+            application/json: {}
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.list()"
+  /ai/traces/health:
+    get:
+      tags:
+      - AI Traces
+      summary: Check tracer store health
+      description: Returns 200 when the trace store is reachable and serving queries.
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Health status.
+          content:
+            application/json: {}
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.health()"
+  /ai/traces/{trace_id}:
+    parameters:
+    - name: trace_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Trace id (also the `task_id` from an agent run).
+    get:
+      tags:
+      - AI Traces
+      summary: Get a single trace as a span tree
+      description: "Returns one trace with its own spans as a tree. Use `GET /ai/traces/{trace_id}/execution-tree` for the\
+        \ full nested run including sub-traces. Query params: `depth` (tree depth, default 3), `io` (`summary` or `full` \u2014\
+        \ full includes span input/output payloads). pyfsr: `client.ai.traces.get(trace_id)`."
+      x-fsr-version: 8.0+
+      parameters:
+      - name: depth
+        in: query
+        schema:
+          type: integer
+          default: 3
+        description: Maximum tree depth.
+      - name: io
+        in: query
+        schema:
+          type: string
+          default: summary
+        description: '`summary` (default) or `full` (includes I/O payloads).'
+      responses:
+        '200':
+          description: Trace span tree.
+          content:
+            application/json: {}
+        '404':
+          description: Trace not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.get(\"abc123\")"
+  /ai/traces/{trace_id}/execution-tree:
+    parameters:
+    - name: trace_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Root trace id.
+    get:
+      tags:
+      - AI Traces
+      summary: Get the full execution tree for a run
+      description: "Stitches in every sub-trace (agent-to-agent calls, tool sub-runs) into one tree \u2014 the same structure\
+        \ the Trace Flow panel renders. Query params: `depth` (default 10), `io` (`summary` or `full`), `max_traces` (cap\
+        \ on sub-traces, default 25). pyfsr: `client.ai.traces.execution_tree(trace_id)`."
+      x-fsr-version: 8.0+
+      parameters:
+      - name: depth
+        in: query
+        schema:
+          type: integer
+          default: 10
+      - name: io
+        in: query
+        schema:
+          type: string
+          default: summary
+      - name: max_traces
+        in: query
+        schema:
+          type: integer
+          default: 25
+      responses:
+        '200':
+          description: Full execution tree.
+          content:
+            application/json: {}
+        '404':
+          description: Trace not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.execution_tree(\"abc123\")"
+  /ai/traces/{trace_id}/spans:
+    parameters:
+    - name: trace_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Trace id.
+    get:
+      tags:
+      - AI Traces
+      summary: List all spans in a trace (flat)
+      description: 'Every span of one trace, flat, with full I/O. Use `GET /ai/traces/{trace_id}` for the tree view, or `GET
+        /ai/traces/spans/{span_id}` for a single span''s details. pyfsr: `client.ai.traces.spans(trace_id)`.'
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Flat array of spans.
+          content:
+            application/json: {}
+        '404':
+          description: Trace not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.spans(\"abc123\")"
+  /ai/traces/spans/{span_id}:
+    parameters:
+    - name: span_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Span id.
+    get:
+      tags:
+      - AI Traces
+      summary: Get a single span with full I/O
+      description: "One span with full input/output \u2014 the Step Details panel. pyfsr: `client.ai.traces.span(span_id)`."
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Span detail.
+          content:
+            application/json: {}
+        '404':
+          description: Span not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span(\"span-xyz\")"
+  /ai/traces/spans/{span_id}/children:
+    parameters:
+    - name: span_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Span id.
+    get:
+      tags:
+      - AI Traces
+      summary: List direct children of a span
+      description: Returns the immediate child spans (one level deep).
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Array of child spans.
+          content:
+            application/json: {}
+        '404':
+          description: Span not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_children(\"span-xyz\")"
+  /ai/traces/spans/{span_id}/lineage:
+    parameters:
+    - name: span_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Span id.
+    get:
+      tags:
+      - AI Traces
+      summary: Data lineage around a span
+      description: "Which spans fed this span and which consumed its output. Query params: `direction` (`upstream`, `downstream`,\
+        \ or `both` \u2014 default `both`), `max_hops` (default 5). Always fails on fsr-ai 8.0.1 (HTTP 500)."
+      x-fsr-version: 8.0+
+      parameters:
+      - name: direction
+        in: query
+        schema:
+          type: string
+          default: both
+      - name: max_hops
+        in: query
+        schema:
+          type: integer
+          default: 5
+      responses:
+        '200':
+          description: Lineage graph.
+          content:
+            application/json: {}
+        '404':
+          description: Span not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_lineage(\"span-xyz\")"
+  /ai/traces/spans/{span_id}/tree:
+    parameters:
+    - name: span_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Span id.
+    get:
+      tags:
+      - AI Traces
+      summary: Get the subtree rooted at a span
+      description: 'The subtree rooted at one span, e.g. a single agent''s work inside a larger run. Query params: `depth`
+        (default 10), `io` (`summary` or `full`). On fsr-ai 8.0.1 `GET .../tree` redirects to `.../subtree`.'
+      x-fsr-version: 8.0+
+      parameters:
+      - name: depth
+        in: query
+        schema:
+          type: integer
+          default: 10
+      - name: io
+        in: query
+        schema:
+          type: string
+          default: summary
+      responses:
+        '200':
+          description: Span subtree.
+          content:
+            application/json: {}
+        '404':
+          description: Span not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_subtree(\"span-xyz\")"
+  /ai/traces/tokens/{trace_id}:
+    parameters:
+    - name: trace_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Trace id.
+    get:
+      tags:
+      - AI Traces
+      summary: Token totals for a trace
+      description: Prompt, completion, and total token counts for all LLM calls in the trace.
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Token totals.
+          content:
+            application/json: {}
+        '404':
+          description: Trace not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.tokens(\"abc123\")"
+  /ai/traces/tokens/session/{session_id}:
+    parameters:
+    - name: session_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Chat session id.
+    get:
+      tags:
+      - AI Traces
+      summary: Token totals across a chat session
+      description: Aggregate token usage for every trace in a chat session.
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Session token totals.
+          content:
+            application/json: {}
+        '404':
+          description: Session not found.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.session_tokens(\"sess-xyz\")"
+  /ai/traces/delete:
+    delete:
+      tags:
+      - AI Traces
+      summary: Purge traces older than a cutoff
+      description: 'Delete every trace older than a cutoff. There is no per-trace delete: the endpoint only accepts a bulk
+        cutoff. Body: `{"days": 30}` or `{"before": "2026-01-01T00:00:00Z"}`. pyfsr: `client.ai.traces.purge_older_than(days=30)`.'
+      x-fsr-version: 8.0+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                days:
+                  type: integer
+                  description: Delete traces older than N days.
+                before:
+                  type: string
+                  description: ISO-8601 cutoff timestamp.
+            example:
+              days: 0
+              before: example
+      responses:
+        '200':
+          description: Purge result.
+          content:
+            application/json: {}
+        '400':
+          description: Invalid cutoff.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.purge_older_than(days=30)"
 components:
   securitySchemes:
     apiKeyAuth:
