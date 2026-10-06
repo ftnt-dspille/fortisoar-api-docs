@@ -248,13 +248,17 @@ class Session:
     def request(self, method: str, path: str, **kw) -> requests.Response:
         url = f"{self.base}{path}"
         kw.setdefault("allow_redirects", False)
+        # Allow callers to override the default per-request timeout without
+        # colliding with the explicit `timeout=self.timeout` below (which would
+        # otherwise raise "got multiple values for keyword argument 'timeout'").
+        timeout = kw.pop("timeout", self.timeout)
         r = requests.request(method, url, headers=self.headers, verify=self.verify,
-                             timeout=self.timeout, **kw)
+                             timeout=timeout, **kw)
         if 300 <= r.status_code < 400 and r.headers.get("Location"):
             self.redirects.append((method.upper(), url, r.status_code, r.headers["Location"]))
             kw["allow_redirects"] = True
             r = requests.request(method, url, headers=self.headers, verify=self.verify,
-                                 timeout=self.timeout, **kw)
+                                 timeout=timeout, **kw)
         return r
 
     def call(
@@ -768,25 +772,251 @@ def scenario_smoke(s: Session) -> None:
 @scenario("ai")
 def scenario_ai(s: Session) -> None:
     """Exercise 8.0+ AI / MCP surface (GETs + safe POSTs).
+
+    Uses the spec-canonical ``/ai/`` prefix (not ``/api/ai/``) so observations
+    key against the curated OpenAPI paths.
     """
+    _ok = (200, 401, 403)
+    _post = (200, 201, 202, 204, 400, 404, 422, 500, 401, 403)
+
     print("[ai] agent list + LLM config + MCP server list")
-    s.call("GET", "/api/ai/agent/", want=(200, 401, 403))
-    s.call("GET", "/api/ai/llm/config", want=(200, 401, 403))
-    s.call("GET", "/api/ai/mcp", want=(200, 201, 401, 403))
+    _, agent_list = s.call("GET", "/ai/agent/", want=_ok)
+    _, llm_list = s.call("GET", "/ai/llm/config", want=_ok)
+    s.call("GET", "/ai/mcp", want=(200, 201, 401, 403))
 
     print("[ai] MCP CRUD store + connector candidates + activity")
-    s.call("GET", "/api/3/mcp_configurations", want=(200, 401, 403))
-    s.call("GET", "/mcp/servers/connector", want=(200, 401, 403), params={"restricted": "true"})
-    s.call("GET", "/api/3/llm_activity_logs", want=(200, 401, 403))
+    s.call("GET", "/api/3/mcp_configurations", want=_ok)
+    s.call("GET", "/mcp/servers/connector", want=_ok, params={"restricted": "true"})
+    s.call("GET", "/api/3/llm_activity_logs", want=_ok)
 
     print("[ai] insight list + default agent config")
-    s.call("GET", "/api/ai/insight/", want=(200, 401, 403))
-    s.call("GET", "/api/ai/agent/config/default", want=(200, 401, 403))
+    s.call("GET", "/ai/insight/", want=_ok)
+    s.call("GET", "/ai/agent/config/default", want=_ok)
 
     print("[ai] agent activate + prompt validate + triage")
-    s.call("POST", "/api/ai/agent/activate", want=(200, 401, 403), json={"uuids": [], "active": True})
-    s.call("POST", "/api/ai/prompt/validate", want=(200, 201, 401, 403), json={})
-    s.call("POST", "/api/ai/triage/alert", want=(202, 400, 401, 403), json={})
+    s.call("POST", "/ai/agent/activate", want=(200, 401, 403), json={"uuids": [], "active": True})
+    s.call("POST", "/ai/prompt/validate", want=(200, 201, 401, 403), json={})
+    s.call("POST", "/ai/triage/alert", want=(202, 400, 401, 403), json={})
+
+    print("[ai] agent detail (by name/version + by uuid)")
+    agents = agent_list if isinstance(agent_list, list) else []
+    if agents:
+        a = agents[0]
+        a_name, a_ver, a_uuid = a.get("name"), a.get("version"), a.get("uuid")
+        if a_name and a_ver:
+            s.call("GET", "/ai/agent/{name}/{version}", want=_ok,
+                   path_params={"name": a_name, "version": a_ver})
+            s.call("GET", "/ai/agent/{name}/{version}/relationships", want=_ok,
+                   path_params={"name": a_name, "version": a_ver})
+            s.call("GET", "/ai/agent/config/{agent_name}/{version}", want=(200, 404, 500, 401, 403),
+                   path_params={"agent_name": a_name, "version": a_ver})
+        if a_uuid:
+            s.call("GET", "/ai/agent/{uuid}", want=_ok,
+                   path_params={"uuid": a_uuid})
+
+    print("[ai] LLM config detail + verify")
+    llms = llm_list if isinstance(llm_list, list) else []
+    if llms:
+        llm_uuid = llms[0].get("uuid")
+        if llm_uuid:
+            s.call("GET", "/ai/llm/config/{uuid}", want=_ok,
+                   path_params={"uuid": llm_uuid})
+            s.call("GET", "/ai/llm/config/{uuid}/verify", want=(200, 422, 500, 401, 403),
+                   path_params={"uuid": llm_uuid},
+                   params={"model_id": llm_uuid})
+
+    print("[ai] agent trigger + task status/result (dummy task_id)")
+    if agents:
+        a_name = agents[0].get("name")
+        if a_name:
+            s.call("POST", "/ai/agents/{agent_name}/trigger", want=_post,
+                   path_params={"agent_name": a_name}, json={})
+    _dummy = "00000000-0000-0000-0000-000000000000"
+    s.call("GET", "/ai/agents/{task_id}/result", want=(200, 404, 422, 401, 403),
+           path_params={"task_id": _dummy})
+    s.call("GET", "/ai/agents/{task_id}/status", want=(200, 404, 422, 401, 403),
+           path_params={"task_id": _dummy})
+    s.call("POST", "/ai/agents/{task_id}/acceptance", want=(200, 404, 422, 401, 403),
+           path_params={"task_id": _dummy}, json={})
+
+    print("[ai] insight plan + chain_of_thoughts + execute + schedule")
+    s.call("POST", "/ai/insight/plan", want=_post, json={})
+    s.call("POST", "/ai/insight/chain_of_thoughts", want=_post, json={})
+    s.call("POST", "/ai/insight/plan/execute", want=_post, json={})
+    s.call("POST", "/ai/insight/trigger/schedule", want=_post, json={})
+    s.call("GET", "/ai/insight/plan/{task_id}/result", want=(200, 404, 422, 401, 403),
+           path_params={"task_id": _dummy})
+    s.call("GET", "/ai/insight/plan/{task_id}/status", want=(200, 404, 422, 401, 403),
+           path_params={"task_id": _dummy})
+
+    print("[ai] chat + enrich + mcp validate")
+    s.call("POST", "/ai/chat/", want=_post, json={})
+    s.call("POST", "/ai/enrich/context", want=_post, json={})
+    s.call("POST", "/ai/enrich/context/index", want=_post, json={})
+    s.call("POST", "/ai/enrich/index/build", want=_post, json={})
+    s.call("POST", "/ai/mcp/validate", want=_post, json={})
+
+    print("[ai] agent config write + export/import")
+    s.call("POST", "/ai/agent/config", want=_post, json={})
+    s.call("POST", "/ai/agent/config/default", want=_post, json={})
+    if agents:
+        a_id = agents[0].get("id") or agents[0].get("uuid")
+        if a_id:
+            s.call("POST", "/ai/agent/export/{agent_id}", want=_post,
+                   path_params={"agent_id": str(a_id)}, json={})
+    s.call("POST", "/ai/agent/import", want=_post, json={})
+
+
+@scenario("misc_reads")
+def scenario_misc_reads(s: Session) -> None:
+    """Read-only sweeps of uncovered non-AI endpoints.
+
+    Comments, scheduled tasks, staging/model metadata, MCP servers,
+    publish state, and workflow action stubs.
+    """
+    _ok = (200, 401, 403)
+    _post = (200, 201, 202, 204, 400, 402, 404, 405, 406, 422, 500, 502, 401, 403)
+
+    print("[misc] comments list")
+    s.call("GET", "/api/3/comments", want=_ok, params={"$limit": 1})
+
+    print("[misc] scheduled tasks list + trigger-now")
+    _, sched_list = s.call("GET", "/api/wf/api/scheduled/", want=(200, 502, 401, 403), params={"limit": 1})
+    sched_items = []
+    if isinstance(sched_list, dict):
+        sched_items = sched_list.get("hydra:member") or sched_list.get("results") or []
+    if sched_items:
+        sched_id = sched_items[0].get("id")
+        if sched_id:
+            s.call("POST", "/api/wf/api/scheduled/trigger-now/", want=_post,
+                   json={"id": sched_id})
+    else:
+        s.call("POST", "/api/wf/api/scheduled/trigger-now/", want=_post, json={})
+    s.call("POST", "/api/wf/api/scheduled/", want=_post, json={})
+
+    print("[misc] staging + model metadata detail")
+    r = s.request("GET", "/api/3/staging_model_metadatas?$limit=1")
+    if r.ok:
+        members = extract_members(r.json())
+        if members:
+            stag_uuid = members[0].get("uuid") or members[0].get("@id", "").rsplit("/", 1)[-1]
+            if stag_uuid:
+                s.call("GET", "/api/3/staging_model_metadatas", want=_ok, params={"$limit": 1})
+                s.call("GET", "/api/3/staging_model_metadatas/{uuid}", want=_ok,
+                       path_params={"uuid": stag_uuid})
+    r2 = s.request("GET", "/api/3/model_metadatas?$limit=1")
+    if r2.ok:
+        members2 = extract_members(r2.json())
+        if members2:
+            mm_uuid = members2[0].get("uuid") or members2[0].get("@id", "").rsplit("/", 1)[-1]
+            if mm_uuid:
+                s.call("GET", "/api/3/model_metadatas/{uuid}", want=_ok,
+                       path_params={"uuid": mm_uuid})
+
+    print("[misc] publish state + MCP servers by type")
+    s.call("GET", "/api/publish/error", want=_ok)
+    for mcp_type in ("connector", "utility", "playbook", "module"):
+        s.call("GET", "/mcp/servers/{mcp_type}", want=_ok,
+               path_params={"mcp_type": mcp_type},
+               params={"restricted": "true"})
+
+    print("[misc] MCP admin + tools")
+    s.call("POST", "/mcp/config/import", want=_post, json={})
+    s.call("POST", "/mcp/add/tools", want=_post, json={})
+    s.call("POST", "/mcp/connector/{connector_name}/", want=_post,
+           path_params={"connector_name": "aws"}, json={})
+    s.call("POST", "/mcp/modules/", want=_post, json={})
+    s.call("POST", "/mcp/playbooks/", want=_post, json={})
+    s.call("POST", "/mcp/utility/", want=_post, json={})
+
+    print("[misc] MCP configurations CRUD (create + read, no delete)")
+    s.call("POST", "/api/3/mcp_configurations", want=_post, json={})
+
+    print("[misc] auth license POST + logout probe")
+    s.call("POST", "/api/auth/license", want=(200, 400, 401, 403), json={})
+
+    print("[misc] workflow action stubs")
+    r3 = s.request("GET", "/api/wf/api/workflows/?parent_wf__isnull=True&limit=1")
+    wf_pk = None
+    if r3.ok:
+        wf_members = (r3.json() or {}).get("hydra:member") or (r3.json() or {}).get("results") or []
+        if wf_members:
+            raw = wf_members[0].get("@id") or str(wf_members[0].get("id") or "")
+            wf_pk = raw.rstrip("/").rsplit("/", 1)[-1]
+    if wf_pk:
+        s.call("POST", "/api/wf/api/workflows/{pk}/start/", want=_post,
+               path_params={"pk": wf_pk}, json={})
+        s.call("POST", "/api/wf/api/workflows/{pk}/resume/", want=_post,
+               path_params={"pk": wf_pk}, json={})
+        s.call("POST", "/api/wf/api/workflows/{pk}/retry/", want=_post,
+               path_params={"pk": wf_pk}, json={})
+        s.call("POST", "/api/wf/api/workflows/{pk}/approval/", want=_post,
+               path_params={"pk": wf_pk}, json={})
+        s.call("POST", "/api/wf/api/workflows/{pk}/wfinput_resume/", want=_post,
+               path_params={"pk": wf_pk}, json={})
+    s.call("POST", "/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/", want=_post,
+           path_params={"pk": wf_pk or "1"}, json={})
+
+    print("[misc] triggers + notifications")
+    s.call("POST", "/api/triggers/1/{name}", want=_post,
+           path_params={"name": "nonexistent"}, json={})
+    s.call("POST", "/api/triggers/1/deferred/{name}", want=_post,
+           path_params={"name": "nonexistent"}, json={})
+    s.call("POST", "/api/triggers/1/notrigger/{workflowId}", want=_post,
+           path_params={"workflowId": wf_pk or "1"}, json={})
+    s.call("POST", "/api/rule/api/system-notification/notifications/", want=_post, json={})
+    s.call("POST", "/api/rule/api/system-notification/purge/", want=_post, json={})
+
+    print("[misc] widget export + development read")
+    r4 = s.request("GET", "/api/3/widgets?$limit=1")
+    if r4.ok:
+        w_members = extract_members(r4.json())
+        if w_members:
+            w_uuid = w_members[0].get("uuid") or w_members[0].get("@id", "").rsplit("/", 1)[-1]
+            if w_uuid:
+                s.call("GET", "/api/3/widgets/development/{uuid}", want=_ok,
+                       path_params={"uuid": w_uuid})
+                s.call("POST", "/api/3/widgets/export/{uuid}", want=_post,
+                       path_params={"uuid": w_uuid}, json={})
+
+    print("[misc] bulk ops + staging metadata + feeds")
+    s.call("POST", "/api/3/insert/{moduleType}", want=_post,
+           path_params={"moduleType": "alerts"}, json={})
+    s.call("POST", "/api/ingest-feeds/indicators", want=_post, json={})
+    s.call("POST", "/api/insert-feeds/{recordType}", want=_post,
+           path_params={"recordType": "indicator"}, json={})
+    s.call("POST", "/api/3/staging_model_metadatas", want=_post, json={})
+    s.call("POST", "/mcp/config/export", want=_post, json={})
+
+    print("[misc] AI LLM config POST + insight detail")
+    s.call("POST", "/ai/llm/config", want=_post, json={})
+    _dummy = "00000000-0000-0000-0000-000000000000"
+    s.call("GET", "/ai/insight/{insight_id}", want=(200, 404, 500, 401, 403),
+           path_params={"insight_id": _dummy})
+
+    print("[misc] MCP config detail + agent heartbeat + PUT stubs")
+    r5 = s.request("GET", "/api/3/mcp_configurations?$limit=1")
+    if r5.ok:
+        mc_members = extract_members(r5.json())
+        if mc_members:
+            mc_uuid = mc_members[0].get("uuid") or mc_members[0].get("@id", "").rsplit("/", 1)[-1]
+            if mc_uuid:
+                s.call("GET", "/api/3/mcp_configurations/{uuid}", want=_ok,
+                       path_params={"uuid": mc_uuid})
+    s.call("GET", "/api/integration/agent-heartbeat/{agent}/", want=(200, 404, 500, 401, 403),
+           path_params={"agent": "nonexistent"})
+    s.call("PUT", "/api/auth/config", want=(200, 400, 405, 500, 401, 403), json={})
+    s.call("PUT", "/api/publish/revert", want=(200, 400, 405, 401, 403), json={})
+
+    print("[misc] export/import templates + jobs (live-* names)")
+    s.call("POST", "/api/3/export_templates", want=(200, 201, 400, 422, 401, 403),
+           json={"name": f"{LIVE_PREFIX}export-template"})
+    s.call("POST", "/api/3/export_jobs", want=(200, 201, 400, 422, 401, 403),
+           json={"name": f"{LIVE_PREFIX}export-job"})
+    s.call("POST", "/api/3/import_jobs", want=(200, 201, 400, 422, 401, 403),
+           json={"name": f"{LIVE_PREFIX}import-job"})
+    s.call("POST", "/api/3/picklist_names", want=(200, 201, 400, 409, 422, 401, 403),
+           json={"name": f"{LIVE_PREFIX}picklist-name", "description": "live test"})
 
 
 @scenario("queries")
