@@ -528,53 +528,53 @@ def _fake_request(self, method, url, **kwargs):
             {"id": 1, "uuid": "6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f",
              "name": "ioc-enrichment", "version": "1.0", "active": True},
         ]).encode())
-    if method == "GET" and "/ai/agent/" in url and "/config" not in url:
+    if method == "GET" and "/api/ai/agent/" in url and "/config" not in url:
         return _fake_response(200, json.dumps({"name": "test", "version": "1.0"}).encode())
-    if method == "DELETE" and "/ai/agent/" in url and "/config" not in url:
+    if method == "DELETE" and "/api/ai/agent/" in url and "/config" not in url:
         return _fake_response(200, json.dumps({"status": "deleted"}).encode())
     if method == "POST" and "/ai/agent/import" in url:
         return _fake_response(200, json.dumps({"status": "ok"}).encode())
-    if method == "POST" and "/ai/agent/export/" in url:
+    if method == "POST" and "/api/ai/agent/export/" in url:
         return _fake_response(200, json.dumps({}).encode())
-    if method == "POST" and "/ai/agent/activate" in url:
+    if method == "POST" and "/api/ai/agent/activate" in url:
         return _fake_response(200, json.dumps({"status": "activated"}).encode())
     # AI default agent config (check before the general config patterns)
     if "/agent/config/default" in url:
         return _fake_response(200, json.dumps({"name": "default", "config": {}}).encode())
     # AI agent config
-    if method == "GET" and "/ai/agent/config/" in url:
+    if method == "GET" and "/api/ai/agent/config/" in url:
         return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
-    if method == "POST" and "/ai/agent/config" in url and "/default" not in url:
+    if method == "POST" and "/api/ai/agent/config" in url and "/default" not in url:
         return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
     # AI triage
-    if method == "POST" and "/ai/triage/alert" in url:
+    if method == "POST" and "/api/ai/triage/alert" in url:
         return _fake_response(200, json.dumps({"task_id": "abc123-def456"}).encode())
     # AI agents trigger/status/result
-    if method == "POST" and "/ai/agents/" in url and "/trigger" in url:
+    if method == "POST" and "/api/ai/agents/" in url and "/trigger" in url:
         return _fake_response(200, json.dumps({"task_id": "abc123-def456"}).encode())
-    if method == "GET" and "/ai/agents/" in url and "/status" in url:
+    if method == "GET" and "/api/ai/agents/" in url and "/status" in url:
         return _fake_response(200, json.dumps({"status": "completed"}).encode())
-    if method == "GET" and "/ai/agents/" in url and "/result" in url:
+    if method == "GET" and "/api/ai/agents/" in url and "/result" in url:
         return _fake_response(200, json.dumps({"status": "success", "result": {}}).encode())
-    if method == "POST" and "/ai/agents/" in url and "/acceptance" in url:
+    if method == "POST" and "/api/ai/agents/" in url and "/acceptance" in url:
         return _fake_response(200, json.dumps({"status": "ok"}).encode())
     # AI LLM config
     if method == "GET" and "/api/ai/llm/config" in url and "/verify" not in url:
         return _fake_response(200, json.dumps([]).encode())
-    if method == "GET" and "/ai/llm/config/" in url and "/verify" in url:
+    if method == "GET" and "/api/ai/llm/config/" in url and "/verify" in url:
         return _fake_response(200, json.dumps({"status": "verified"}).encode())
-    if method == "GET" and "/ai/llm/config/" in url:
+    if method == "GET" and "/api/ai/llm/config/" in url:
         return _fake_response(200, json.dumps({"name": "test", "config": {}}).encode())
-    if method == "POST" and "/ai/llm/config" in url and "/verify" not in url:
+    if method == "POST" and "/api/ai/llm/config" in url and "/verify" not in url:
         return _fake_response(200, json.dumps({"status": "created"}).encode())
-    if method == "DELETE" and "/ai/llm/config/" in url:
+    if method == "DELETE" and "/api/ai/llm/config/" in url:
         return _fake_response(204, b"")
     # AI MCP
-    if method == "GET" and "/ai/mcp" == url:
+    if method == "GET" and "/api/ai/mcp" == url:
         return _fake_response(200, json.dumps([]).encode())
     if method == "GET" and "/api/ai/mcp" in url:
         return _fake_response(200, json.dumps([]).encode())
-    if method == "POST" and "/ai/mcp/validate" in url:
+    if method == "POST" and "/api/ai/mcp/validate" in url:
         return _fake_response(200, json.dumps({"valid": True}).encode())
     # MCP configurations
     if method == "GET" and "/api/3/mcp_configurations/" in url:
@@ -606,12 +606,12 @@ def _fake_request(self, method, url, **kwargs):
     if method == "GET" and "/api/3/llm_activity_logs" in url:
         return _fake_response(200, json.dumps([]).encode())
     # --- AI Traces ---
-    if "/api/ai/traces" in url:
+    if "/ai/traces" in url:
         # health
-        if url.rstrip("/").endswith("/api/ai/traces/health"):
+        if url.rstrip("/").endswith("/ai/traces/health"):
             return _fake_response(200, b'"ok"')
         # delete (purge)
-        if method == "DELETE" and url.rstrip("/").endswith("/api/ai/traces/delete"):
+        if method == "DELETE" and url.rstrip("/").endswith("/ai/traces/delete"):
             return _fake_response(200, json.dumps({"deleted": 5}).encode())
         # tokens
         if "/tokens/" in url:
@@ -638,9 +638,9 @@ def _fake_request(self, method, url, **kwargs):
         if method == "GET" and "/spans" in url and "/spans/" not in url:
             return _fake_response(200, json.dumps({"spans": [{"span_id": "s1", "trace_id": "abc123"}]}).encode())
         # single trace - needs {"root": {"span_id": ...}}
-        if method == "GET" and "/api/ai/traces/" in url:
+        if method == "GET" and "/ai/traces/" in url:
             # Could be list or single trace. List has /traces/ at end.
-            if url.rstrip("/").endswith("/api/ai/traces"):
+            if url.rstrip("/").endswith("/ai/traces"):
                 # list - needs {"traces": [{"trace_id": ...}]}
                 return _fake_response(200, json.dumps({"traces": [{"trace_id": "abc123", "status": "OK"}]}).encode())
             # single trace - needs {"root": {"span_id": ...}}

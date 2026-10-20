@@ -7,7 +7,7 @@ JSONs, and re-run `build_curated.py`.
 
 Four surfaces are folded in:
 
-  1. `/ai/*` - filtered from `fsr_ai_openapi.json` (55 ops, ~14 unreachable
+  1. `/api/ai/*` - filtered from `fsr_ai_openapi.json` (55 ops, ~14 unreachable
      through the front-door proxy). Hand-grouped into 7 AI tags.
   2. `/mcp/* REST admin` - 6 endpoints from `mcp_server_openapi.json`,
      tagged "MCP Admin".
@@ -47,38 +47,38 @@ def _recon_dir() -> Path:
 # of role.  The list below is the complement: ops the service OpenAPI exposes
 # but the front door does not authorise.  Omit them from the curated spec.
 #
-# The `/ai/triage` vs `/ai/agents` trap: the service mounts one router under
+# The `/api/ai/triage` vs `/api/ai/agents` trap: the service mounts one router under
 # both prefixes so its OpenAPI lists both as equals, but only
 # `^agents?/(.*)/trigger` is authorised.  Note the asymmetry -
-# `POST /ai/triage/alert` IS authorised, so the prefix is not uniformly wrong,
-# which is exactly why this bites.  We keep `/ai/triage/alert` and drop the
-# four /ai/triage/{task_id}/* routes.
+# `POST /api/ai/triage/alert` IS authorised, so the prefix is not uniformly wrong,
+# which is exactly why this bites.  We keep `/api/ai/triage/alert` and drop the
+# four /api/ai/triage/{task_id}/* routes.
 # ---------------------------------------------------------------------------
 
 UNREACHABLE_OPS = {
     # LLM model/provider catalogue - no matching permission group (live-verified 8.0.0).
-    ("get", "/ai/llm/model"),
-    ("get", "/ai/llm/model/{model_id}"),
-    ("get", "/ai/llm/provider"),
-    ("get", "/ai/llm/provider/{provider_id}"),
-    ("get", "/ai/llm/provider/model/{provider_id}"),
+    ("get", "/api/ai/llm/model"),
+    ("get", "/api/ai/llm/model/{model_id}"),
+    ("get", "/api/ai/llm/provider"),
+    ("get", "/api/ai/llm/provider/{provider_id}"),
+    ("get", "/api/ai/llm/provider/model/{provider_id}"),
     # Agent config write - permission group is `agent/config` for POST only.
-    ("put", "/ai/agent/config"),
+    ("put", "/api/ai/agent/config"),
     # Agent LLM config (POST) - 403 Access Denied on 8.0.0 (live-verified).
-    ("post", "/ai/agent/llm/config"),
+    ("post", "/api/ai/agent/llm/config"),
     # LLM config verify (POST form is unauthorised; GET form per-uuid is OK).
-    ("post", "/ai/llm/config/verify"),
+    ("post", "/api/ai/llm/config/verify"),
     # Agents alert triage (POST) - unauthorised despite appearing in service spec.
-    ("post", "/ai/agents/alert"),
-    # Triage task routes - the service re-mounts /ai/agents under /ai/triage,
+    ("post", "/api/ai/agents/alert"),
+    # Triage task routes - the service re-mounts /api/ai/agents under /api/ai/triage,
     # but only `agents?/(.*)/trigger` is authorised.  The four task routes
-    # under /ai/triage match nothing; POST /ai/triage/alert is authorised.
-    ("post", "/ai/triage/{agent_name}/trigger"),
-    ("post", "/ai/triage/{task_id}/acceptance"),
-    ("get", "/ai/triage/{task_id}/result"),
-    ("get", "/ai/triage/{task_id}/status"),
+    # under /api/ai/triage match nothing; POST /api/ai/triage/alert is authorised.
+    ("post", "/api/ai/triage/{agent_name}/trigger"),
+    ("post", "/api/ai/triage/{task_id}/acceptance"),
+    ("get", "/api/ai/triage/{task_id}/result"),
+    ("get", "/api/ai/triage/{task_id}/status"),
     # Insight POST returns 405 Method Not Allowed on 8.0.0 (live-verified).
-    ("post", "/ai/insight/"),
+    ("post", "/api/ai/insight/"),
 }
 
 
@@ -88,85 +88,85 @@ UNREACHABLE_OPS = {
 # ---------------------------------------------------------------------------
 
 SUMMARY_OVERRIDES = {
-    ("get", "/ai/agent/"): {"summary": "List installed agents",
+    ("get", "/api/ai/agent/"): {"summary": "List installed agents",
                               "description": "Returns all agents installed on this appliance, including their name, version, status (installed vs active), and inputformat contract for trigger payloads. Response: list of agent records with `id`, `uuid`, `name`, `version`, `status`."},
-    ("post", "/ai/agent/activate"): {"summary": "Activate or deactivate an agent",
+    ("post", "/api/ai/agent/activate"): {"summary": "Activate or deactivate an agent",
                                "description": "Activate or deactivate one or more agents by uuid. Accepts `uuids` (list of agent uuids) and `active` (boolean, default true). Must be installed before activation."},
-    ("post", "/ai/agent/config"): {"summary": "Update agent configuration (LLM profile, MCP allowlist)",
+    ("post", "/api/ai/agent/config"): {"summary": "Update agent configuration (LLM profile, MCP allowlist)",
                                "description": "Create or update an agent's LLM configuration profile, including which LLM provider and MCP servers the agent may call. Body requires `agent_name`, `agent_version`, and `config` object."},
-    ("get", "/ai/agent/config/default"): {"summary": "Get default agent configuration template",
+    ("get", "/api/ai/agent/config/default"): {"summary": "Get default agent configuration template",
                                "description": "Return the system-wide agent configuration template (LLM provider, version, MCP allowlist) used for newly installed agents. Response: `AiAgentConfigurationDTO`."},
-    ("post", "/ai/agent/config/default"): {"summary": "Update default agent configuration template",
+    ("post", "/api/ai/agent/config/default"): {"summary": "Update default agent configuration template",
                                            "description": "Update the system-wide agent configuration template. Affects all agents that use the default profile. Body: `config` object with LLM provider, model, and MCP server allowlist."},
-    ("get", "/ai/agent/config/{agent_name}/{version}"): {"summary": "Get agent-specific configuration",
+    ("get", "/api/ai/agent/config/{agent_name}/{version}"): {"summary": "Get agent-specific configuration",
                                                        "description": "Return the configuration for a specific agent, including LLM provider, model version, and MCP server allowlist."},
     ("post", "/ai/agent/import"): {"summary": "Import an agent package (zip)",
-                              "description": "Upload an agent package as multipart form (`file`). The agent lands inactive; call `POST /ai/agent/activate` with its uuid to make it eligible for routing. Set `?replace=true` to overwrite an existing agent of the same name+version."},
-    ("post", "/ai/agent/export/{agent_id}"): {"summary": "Export an agent as a zip package",
+                              "description": "Upload an agent package as multipart form (`file`). The agent lands inactive; call `POST /api/ai/agent/activate` with its uuid to make it eligible for routing. Set `?replace=true` to overwrite an existing agent of the same name+version."},
+    ("post", "/api/ai/agent/export/{agent_id}"): {"summary": "Export an agent as a zip package",
                                        "description": "Download an installed agent as a zip archive. `agent_id` is the agent's uuid from `list_agents`."},
-    ("delete", "/ai/agent/{name}/{version}"): {"summary": "Delete an installed agent",
+    ("delete", "/api/ai/agent/{name}/{version}"): {"summary": "Delete an installed agent",
                                            "description": "Delete an installed agent by name and version. The agent is removed from the appliance and its configuration is lost. Only admins can delete agents."},
-    ("get", "/ai/agent/{name}/{version}"): {"summary": "Get agent details (including inputformat schema)",
+    ("get", "/api/ai/agent/{name}/{version}"): {"summary": "Get agent details (including inputformat schema)",
                                           "description": "Return detailed information about a specific agent including its name, version, status, installed date, and inputformat schema (the expected structure for trigger data payloads)."},
-    ("get", "/ai/agent/{uuid}"): {"summary": "Get agent by uuid",
+    ("get", "/api/ai/agent/{uuid}"): {"summary": "Get agent by uuid",
                                 "description": "Return agent information identified by its uuid. Returns the same agent record as returned by list_agents."},
-    ("post", "/ai/agents/{agent_name}/trigger"): {"summary": "Trigger a single agent run",
-                                        "description": "Trigger a single agent run. Returns a dict with `task_id` and `status` (`pending`). Poll with `GET /ai/agents/{task_id}/status` (returns one of `pending`, `inprogress`, `completed`, `failed`) and fetch results with `GET /ai/agents/{task_id}/result`."},
-    ("get", "/ai/agents/{task_id}/status"): {"summary": "Get agent run status",
+    ("post", "/api/ai/agents/{agent_name}/trigger"): {"summary": "Trigger a single agent run",
+                                        "description": "Trigger a single agent run. Returns a dict with `task_id` and `status` (`pending`). Poll with `GET /api/ai/agents/{task_id}/status` (returns one of `pending`, `inprogress`, `completed`, `failed`) and fetch results with `GET /api/ai/agents/{task_id}/result`."},
+    ("get", "/api/ai/agents/{task_id}/status"): {"summary": "Get agent run status",
                                        "description": "Return current pipeline status for a triage task. While running: `pending` then `inprogress`; terminal: `completed` or `failed`."},
-    ("get", "/ai/agents/{task_id}/result"): {"summary": "Get agent run result (answer, evidence, confidence)",
+    ("get", "/api/ai/agents/{task_id}/result"): {"summary": "Get agent run result (answer, evidence, confidence)",
                                         "description": "Return the investigation result after the agent run completes. Contains `answer` (natural language), `evidence` (supporting data), and `confidence` score (0.0-1.0)."},
-    ("post", "/ai/agents/{task_id}/acceptance"): {"summary": "Submit analyst feedback on agent result",
+    ("post", "/api/ai/agents/{task_id}/acceptance"): {"summary": "Submit analyst feedback on agent result",
                                              "description": "Submit analyst acceptance/rejection feedback on the agent's result. Accepts a JSON object with `accepted` (boolean) and optional `reason` (string)."},
-    ("get", "/ai/llm/config"): {"summary": "List LLM reasoning profiles",
+    ("get", "/api/ai/llm/config"): {"summary": "List LLM reasoning profiles",
                              "description": "Return all LLM reasoning profiles. Each profile defines the provider, model, temperature, and system prompt used by agents. Response: list of `LLMConfig` objects with `uuid`, `name`, `config`."},
-    ("post", "/ai/llm/config"): {"summary": "Create an LLM reasoning profile",
+    ("post", "/api/ai/llm/config"): {"summary": "Create an LLM reasoning profile",
                               "description": "Create one or more LLM reasoning profiles. Body: list of config objects, each with `name`, `provider`, `model`, and other provider-specific fields."},
-    ("delete", "/ai/llm/config/{uuid}"): {"summary": "Delete an LLM reasoning profile",
+    ("delete", "/api/ai/llm/config/{uuid}"): {"summary": "Delete an LLM reasoning profile",
                                         "description": "Delete the specified LLM reasoning profile by uuid. Agents using this profile will fall back to the default configuration."},
-    ("get", "/ai/llm/config/{uuid}"): {"summary": "Get an LLM reasoning profile by uuid",
+    ("get", "/api/ai/llm/config/{uuid}"): {"summary": "Get an LLM reasoning profile by uuid",
                                     "description": "Return the full LLM configuration record for the specified uuid, including provider, model name, temperature, system prompt, and active/default status."},
-    ("get", "/ai/llm/config/{uuid}/verify"): {"summary": "Verify an LLM reasoning profile is callable",
+    ("get", "/api/ai/llm/config/{uuid}/verify"): {"summary": "Verify an LLM reasoning profile is callable",
                                          "description": "Test whether the specified LLM configuration can actually invoke a model (validates the provider endpoint, auth, and connectivity)."},
-    ("get", "/ai/llm/allowed-providers"): {"summary": "List available LLM solution pack providers",
+    ("get", "/api/ai/llm/allowed-providers"): {"summary": "List available LLM solution pack providers",
                                        "description": "Return the catalog of LLM providers bundled in the FortiSOAR solution pack (e.g., OpenAI, Azure OpenAI)."},
-    ("get", "/ai/mcp"): {"summary": "List registered MCP servers",
+    ("get", "/api/ai/mcp"): {"summary": "List registered MCP servers",
                       "description": "Return all registered MCP servers that agents may call as tools during investigation. Response: list of `MCPServerRef` objects with `id`, `name`, `url`."},
-    ("post", "/ai/mcp/validate"): {"summary": "Validate an MCP server configuration (handshake + auth)",
+    ("post", "/api/ai/mcp/validate"): {"summary": "Validate an MCP server configuration (handshake + auth)",
                                "description": "Validate an MCP server by attempting handshake and auth. Accepts `MCPServerConfig` body with `uuid`, `name`, `url`, and auth credentials. Returns `MCPValidateResult`."},
-    ("post", "/ai/prompt/validate"): {"summary": "Validate a prompt template",
+    ("post", "/api/ai/prompt/validate"): {"summary": "Validate a prompt template",
                                    "description": "Validate a prompt template string for Jinja2 interpolation errors. Returns a JSON object with `valid` (boolean) and `message` (string)."},
-    ("post", "/ai/triage/alert"): {"summary": "Start an AI investigation for an alert",
+    ("post", "/api/ai/triage/alert"): {"summary": "Start an AI investigation for an alert",
                                "description": "Submit an alert for AI triage/investigation. Returns 202 Accepted with a JSON object containing `task_id` and `status` (`pending`). The task_id links to the investigation; use `get_status`/`get_result` to poll. If a record reference (e.g. `alerts:<uuid>`) is passed, the uuid is extracted and written back to the alert's `triagetaskid` field for later recovery."},
-    ("post", "/ai/chat/"): {"summary": "Start or continue a conversational investigation",
+    ("post", "/api/ai/chat/"): {"summary": "Start or continue a conversational investigation",
                          "description": "Start or continue a conversational investigation session. Requires `user_id` and `message` in the request body. Returns a ChatResponse with response text and optional tool calls."},
     # Insight paths
-    ("get", "/ai/insight/"): {"summary": "List scheduled insights",
+    ("get", "/api/ai/insight/"): {"summary": "List scheduled insights",
                            "description": "Return all scheduled insights. Each insight has an `insight_id`, schedule, associated playbook, and last-run status."},
-    ("get", "/ai/insight/{insight_id}"): {"summary": "Get scheduled insight details",
+    ("get", "/api/ai/insight/{insight_id}"): {"summary": "Get scheduled insight details",
                                         "description": "Return details for a scheduled insight including its configuration, associated playbook, and last-run status."},
-    ("delete", "/ai/insight/{insight_id}"): {"summary": "Delete a scheduled insight",
+    ("delete", "/api/ai/insight/{insight_id}"): {"summary": "Delete a scheduled insight",
                                            "description": "Delete a previously-scheduled insight. The insight will stop running on its schedule."},
-    ("post", "/ai/insight/chain_of_thoughts"): {"summary": "Generate a single-shot reasoning trace",
+    ("post", "/api/ai/insight/chain_of_thoughts"): {"summary": "Generate a single-shot reasoning trace",
                                             "description": "Generate a single-shot chain-of-thought reasoning trace for an investigation. Requires LLM configuration and investigation context in the body."},
-    ("post", "/ai/insight/plan"): {"summary": "Generate a multi-step investigation plan",
+    ("post", "/api/ai/insight/plan"): {"summary": "Generate a multi-step investigation plan",
                                "description": "Generate a structured, multi-step investigation plan. Requires investigation context and optional constraints in the body. Returns a plan object with ordered steps."},
-    ("post", "/ai/insight/plan/execute"): {"summary": "Execute an investigation plan asynchronously",
-                                       "description": "Execute a previously-generated investigation plan. The plan runs asynchronously; poll with `GET /ai/insight/plan/{task_id}/status`."},
-    ("get", "/ai/insight/plan/{task_id}/status"): {"summary": "Get plan execution status",
+    ("post", "/api/ai/insight/plan/execute"): {"summary": "Execute an investigation plan asynchronously",
+                                       "description": "Execute a previously-generated investigation plan. The plan runs asynchronously; poll with `GET /api/ai/insight/plan/{task_id}/status`."},
+    ("get", "/api/ai/insight/plan/{task_id}/status"): {"summary": "Get plan execution status",
                                                 "description": "Return the current status of an asynchronously-executing investigation plan. Returns `pending`, `inprogress`, `completed`, or `failed`."},
-    ("get", "/ai/insight/plan/{task_id}/result"): {"summary": "Get plan execution result",
+    ("get", "/api/ai/insight/plan/{task_id}/result"): {"summary": "Get plan execution result",
                                                 "description": "Return the result of a completed investigation plan execution. Contains the plan output, evidence gathered, and analyst recommendations."},
-    ("post", "/ai/insight/trigger/schedule"): {"summary": "Create or update a scheduled insight",
+    ("post", "/api/ai/insight/trigger/schedule"): {"summary": "Create or update a scheduled insight",
                                            "description": "Create or update a scheduled insight that runs at specified intervals. Requires playbook reference and schedule configuration in the body."},
     # Enrichment paths
-    ("post", "/ai/enrich/context"): {"summary": "Retrieve knowledge-base enrichment for context",
+    ("post", "/api/ai/enrich/context"): {"summary": "Retrieve knowledge-base enrichment for context",
                                   "description": "Retrieve vector-search enrichment from the knowledge base for a given context. Returns relevant indexed documents with similarity scores."},
-    ("post", "/ai/enrich/context/index"): {"summary": "Index a document into the knowledge base",
+    ("post", "/api/ai/enrich/context/index"): {"summary": "Index a document into the knowledge base",
                                        "description": "Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Accepts a JSON body with `content` (string) and `metadata` (object)."},
-    ("delete", "/ai/enrich/context/index/{uuid}"): {"summary": "Remove a document from the knowledge base index",
+    ("delete", "/api/ai/enrich/context/index/{uuid}"): {"summary": "Remove a document from the knowledge base index",
                                                  "description": "Delete a previously-indexed document from the knowledge-base vector store. The document will no longer be returned by RAG enrichment queries."},
-    ("post", "/ai/enrich/index/build"): {"summary": "Build or rebuild the knowledge-base vector index",
+    ("post", "/api/ai/enrich/index/build"): {"summary": "Build or rebuild the knowledge-base vector index",
                                       "description": "Rebuild (or create) the knowledge-base vector index from all indexed documents. Runs asynchronously; returns a task reference."},
     # MCP Admin paths (from mcp_server_openapi.json, summaries/descriptions may be empty)
     ("post", "/mcp/config/import"): {"summary": "Import exported MCP configuration",
@@ -201,7 +201,7 @@ def _build_pyfsr_only_paths():
             "description": (
                 "Returns full MCP server records including URL, auth type, and status. "
                 "This is the authoritative CRUD store - the AI service only *reads and "
-                "validates* registered servers via `/ai/mcp`. Use `?$limit`, `?$page` for pagination."
+                "validates* registered servers via `/api/ai/mcp`. Use `?$limit`, `?$page` for pagination."
             ),
             "x-fsr-version": "8.0+",
             "responses": {"200": _ai_resp("Hydra paged collection of MCP server configurations.")},
@@ -210,7 +210,7 @@ def _build_pyfsr_only_paths():
             "tags": ["MCP Configurations"],
             "summary": "Register a new MCP server configuration",
             "description": (
-                "Persist an MCP server after validating it with `POST /ai/mcp/validate`. "
+                "Persist an MCP server after validating it with `POST /api/ai/mcp/validate`. "
                 "The body carries the server name, URL, auth type, and credentials. "
                 "Typical flow: validate → POST. pyfsr wraps this as "
                 "`client.ai.register_mcp_server()` and the convenience "
@@ -585,20 +585,22 @@ _build_pyfsr_only_paths()
 # ---------------------------------------------------------------------------
 
 AI_TAG_FOR_PREFIX = [
-    ("/ai/insight",  "AI Insight"),
-    ("/ai/agents",   "AI Agents"),
-    ("/ai/triage",   "AI Agents"),   # /ai/triage is a re-mount of /ai/agents
-    ("/ai/agent",    "AI Agents"),
+    ("/api/ai/insight",  "AI Insight"),
+    ("/api/ai/agents",   "AI Agents"),
+    ("/api/ai/triage",   "AI Agents"),   # /api/ai/triage is a re-mount of /api/ai/agents
+    ("/api/ai/agent",    "AI Agents"),
     ("/ai/traces",   "AI Traces"),
-    ("/ai/chat",     "AI Chat"),
-    ("/ai/llm",      "AI LLM"),
-    ("/ai/enrich",   "AI Enrichment"),
-    ("/ai/mcp",      "AI MCP Registry"),
-    ("/ai/prompt",   "AI Prompts"),
+    ("/api/ai/chat",     "AI Chat"),
+    ("/api/ai/llm",      "AI LLM"),
+    ("/api/ai/enrich",   "AI Enrichment"),
+    ("/api/ai/mcp",      "AI MCP Registry"),
+    ("/api/ai/prompt",   "AI Prompts"),
 ]
 
 
 def _ai_tag(path: str) -> str:
+    if path.startswith("/ai/"):  # the one route kept off the gateway
+        path = "/api" + path
     for prefix, tag in AI_TAG_FOR_PREFIX:
         if path == prefix or path.startswith(prefix + "/"):
             return tag
@@ -620,44 +622,44 @@ AI_MCP_TAG_DESCRIPTIONS = {
     ),
     "AI Insight": (
         "Generate and execute multi-step investigation plans. The classic flow is "
-        "`POST /ai/insight/plan` → `POST /ai/insight/plan/execute` → poll "
-        "`GET /ai/insight/plan/{task_id}/status` → `GET /ai/insight/plan/{task_id}/result`. "
-        "Lower-level: `POST /ai/insight/chain_of_thoughts` returns a single-shot reasoning trace."
+        "`POST /api/ai/insight/plan` → `POST /api/ai/insight/plan/execute` → poll "
+        "`GET /api/ai/insight/plan/{task_id}/status` → `GET /api/ai/insight/plan/{task_id}/result`. "
+        "Lower-level: `POST /api/ai/insight/chain_of_thoughts` returns a single-shot reasoning trace."
     ),
     "AI Agents": (
-        "Agent execution + management. `POST /ai/agents/{agent_name}/trigger` "
-        "and `POST /ai/triage/alert` kick off an agent run; "
-        "`/ai/agents/{task_id}/{status,result,acceptance}` track it. "
-        "`/ai/agent/*` (singular) is the agent **catalog** - import, export, "
+        "Agent execution + management. `POST /api/ai/agents/{agent_name}/trigger` "
+        "and `POST /api/ai/triage/alert` kick off an agent run; "
+        "`/api/ai/agents/{task_id}/{status,result,acceptance}` track it. "
+        "`/api/ai/agent/*` (singular) is the agent **catalog** - import, export, "
         "activate, configure.\n\n"
-        "**The `/ai/triage` vs `/ai/agents` trap:** the AI service mounts one "
+        "**The `/api/ai/triage` vs `/api/ai/agents` trap:** the AI service mounts one "
         "router under both prefixes, so the raw service OpenAPI lists both as "
         "equals, but the front-door proxy only authorises "
         "`^agents?/(.*)/trigger` (the generic trigger) and "
-        "`POST /ai/triage/alert` specifically.  The four `/ai/triage/{task_id}/*` "
-        "routes return 403.  Always use `/ai/agents/` for status, result, and "
-        "acceptance - never `/ai/triage/` for those."
+        "`POST /api/ai/triage/alert` specifically.  The four `/api/ai/triage/{task_id}/*` "
+        "routes return 403.  Always use `/api/ai/agents/` for status, result, and "
+        "acceptance - never `/api/ai/triage/` for those."
     ),
-    "AI Chat": "Conversational investigation. `POST /ai/chat/` starts or continues a thread.",
+    "AI Chat": "Conversational investigation. `POST /api/ai/chat/` starts or continues a thread.",
     "AI LLM": (
         "LLM provider, model, and per-tenant config catalog. Provider rows ship empty; "
-        "the operator wires an OpenAI/local model with `POST /ai/llm/config` and verifies "
-        "with `GET /ai/llm/config/{uuid}/verify`.  `GET /ai/llm/allowed-providers` "
+        "the operator wires an OpenAI/local model with `POST /api/ai/llm/config` and verifies "
+        "with `GET /api/ai/llm/config/{uuid}/verify`.  `GET /api/ai/llm/allowed-providers` "
         "lists available solution packs.\n\n"
         "**Note:** The LLM model and provider catalogue endpoints "
-        "(`GET /ai/llm/model`, `GET /ai/llm/provider`) are exposed by the AI "
+        "(`GET /api/ai/llm/model`, `GET /api/ai/llm/provider`) are exposed by the AI "
         "service but return 403 through the front-door proxy - no matching "
         "permission group exists.  They are omitted from this spec."
     ),
     "AI Enrichment": (
-        "Knowledge-base ingestion for the agentic RAG store. `POST /ai/enrich/context` "
-        "retrieves enrichment, `POST /ai/enrich/context/index` indexes a doc, "
-        "`POST /ai/enrich/index/build` (re)builds the vector index."
+        "Knowledge-base ingestion for the agentic RAG store. `POST /api/ai/enrich/context` "
+        "retrieves enrichment, `POST /api/ai/enrich/context/index` indexes a doc, "
+        "`POST /api/ai/enrich/index/build` (re)builds the vector index."
     ),
-    "AI Prompts": "Prompt template validation. `POST /ai/prompt/validate` lints a template.",
+    "AI Prompts": "Prompt template validation. `POST /api/ai/prompt/validate` lints a template.",
     "AI MCP Registry": (
         "Register external MCP servers that the AI agents may call. "
-        "`GET /ai/mcp` lists them, `POST /ai/mcp/validate` round-trips a config "
+        "`GET /api/ai/mcp` lists them, `POST /api/ai/mcp/validate` round-trips a config "
         "(handshake + auth) before persisting."
     ),
     "MCP Admin": (
@@ -678,7 +680,7 @@ AI_MCP_TAG_DESCRIPTIONS = {
     "MCP Configurations": (
         "Full CRUD store for registered MCP servers. This is where servers are "
         "actually created (`/api/3/mcp_configurations`). The AI service only reads "
-        "and validates them via `/ai/mcp`. Keep these tags distinct - conflating "
+        "and validates them via `/api/ai/mcp`. Keep these tags distinct - conflating "
         "MCP Configurations with AI MCP Registry is the most common source of confusion."
     ),
     "MCP Gateway": (
@@ -873,15 +875,23 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
     for path, methods in fsr_ai.get("paths", {}).items():
         if path == "/":  # uvicorn welcome root, not useful in curated docs
             continue
+        # The service's own OpenAPI says /ai/..., which nginx sends straight to
+        # fsr-ai: JWT only. The same routes through the API gateway at
+        # /api/ai/... take an API key too, so that is the URL we document.
+        # Multipart agent import stays on /ai/ (the gateway drops the file).
+        # (The traces routes, also kept on /ai/, are added in PYFSR_ONLY_PATHS:
+        # the gateway answers 403 to both credentials for those on 8.0.0.)
+        if path != "/ai/agent/import":
+            path = "/api" + path
         tag = _ai_tag(path)
         new_methods = {}
         for method, op in methods.items():
             if method not in {"get", "post", "put", "delete", "patch"}:
                 new_methods[method] = op
                 continue
-            # Fix: /ai/llm/config/{uuid}/verify is missing the `uuid` path param
+            # Fix: /api/ai/llm/config/{uuid}/verify is missing the `uuid` path param
             # in the service OpenAPI.  Patch it in.
-            if path == "/ai/llm/config/{uuid}/verify" and method == "get":
+            if path == "/api/ai/llm/config/{uuid}/verify" and method == "get":
                 op.setdefault("parameters", [])
                 op["parameters"].append({
                     "name": "uuid",

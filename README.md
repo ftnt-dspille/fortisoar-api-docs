@@ -14,7 +14,8 @@ envelopes leak into the docs.
 
 ```
 src/build_curated.py        →  build/fortisoar.curated.openapi.yaml
-src/live_test.py            →  build/live_observations.json
+src/live_test.py            →  build/live_observations.json   (real examples)
+src/auth_probe.py           →  build/auth_probe.json          (API key / JWT: Yes or No per op)
 src/spec_health.py          →  drift report (live/auth/request/response/...)
 web/index.html              →  Scalar renderer (CDN)
 TODOS.md                    →  what's next: coverage backlog + accuracy work
@@ -38,7 +39,8 @@ $EDITOR .env
 # 3. build, run live scenarios, rebuild with real captures
 .venv/bin/python src/build_curated.py     # writes the spec
 .venv/bin/python src/live_test.py         # exercises scenarios, writes observations
-.venv/bin/python src/build_curated.py     # re-run: folds captures into the spec
+.venv/bin/python src/auth_probe.py        # measures API key / JWT support per op
+.venv/bin/python src/build_curated.py     # re-run: folds captures + auth into the spec
 
 # 4. check what's drifting
 .venv/bin/python src/spec_health.py       # categorized drift report
@@ -106,14 +108,14 @@ src/live_test.py
     │                            → healthcheck → uninstall
     │
     │  Each scenario runs once per auth mode the .env supports (JWT,
-    │  API-KEY, or both). Per-auth observations land in:
+    │  API-KEY, or both), so either can supply an example. Observations land in:
     │
     ▼
 build/live_observations.json
     │
     │  Structure: {"METHOD /path/template": {"by_auth": {
     │                "jwt":    {request_body, response_status, response_body, captured_at},
-    │                "apikey": {…} | {"gated_upstream": true}
+    │                "apikey": {…}
     │              }}}
     │
     │  Bodies are scrubbed before persisting:
@@ -125,20 +127,31 @@ next `src/build_curated.py` invocation
     │  For each captured op:
     │    1. replace request example with the actual sent body (JWT-preferred)
     │    2. replace 2xx response example with the captured body
-    │    3. add `x-verified-live: [jwt, apikey]` listing which modes returned 2xx
-    │    4. append `**Auth coverage:** Bearer JWT: OK · API-KEY: 403` to description
+    │    3. mark the op `x-live-captured`
+    │  Then, from build/auth_probe.json, for every op:
+    │    4. prepend `**API key: Yes · JWT: No**` and narrow `security` to match
     ▼
-docs render with real wire shapes, per-auth coverage badges, no fabrication
+docs render with real wire shapes, one measured auth line, no fabrication
 ```
 
-### Auth-mode coverage
+### Which credentials an op accepts
 
-Scenarios run **once per auth mode** the `.env` supports. An op that
-returns `apikey: 403` and `jwt: 200` ends up with `x-verified-live: [jwt]`
-and a description footer showing both statuses, so callers can see at a
-glance which modes work. Examples observed in this repo: all
-`api_keys` / `auth/users` / `auth/config` admin ops are JWT-only;
-`/api/wf/...` and `/api/3/*` CRUD work under either.
+`src/auth_probe.py` answers that, not `live_test.py`. A status code alone
+cannot: a 400 or 404 means "bad request" as often as "bad credential". The
+probe sends every op (through pyfsr) with a real JWT, a real API key, and a
+garbage credential of each kind. Same answer as garbage: **No**. Anything
+else: **Yes**. Path params are ids that cannot exist and write bodies are a
+bare JSON string, so a call that passes auth fails in the handler. Ops a junk
+body cannot make safe (param-less DELETE, publish, logout, ...) are only sent
+with garbage credentials and come out **Not tested** unless a live capture got
+a 2xx. Handlers that re-check the credential after the gateway (bulkupsert)
+get a real-body check in `DEEP_CHECKS`.
+
+The build puts **API key: Yes · JWT: Yes** at the top of every op and
+narrows the op's `security` to the schemes that are Yes.
+
+The API key under test needs a role that can do everything the JWT user can
+(Full App Permissions), or RBAC 403s and team-ownership 403s read as "No".
 
 ### Read-only by default, destructive by opt-in
 
@@ -164,8 +177,8 @@ piecemeal. Exits non-zero if anything is flagged.
 
 | Category | What it surfaces |
 |---|---|
-| `live` | Ops not exercised by any `live_test.py` scenario. |
-| `auth` | Ops verified under only one auth mode (the other was 403 / gated upstream). |
+| `live` | Ops with no live-captured example. |
+| `auth` | Ops whose API key / JWT support is not measured (no probe result, or Not tested). |
 | `params` | Path-template params not declared in `parameters`. |
 | `request` | POST/PUT/PATCH ops missing a `requestBody` example or schema. |
 | `response` | 2xx responses with neither an example nor a schema. |

@@ -95,31 +95,20 @@ def _captured_params(request_body: Any) -> set[str]:
 def check_live(spec: dict, obs: dict) -> list[str]:
     issues = []
     for path, verb, op in _iter_ops(spec):
-        if "x-verified-live" not in op:
+        if not op.get("x-live-captured"):
             issues.append(f"{verb.upper()} {path}")
     return issues
 
 
 def check_auth(spec: dict, obs: dict) -> list[str]:
+    """Ops whose API key / JWT support is unmeasured (no probe result, or Not tested)."""
     issues = []
     for path, verb, op in _iter_ops(spec):
-        verified = op.get("x-verified-live")
-        if not isinstance(verified, list) or not verified:
-            continue
-        # Single-auth verified (the other mode either 403'd or was gated upstream).
-        if len(verified) == 1:
-            mode = verified[0]
-            obs_key = f"{verb.upper()} {path}"
-            by_auth = (obs.get(obs_key) or {}).get("by_auth", {})
-            other_status = []
-            for m, rec in by_auth.items():
-                if m == mode:
-                    continue
-                if rec.get("gated_upstream"):
-                    other_status.append(f"{m}=gated")
-                else:
-                    other_status.append(f"{m}={rec.get('response_status')}")
-            issues.append(f"{verb.upper()} {path}  (works: {mode}; other: {', '.join(other_status) or '?'})")
+        auth = op.get("x-auth")
+        if not auth:
+            issues.append(f"{verb.upper()} {path}  (not probed)")
+        elif "untested" in auth.values():
+            issues.append(f"{verb.upper()} {path}  ({', '.join(f'{m}={v}' for m, v in sorted(auth.items()))})")
     return issues
 
 
@@ -222,9 +211,8 @@ def check_description(spec: dict, obs: dict) -> list[str]:
     issues = []
     for path, verb, op in _iter_ops(spec):
         desc = (op.get("description") or "").strip()
-        # Strip the auto-appended "**Auth coverage:**" line so it doesn't
-        # mask a genuinely thin description.
-        stripped = re.sub(r"\n*\*\*Auth coverage:\*\*.*$", "", desc, flags=re.S).strip()
+        # Strip the generated auth line so it doesn't mask a genuinely thin description.
+        stripped = re.sub(r"^\*\*(API key:|No authentication)[^\n]*\n*", "", desc).strip()
         if not stripped:
             issues.append(f"{verb.upper()} {path}  (no description)")
         elif len(stripped) < 40:
@@ -311,8 +299,8 @@ def check_schema_drift(spec: dict, obs: dict) -> list[str]:
 
 
 CHECKS = {
-    "live":         (check_live,         "Ops not exercised by live_test.py"),
-    "auth":         (check_auth,         "Ops verified under only one auth mode"),
+    "live":         (check_live,         "Ops with no live-captured example"),
+    "auth":         (check_auth,         "Ops whose API key / JWT support is not measured"),
     "params":       (check_params,       "Path params used in URL but not declared"),
     "request":      (check_request,      "POST/PUT/PATCH ops missing requestBody example/schema"),
     "empty_schema": (check_empty_schema, "POST/PUT/PATCH ops with empty `{type:object}` body schema"),
