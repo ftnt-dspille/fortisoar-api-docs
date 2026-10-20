@@ -1,0 +1,3761 @@
+{
+  "fsr_version": "8.0.0-6034",
+  "live_box": true,
+  "ops": {
+    "DELETE /api/3/agents/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/agents/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/alerts/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/comments/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/comments/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/delete/widgets": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/3/delete/widgets"
+    },
+    "DELETE /api/3/delete/{moduleType}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: 500 ''"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: 204"
+      },
+      "probed": "/api/3/delete/alerts"
+    },
+    "DELETE /api/3/export_templates/{template_uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/export_templates/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/incidents/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/mcp_configurations/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/picklist_names/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "real body: 204"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "real body: 204"
+      },
+      "probed": "/api/3/picklist_names/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/picklists/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/picklists/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/staging_model_metadatas/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/staging_model_metadatas/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/tasks/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/tasks/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/{collection}/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/ai/agent/{name}/{version}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/ai/agent/authprobe-nonexistent/0.0.0"
+    },
+    "DELETE /api/ai/enrich/context/index/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/enrich/context/index/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/ai/insight/{insight_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/ai/llm/config/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/llm/config/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/ai/traces/delete": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/ai/traces/delete"
+    },
+    "DELETE /api/gateway/audit/activities": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/gateway/audit/activities"
+    },
+    "DELETE /api/gateway/audit/activities/ttl": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/gateway/audit/activities/ttl"
+    },
+    "DELETE /api/integration/configuration/{config_id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/configuration/00000000-0000-0000-0000-000000000000/"
+    },
+    "DELETE /api/integration/connectors/{id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/999999999/"
+    },
+    "DELETE /api/integration/install-connector/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/integration/install-connector/"
+    },
+    "DELETE /api/wf/api/manual-wf-input/{pk}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/manual-wf-input/authprobe-nonexistent/"
+    },
+    "DELETE /api/wf/api/scheduled/{id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/scheduled/00000000-0000-0000-0000-000000000000/"
+    },
+    "DELETE /mcp/tools/delete": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/mcp/tools/delete"
+    },
+    "GET /api/3/actors/current": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/actors/current"
+    },
+    "GET /api/3/agents": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/agents"
+    },
+    "GET /api/3/agents/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/agents/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/alerts": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/alerts"
+    },
+    "GET /api/3/alerts/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/api_keys": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/api_keys"
+    },
+    "GET /api/3/api_keys/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "real body: 200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "real body: 200"
+      },
+      "probed": "/api/3/api_keys/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/api_keys/01bb3667-ae6d-4d9b-957e-dae96945f2cf"
+    },
+    "GET /api/3/comments": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/comments"
+    },
+    "GET /api/3/comments/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/comments/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/contexts/{shortName}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/contexts/authprobe-nonexistent"
+    },
+    "GET /api/3/docs.jsonld": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/docs.jsonld"
+    },
+    "GET /api/3/incidents": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/incidents"
+    },
+    "GET /api/3/incidents/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/llm_activity_logs": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/llm_activity_logs"
+    },
+    "GET /api/3/mcp_configurations": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/mcp_configurations"
+    },
+    "GET /api/3/mcp_configurations/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/model_metadatas": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/model_metadatas"
+    },
+    "GET /api/3/model_metadatas/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/model_metadatas/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/picklist_names": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/picklist_names"
+    },
+    "GET /api/3/picklist_names/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "probed": "/api/3/picklist_names/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/picklist_names/0042bf40-d0e6-4324-ab84-0c7b0703f681"
+    },
+    "GET /api/3/picklists/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/picklists/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/roles": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/roles"
+    },
+    "GET /api/3/routers": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/routers"
+    },
+    "GET /api/3/staging_model_metadatas": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/staging_model_metadatas"
+    },
+    "GET /api/3/staging_model_metadatas/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/staging_model_metadatas/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/tasks": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/tasks"
+    },
+    "GET /api/3/tasks/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/tasks/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/teams": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/teams"
+    },
+    "GET /api/3/widgets/development/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/widgets/development/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/{collection}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/alerts"
+    },
+    "GET /api/3/{collection}/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/3/{module}/{recordId}/comments": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000/comments"
+    },
+    "GET /api/ai/agent/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/ai/agent/"
+    },
+    "GET /api/ai/agent/config/default": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/ai/agent/config/default"
+    },
+    "GET /api/ai/agent/config/{agent_name}/{version}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/config/authprobe-nonexistent/0.0.0"
+    },
+    "GET /api/ai/agent/{name}/{version}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/authprobe-nonexistent/0.0.0"
+    },
+    "GET /api/ai/agent/{name}/{version}/relationships": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/authprobe-nonexistent/0.0.0/relationships"
+    },
+    "GET /api/ai/agent/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/agents/{task_id}/result": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agents/00000000-0000-0000-0000-000000000000/result"
+    },
+    "GET /api/ai/agents/{task_id}/status": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agents/00000000-0000-0000-0000-000000000000/status"
+    },
+    "GET /api/ai/insight/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/ai/insight/"
+    },
+    "GET /api/ai/insight/plan/{task_id}/result": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/plan/00000000-0000-0000-0000-000000000000/result"
+    },
+    "GET /api/ai/insight/plan/{task_id}/status": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/plan/00000000-0000-0000-0000-000000000000/status"
+    },
+    "GET /api/ai/insight/{insight_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/llm/config": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/ai/llm/config"
+    },
+    "GET /api/ai/llm/config/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "probed": "/api/ai/llm/config/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/ai/llm/config/1bfa20df-3ca8-4b70-904c-4da36370bc10"
+    },
+    "GET /api/ai/llm/config/{uuid}/verify": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/llm/config/00000000-0000-0000-0000-000000000000/verify"
+    },
+    "GET /api/ai/mcp": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 201,
+        "verdict": "YES",
+        "why": "201"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 201,
+        "verdict": "YES",
+        "why": "201"
+      },
+      "probed": "/api/ai/mcp"
+    },
+    "GET /api/ai/traces/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/"
+    },
+    "GET /api/ai/traces/health": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/health"
+    },
+    "GET /api/ai/traces/spans/{span_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/spans/{span_id}/children": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/children"
+    },
+    "GET /api/ai/traces/spans/{span_id}/lineage": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/lineage"
+    },
+    "GET /api/ai/traces/spans/{span_id}/tree": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/tree"
+    },
+    "GET /api/ai/traces/tokens/session/{session_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/tokens/session/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/tokens/{trace_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/tokens/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/{trace_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/{trace_id}/execution-tree": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000/execution-tree"
+    },
+    "GET /api/ai/traces/{trace_id}/spans": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000/spans"
+    },
+    "GET /api/auth/cluster/health": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/auth/cluster/health"
+    },
+    "GET /api/auth/config": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/auth/config"
+    },
+    "GET /api/auth/license": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/auth/license"
+    },
+    "GET /api/auth/users": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/auth/users"
+    },
+    "GET /api/gateway/audit/activities/{auditId}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/gateway/audit/activities/999999999"
+    },
+    "GET /api/gateway/audit/operations": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/gateway/audit/operations"
+    },
+    "GET /api/import/{job_uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/import/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/integration/agent-heartbeat/{agent}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/agent-heartbeat/authprobe-nonexistent/"
+    },
+    "GET /api/integration/configuration/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/integration/configuration/"
+    },
+    "GET /api/integration/configuration/{config_id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/integration/configuration/00000000-0000-0000-0000-000000000000/"
+    },
+    "GET /api/integration/connector/development/entity/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 405,
+        "verdict": "YES",
+        "why": "405 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 405,
+        "verdict": "YES",
+        "why": "405 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector/development/entity/"
+    },
+    "GET /api/integration/connectors/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/integration/connectors/"
+    },
+    "GET /api/integration/connectors/agents/{name}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 405,
+        "verdict": "YES",
+        "why": "405 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 405,
+        "verdict": "YES",
+        "why": "405 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/agents/authprobe-nonexistent/0.0.0/"
+    },
+    "GET /api/integration/connectors/dependencies_check/{connector}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/dependencies_check/authprobe-nonexistent/0.0.0/"
+    },
+    "GET /api/integration/connectors/healthcheck/{name}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/healthcheck/authprobe-nonexistent/0.0.0/"
+    },
+    "GET /api/integration/data-import/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/integration/data-import/"
+    },
+    "GET /api/permissions/current": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/permissions/current"
+    },
+    "GET /api/product/feature-access": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/product/feature-access"
+    },
+    "GET /api/publish/error": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/publish/error"
+    },
+    "GET /api/taxii/1/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/taxii/1/"
+    },
+    "GET /api/taxii/1/collections": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/taxii/1/collections"
+    },
+    "GET /api/taxii/1/collections/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/taxii/1/collections/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/taxii/1/collections/{uuid}/manifest": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/taxii/1/collections/00000000-0000-0000-0000-000000000000/manifest"
+    },
+    "GET /api/taxii/1/collections/{uuid}/objects": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/taxii/1/collections/00000000-0000-0000-0000-000000000000/objects"
+    },
+    "GET /api/taxii/1/collections/{uuid}/objects/{stixId}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/taxii/1/collections/00000000-0000-0000-0000-000000000000/objects/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/version": {
+      "apikey": {
+        "bogus_status": 200,
+        "status": 200,
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 200"
+      },
+      "jwt": {
+        "bogus_status": 200,
+        "status": 200,
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 200"
+      },
+      "probed": "/api/version"
+    },
+    "GET /api/views/1/app": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/views/1/app"
+    },
+    "GET /api/views/1/{name}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/views/1/authprobe-nonexistent"
+    },
+    "GET /api/wf/api/dynamic-variable/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/dynamic-variable/"
+    },
+    "GET /api/wf/api/historical-steps/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/historical-steps/"
+    },
+    "GET /api/wf/api/historical-workflows/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/historical-workflows/"
+    },
+    "GET /api/wf/api/historical-workflows/{pk}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "probed": "/api/wf/api/historical-workflows/authprobe-nonexistent/",
+      "probed_real": "/api/wf/api/historical-workflows/141391/"
+    },
+    "GET /api/wf/api/manual-wf-input/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/manual-wf-input/"
+    },
+    "GET /api/wf/api/scheduled/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/scheduled/"
+    },
+    "GET /api/wf/api/workflows/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/workflows/"
+    },
+    "GET /api/wf/api/workflows/count/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/wf/api/workflows/count/"
+    },
+    "GET /api/wf/api/workflows/{pk}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/",
+      "probed_real": "/api/wf/api/workflows/141571/"
+    },
+    "GET /api/wf/workflow/config/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/workflow/config/"
+    },
+    "GET /mcp/servers/connector": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/mcp/servers/connector"
+    },
+    "GET /mcp/servers/{mcp_type}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/mcp/servers/authprobe-nonexistent"
+    },
+    "POST /ai/agent/import": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 401,
+        "verdict": "NO",
+        "why": "401, same as a bogus credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/ai/agent/import"
+    },
+    "POST /api/3/agents": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/agents"
+    },
+    "POST /api/3/alerts": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts"
+    },
+    "POST /api/3/api_keys": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: 403 'AccessDeniedException Access Denied.'"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: 201"
+      },
+      "probed": "/api/3/api_keys"
+    },
+    "POST /api/3/bulkupsert/{moduleType}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: APIError Invalid credentials."
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: row upserted (and deleted)"
+      },
+      "probed": "/api/3/bulkupsert/alerts"
+    },
+    "POST /api/3/comments": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/comments"
+    },
+    "POST /api/3/export_jobs": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/export_jobs"
+    },
+    "POST /api/3/export_templates": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/export_templates"
+    },
+    "POST /api/3/files": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/files"
+    },
+    "POST /api/3/import_jobs": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/import_jobs"
+    },
+    "POST /api/3/incidents": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/incidents"
+    },
+    "POST /api/3/insert/{moduleType}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: 500 APIError Invalid credentials."
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: accepted"
+      },
+      "probed": "/api/3/insert/alerts"
+    },
+    "POST /api/3/logout": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "NO",
+        "why": "real logout of a disposable credential: 400, then reuse: 200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "YES",
+        "why": "real logout of a disposable credential: 200, then reuse: 401"
+      },
+      "probed": "/api/3/logout"
+    },
+    "POST /api/3/mcp_configurations": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/mcp_configurations"
+    },
+    "POST /api/3/picklist_names": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: 201"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: 201"
+      },
+      "probed": "/api/3/picklist_names"
+    },
+    "POST /api/3/picklists": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/picklists"
+    },
+    "POST /api/3/roles": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/roles"
+    },
+    "POST /api/3/solutionpacks/install": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/3/solutionpacks/install"
+    },
+    "POST /api/3/staging_model_metadatas": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/staging_model_metadatas"
+    },
+    "POST /api/3/tasks": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/tasks"
+    },
+    "POST /api/3/teams": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/teams"
+    },
+    "POST /api/3/upsert/{moduleType}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/upsert/alerts"
+    },
+    "POST /api/3/user_queries": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/user_queries"
+    },
+    "POST /api/3/widgets/export/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/widgets/export/00000000-0000-0000-0000-000000000000"
+    },
+    "POST /api/3/{collection}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts"
+    },
+    "POST /api/ai/agent/activate": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/activate"
+    },
+    "POST /api/ai/agent/config": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/config"
+    },
+    "POST /api/ai/agent/config/default": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/config/default"
+    },
+    "POST /api/ai/agent/export/{agent_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agent/export/00000000-0000-0000-0000-000000000000"
+    },
+    "POST /api/ai/agents/{agent_name}/trigger": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agents/authprobe-nonexistent/trigger"
+    },
+    "POST /api/ai/agents/{task_id}/acceptance": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/agents/00000000-0000-0000-0000-000000000000/acceptance"
+    },
+    "POST /api/ai/chat/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/chat/"
+    },
+    "POST /api/ai/enrich/context": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/enrich/context"
+    },
+    "POST /api/ai/enrich/context/index": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/enrich/context/index"
+    },
+    "POST /api/ai/enrich/index/build": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 204,
+        "verdict": "YES",
+        "why": "204"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 204,
+        "verdict": "YES",
+        "why": "204"
+      },
+      "probed": "/api/ai/enrich/index/build"
+    },
+    "POST /api/ai/insight/chain_of_thoughts": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/chain_of_thoughts"
+    },
+    "POST /api/ai/insight/plan": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/plan"
+    },
+    "POST /api/ai/insight/plan/execute": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/plan/execute"
+    },
+    "POST /api/ai/insight/trigger/schedule": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/insight/trigger/schedule"
+    },
+    "POST /api/ai/llm/config": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/llm/config"
+    },
+    "POST /api/ai/mcp/validate": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/mcp/validate"
+    },
+    "POST /api/ai/prompt/validate": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/prompt/validate"
+    },
+    "POST /api/ai/triage/alert": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ai/triage/alert"
+    },
+    "POST /api/auth/license": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/auth/license"
+    },
+    "POST /api/auth/query/users": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/auth/query/users"
+    },
+    "POST /api/auth/users": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/auth/users"
+    },
+    "POST /api/gateway/audit/activities": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/gateway/audit/activities"
+    },
+    "POST /api/gateway/audit/activities/count": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/gateway/audit/activities/count"
+    },
+    "POST /api/ingest-feeds/indicators": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: accepted"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: accepted"
+      },
+      "probed": "/api/ingest-feeds/indicators"
+    },
+    "POST /api/ingest-feeds/observables": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ingest-feeds/observables"
+    },
+    "POST /api/ingest-feeds/reputation": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ingest-feeds/reputation"
+    },
+    "POST /api/ingest-feeds/stix-bundle": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ingest-feeds/stix-bundle"
+    },
+    "POST /api/ingest-feeds/threatintel": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/ingest-feeds/threatintel"
+    },
+    "POST /api/insert-feeds/{recordType}": {
+      "apikey": {
+        "bogus_status": 404,
+        "status": 404,
+        "verdict": "INCONCLUSIVE",
+        "why": "404 for valid and bogus alike (route answers before auth)"
+      },
+      "jwt": {
+        "bogus_status": 404,
+        "status": 404,
+        "verdict": "INCONCLUSIVE",
+        "why": "404 for valid and bogus alike (route answers before auth)"
+      },
+      "probed": "/api/insert-feeds/alerts"
+    },
+    "POST /api/integration/agent-installer/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/agent-installer/"
+    },
+    "POST /api/integration/configuration/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/configuration/"
+    },
+    "POST /api/integration/connector/development/entity/{id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector/development/entity/999999999/"
+    },
+    "POST /api/integration/connector/development/entity/{id}/files/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector/development/entity/999999999/files/"
+    },
+    "POST /api/integration/connector/development/entity/{id}/publish/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector/development/entity/999999999/publish/"
+    },
+    "POST /api/integration/connector_details/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector_details/"
+    },
+    "POST /api/integration/connector_output_schema/{connector}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector_output_schema/authprobe-nonexistent/0.0.0/"
+    },
+    "POST /api/integration/connectors/agents/{name}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/agents/authprobe-nonexistent/0.0.0/"
+    },
+    "POST /api/integration/connectors/dependencies_check/{connector}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/dependencies_check/authprobe-nonexistent/0.0.0/"
+    },
+    "POST /api/integration/connectors/{connector}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/authprobe-nonexistent/0.0.0/"
+    },
+    "POST /api/integration/connectors/{id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/999999999/"
+    },
+    "POST /api/integration/data-import/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/data-import/"
+    },
+    "POST /api/integration/execute/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/execute/"
+    },
+    "POST /api/integration/install-connector/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/integration/install-connector/"
+    },
+    "POST /api/public/license": {
+      "apikey": {
+        "bogus_status": 400,
+        "status": null,
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 400"
+      },
+      "jwt": {
+        "bogus_status": 400,
+        "status": null,
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 400"
+      },
+      "probed": "/api/public/license"
+    },
+    "POST /api/query/{collection}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/query/alerts"
+    },
+    "POST /api/query/{collection}/{queryId}": {
+      "apikey": {
+        "bogus_status": 404,
+        "status": 404,
+        "verdict": "INCONCLUSIVE",
+        "why": "404 for valid and bogus alike (route answers before auth)"
+      },
+      "jwt": {
+        "bogus_status": 404,
+        "status": 404,
+        "verdict": "INCONCLUSIVE",
+        "why": "404 for valid and bogus alike (route answers before auth)"
+      },
+      "probed": "/api/query/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "POST /api/rule/api/system-notification/notifications/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/rule/api/system-notification/notifications/"
+    },
+    "POST /api/rule/api/system-notification/purge/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/rule/api/system-notification/purge/"
+    },
+    "POST /api/search": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/search"
+    },
+    "POST /api/triggers/1/action/{routeUuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/triggers/1/action/00000000-0000-0000-0000-000000000000"
+    },
+    "POST /api/triggers/1/deferred/{name}": {
+      "apikey": {
+        "bogus_status": 404,
+        "status": 404,
+        "verdict": "INCONCLUSIVE",
+        "why": "404 for valid and bogus alike (route answers before auth)"
+      },
+      "jwt": {
+        "bogus_status": 404,
+        "status": 404,
+        "verdict": "INCONCLUSIVE",
+        "why": "404 for valid and bogus alike (route answers before auth)"
+      },
+      "probed": "/api/triggers/1/deferred/authprobe-nonexistent"
+    },
+    "POST /api/triggers/1/notrigger/{workflowId}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/triggers/1/notrigger/00000000-0000-0000-0000-000000000000"
+    },
+    "POST /api/triggers/1/{name}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/triggers/1/authprobe-nonexistent"
+    },
+    "POST /api/views/1/{name}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/views/1/authprobe-nonexistent"
+    },
+    "POST /api/wf/api/dynamic-variable/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/dynamic-variable/"
+    },
+    "POST /api/wf/api/jinja-editor/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/jinja-editor/"
+    },
+    "POST /api/wf/api/manual-wf-input/list_wfinput/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/manual-wf-input/list_wfinput/"
+    },
+    "POST /api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/manual-wf-input/authprobe-nonexistent/retrieve_wfinput/"
+    },
+    "POST /api/wf/api/query/workflow_logs/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/query/workflow_logs/"
+    },
+    "POST /api/wf/api/scheduled/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/scheduled/"
+    },
+    "POST /api/wf/api/scheduled/trigger-now/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/wf/api/scheduled/trigger-now/"
+    },
+    "POST /api/wf/api/workflows/log_list/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/log_list/"
+    },
+    "POST /api/wf/api/workflows/{pk}/approval/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/approval/"
+    },
+    "POST /api/wf/api/workflows/{pk}/resume/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/resume/"
+    },
+    "POST /api/wf/api/workflows/{pk}/retry/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/retry/"
+    },
+    "POST /api/wf/api/workflows/{pk}/start/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/start/"
+    },
+    "POST /api/wf/api/workflows/{pk}/wfinput_resume/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/wfinput_resume/"
+    },
+    "POST /auth/authenticate": {
+      "apikey": {
+        "bogus_status": 500,
+        "status": 500,
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 500"
+      },
+      "jwt": {
+        "bogus_status": 500,
+        "status": 500,
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 500"
+      },
+      "probed": "/auth/authenticate"
+    },
+    "POST /mcp/add/tools": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/mcp/add/tools"
+    },
+    "POST /mcp/config/export": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/mcp/config/export"
+    },
+    "POST /mcp/config/import": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/mcp/config/import"
+    },
+    "POST /mcp/connector/{connector_name}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "real body: tools listed"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "real body: tools listed"
+      },
+      "probed": "/mcp/connector/authprobe-nonexistent/"
+    },
+    "POST /mcp/modules/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 406,
+        "verdict": "YES",
+        "why": "real body: tools listed"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 406,
+        "verdict": "YES",
+        "why": "real body: tools listed"
+      },
+      "probed": "/mcp/modules/"
+    },
+    "POST /mcp/playbooks/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 406,
+        "verdict": "YES",
+        "why": "real body: tools listed"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 406,
+        "verdict": "YES",
+        "why": "real body: tools listed"
+      },
+      "probed": "/mcp/playbooks/"
+    },
+    "POST /mcp/utility/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 406,
+        "verdict": "YES",
+        "why": "real body: tools listed and get_current_datetime called"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 406,
+        "verdict": "YES",
+        "why": "real body: tools listed and get_current_datetime called"
+      },
+      "probed": "/mcp/utility/"
+    },
+    "PUT /api/3/alerts/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/api_keys/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "NO",
+        "why": "real body: 403 'AccessDeniedException Access Denied.'"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "real body: 200"
+      },
+      "probed": "/api/3/api_keys/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/changepassword": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/3/changepassword"
+    },
+    "PUT /api/3/comments/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/comments/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/incidents/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/mcp_configurations/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/staging_model_metadatas/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/staging_model_metadatas/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/tasks/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/tasks/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/update/{moduleType}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: 500 ''"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: 200"
+      },
+      "probed": "/api/3/update/alerts"
+    },
+    "PUT /api/3/widgets/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/widgets/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/{collection}/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/auth/config": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "NO",
+        "why": "real body: 403 PermissionError Access Denied.\n\nIf this is a newly created module,"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "YES",
+        "why": "real body: accepted"
+      },
+      "probed": "/api/auth/config"
+    },
+    "PUT /api/auth/users": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "NO",
+        "why": "real body: 403 PermissionError Access Denied.\n\nIf this is a newly created module,"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "YES",
+        "why": "real body: accepted"
+      },
+      "probed": "/api/auth/users"
+    },
+    "PUT /api/export": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: export job never ran (status=None, 0%)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: export finished"
+      },
+      "probed": "/api/export"
+    },
+    "PUT /api/import/{job_uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/import/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/integration/configuration/{config_id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/configuration/00000000-0000-0000-0000-000000000000/"
+    },
+    "PUT /api/integration/connector/development/entity/{id}/files/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connector/development/entity/999999999/files/"
+    },
+    "PUT /api/integration/install-connector/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/integration/install-connector/"
+    },
+    "PUT /api/publish": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/publish"
+    },
+    "PUT /api/publish/revert": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/publish/revert"
+    },
+    "PUT /api/views/1/{name}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/views/1/authprobe-nonexistent"
+    },
+    "PUT /api/wf/api/manual-wf-input/{pk}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/manual-wf-input/authprobe-nonexistent/"
+    },
+    "PUT /api/wf/api/scheduled/{id}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/scheduled/00000000-0000-0000-0000-000000000000/"
+    },
+    "PUT /mcp/tools/{mcp_config_uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/mcp/tools/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /mcp/tools/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 422,
+        "verdict": "YES",
+        "why": "422 from the handler (bogus gets 401)"
+      },
+      "probed": "/mcp/tools/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}

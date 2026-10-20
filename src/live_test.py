@@ -51,6 +51,11 @@ _JWT_RE = re.compile(r"eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
 # is echoed in a response. The 8-hex run_id changes every run and is pure
 # diff churn -- strip it so only the stable `live-<run>-<slug>` shape persists.
 _LIVE_RUN_RE = re.compile(r"\blive-[0-9a-f]{8}-", re.I)
+# Any private-range IPv4 (other lab boxes show up in configs, agent records and
+# request headers, not just the base host) and the per-run mirror API key name.
+_PRIVATE_IP_RE = re.compile(
+    r"\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}\b")
+_MIRROR_KEY_RE = re.compile(r"\bauthprobe-mirror-[0-9a-f]{8}\b")
 
 # Server-side timestamps that vary record-by-record and run-by-run. Normalized
 # to a fixed epoch in `_scrub` so observation files diff only when shape /
@@ -103,6 +108,8 @@ def _scrub(value: Any) -> Any:
         v = _UUID_RE.sub("<uuid>", v)
         v = _AGENT_HASH_RE.sub("<self-agent>", v)
         v = _LIVE_RUN_RE.sub("live-<run>-", v)
+        v = _PRIVATE_IP_RE.sub("<lab-host>", v)
+        v = _MIRROR_KEY_RE.sub("authprobe-mirror-<run>", v)
         return v
     if isinstance(value, dict):
         return {k: (_TIMESTAMP_PLACEHOLDER
@@ -342,7 +349,7 @@ class Session:
         return f"{LIVE_PREFIX}{self.run_id}-{slug}"
 
 
-def open_session() -> Session:
+def open_session(api_key: str = "") -> Session:
     load_dotenv(ROOT / ".env")
     base = os.environ.get("FSR_BASE_URL", "").rstrip("/")
     if not base:
@@ -350,7 +357,7 @@ def open_session() -> Session:
     verify = os.environ.get("FSR_VERIFY_TLS", "false").lower() == "true"
     timeout = int(os.environ.get("FSR_TEST_TIMEOUT", "20"))
 
-    api_key = os.environ.get("FSR_API_KEY", "")
+    api_key = api_key or os.environ.get("FSR_API_KEY", "")
     user = os.environ.get("FSR_USERNAME", "")
     pw = os.environ.get("FSR_PASSWORD", "")
 
@@ -1701,9 +1708,10 @@ def scenario_agents_lifecycle(s: Session) -> None:
     # that has no live agent VM behind it, the appliance typically responds 200
     # with an empty listing (GET) or 4xx (write paths). Accept the broad set so
     # the probes record per-auth coverage without false-failing the run.
-    s.call("GET", "/api/integration/connectors/agents/{name}/{version}/",
+    s.call("POST", "/api/integration/connectors/agents/{name}/{version}/",
            want=(200, 400, 404),
-           path_params={"name": "hello-world", "version": "1.0.4"})
+           path_params={"name": "hello-world", "version": "1.0.4"},
+           params={"format": "json"}, json={})
     s.call("GET", "/api/integration/agent-heartbeat/{agent}/",
            want=(200, 400, 404),
            path_params={"agent": agent_id})
@@ -1717,6 +1725,29 @@ def scenario_agents_lifecycle(s: Session) -> None:
 # --- CLI -----------------------------------------------------------------
 
 def main() -> int:
+    """Run with a throwaway API key that mirrors the JWT user's roles and teams.
+
+    Without it the API-key runs compare against whatever key `.env` holds; one
+    with no team 403s on every write and aborts the scenario, which reads as
+    "API keys don't work here". `--env-key` uses `FSR_API_KEY` as before.
+    """
+    if "--env-key" in sys.argv:
+        sys.argv.remove("--env-key")
+        return _run()
+    load_dotenv(ROOT / ".env")
+    from pyfsr import FortiSOAR
+
+    from mirror_key import mirror_api_key
+
+    jwt = FortiSOAR(os.environ["FSR_BASE_URL"], username=os.environ["FSR_USERNAME"],
+                    password=os.environ["FSR_PASSWORD"],
+                    verify_ssl=os.environ.get("FSR_VERIFY_TLS", "false").lower() == "true",
+                    suppress_insecure_warnings=True)
+    with mirror_api_key(jwt) as key:
+        return _run(key)
+
+
+def _run(api_key: str = "") -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--sweep-only", action="store_true", help="Clean up leftover live-* records and exit.")
     ap.add_argument("--scenario", action="append", help="Run only the named scenario(s). Defaults to all.")
@@ -1727,7 +1758,7 @@ def main() -> int:
                          "merged back into the main session after each completes.")
     args = ap.parse_args()
 
-    s = open_session()
+    s = open_session(api_key)
     print(f"base: {s.base}")
     print(f"run id: {s.run_id}")
 

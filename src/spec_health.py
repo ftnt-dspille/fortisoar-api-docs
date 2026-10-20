@@ -107,6 +107,10 @@ def check_auth(spec: dict, obs: dict) -> list[str]:
         auth = op.get("x-auth")
         if not auth:
             issues.append(f"{verb.upper()} {path}  (not probed)")
+        elif "missing" in auth.values():
+            issues.append(f"{verb.upper()} {path}  (route not found on the measured version)")
+        elif "unreleased" in auth.values():
+            issues.append(f"{verb.upper()} {path}  (newer than every measured box)")
         elif "untested" in auth.values():
             issues.append(f"{verb.upper()} {path}  ({', '.join(f'{m}={v}' for m, v in sorted(auth.items()))})")
     return issues
