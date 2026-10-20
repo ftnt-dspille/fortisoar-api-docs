@@ -18485,11 +18485,11 @@ paths:
       tags:
       - Import / export
       summary: Trigger an export from a template
-      description: "**API key: Not tested \xB7 JWT: Not tested** (measured on FortiSOAR 8.0.0)\n\nTriggers a configuration\
-        \ export using a pre-created template. **Note: `/api/export` (no `/3/`).** The parameters are **query params, not\
-        \ a JSON body** - `fileName` (must end in `.zip`) and `template` (a template uuid from `POST /api/3/export_templates`).\
-        \ Returns the export-job record; poll `GET /api/3/export_jobs/{job_uuid}` until `status == \"Export Complete\"`, then\
-        \ download the `file` IRI."
+      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nTriggers a configuration export using a\
+        \ pre-created template. **Note: `/api/export` (no `/3/`).** The parameters are **query params, not a JSON body** -\
+        \ `fileName` (must end in `.zip`) and `template` (a template uuid from `POST /api/3/export_templates`). Returns the\
+        \ export-job record; poll `GET /api/3/export_jobs/{job_uuid}` until `status == \"Export Complete\"`, then download\
+        \ the `file` IRI."
       parameters:
       - name: fileName
         in: query
@@ -18532,8 +18532,10 @@ paths:
           \        template_uuid=\"123e4567-e89b-12d3-a456-426655440000\",\n        output_path=str(Path(tmp) / \"config.zip\"\
           ),\n        poll_interval=0,\n    )\n    archive = Path(out).read_bytes()\nprint(archive)"
       x-auth:
-        apikey: untested
-        jwt: untested
+        apikey: 'no'
+        jwt: 'yes'
+      security:
+      - bearerJwt: []
   /api/views/1/app:
     get:
       tags:

@@ -145,7 +145,8 @@ bare JSON string, so a call that passes auth fails in the handler. Ops a junk
 body cannot make safe (param-less DELETE, publish, logout, ...) are only sent
 with garbage credentials and come out **Not tested** unless a live capture got
 a 2xx. Handlers that re-check the credential after the gateway (bulkupsert)
-get a real-body check in `DEEP_CHECKS`.
+get a real-body check in `DEEP_CHECKS`, as does config export (an API key's export
+job is created but never runs).
 
 The build puts **API key: Yes · JWT: Yes** at the top of every op and
 narrows the op's `security` to the schemes that are Yes.
