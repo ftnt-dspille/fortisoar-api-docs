@@ -1,21 +1,6 @@
 {
   "fsr_version": "8.0.0-6034",
   "ops": {
-    "DELETE /ai/traces/delete": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
-      },
-      "probed": "/ai/traces/delete"
-    },
     "DELETE /api/3/agents/{uuid}": {
       "apikey": {
         "bogus_status": 401,
@@ -271,6 +256,21 @@
       },
       "probed": "/api/ai/llm/config/00000000-0000-0000-0000-000000000000"
     },
+    "DELETE /api/ai/traces/delete": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": null,
+        "verdict": "UNTESTED",
+        "why": "unsafe to send with a valid credential"
+      },
+      "probed": "/api/ai/traces/delete"
+    },
     "DELETE /api/gateway/audit/activities": {
       "apikey": {
         "bogus_status": 401,
@@ -390,171 +390,6 @@
         "why": "unsafe to send with a valid credential"
       },
       "probed": "/mcp/tools/delete"
-    },
-    "GET /ai/traces/": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/"
-    },
-    "GET /ai/traces/health": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/health"
-    },
-    "GET /ai/traces/spans/{span_id}": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/spans/00000000-0000-0000-0000-000000000000"
-    },
-    "GET /ai/traces/spans/{span_id}/children": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/spans/00000000-0000-0000-0000-000000000000/children"
-    },
-    "GET /ai/traces/spans/{span_id}/lineage": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/spans/00000000-0000-0000-0000-000000000000/lineage"
-    },
-    "GET /ai/traces/spans/{span_id}/tree": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/spans/00000000-0000-0000-0000-000000000000/tree"
-    },
-    "GET /ai/traces/tokens/session/{session_id}": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/tokens/session/00000000-0000-0000-0000-000000000000"
-    },
-    "GET /ai/traces/tokens/{trace_id}": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/tokens/00000000-0000-0000-0000-000000000000"
-    },
-    "GET /ai/traces/{trace_id}": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/00000000-0000-0000-0000-000000000000"
-    },
-    "GET /ai/traces/{trace_id}/execution-tree": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/00000000-0000-0000-0000-000000000000/execution-tree"
-    },
-    "GET /ai/traces/{trace_id}/spans": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 401,
-        "verdict": "NO",
-        "why": "401, same as a bogus credential"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
-      },
-      "probed": "/ai/traces/00000000-0000-0000-0000-000000000000/spans"
     },
     "GET /api/3/actors/current": {
       "apikey": {
@@ -1275,6 +1110,171 @@
         "why": "201"
       },
       "probed": "/api/ai/mcp"
+    },
+    "GET /api/ai/traces/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/"
+    },
+    "GET /api/ai/traces/health": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/health"
+    },
+    "GET /api/ai/traces/spans/{span_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/spans/{span_id}/children": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/children"
+    },
+    "GET /api/ai/traces/spans/{span_id}/lineage": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/lineage"
+    },
+    "GET /api/ai/traces/spans/{span_id}/tree": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/tree"
+    },
+    "GET /api/ai/traces/tokens/session/{session_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/tokens/session/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/tokens/{trace_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/tokens/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/{trace_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/traces/{trace_id}/execution-tree": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000/execution-tree"
+    },
+    "GET /api/ai/traces/{trace_id}/spans": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 403,
+        "verdict": "NO",
+        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+      },
+      "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000/spans"
     },
     "GET /api/auth/cluster/health": {
       "apikey": {

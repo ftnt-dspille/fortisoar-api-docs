@@ -433,11 +433,11 @@ tags:
     did to reach its verdict.
 - name: AI Traces
   description: 'OpenTelemetry-style trace observability for AI agent runs. Each run produces a trace with spans (LLM calls,
-    tool calls, sub-agent steps). Use `GET /ai/traces/` to list, `GET /ai/traces/{trace_id}` to inspect a single trace, `GET
-    /ai/traces/{trace_id}/execution-tree` for the full nested run tree, and `GET /ai/traces/{trace_id}/spans` for a flat span
-    list. Per-span detail: `GET /ai/traces/spans/{span_id}`. Token usage: `GET /ai/traces/tokens/{trace_id}` (per-trace) or
-    `GET /ai/traces/tokens/session/{session_id}` (per-chat-session). `DELETE /ai/traces/delete` purges traces older than a
-    cutoff.'
+    tool calls, sub-agent steps). Use `GET /api/ai/traces/` to list, `GET /api/ai/traces/{trace_id}` to inspect a single trace,
+    `GET /api/ai/traces/{trace_id}/execution-tree` for the full nested run tree, and `GET /api/ai/traces/{trace_id}/spans`
+    for a flat span list. Per-span detail: `GET /api/ai/traces/spans/{span_id}`. Token usage: `GET /api/ai/traces/tokens/{trace_id}`
+    (per-trace) or `GET /api/ai/traces/tokens/session/{session_id}` (per-chat-session). `DELETE /api/ai/traces/delete` purges
+    traces older than a cutoff.'
 x-tagGroups:
 - name: Auth & system
   tags:
@@ -23568,15 +23568,15 @@ paths:
       security:
       - apiKeyAuth: []
       - bearerJwt: []
-  /ai/traces/:
+  /api/ai/traces/:
     get:
       tags:
       - AI Traces
       summary: List AI execution traces
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nOne page of top-level traces, newest first.\
-        \ Query params: `status` (`OK`, `ERROR`, `RUNNING`), `session_id` (chat session filter), `limit` (page size, default\
-        \ 50), `cursor` (start-time cursor for paging). pyfsr: `client.ai.traces.list()`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nOne page of\
+        \ top-level traces, newest first. Query params: `status` (`OK`, `ERROR`, `RUNNING`), `session_id` (chat session filter),\
+        \ `limit` (page size, default 50), `cursor` (start-time cursor for paging). pyfsr: `client.ai.traces.list()`."
+      x-fsr-version: 8.0.1+
       parameters:
       - name: status
         in: query
@@ -23610,18 +23610,16 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.list()"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/health:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/health:
     get:
       tags:
       - AI Traces
       summary: Check tracer store health
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nReturns 200 when the trace store is reachable\
-        \ and serving queries."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nReturns 200\
+        \ when the trace store is reachable and serving queries."
+      x-fsr-version: 8.0.1+
       responses:
         '200':
           description: Health status.
@@ -23633,11 +23631,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.health()"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/{trace_id}:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/{trace_id}:
     parameters:
     - name: trace_id
       in: path
@@ -23649,10 +23645,11 @@ paths:
       tags:
       - AI Traces
       summary: Get a single trace as a span tree
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nReturns one trace with its own spans as\
-        \ a tree. Use `GET /ai/traces/{trace_id}/execution-tree` for the full nested run including sub-traces. Query params:\
-        \ `depth` (tree depth, default 3), `io` (`summary` or `full` - full includes span input/output payloads). pyfsr: `client.ai.traces.get(trace_id)`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nReturns one\
+        \ trace with its own spans as a tree. Use `GET /api/ai/traces/{trace_id}/execution-tree` for the full nested run including\
+        \ sub-traces. Query params: `depth` (tree depth, default 3), `io` (`summary` or `full` - full includes span input/output\
+        \ payloads). pyfsr: `client.ai.traces.get(trace_id)`."
+      x-fsr-version: 8.0.1+
       parameters:
       - name: depth
         in: query
@@ -23679,11 +23676,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.get(\"abc123\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/{trace_id}/execution-tree:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/{trace_id}/execution-tree:
     parameters:
     - name: trace_id
       in: path
@@ -23695,10 +23690,11 @@ paths:
       tags:
       - AI Traces
       summary: Get the full execution tree for a run
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nStitches in every sub-trace (agent-to-agent\
-        \ calls, tool sub-runs) into one tree - the same structure the Trace Flow panel renders. Query params: `depth` (default\
-        \ 10), `io` (`summary` or `full`), `max_traces` (cap on sub-traces, default 25). pyfsr: `client.ai.traces.execution_tree(trace_id)`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nStitches in\
+        \ every sub-trace (agent-to-agent calls, tool sub-runs) into one tree - the same structure the Trace Flow panel renders.\
+        \ Query params: `depth` (default 10), `io` (`summary` or `full`), `max_traces` (cap on sub-traces, default 25). pyfsr:\
+        \ `client.ai.traces.execution_tree(trace_id)`."
+      x-fsr-version: 8.0.1+
       parameters:
       - name: depth
         in: query
@@ -23728,11 +23724,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.execution_tree(\"abc123\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/{trace_id}/spans:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/{trace_id}/spans:
     parameters:
     - name: trace_id
       in: path
@@ -23744,10 +23738,10 @@ paths:
       tags:
       - AI Traces
       summary: List all spans in a trace (flat)
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nEvery span of one trace, flat, with full\
-        \ I/O. Use `GET /ai/traces/{trace_id}` for the tree view, or `GET /ai/traces/spans/{span_id}` for a single span's\
-        \ details. pyfsr: `client.ai.traces.spans(trace_id)`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nEvery span\
+        \ of one trace, flat, with full I/O. Use `GET /api/ai/traces/{trace_id}` for the tree view, or `GET /api/ai/traces/spans/{span_id}`\
+        \ for a single span's details. pyfsr: `client.ai.traces.spans(trace_id)`."
+      x-fsr-version: 8.0.1+
       responses:
         '200':
           description: Flat array of spans.
@@ -23761,11 +23755,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.spans(\"abc123\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/spans/{span_id}:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/spans/{span_id}:
     parameters:
     - name: span_id
       in: path
@@ -23777,9 +23769,9 @@ paths:
       tags:
       - AI Traces
       summary: Get a single span with full I/O
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nOne span with full input/output - the Step\
-        \ Details panel. pyfsr: `client.ai.traces.span(span_id)`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nOne span with\
+        \ full input/output - the Step Details panel. pyfsr: `client.ai.traces.span(span_id)`."
+      x-fsr-version: 8.0.1+
       responses:
         '200':
           description: Span detail.
@@ -23793,11 +23785,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span(\"span-xyz\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/spans/{span_id}/children:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/spans/{span_id}/children:
     parameters:
     - name: span_id
       in: path
@@ -23809,9 +23799,9 @@ paths:
       tags:
       - AI Traces
       summary: List direct children of a span
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nReturns the immediate child spans (one\
-        \ level deep)."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nReturns the\
+        \ immediate child spans (one level deep)."
+      x-fsr-version: 8.0.1+
       responses:
         '200':
           description: Array of child spans.
@@ -23825,11 +23815,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_children(\"span-xyz\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/spans/{span_id}/lineage:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/spans/{span_id}/lineage:
     parameters:
     - name: span_id
       in: path
@@ -23841,10 +23829,10 @@ paths:
       tags:
       - AI Traces
       summary: Data lineage around a span
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nWhich spans fed this span and which consumed\
-        \ its output. Query params: `direction` (`upstream`, `downstream`, or `both` - default `both`), `max_hops` (default\
-        \ 5). Always fails on fsr-ai 8.0.1 (HTTP 500)."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nWhich spans\
+        \ fed this span and which consumed its output. Query params: `direction` (`upstream`, `downstream`, or `both` - default\
+        \ `both`), `max_hops` (default 5). Always fails on fsr-ai 8.0.1 (HTTP 500)."
+      x-fsr-version: 8.0.1+
       parameters:
       - name: direction
         in: query
@@ -23869,11 +23857,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_lineage(\"span-xyz\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/spans/{span_id}/tree:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/spans/{span_id}/tree:
     parameters:
     - name: span_id
       in: path
@@ -23885,10 +23871,10 @@ paths:
       tags:
       - AI Traces
       summary: Get the subtree rooted at a span
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nThe subtree rooted at one span, e.g. a\
-        \ single agent's work inside a larger run. Query params: `depth` (default 10), `io` (`summary` or `full`). On fsr-ai\
-        \ 8.0.1 `GET .../tree` redirects to `.../subtree`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nThe subtree\
+        \ rooted at one span, e.g. a single agent's work inside a larger run. Query params: `depth` (default 10), `io` (`summary`\
+        \ or `full`). On fsr-ai 8.0.1 `GET .../tree` redirects to `.../subtree`."
+      x-fsr-version: 8.0.1+
       parameters:
       - name: depth
         in: query
@@ -23913,11 +23899,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_subtree(\"span-xyz\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/tokens/{trace_id}:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/tokens/{trace_id}:
     parameters:
     - name: trace_id
       in: path
@@ -23929,9 +23913,9 @@ paths:
       tags:
       - AI Traces
       summary: Token totals for a trace
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nPrompt, completion, and total token counts\
-        \ for all LLM calls in the trace."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nPrompt, completion,\
+        \ and total token counts for all LLM calls in the trace."
+      x-fsr-version: 8.0.1+
       responses:
         '200':
           description: Token totals.
@@ -23945,11 +23929,9 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.tokens(\"abc123\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/tokens/session/{session_id}:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/tokens/session/{session_id}:
     parameters:
     - name: session_id
       in: path
@@ -23961,9 +23943,9 @@ paths:
       tags:
       - AI Traces
       summary: Token totals across a chat session
-      description: "**API key: No \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0)\n\nAggregate token usage for every trace in\
-        \ a chat session."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nAggregate token\
+        \ usage for every trace in a chat session."
+      x-fsr-version: 8.0.1+
       responses:
         '200':
           description: Session token totals.
@@ -23977,19 +23959,17 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.session_tokens(\"sess-xyz\")"
       x-auth:
-        apikey: 'no'
-        jwt: 'yes'
-      security:
-      - bearerJwt: []
-  /ai/traces/delete:
+        apikey: untested
+        jwt: untested
+  /api/ai/traces/delete:
     delete:
       tags:
       - AI Traces
       summary: Purge traces older than a cutoff
-      description: "**API key: Not tested \xB7 JWT: Not tested** (measured on FortiSOAR 8.0.0)\n\nDelete every trace older\
-        \ than a cutoff. There is no per-trace delete: the endpoint only accepts a bulk cutoff. Body: `{\"days\": 30}` or\
-        \ `{\"before\": \"2026-01-01T00:00:00Z\"}`. pyfsr: `client.ai.traces.purge_older_than(days=30)`."
-      x-fsr-version: 8.0+
+      description: "**API key: Not tested \xB7 JWT: Not tested** (needs FortiSOAR 8.0.1; measured on 8.0.0)\n\nDelete every\
+        \ trace older than a cutoff. There is no per-trace delete: the endpoint only accepts a bulk cutoff. Body: `{\"days\"\
+        : 30}` or `{\"before\": \"2026-01-01T00:00:00Z\"}`. pyfsr: `client.ai.traces.purge_older_than(days=30)`."
+      x-fsr-version: 8.0.1+
       requestBody:
         required: true
         content:

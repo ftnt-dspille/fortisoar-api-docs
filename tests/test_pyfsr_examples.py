@@ -606,12 +606,12 @@ def _fake_request(self, method, url, **kwargs):
     if method == "GET" and "/api/3/llm_activity_logs" in url:
         return _fake_response(200, json.dumps([]).encode())
     # --- AI Traces ---
-    if "/ai/traces" in url:
+    if "/api/ai/traces" in url:
         # health
-        if url.rstrip("/").endswith("/ai/traces/health"):
+        if url.rstrip("/").endswith("/api/ai/traces/health"):
             return _fake_response(200, b'"ok"')
         # delete (purge)
-        if method == "DELETE" and url.rstrip("/").endswith("/ai/traces/delete"):
+        if method == "DELETE" and url.rstrip("/").endswith("/api/ai/traces/delete"):
             return _fake_response(200, json.dumps({"deleted": 5}).encode())
         # tokens
         if "/tokens/" in url:
@@ -638,9 +638,9 @@ def _fake_request(self, method, url, **kwargs):
         if method == "GET" and "/spans" in url and "/spans/" not in url:
             return _fake_response(200, json.dumps({"spans": [{"span_id": "s1", "trace_id": "abc123"}]}).encode())
         # single trace - needs {"root": {"span_id": ...}}
-        if method == "GET" and "/ai/traces/" in url:
+        if method == "GET" and "/api/ai/traces/" in url:
             # Could be list or single trace. List has /traces/ at end.
-            if url.rstrip("/").endswith("/ai/traces"):
+            if url.rstrip("/").endswith("/api/ai/traces"):
                 # list - needs {"traces": [{"trace_id": ...}]}
                 return _fake_response(200, json.dumps({"traces": [{"trace_id": "abc123", "status": "OK"}]}).encode())
             # single trace - needs {"root": {"span_id": ...}}
