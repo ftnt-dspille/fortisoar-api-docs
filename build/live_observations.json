@@ -259,3118 +259,6 @@
       }
     }
   },
-  "GET /ai/agent/": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": [
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data |\n| detransform_map  | JSON object required when `action=unmask`; used to reconstruct original data |\n",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n| detransform_map  | JSON object containing mappings to reconstruct original data (present when `action=mask`) |\n",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "{Masking}",
-            "classpath": "IOCMasking",
-            "config_count": -1,
-            "config_schema": null,
-            "configuration": [],
-            "dependencies": [],
-            "description": "Detects and masks IOC's including emails, IP addresses, filehash using pattern matching regex rules before sending data to the LLM.",
-            "id": 1,
-            "inputformat": {
-              "action": "Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data",
-              "data": "Input data containing sensitive information to be masked or unmasked",
-              "detransform_map": "required when unmasking data, which contains actual data with masking key"
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "IOC Masking",
-            "llmconfig": null,
-            "name": "ioc-masking",
-            "outputformat": {
-              "action": "mask/unmask",
-              "data": "masked/unmasked data",
-              "detransform_map": "map contains masking key and actual unmasked data"
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Masking"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| Data | The complete raw alert payload containing all available alert metadata, indicators, timestamps, entities, and contextual fields required for triage. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| Summary | Investigation summary with verdict, key findings, next steps, and highlights .|\n| Hypotheses | All generated investigation hypotheses |\n| Logs | Detailed evaluation of investigation questions and results |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "AlertInvestigationAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Analyzes incoming security alerts using alert details, enrichment results from other agents, and investigation evidence to determine alert validity, severity, and priority. Correlates available context and recommends investigative next actions.",
-            "id": 2,
-            "inputformat": {
-              "data": "Raw alert"
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Alert Investigation",
-            "llmconfig": null,
-            "name": "alert-investigation",
-            "outputformat": {
-              "data": {},
-              "hypotheses": [],
-              "logs": [],
-              "summary": {
-                "classification": "",
-                "highlighted_summary": "",
-                "key_findings": [],
-                "narrative_summary": "",
-                "next_action_steps": [],
-                "severity": ""
-              }
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Analysis and Investigation"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| context | Raw alert data used as the primary context for hypothesis generation. This represents the unprocessed alert payload. |\n| indicators | A list or object containing extracted indicators (e.g., IPs, domains, hashes, users, processes) relevant to the alert. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| id | Unique identifier containing only numbers |\n| name | Name of the detected threat or entity |\n| intent | Classification of intent: BENIGN, MALICIOUS, FALSE POSITIVE, or SUSPICIOUS |\n| explanatory_focus | Primary focus area of the threat analysis |\n| description | Detailed description of the threat or finding |\n| reasoning | Explanation of the analysis  |\n| tactics | Array of MITRE ATT&CK tactics associated with the threat |\n| techniques | Array of MITRE ATT&CK techniques used in the threat |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "InvestigationHypothesisAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "investigation-hypothesis",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Generates investigation hypotheses for security alerts or incidents based on observed indicators, behaviors, and contextual data.",
-            "id": 3,
-            "inputformat": {
-              "data": "Raw alert",
-              "indicators": "List of indicators"
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Investigation Hypothesis Generation",
-            "llmconfig": null,
-            "name": "investigation-hypothesis",
-            "outputformat": {
-              "explanatory_focus": "",
-              "id": "",
-              "intent": "BENIGN | MALICIOUS | FALSE POSITIVE | SUSPICIOUS",
-              "name": "",
-              "reasoning": "",
-              "tactics": [],
-              "techniques": []
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Analysis and Investigation"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| data | Raw alert data containing initial alert details and context. |\n| indicators | List of identified indicators of compromise extracted from the alert. |\n| hypotheses | List of generated investigation hypotheses based on alert analysis. |\n| agents | List of agents assigned to execute investigation tasks. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output must be returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| status | Response status ('success' or 'failure'). |\n| plan | Array of investigation steps with the following properties: |\n| question | Investigation question to be answered. |\n| primary_information_type | List of information types required to answer the question. |\n| agent_hint | Assigned agent responsible for executing the step (e.g., ThreatIntelAgent, AssetCMDBAgent). |\n| params | Additional parameters and configuration for the investigation step. |\n| supports | List of hypothesis IDs supported by this investigation step. |\n| weakens | List of hypothesis IDs weakened by this investigation step. |\n| tactics | MITRE ATT&CK tactics relevant to the investigation. |\n| techniques | MITRE ATT&CK technique IDs relevant to the investigation. |\n| yes_path | Next step IDs if the answer is affirmative. |\n| no_path | Next step IDs if the answer is negative. |\n| message | Status message providing additional context or details. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "InvestigationPlanningAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Generates investigation plans and structured methodologies for security alerts. Outlines investigation steps, recommends investigation direction, and provides approach based on alert complexity and investigation scope",
-            "id": 4,
-            "inputformat": {
-              "agents": "List of agents assigned to execute investigation tasks",
-              "data": "Raw alert data containing initial alert details and context",
-              "hypotheses": "List of generated investigation hypotheses based on alert analysis",
-              "indicators": "List of identified indicators of compromise extracted from the alert"
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Investigation Planner",
-            "llmconfig": null,
-            "name": "investigation-planning",
-            "outputformat": {
-              "plan": [
-                {
-                  "agent_hint": "",
-                  "no_path": [],
-                  "params": {},
-                  "primary_information_type": [],
-                  "question": "",
-                  "supports": [],
-                  "tactics": [],
-                  "techniques": [],
-                  "weakens": [],
-                  "yes_path": []
-                }
-              ]
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Analysis and Investigation"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| logs | Array of investigation logs containing question evaluations, findings, and step outcomes. |\n| hypotheses | Array of investigation hypotheses requiring validation and evidence correlation. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output must be returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| key_findings | Array of significant discoveries and critical evidence identified during investigation. |\n| hypothesis_details | Detailed analysis and validation status of investigation hypotheses with supporting evidence. |\n| verdict | Final determination of alert validity and threat classification. |\n| next_steps | Recommended actions and follow-up investigations based on investigation results. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "InvestigationVerdictAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "investigation-verdict",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Generates investigation summaries with final verdict, key findings, and recommended next steps based on gathered evidence and investigation results.",
-            "id": 5,
-            "inputformat": {
-              "hypotheses": "Array of investigation hypotheses requiring validation and evidence correlation.",
-              "logs": "Array of investigation logs containing question evaluations, findings, and step outcomes."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Investigation Summarization",
-            "llmconfig": null,
-            "name": "investigation-verdict",
-            "outputformat": {
-              "hypothesis_details": "Detailed analysis and validation status of investigation hypotheses with supporting evidence.",
-              "key_findings": "Array of significant discoveries and critical evidence identified during investigation.",
-              "next_steps": "Recommended actions and follow-up investigations based on investigation results.",
-              "verdict": "Final determination of alert validity and threat classification."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Analysis and Investigation"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question to be answered. |\n| indicators | List of indicator values as strings. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "AlertCorrelationAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "alert-correlation",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "mcp_server": [
-                    "<uuid>",
-                    "<uuid>"
-                  ],
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Retrieves and analyzes previous alerts and associated IOC's to surface potential attack sequences, recurring behaviors, and possible threat campaign relationships for investigation.",
-            "id": 6,
-            "inputformat": {
-              "indicators": {
-                "description": "List of indicator values",
-                "example": [
-                  "192.168.1.1",
-                  "example.com",
-                  "<self-agent>"
-                ],
-                "required": false,
-                "type": "array of strings"
-              },
-              "question": {
-                "description": "The question to be answered",
-                "required": true,
-                "type": "string"
-              }
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Alert Correlation",
-            "llmconfig": null,
-            "name": "alert-correlation",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Analysis and Investigation"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The natural language task for this agent to execute. |\n| intent | Classify the task. Must be one of: IOC_HUNT, ASSOCIATED_EVENTS, OTHER. |\n| indicatorRecordValue | The raw IOC value (e.g., '81.68.95.163', 'evil.com'). |\n| indicatorRecordType | Type of the IOC: IP Address, Domain, Email Address, Host, FileHash-MD5, FileHash-SHA1, FileHash-SHA256, URL, User, or File. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "SIEMAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "siem",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "mcp_server": [
-                    "<uuid>"
-                  ],
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Retrieves event details through connected tools and data sources to provide event records, measurements, and activity timelines for investigating network, authentication, and system behavior at the event level.",
-            "id": 8,
-            "inputformat": {
-              "indicatorRecordType": {
-                "description": "Type of the IOC. Must be exactly one of: 'IP Address', 'Domain', 'Email Address', 'Host', 'FileHash-MD5', 'FileHash-SHA1', 'FileHash-SHA256', 'URL', 'User', or 'File'. Infer the type from the IOC value format. Populate only when indicatorRecordValue is provided.",
-                "required": false,
-                "type": "string"
-              },
-              "indicatorRecordValue": {
-                "description": "The raw IOC value (e.g., '81.68.95.163', 'evil.com')",
-                "required": false,
-                "type": "string"
-              },
-              "intent": {
-                "description": "Classify the request into exactly one of: 'IOC_HUNT' \u2014 question wants to search for indicators of compromise (IPs, hashes, domains, URLs) across historical logs with no reference to a known incident; 'ASSOCIATED_EVENTS' \u2014 question asks about events linked to the given incident; 'OTHER' \u2014 use only if neither fits.",
-                "required": true,
-                "type": "string"
-              },
-              "question": {
-                "description": "The natural language task for this agent to execute.",
-                "required": true,
-                "type": "string"
-              }
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Query SIEM",
-            "llmconfig": null,
-            "name": "siem",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Data Access and Retrieval"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question that needs to be answered. |\n| entities | List of entity values (e.g., hosts, users, IPs, domains) used for contextual correlation. |\n| time_window_days | Number of past days to constrain the ticket search scope. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "ITSMAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": false,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Finds related tickets and incidents by correlating investigations and alerts with investigation ID, alert ID, and key entities such as hosts, users, and IPs.",
-            "id": 10,
-            "inputformat": {
-              "entities": [
-                "<entity_1>",
-                "<entity_2>"
-              ],
-              "question": "The question that needs to be answered",
-              "time_window_days": "Number of past days to constrain the ticket search scope"
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "ITSM Context Provider",
-            "llmconfig": null,
-            "name": "itsm",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question that needs to be answered. |\n| ioc | IOC-related information that must be used strictly to derive the answer. |\n| hostname | Host-related information that must be used strictly to derive the answer. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "EndpointTelemetryAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Queries endpoint telemetry using IOCs (file hashes, IPs, domains, command lines), hosts, and date ranges to retrieve endpoint activity, processes, files, registry changes, and network connections for investigation.",
-            "id": 11,
-            "inputformat": {
-              "hostname": {
-                "description": "Host-related information that must be used strictly to derive the answer",
-                "required": true,
-                "type": "string"
-              },
-              "ioc": {
-                "description": "Single IOC for which information required. Only include file_path, file_name, file_hash, process_name, process_id. If not found keep it blank",
-                "type": "string"
-              },
-              "question": {
-                "description": "Investigation question to answer",
-                "required": true,
-                "type": "string"
-              }
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Query Endpoint",
-            "llmconfig": null,
-            "name": "endpoint-telemetry",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question that needs to be answered. |\n| search_query | List of queries which will help to search through context memory. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "OrganizationContextAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "organization-context",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Retrieves organization-specific information such as business activities, schedules, events, policies, and compliance requirements.",
-            "id": 12,
-            "inputformat": {
-              "question": "The question that needs to be answered.",
-              "search_query": [
-                "multiple queries which will help to search through context memory"
-              ]
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Organization Context Provider",
-            "llmconfig": null,
-            "name": "organization-context",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question that needs to be answered. |\n| ioc | List of IOC (Indicator of Compromise) objects to enrich. Each IOC object must contain `value` and `type`. Example : { value : `8.8.8.8`, type : `IP Address` }|",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "IOCEnrichmentAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "ioc-enrichment",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "mcp_server": [
-                    "<uuid>"
-                  ],
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Enriches indicators (IPs, domains, URLs, file hashes, emails, ports) with external and internal threat intelligence, providing reputation scores, threat associations, geolocation data, ASN details, and campaign attribution for threat identification.",
-            "id": 7,
-            "inputformat": {
-              "ioc": {
-                "description": "Retrieve detailed information for the indicator of compromise (IOC)",
-                "example": [
-                  {
-                    "type": "IP Address",
-                    "value": "192.168.1.100"
-                  },
-                  {
-                    "type": "Domain",
-                    "value": "malicious.com"
-                  }
-                ],
-                "properties": {
-                  "type": {
-                    "type": "enum",
-                    "values": [
-                      "IP Address",
-                      "Domain",
-                      "Email Address",
-                      "File",
-                      "FileHash-MD5",
-                      "FileHash-SHA1",
-                      "FileHash-SHA256",
-                      "URL",
-                      "User"
-                    ]
-                  },
-                  "value": {
-                    "description": "The IOC value (IP, domain, URL, hash, email)",
-                    "type": "string"
-                  }
-                },
-                "required": true,
-                "type": "array of objects"
-              },
-              "question": {
-                "description": "The question that needs to be answered",
-                "required": true,
-                "type": "string"
-              }
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Threat Intelligence Provider",
-            "llmconfig": null,
-            "name": "ioc-enrichment",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| natural_language_task | Description of what data should be retrieved from FortiSOAR, including any filters or conditions. |\n| objective | The purpose of the request and what the retrieved data is expected to help accomplish. |\n| chain_of_thought | Logical reasoning that guides how the objective should be interpreted to retrieve the correct data. |\n| entities | Fields to be parse after fetching record. |\n| user_context | Logged-in user context. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| status | Indicates whether the request completed successfully or failed. |\n| metadata | Additional details about the query execution, such as execution mode and record count. |\n| data | List of records returned from the FortiSOAR based on the request. |\n| url | Query string or reference used to fetch the records for traceability. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "FortiSOARDataAccessAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "fortisoar-data-access",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "mcp_server": [
-                    "<uuid>",
-                    "<uuid>"
-                  ],
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "An SOC-aware SOAR agent that interprets natural-language security queries, identifies the appropriate FortiSOAR module, retrieves matching records using relevant filters, parses key fields from the results, enriches context across related modules (Indicators, Reputation, Assets, SLA, MITRE), and returns a single, fully correlated response.",
-            "id": 9,
-            "inputformat": {
-              "chain_of_thought": "Logical reasoning that guides how the objective should be interpreted to retrieve the correct data.",
-              "entities": "Field to be parse after fetching record",
-              "natural_language_task": "Description of what data should be retrieved from FortiSOAR, including any filters or conditions",
-              "objective": "The purpose of the request and what the retrieved data is expected to help accomplish.",
-              "user_context": "Logged-in user context."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "FortiSOAR Data Access",
-            "llmconfig": null,
-            "name": "fortisoar-data-access",
-            "outputformat": {
-              "data": "List of records returned from the FortiSOAR based on the request.",
-              "metadata": "Additional details about the query execution, such as execution mode and record count.",
-              "status": "Indicates whether the request completed successfully or failed.",
-              "url": "Query string or reference used to fetch the records for traceability."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Insight",
-              "Data Access and Retrieval"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question to be answered. The response should follow these constraints: (1) Prefer yes/no if possible, (2) Use minimum words, (3) Return 'No information available' if data is insufficient. |\n| user | User details or contextual data that must be used strictly to derive the answer. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "IdentityContextAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "identity-context",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "mcp_server": [
-                    "<uuid>"
-                  ],
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Enriches user identities with role, privilege level, group memberships, behavior patterns, and recent authentication activity to assess user risk and investigate user-related incidents.",
-            "id": 13,
-            "inputformat": {
-              "question": {
-                "description": "The question that needs to be answered",
-                "required": true,
-                "type": "string"
-              },
-              "user": {
-                "description": "User name or user id for which question needs to be answered. Do not include customer name, tenant , IP.",
-                "required": true,
-                "type": "sting"
-              }
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Identity Context Provider",
-            "llmconfig": null,
-            "name": "identity-context",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n\n| Parameter       | Description|\n| --------------- | ----------------------------------------------------------------------------------------------------------------- |\n| messages        | List of user input messages to be processed by the conversation agent.. |\n| insight_id      | Insight id to answer query in context of. |\n| message_history | Historical conversation messages providing context for the current request. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n\n| Parameter | Description                                        |\n| --------- | -------------------------------------------------- |\n| status    | Indicates if the request was successful or failed. |\n| data      | The response returned by the agent.   |\n| message   | A message describing the result.             |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "ConversationAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "A cybersecurity conversational agent that interprets SOC analyst queries and provides accurate, context-driven responses.",
-            "id": 15,
-            "inputformat": {
-              "insight_id": "Insight id to answer query in context of.",
-              "message_history": "Historical conversation messages providing context for the current request.",
-              "messages": "List of user input messages to be processed by the conversation agent."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Chat Assistant",
-            "llmconfig": null,
-            "name": "conversation",
-            "outputformat": {
-              "data": "The response returned by the agent.",
-              "message": "A message describing the result. ",
-              "status": "Indicates if the request was successful or failed."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| natural_language_task | Instruction describing what metrics should be generated or calculated from the provided data. |\n| data | Structured dataset used as the source for metric generation and calculation. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| status | Indicates whether the metric calculation completed successfully or failed. |\n| data | Structured output containing calculated metrics, the final result, and an explanation of how the metrics were derived. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "MetricComputationAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "metric-computation",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Filters, transforms, and computes metrics from structured data based on natural-language instructions. Performs aggregations, scoring, trend analysis, and lightweight correlation to generate analytical insights.",
-            "id": 16,
-            "inputformat": {
-              "data": "Structured dataset used as the source for metric generation and calculation.",
-              "natural_language_task": "Instruction describing what metrics should be generated or calculated from the provided data."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Metric Computation",
-            "llmconfig": null,
-            "name": "metric-computation",
-            "outputformat": {
-              "data": "Structured output containing calculated metrics, the final result, and an explanation of how the metrics were derived.",
-              "status": "Indicates whether the metric calculation completed successfully or failed."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Insight",
-              "Core and Orchestration"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| question | The question that needs to be answered. |\n| asset | List of assets that needs to be evaluated. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n### Parameters\n| Parameter | Description |\n|----------|-------------|\n| answer | Answer to the query derived from available data. |\n| confidence | Confidence percentage indicating reliability of the answer. |\n| evidence | Supporting information and details from retrieved data sources. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "AssetEnrichmentAgent",
-            "config_count": 1,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "value": "Default Configuration",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Connect MCP server to extend agent capabilities by providing access to tools, resources, and integrations.",
-                        "editable": true,
-                        "name": "mcp_server",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/3/mcp_configurations?$limit=30&$orderby=-modifyDate",
-                          "urlResponseKey": "hydra:member"
-                        },
-                        "required": true,
-                        "title": "MCP Server",
-                        "tooltip": "Select MCP server to extend agent capabilities with tools, resources, and integrations.",
-                        "type": "multiselect",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [
-              {
-                "agent_name": "asset-enrichment",
-                "agent_version": "1.0.0",
-                "config": {
-                  "config_type": "custom",
-                  "llm_provider": "<uuid>",
-                  "masking_agent": "ioc-masking",
-                  "mcp_server": [
-                    "<uuid>"
-                  ],
-                  "name": "Custom Configuration"
-                },
-                "config_id": "<uuid>",
-                "default": false,
-                "name": ""
-              }
-            ],
-            "dependencies": [],
-            "description": "Enriches hosts, servers, and resources with asset metadata including ownership, criticality levels, data sensitivity classifications, and business function. Provides contextual information to assess asset risk and relevance during incident investigation.",
-            "id": 14,
-            "inputformat": {
-              "asset": {
-                "description": "List of asset values i.e. either hostname or internal ips",
-                "required": true,
-                "type": "array of strings"
-              },
-              "question": {
-                "description": "The question that needs to be answered",
-                "required": true,
-                "type": "string"
-              }
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Asset Context Provider",
-            "llmconfig": null,
-            "name": "asset-enrichment",
-            "outputformat": {
-              "answer": "success",
-              "confidence": "",
-              "evidence": ""
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Triage",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| query | User query that must be decomposed into structured, executable tasks. |\n| socrole | Defines the analyst role used to interpret the execution results and tailor response guidance.|\n| chain_of_thought | Logical reasoning that guides how the objective should be interpreted to retrieve the correct data |\n| generate_plan | Set to `true` to generate a task execution plan; otherwise, decompose the task into actionable steps. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| steps | A structured investigation plan composed of ordered steps. |\n| chain_of_thought | When `generate_plan` is set to false, contains a structured breakdown of the task. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "TaskPlannerAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Analyzes user queries and assesses task scale and complexity. Generates optimized multi-step task plans by selecting and orchestrating the most appropriate tools to fulfill the objectives.",
-            "id": 17,
-            "inputformat": {
-              "chain_of_thought": "Logical reasoning that guides how the objective should be interpreted to retrieve the correct data.",
-              "generate_plan": "Set to `true` to generate a task execution plan; otherwise, decompose the task into actionable steps.",
-              "query": "User query that must be decomposed into structured, executable tasks.",
-              "socrole": "Defines the analyst role used to interpret the execution results and tailor response guidance."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Task Planner",
-            "llmconfig": null,
-            "name": "task-planner",
-            "outputformat": {
-              "chain_of_thought": "When `generate_plan` is set to false, contains a structured breakdown of the task.",
-              "steps": "A structured investigation plan composed of ordered steps."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Core and Orchestration"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| natural_language_task |  Instruction describing how threats should be evaluated using configurable risk knowledge and contextual criteria. |\n| data | Structured contextual data used to compute risk and evaluate threats. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| status | Indicates whether the risk evaluation completed successfully or failed. |\n| data | Structured output containing evaluated threats, contextual risk assessment, and highest-risk threat identification with explanations. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "RiskEvaluationAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Evaluates threat risk using configurable knowledge and contextual data. Aligns threats with relevant organizational impact scopes and produces structured assessments prioritizing high-risk threats with detailed explanations.",
-            "id": 18,
-            "inputformat": {
-              "data": "Structured contextual data used to compute risk and evaluate threats.",
-              "natural_language_task": " Instruction describing how threats should be evaluated using configurable risk knowledge and contextual criteria."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Impact Analysis",
-            "llmconfig": null,
-            "name": "risk-evaluation",
-            "outputformat": {
-              "data": "Structured output containing evaluated threats, contextual risk assessment, and highest-risk threat identification with explanations.",
-              "status": "Indicates whether the risk evaluation completed successfully or failed."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Insight",
-              "Context and Enrichment"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          },
-          {
-            "active": true,
-            "additional_information": [
-              {
-                "context": "The input must be provided as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| data | List of structured outputs from previous workflow steps used as the source for summary generation. |\n| natural_language_task | Instruction specifying what should be summarized, analyzed, or extracted from the provided data. |\n| socrole | Define the analyst role used to interpret the execution results and tailor response guidance. |",
-                "title": "INPUTS",
-                "type": "textarea"
-              },
-              {
-                "context": "The output is returned as a JSON object.\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| status | Indicates whether the summary generation completed successfully or failed. |\n| summary | Final narrative summary synthesized from the provided workflow outputs. |",
-                "title": "OUTPUTS",
-                "type": "textarea"
-              }
-            ],
-            "category": "",
-            "classpath": "SummaryAgent",
-            "config_count": 0,
-            "config_schema": {
-              "fields": [
-                {
-                  "editable": true,
-                  "name": "config_type",
-                  "onchange": {
-                    "custom": [
-                      {
-                        "editable": true,
-                        "name": "name",
-                        "options": [],
-                        "required": true,
-                        "title": "Configuration Name",
-                        "type": "text",
-                        "visible": true
-                      },
-                      {
-                        "description": "Select the reasoning level for the language model. Higher reasoning provides more in-depth analysis and problem-solving, while lower reasoning offers faster responses for simpler tasks.",
-                        "editable": true,
-                        "name": "llm_provider",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "uuid",
-                          "contentLabel": "name",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/llm/config",
-                          "urlResponseKey": "data"
-                        },
-                        "required": true,
-                        "title": "LLM Provider",
-                        "tooltip": "Choose the model reasoning level based on your task requirements.",
-                        "type": "select",
-                        "visible": true
-                      },
-                      {
-                        "description": "Use a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "editable": true,
-                        "name": "masking_agent",
-                        "options": [],
-                        "renderer": "dynamic",
-                        "rendererParams": {
-                          "contentKey": "name",
-                          "contentLabel": "label",
-                          "requestMethod": "GET",
-                          "url": "/api/ai/agent/?category=masking",
-                          "urlResponseKey": "data"
-                        },
-                        "required": false,
-                        "title": "Masking Agent",
-                        "tooltip": "Select a masking agent to detect and mask IOCs before it is sent to the LLM.",
-                        "type": "select",
-                        "value": "ioc-masking",
-                        "visible": true
-                      }
-                    ]
-                  },
-                  "options": [
-                    {
-                      "label": "Default System Configuration",
-                      "value": "default"
-                    },
-                    {
-                      "label": "Custom Configuration",
-                      "value": "custom"
-                    }
-                  ],
-                  "renderer": "object",
-                  "title": "Configuration Type",
-                  "type": "select",
-                  "value": "default",
-                  "visible": true
-                }
-              ]
-            },
-            "configuration": [],
-            "dependencies": [],
-            "description": "Synthesizes outputs from previous workflow steps and generates a final human-readable summary in the requested format for analysis, decision-making, and reporting.",
-            "id": 19,
-            "inputformat": {
-              "data": "List of structured outputs from previous workflow steps used as the source for summary generation.",
-              "natural_language_task": "Instruction specifying what should be summarized, analyzed, or extracted from the provided data.",
-              "socrole": "Define the analyst role used to interpret the execution results and tailor response guidance."
-            },
-            "installed": true,
-            "jailbreakguard": false,
-            "label": "Summary",
-            "llmconfig": null,
-            "name": "summary",
-            "outputformat": {
-              "status": "Indicates whether the summary generation completed successfully or failed.",
-              "summary": "Final synthesized narrative generated from the provided workflow outputs."
-            },
-            "piimasking": false,
-            "prompt": null,
-            "status": "Completed",
-            "system": false,
-            "tags": [
-              "Insight",
-              "Analysis and Investigation"
-            ],
-            "uuid": "<uuid>",
-            "version": "1.0.0"
-          }
-        ],
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/agent/config/default": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": {
-          "agent_name": null,
-          "agent_version": null,
-          "config": {
-            "config_type": "default",
-            "llm_provider": "<uuid>",
-            "masking_agent": "ioc-masking",
-            "mcp_server": [
-              "<uuid>",
-              "<uuid>",
-              "<uuid>",
-              "<uuid>"
-            ]
-          },
-          "config_id": null,
-          "default": false,
-          "name": null
-        },
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/agent/config/{agent_name}/{version}": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "GET /ai/agent/{name}/{version}": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": {
-          "active": true,
-          "additional_information": [
-            {
-              "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data |\n| detransform_map  | JSON object required when `action=unmask`; used to reconstruct original data |\n",
-              "title": "INPUTS",
-              "type": "textarea"
-            },
-            {
-              "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n| detransform_map  | JSON object containing mappings to reconstruct original data (present when `action=mask`) |\n",
-              "title": "OUTPUTS",
-              "type": "textarea"
-            }
-          ],
-          "category": "{Masking}",
-          "classpath": "IOCMasking",
-          "config_count": -1,
-          "config_schema": null,
-          "configuration": [],
-          "dependencies": [],
-          "description": "Detects and masks IOC's including emails, IP addresses, filehash using pattern matching regex rules before sending data to the LLM.",
-          "id": 1,
-          "inputformat": {
-            "action": "Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data",
-            "data": "Input data containing sensitive information to be masked or unmasked",
-            "detransform_map": "required when unmasking data, which contains actual data with masking key"
-          },
-          "installed": true,
-          "jailbreakguard": false,
-          "label": "IOC Masking",
-          "llmconfig": null,
-          "name": "ioc-masking",
-          "outputformat": {
-            "action": "mask/unmask",
-            "data": "masked/unmasked data",
-            "detransform_map": "map contains masking key and actual unmasked data"
-          },
-          "piimasking": false,
-          "prompt": null,
-          "status": "Completed",
-          "system": false,
-          "tags": [
-            "Masking"
-          ],
-          "uuid": "<uuid>",
-          "version": "1.0.0"
-        },
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/agent/{name}/{version}/relationships": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": [],
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/agent/{uuid}": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": {
-          "active": true,
-          "additional_information": [
-            {
-              "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data |\n| detransform_map  | JSON object required when `action=unmask`; used to reconstruct original data |\n",
-              "title": "INPUTS",
-              "type": "textarea"
-            },
-            {
-              "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n| detransform_map  | JSON object containing mappings to reconstruct original data (present when `action=mask`) |\n",
-              "title": "OUTPUTS",
-              "type": "textarea"
-            }
-          ],
-          "category": "{Masking}",
-          "classpath": "IOCMasking",
-          "config_count": 0,
-          "config_schema": null,
-          "configuration": [],
-          "dependencies": [],
-          "description": "Detects and masks IOC's including emails, IP addresses, filehash using pattern matching regex rules before sending data to the LLM.",
-          "id": 1,
-          "inputformat": {
-            "action": "Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data",
-            "data": "Input data containing sensitive information to be masked or unmasked",
-            "detransform_map": "required when unmasking data, which contains actual data with masking key"
-          },
-          "installed": true,
-          "jailbreakguard": false,
-          "label": "IOC Masking",
-          "llmconfig": null,
-          "name": "ioc-masking",
-          "outputformat": {
-            "action": "mask/unmask",
-            "data": "masked/unmasked data",
-            "detransform_map": "map contains masking key and actual unmasked data"
-          },
-          "piimasking": false,
-          "prompt": null,
-          "status": "Completed",
-          "system": false,
-          "tags": [
-            "Masking"
-          ],
-          "uuid": "<uuid>",
-          "version": "1.0.0"
-        },
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/agents/{task_id}/result": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
-  "GET /ai/agents/{task_id}/status": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
-  "GET /ai/insight/": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": [],
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/insight/plan/{task_id}/result": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
-  "GET /ai/insight/plan/{task_id}/status": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
-  "GET /ai/insight/{insight_id}": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "GET /ai/llm/config": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": [
-          {
-            "active": true,
-            "apikey": "default",
-            "baseurl": null,
-            "config": {
-              "connector_config_id": "<uuid>",
-              "connector_name": "fortinet-fortiai-proxy"
-            },
-            "isdefault": true,
-            "model": null,
-            "modelname": "gpt-4.1",
-            "name": "Low Reasoning",
-            "provider": "fortisoar",
-            "uuid": "<uuid>"
-          },
-          {
-            "active": true,
-            "apikey": "default",
-            "baseurl": null,
-            "config": {
-              "connector_config_id": "<uuid>",
-              "connector_name": "fortinet-fortiai-proxy"
-            },
-            "isdefault": false,
-            "model": null,
-            "modelname": "gpt-5.4",
-            "name": "High Reasoning",
-            "provider": "fortisoar",
-            "uuid": "<uuid>"
-          }
-        ],
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/llm/config/{uuid}": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": {
-          "active": true,
-          "apikey": "default",
-          "baseurl": null,
-          "config": {
-            "connector_config_id": "<uuid>",
-            "connector_name": "fortinet-fortiai-proxy"
-          },
-          "isdefault": true,
-          "model": null,
-          "modelname": "gpt-4.1",
-          "name": "Low Reasoning",
-          "provider": "fortisoar",
-          "uuid": "<uuid>"
-        },
-        "response_status": 200
-      }
-    }
-  },
-  "GET /ai/llm/config/{uuid}/verify": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "GET /ai/mcp": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": null,
-        "response_body": [
-          {
-            "id": "<uuid>",
-            "name": "AWSEC2"
-          },
-          {
-            "id": "<uuid>",
-            "name": "SOC Framework"
-          },
-          {
-            "id": "<uuid>",
-            "name": "Utility Tools"
-          },
-          {
-            "id": "<uuid>",
-            "name": "FortiSOAR Playbook Management"
-          },
-          {
-            "id": "<uuid>",
-            "name": "FortiSOAR Module Management"
-          }
-        ],
-        "response_status": 201
-      }
-    }
-  },
   "GET /api/3/actors/current": {
     "by_auth": {
       "apikey": {
@@ -114084,6 +110972,190 @@
       }
     }
   },
+  "GET /api/ai/agent/config/{agent_name}/{version}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 500
+      }
+    }
+  },
+  "GET /api/ai/agent/{name}/{version}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": {
+          "active": true,
+          "additional_information": [
+            {
+              "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data |\n| detransform_map  | JSON object required when `action=unmask`; used to reconstruct original data |\n",
+              "title": "INPUTS",
+              "type": "textarea"
+            },
+            {
+              "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n| detransform_map  | JSON object containing mappings to reconstruct original data (present when `action=mask`) |\n",
+              "title": "OUTPUTS",
+              "type": "textarea"
+            }
+          ],
+          "category": "{Masking}",
+          "classpath": "IOCMasking",
+          "config_count": -1,
+          "config_schema": null,
+          "configuration": [],
+          "dependencies": [],
+          "description": "Detects and masks IOC's including emails, IP addresses, filehash using pattern matching regex rules before sending data to the LLM.",
+          "id": 1,
+          "inputformat": {
+            "action": "Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data",
+            "data": "Input data containing sensitive information to be masked or unmasked",
+            "detransform_map": "required when unmasking data, which contains actual data with masking key"
+          },
+          "installed": true,
+          "jailbreakguard": false,
+          "label": "IOC Masking",
+          "llmconfig": null,
+          "name": "ioc-masking",
+          "outputformat": {
+            "action": "mask/unmask",
+            "data": "masked/unmasked data",
+            "detransform_map": "map contains masking key and actual unmasked data"
+          },
+          "piimasking": false,
+          "prompt": null,
+          "status": "Completed",
+          "system": false,
+          "tags": [
+            "Masking"
+          ],
+          "uuid": "<uuid>",
+          "version": "1.0.0"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/ai/agent/{name}/{version}/relationships": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": [],
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/ai/agent/{uuid}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": {
+          "active": true,
+          "additional_information": [
+            {
+              "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data |\n| detransform_map  | JSON object required when `action=unmask`; used to reconstruct original data |\n",
+              "title": "INPUTS",
+              "type": "textarea"
+            },
+            {
+              "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n| detransform_map  | JSON object containing mappings to reconstruct original data (present when `action=mask`) |\n",
+              "title": "OUTPUTS",
+              "type": "textarea"
+            }
+          ],
+          "category": "{Masking}",
+          "classpath": "IOCMasking",
+          "config_count": 0,
+          "config_schema": null,
+          "configuration": [],
+          "dependencies": [],
+          "description": "Detects and masks IOC's including emails, IP addresses, filehash using pattern matching regex rules before sending data to the LLM.",
+          "id": 1,
+          "inputformat": {
+            "action": "Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data",
+            "data": "Input data containing sensitive information to be masked or unmasked",
+            "detransform_map": "required when unmasking data, which contains actual data with masking key"
+          },
+          "installed": true,
+          "jailbreakguard": false,
+          "label": "IOC Masking",
+          "llmconfig": null,
+          "name": "ioc-masking",
+          "outputformat": {
+            "action": "mask/unmask",
+            "data": "masked/unmasked data",
+            "detransform_map": "map contains masking key and actual unmasked data"
+          },
+          "piimasking": false,
+          "prompt": null,
+          "status": "Completed",
+          "system": false,
+          "tags": [
+            "Masking"
+          ],
+          "uuid": "<uuid>",
+          "version": "1.0.0"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/ai/agents/{task_id}/result": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 404
+      }
+    }
+  },
+  "GET /api/ai/agents/{task_id}/status": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 404
+      }
+    }
+  },
   "GET /api/ai/insight/": {
     "by_auth": {
       "apikey": {
@@ -137276,6 +134348,54 @@
       }
     }
   },
+  "GET /api/ai/insight/plan/{task_id}/result": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 404
+      }
+    }
+  },
+  "GET /api/ai/insight/plan/{task_id}/status": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 404
+      }
+    }
+  },
+  "GET /api/ai/insight/{insight_id}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 500
+      }
+    }
+  },
   "GET /api/ai/llm/config": {
     "by_auth": {
       "apikey": {
@@ -137332,6 +134452,50 @@
           }
         ],
         "response_status": 200
+      }
+    }
+  },
+  "GET /api/ai/llm/config/{uuid}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": {
+          "active": true,
+          "apikey": "default",
+          "baseurl": null,
+          "config": {
+            "connector_config_id": "<uuid>",
+            "connector_name": "fortinet-fortiai-proxy"
+          },
+          "isdefault": true,
+          "model": null,
+          "modelname": "gpt-4.1",
+          "name": "Low Reasoning",
+          "provider": "fortisoar",
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/ai/llm/config/{uuid}/verify": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 500
       }
     }
   },
@@ -145321,84 +142485,6 @@
       }
     }
   },
-  "POST /ai/agent/activate": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {
-          "active": true,
-          "uuids": []
-        },
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {
-          "active": true,
-          "uuids": []
-        },
-        "response_body": {
-          "uuids": []
-        },
-        "response_status": 200
-      }
-    }
-  },
-  "POST /ai/agent/config": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
-  "POST /ai/agent/config/default": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": {
-          "agent_name": null,
-          "agent_version": null,
-          "config": {},
-          "config_id": null,
-          "default": false,
-          "name": null
-        },
-        "response_status": 200
-      }
-    }
-  },
-  "POST /ai/agent/export/{agent_id}": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 200
-      }
-    }
-  },
   "POST /ai/agent/import": {
     "by_auth": {
       "apikey": {
@@ -145412,238 +142498,6 @@
         "request_body": {},
         "response_body": null,
         "response_status": 422
-      }
-    }
-  },
-  "POST /ai/agents/{agent_name}/trigger": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "gated_upstream": true,
-        "response_status": null
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": {
-          "status": "pending",
-          "task_id": "<uuid>"
-        },
-        "response_status": 202
-      }
-    }
-  },
-  "POST /ai/agents/{task_id}/acceptance": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 404
-      }
-    }
-  },
-  "POST /ai/chat/": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 422
-      }
-    }
-  },
-  "POST /ai/enrich/context": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "POST /ai/enrich/context/index": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "POST /ai/enrich/index/build": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 204
-      }
-    }
-  },
-  "POST /ai/insight/chain_of_thoughts": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 422
-      }
-    }
-  },
-  "POST /ai/insight/plan": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 422
-      }
-    }
-  },
-  "POST /ai/insight/plan/execute": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 422
-      }
-    }
-  },
-  "POST /ai/insight/trigger/schedule": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "POST /ai/llm/config": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 422
-      }
-    }
-  },
-  "POST /ai/mcp/validate": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 500
-      }
-    }
-  },
-  "POST /ai/prompt/validate": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": {
-          "message": "Message validate Successfully",
-          "valid": true
-        },
-        "response_status": 201
-      }
-    }
-  },
-  "POST /ai/triage/alert": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 401
-      },
-      "jwt": {
-        "captured_at": "2026-10-06",
-        "request_body": {},
-        "response_body": {
-          "status": "pending",
-          "task_id": "<uuid>"
-        },
-        "response_status": 202
       }
     }
   },
@@ -149473,6 +146327,254 @@
           "uuids": []
         },
         "response_status": 200
+      }
+    }
+  },
+  "POST /api/ai/agent/config": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 404
+      }
+    }
+  },
+  "POST /api/ai/agent/config/default": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": {
+          "agent_name": null,
+          "agent_version": null,
+          "config": {},
+          "config_id": null,
+          "default": false,
+          "name": null
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/ai/agent/export/{agent_id}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/ai/agents/{agent_name}/trigger": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "gated_upstream": true,
+        "response_status": null
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": {
+          "status": "pending",
+          "task_id": "<uuid>"
+        },
+        "response_status": 202
+      }
+    }
+  },
+  "POST /api/ai/agents/{task_id}/acceptance": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 404
+      }
+    }
+  },
+  "POST /api/ai/chat/": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 422
+      }
+    }
+  },
+  "POST /api/ai/enrich/context": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 500
+      }
+    }
+  },
+  "POST /api/ai/enrich/context/index": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 500
+      }
+    }
+  },
+  "POST /api/ai/enrich/index/build": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 204
+      }
+    }
+  },
+  "POST /api/ai/insight/chain_of_thoughts": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 422
+      }
+    }
+  },
+  "POST /api/ai/insight/plan": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 422
+      }
+    }
+  },
+  "POST /api/ai/insight/plan/execute": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 422
+      }
+    }
+  },
+  "POST /api/ai/insight/trigger/schedule": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 500
+      }
+    }
+  },
+  "POST /api/ai/llm/config": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 422
+      }
+    }
+  },
+  "POST /api/ai/mcp/validate": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 401
+      },
+      "jwt": {
+        "captured_at": "2026-10-06",
+        "request_body": {},
+        "response_body": null,
+        "response_status": 500
       }
     }
   },

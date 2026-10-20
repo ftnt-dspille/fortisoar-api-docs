@@ -11,9 +11,9 @@ because it matters. Coverage is the curated core surface; queue
 expansions in TODOS.md.
 
 Outputs build/fortisoar.curated.openapi.yaml.
-The companion src/verify_curated.py exercises every op against a live
-FSR (creds in .env) and emits build/curated_verification.json which the
-Scalar page surfaces as per-op verified badges.
+Live inputs, both optional: build/live_observations.json (src/live_test.py)
+supplies real request/response examples; build/auth_probe.json
+(src/auth_probe.py) supplies each op's API key / JWT support.
 """
 from __future__ import annotations
 
@@ -769,9 +769,8 @@ PATHS["/api/auth/license"] = {
             "Authenticated equivalent of the `POST /api/public/license` `get_info` flow, but reports "
             "deployed-license state (`remaining_days`, `expired_nodes`, per-node max users, "
             "issue/expiry dates) rather than parsing an unsubmitted key.\n\n"
-            "**Auth quirk on 7.6.x:** typically JWT-only - API key returns 403. Some builds also "
-            "surface a generic 400 on the JWT path when the auth standalone service is unhappy; "
-            "callers that just need basic build info should prefer `GET /api/version` instead."
+            "Some builds answer a generic 400 when the auth service is unhappy; callers that just "
+            "need basic build info should prefer `GET /api/version` instead."
         ),
         "parameters": [
             {"name": "param", "in": "query", "required": False,
@@ -1098,9 +1097,7 @@ for verb, op_method, op_summary, op_desc, body_shape in [
      "Insert-or-update **a single record** keyed on the module's identifier field. Body is a JSON object, "
      "not an array - use `/api/3/bulkupsert/{moduleType}` for the array variant.", "object"),
     ("bulkupsert", "post",   "Bulk upsert",
-     "Array-input version of upsert. Body must be a JSON array. Works under JWT auth on FSR 7.6.x; "
-     "under API-KEY auth the server fans out to its own credentials and may report "
-     "`Invalid credentials` per item.", "array_obj"),
+     "Array-input version of upsert. Body must be a JSON array.", "array_obj"),
 ]:
     op_def = {
         "tags": ["Bulk operations"],
@@ -1733,7 +1730,7 @@ _WF_LIST_PARAMS = [
 
 PATHS["/api/wf/api/workflows/"] = {
     "get": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "List recent playbook runs",
         "description": (
             "Hydra-paged list of recent playbook execution logs. **Recent** here means runs that have not "
@@ -1762,7 +1759,7 @@ PATHS["/api/wf/api/workflows/{pk}/"] = {
     "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "Workflow pk (the trailing segment of the `@id` from a list result). Numeric on this build."}],
     "get": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Recent run detail",
         "description": (
             "Full execution record for one recent playbook run. `result` is a dict keyed by step UUID with "
@@ -1778,7 +1775,7 @@ PATHS["/api/wf/api/workflows/{pk}/"] = {
 
 PATHS["/api/wf/api/workflows/log_list/"] = {
     "post": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Status lookup by `task_id`",
         "description": (
             "Returns the status of one or more executing playbooks identified by `task_id`. The `task_id` "
@@ -1799,7 +1796,7 @@ PATHS["/api/wf/api/workflows/log_list/"] = {
 
 PATHS["/api/wf/api/historical-workflows/"] = {
     "get": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "List historical playbook runs",
         "description": (
             "Hydra-paged list of playbook runs that have been moved to historical storage (added in 7.6.1). "
@@ -1819,7 +1816,7 @@ PATHS["/api/wf/api/historical-workflows/{pk}/"] = {
     "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "Historical workflow pk (trailing segment of `@id`)."}],
     "get": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Historical run detail",
         "description": (
             "Detail view for one historical playbook run. Shape mirrors `/api/wf/api/workflows/{pk}/` - "
@@ -1833,7 +1830,7 @@ PATHS["/api/wf/api/historical-workflows/{pk}/"] = {
 
 PATHS["/api/wf/api/query/workflow_logs/"] = {
     "post": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Query playbook logs (recent + historical)",
         "description": (
             "POST-body query against the playbook log store. `?logs=all` (default) combines recent and "
@@ -1908,7 +1905,7 @@ PATHS["/api/wf/api/query/workflow_logs/"] = {
 }
 
 PATHS["/api/wf/api/workflows/count/"] = {
-    "get": {"tags": ["Workflows"], "summary": "Workflow count",
+    "get": {"tags": ["Playbook runs"], "summary": "Workflow count",
             "description": (
                 "Total run count. `?logs=all` (default) combines recent + historical; pass `logs=recent` or "
                 "`logs=historical` to restrict.\n\n"
@@ -1946,7 +1943,7 @@ for action, desc in [
     _schema, _example = _WF_ACTION_BODIES[action]
     PATHS[f"/api/wf/api/workflows/{{pk}}/{action}/"] = {
         "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"}}],
-        "post": {"tags": ["Workflows"], "summary": f"Workflow {action}", "description": desc,
+        "post": {"tags": ["Playbook runs"], "summary": f"Workflow {action}", "description": desc,
                  "requestBody": {"required": False, "content": {"application/json": {
                      "schema": _schema, "example": _example,
                  }}},
@@ -1955,7 +1952,7 @@ for action, desc in [
 
 PATHS["/api/wf/api/jinja-editor/"] = {
     "post": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Render a Jinja template",
         "description": "Live Jinja evaluation. Supports ~144 filters (Jinja2 + Ansible + FortiSOAR-specific). YAQL also available via `| yaql(...)` in 7.2.0+.",
         "requestBody": {"required": True, "content": {"application/json": {
@@ -1968,7 +1965,7 @@ PATHS["/api/wf/api/jinja-editor/"] = {
 }
 
 PATHS["/api/wf/api/manual-wf-input/list_wfinput/"] = {
-    "post": {"tags": ["Workflows"], "summary": "List pending manual inputs",
+    "post": {"tags": ["Playbook runs"], "summary": "List pending manual inputs",
              "description": "GET on this path returns 405 - must be POST.\n\nEach `hydra:member` carries `id` (the `manual_input_id` for the resume), `step_id` (the execution-step id - the only honest link to a run, since `workflow` is an *encrypted* token, not the run pk), `type` (`InputBased`/`DecisionBased`), and `title`. The list omits `response_mapping` (the buttons) - fetch that via `retrieve_wfinput`.",
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {},
@@ -1980,7 +1977,7 @@ PATHS["/api/wf/api/manual-wf-input/list_wfinput/"] = {
 PATHS["/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/"] = {
     "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "manual_input_id (`list_wfinput[].id`)."}],
-    "post": {"tags": ["Workflows"], "summary": "Retrieve one pending manual input (with buttons)",
+    "post": {"tags": ["Playbook runs"], "summary": "Retrieve one pending manual input (with buttons)",
              "description": "Returns the full manual-input record including `response_mapping.options[]` (the buttons and each option's `step_iri`). `list_wfinput` omits these, so you need this call to know which option to send when resuming.",
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {}}}},
@@ -1997,17 +1994,15 @@ PATHS["/api/wf/api/workflows/{pk}/wfinput_resume/"] = {
     "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "Integer workflow-RUN pk (from the run record `@id`)."}],
     "post": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Resume an awaiting manual-input gate (advances the run)",
         "description": (
             "Submit a human's input + chosen button to a paused `awaiting` run and advance it. "
             "The chosen button is conveyed via its `step_iri` (the next step it routes to), taken from "
             "`retrieve_wfinput`'s `response_mapping.options[]`. Correlate the gate to the run by id: the run's "
             "awaiting execution-step ids (`GET {pk}/?step_detail=true`) ∩ `list_wfinput[].step_id`.\n\n"
-            "For `is_approval` gates also send `approved: <bool>`.\n\n"
-            "**Auth coverage:** `jwt: OK`"
+            "For `is_approval` gates also send `approved: <bool>`."
         ),
-        "x-verified-live": ["jwt"],
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "required": ["input", "step_iri", "step_id", "manual_input_id"],
                        "properties": {
@@ -2031,20 +2026,19 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
     "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "manual_input_id (`list_wfinput[].id`)."}],
     "put": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Update a manual-input record (does NOT resume the run)",
         "description": (
             "Returns 200 and updates the record, but **does not advance an `awaiting` run** - a common trap. "
             "To actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live 2026-05-29: "
             "PUT here left the run in `awaiting`."
         ),
-        "x-verified-live": ["jwt"],
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object"}, "example": {"input": {}}}}},
         "responses": {"200": _resp("Record updated (run NOT advanced).")},
     },
     "delete": {
-        "tags": ["Workflows"],
+        "tags": ["Playbook runs"],
         "summary": "Abandon/cancel a pending manual input",
         "description": (
             "Removes the waiting input - the paused playbook step is "
@@ -2215,8 +2209,8 @@ PATHS["/api/triggers/1/{name}"] = {
     "parameters": [{"name": "name", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "User-defined endpoint name from a Custom API Endpoint trigger."}],
     "post": {
-        "tags": ["Triggers"],
-        "summary": "Custom playbook trigger",
+        "tags": ["Run a playbook"],
+        "summary": "Run a playbook by its API endpoint name",
         "description": (
             "Fires a playbook by its trigger's arbitrary endpoint name. May allow Basic auth or no-auth depending on trigger config (intentional, for external webhooks).\n\n"
             "Response always carries a `task_id` (sometimes top-level, sometimes nested under `data`). Track the run via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True` and fetch full results from `GET /api/wf/api/workflows/{pk}/`. See [Triggering a playbook with an API key and tracking the task](#description/triggering-a-playbook-with-an-api-key-and-tracking-the-task)."
@@ -2228,7 +2222,7 @@ PATHS["/api/triggers/1/{name}"] = {
 
 PATHS["/api/triggers/1/deferred/{name}"] = {
     "parameters": [{"name": "name", "in": "path", "required": True, "schema": {"type": "string"}}],
-    "post": {"tags": ["Triggers"], "summary": "Custom trigger (deferred / async)",
+    "post": {"tags": ["Run a playbook"], "summary": "Run a playbook by its API endpoint name, asynchronously",
              "description": "Same shape as `POST /api/triggers/1/{name}` but always returns 202 and runs the playbook on a worker.",
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {},
@@ -2238,14 +2232,35 @@ PATHS["/api/triggers/1/deferred/{name}"] = {
 
 PATHS["/api/triggers/1/notrigger/{workflowId}"] = {
     "parameters": [{"name": "workflowId", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
-    "post": {"tags": ["Triggers"], "summary": "Run workflow by id without firing trigger conditions",
-             "description": "Direct execution by workflow UUID, bypassing trigger filters. Use for debugging / forced replay.\n\nResponse carries a top-level `task_id`; track via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`.\n\n**Auth coverage:** `jwt: OK`",
-             "x-verified-live": ["jwt"],
+    "post": {"tags": ["Run a playbook"], "summary": "Run a playbook by UUID (skips trigger conditions)",
+             "description": "Runs any playbook by its workflow UUID, whatever its trigger type, without evaluating the trigger's conditions. The simplest way to run a playbook from a script.\n\nResponse carries a top-level `task_id`; track via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`.",
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object", "description": "Arbitrary input payload exposed to the workflow."},
                  "example": {"input": {}, "request": {"data": {}}, "useMockOutput": False, "globalMock": False},
              }}},
              "responses": {"200": _resp("Run result.", example={"task_id": "04495f62-3cc1-4067-955e-18a452a4783c"})}},
+}
+
+PATHS["/api/triggers/1/action/{routeUuid}"] = {
+    "parameters": [{"name": "routeUuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+                    "description": "The trigger step's `route` uuid (`triggerStep.arguments.route` on the playbook), not the playbook uuid."}],
+    "post": {"tags": ["Run a playbook"], "summary": "Run a manual (record action) playbook",
+             "description": (
+                 "What the UI's record action button calls, for playbooks whose trigger is a record action. "
+                 "Extra top-level keys in the body reach the playbook as input.\n\n"
+                 "Answers `{\"task_ids\": [...]}` (plural, a list), unlike the `notrigger` route's scalar `task_id`; "
+                 "track each via `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True`."
+             ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object", "properties": {
+                     "records": {"type": "array", "items": {"type": "string"}, "description": "Record IRIs, e.g. `/api/3/alerts/<uuid>`."},
+                     "__resource": {"type": "string", "description": "Module the records belong to, e.g. `alerts`."},
+                     "singleRecordExecution": {"type": "boolean"},
+                     "__uuid": {"type": "string", "description": "The playbook uuid. Some versions require it."},
+                 }},
+                 "example": {"singleRecordExecution": True, "__resource": "alerts", "records": [f"/api/3/alerts/{_UUID}"]},
+             }}},
+             "responses": {"200": _resp("Run accepted.", example={"task_ids": ["c0afba58-9dbe-44dd-a6e6-7227e33990dd"]})}},
 }
 
 
@@ -3954,7 +3969,7 @@ PATHS["/api/wf/api/dynamic-variable/"] = {
 # Per-step execution records and the modern approval gate list endpoint.
 
 PATHS["/api/wf/api/historical-steps/"] = {
-    "get": {"tags": ["Workflows"], "summary": "List per-step execution records for a run",
+    "get": {"tags": ["Playbook runs"], "summary": "List per-step execution records for a run",
             "description": (
                 "Fetch per-step execution records for a playbook run, keyed by `task_id` "
                 "(what `POST /api/wf/api/workflows/{pk}/start/` returns). Steps are ordered "
@@ -3973,7 +3988,7 @@ PATHS["/api/wf/api/historical-steps/"] = {
 }
 
 PATHS["/api/wf/api/manual-wf-input/"] = {
-    "get": {"tags": ["Workflows"], "summary": "List pending manual-input / approval gates",
+    "get": {"tags": ["Playbook runs"], "summary": "List pending manual-input / approval gates",
             "description": (
                 "Returns all pending manual-wf-input records - the modern, resumable "
                 "approval gates. Each record represents a paused playbook step awaiting "
@@ -4058,7 +4073,7 @@ TAG_GROUPS = [
     {"name": "Records", "tags": ["Records (generic)", "Bulk operations", "Alerts"]},
     {"name": "Modules", "tags": ["Modules"]},
     {"name": "Query", "tags": ["Query"]},
-    {"name": "Automation", "tags": ["Workflows", "Triggers", "Scheduled tasks", "Connectors", "Agents", "Workflow tools"]},
+    {"name": "Automation", "tags": ["Run a playbook", "Playbook runs", "Scheduled tasks", "Connectors", "Agents", "Workflow tools"]},
     {"name": "Threat intel", "tags": ["Threat intel (TAXII)"]},
     {"name": "Audit", "tags": ["Audit"]},
     {"name": "Reference", "tags": ["Metadata", "Files", "Widgets", "Views", "Import / export"]},
@@ -4083,8 +4098,19 @@ TAG_DESCRIPTIONS = {
     "Bulk operations": "High-throughput insert/update/delete/upsert and feed-ingest paths. Note: `/api/ingest-feeds/*` and `/api/insert-feeds/*` skip on-create playbook triggers; `POST /api/3/insert/*` does not.",
     "Query": "Three search surfaces: URL-param (AND only), POST `/api/query/*` body grammar (full AND/OR + aggregates), and global Elasticsearch (`/api/search`). See operation descriptions for when to use which.",
     "Audit": "Audit log search + retention. Returns one page at a time with no total count - call `/count` separately if you need it. Filters are top-level only and accept exactly one value.",
-    "Workflows": "Workflow run control, history, and introspection. Lives under `/api/wf/*`.",
-    "Triggers": "Fire playbooks - by custom-endpoint name, deferred (async), or by workflow id without firing trigger conditions.",
+    "Playbook runs": "Track and control playbook runs after they start: status by `task_id`, run detail, step history, resume / retry / approve. Lives under `/api/wf/*`.",
+    "Run a playbook": (
+        "Start a playbook from the API. Pick the route by how the playbook is triggered:\n\n"
+        "| Playbook's trigger | Route | pyfsr |\n"
+        "|---|---|---|\n"
+        "| Any (by playbook UUID; trigger conditions skipped) | `POST /api/triggers/1/notrigger/{workflowId}` | `client.playbooks.trigger(name_or_uuid)` |\n"
+        "| Custom API Endpoint | `POST /api/triggers/1/{name}` | `client.playbooks.trigger_by_name(name)` |\n"
+        "| Custom API Endpoint, run on a worker (202) | `POST /api/triggers/1/deferred/{name}` | `client.playbooks.trigger_by_name(name, deferred=True)` |\n"
+        "| Manual (record action button) | `POST /api/triggers/1/action/{routeUuid}` | `client.playbooks.trigger_action(route_uuid, module=..., record_uuid=...)` |\n\n"
+        "Every route answers with a `task_id`. Track it with `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True` "
+        "(see **Playbook runs**), or call `client.playbooks.run_and_wait(...)`. Worked example: "
+        "[Triggering a playbook with an API key and tracking the task](#description/triggering-a-playbook-with-an-api-key-and-tracking-the-task)."
+    ),
     "Scheduled tasks": (
         "Workflow-engine periodic jobs under `/api/wf/api/scheduled/` - the "
         "platform-shipped schedules (Reclaim Disk Space, Purge Executed Playbook "
@@ -4186,16 +4212,9 @@ REFERENCE_PROSE = r"""A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST
 
 > **Official docs:** [FortiSOAR API Guide on docs.fortinet.com](https://docs.fortinet.com/document/fortisoar/latest/api-guide/846127). This reference is **not** official Fortinet documentation - it's a community project. Consult the official guide for the authoritative surface; use this site for endpoints that the guide doesn't cover or where live-verified shapes are useful.
 
-> **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Operations stamped with **Live-verified** at the top of the page were exercised end-to-end against a real FortiSOAR. Anything without that stamp is documented from the API guide and DB introspection only - request/response shapes are best-effort, not guaranteed to be correct. Always validate against your own appliance before relying on it.
->
-> **What the Live-verified line tells you.** It looks like: **Live-verified** (`apikey: OK` - `jwt: OK`, YYYY-MM-DD).
->
-> - `apikey: OK` / `jwt: OK` - the verifier called the operation with that auth mode and got a 2xx response. Captured (sanitized) responses are folded into the `200` example.
-> - `apikey: 401` (or `403`, `404`, ...) - that auth mode returned the listed status code. Some endpoints only accept one auth mode; that's fine, just means the other won't work for you either.
-> - Trailing date - when the verifier last hit this op.
-> - No Live-verified line at all - never executed by the verifier. Treat as documentation-only.
+> **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Request/response examples marked live-captured came from a real FortiSOAR; the rest are documented from the API guide and DB introspection only and are best-effort. Always validate against your own appliance before relying on it.
 
-Schemas (`Alert`, `RecordLog`, ...) are validated against captured responses where present. Run `python src/verify_curated.py` against your FortiSOAR (creds in `.env`) to refresh the verification report.
+Every operation starts with one line saying which credentials it accepts - see [Authentication](#description/authentication).
 
 ## Concepts
 
@@ -4217,7 +4236,13 @@ Three documented methods; only two are recommended.
 | **Bearer JWT** | `Authorization: Bearer <jwt>` | Short-lived / interactive use. Obtain from `POST /auth/authenticate`. Default TTL ~30 min; re-auth on 401. |
 | HMAC | (legacy) | Documented in the public PDF for completeness. Out of scope here - most clients should use API key. |
 
-Some endpoints accept only one method. The **`Live-verified`** badge on each op shows per-auth status; `apikey: 403` next to `jwt: 200` means that endpoint is JWT-only on the box we tested. Examples observed: `/api/auth/cluster/health` requires JWT; `/api/auth/license` is JWT-only; most CRUD works with both.
+Some endpoints accept only one method. Every operation starts with a line like **API key: Yes · JWT: Yes**, measured against a live FortiSOAR (the version is in the line):
+
+- **Yes** - that credential gets past authentication. Measured by sending the request with the real credential and with a garbage one of the same kind: if the answers differ, the credential was accepted.
+- **No** - the real credential gets the same rejection as a garbage one, or a 401/403 access denial.
+- **Not tested** - the call is too destructive to probe and no live capture covers it.
+
+The operation's lock icon / auth selector lists only the methods marked **Yes**.
 
 The `/api/version` and `/api/public/license` endpoints are **public** (no auth required).
 
@@ -4750,7 +4775,7 @@ def _example_from_schema(schema, spec):
 # ---------------------------------------------------------------------------
 # Hand-curated examples for ops we don't (and shouldn't) hit during the
 # read-only verifier sweep. Real captured data overrides these in
-# _merge_verification - this is the floor, not the ceiling.
+# live captures - this is the floor, not the ceiling.
 # ---------------------------------------------------------------------------
 
 CURATED_EXAMPLES = {
@@ -5303,9 +5328,9 @@ CROSS_LINKS = {
     "/api/wf/api/workflows/{pk}/approval/": "[Workflows & triggers](#description/workflows-triggers)",
     "/api/wf/api/manual-wf-input/list_wfinput/": "[Workflows & triggers](#description/workflows-triggers) (canonical resume path)",
     # Triggers
-    "/api/triggers/1/{name}": "[Workflows & triggers](#description/workflows-triggers) (Triggers)",
-    "/api/triggers/1/deferred/{name}": "[Workflows & triggers](#description/workflows-triggers) (Triggers)",
-    "/api/triggers/1/notrigger/{workflowId}": "[Workflows & triggers](#description/workflows-triggers) (Triggers)",
+    "/api/triggers/1/{name}": "[Workflows & triggers](#description/workflows-triggers)",
+    "/api/triggers/1/deferred/{name}": "[Workflows & triggers](#description/workflows-triggers)",
+    "/api/triggers/1/notrigger/{workflowId}": "[Workflows & triggers](#description/workflows-triggers)",
     # Imports
     "/api/3/import_jobs": "[Imports & exports](#description/imports-exports)",
     "/api/import/{job_uuid}": "[Imports & exports](#description/imports-exports)",
@@ -5313,7 +5338,7 @@ CROSS_LINKS = {
     "/api/3/files": "[Imports & exports](#description/imports-exports) (file upload is step 1 of import)",
     # Auth
     "/auth/authenticate": "[Authentication](#description/authentication)",
-    "/api/auth/cluster/health": "[Authentication](#description/authentication) (JWT-only on tested boxes)",
+    "/api/auth/cluster/health": "[Authentication](#description/authentication)",
     "/api/auth/license": "[Authentication](#description/authentication)",
 }
 
@@ -5350,156 +5375,6 @@ def _apply_curated_examples(spec):
             content = resp.setdefault("content", {})
             ct = content.setdefault("application/json", {})
             ct["example"] = ex
-
-
-VERIFICATION_FILE = ROOT / "build" / "curated_verification.json"
-
-# Cap large lists in response examples so the rendered docs don't ship
-# 100-item paged collections inline. Applied to top-level arrays AND to
-# the well-known `hydra:member` / `content` / `data` keys.
-LIST_CAP = 2
-TRUNCATE_KEYS = {"hydra:member", "content", "data", "results", "items"}
-
-
-def _truncate_lists(obj):
-    if isinstance(obj, list):
-        if len(obj) > LIST_CAP:
-            return [_truncate_lists(x) for x in obj[:LIST_CAP]] + [
-                f"... <{len(obj) - LIST_CAP} more items truncated>"]
-        return [_truncate_lists(x) for x in obj]
-    if isinstance(obj, dict):
-        out = {}
-        for k, v in obj.items():
-            if k in TRUNCATE_KEYS and isinstance(v, list) and len(v) > LIST_CAP:
-                out[k] = [_truncate_lists(x) for x in v[:LIST_CAP]] + [
-                    f"... <{len(v) - LIST_CAP} more items truncated>"]
-            else:
-                out[k] = _truncate_lists(v)
-        return out
-    return obj
-
-
-def _merge_verification(spec):
-    """If a verification.json sits next to us, prepend each op's
-    description with a one-line verification badge. Lets the Scalar
-    page surface live-test status without a separate UI layer.
-    """
-    if not VERIFICATION_FILE.exists():
-        # Nothing exercised at all - mark every op as unverified.
-        for path, item in spec["paths"].items():
-            for method, op in item.items():
-                if method == "parameters":
-                    continue
-                op["description"] = (
-                    "**Unverified** - example data is synthetic; this op has "
-                    "not been exercised against a live FortiSOAR.\n\n"
-                ) + (op.get("description") or "")
-                op["x-fsr-status"] = "unverified-synthetic"
-        return
-    data = json.loads(VERIFICATION_FILE.read_text())
-    verified_at = data.get("generated_at") or _dt.date.today().isoformat()
-    for path, item in spec["paths"].items():
-        for method, op in item.items():
-            if method == "parameters":
-                continue
-            key = f"{method.upper()} {path}"
-            v = data["ops"].get(key)
-
-            # Op never exercised by the verifier at all (skipped, filtered,
-            # or absent from a partial run). Pure synthetic example.
-            if not v or "by_auth" not in v:
-                reason = (v or {}).get("skipped",
-                          "verifier did not exercise this op (e.g. read-only mode skipped a mutating verb)")
-                op["description"] = (
-                    f"**Unverified** - {reason}. Example data below is "
-                    f"synthetic.\n\n"
-                ) + (op.get("description") or "")
-                op["x-fsr-status"] = "unverified-skipped"
-                continue
-
-            # Op exercised but no auth mode returned 2xx - real failure
-            # against the live FSR.
-            any_ok = any(200 <= d["status"] < 300 for d in v["by_auth"].values())
-            if not any_ok:
-                badges = [f"`{l}: {d['status']}`" for l, d in v["by_auth"].items()]
-                op["description"] = (
-                    f"**Unverified** - last live test ({verified_at}) failed: "
-                    + " - ".join(badges)
-                    + ". Example data below is synthetic.\n\n"
-                ) + (op.get("description") or "")
-                op["x-fsr-status"] = "unverified-failing"
-                op["x-fsr-verification"] = v["by_auth"]
-                continue
-
-            # If this op was already touched by `live_test.py` (its description
-            # carries an "Auth coverage:" line and `x-verified-live` is set),
-            # skip the verifier's badge - the live-observations source is
-            # richer (real captured request + response per auth) and we don't
-            # want to duplicate.
-            if "x-verified-live" in op or "**Auth coverage:**" in (op.get("description") or ""):
-                op["x-fsr-status"] = "verified"
-                op["x-fsr-verification"] = v["by_auth"]
-            else:
-                badges = []
-                for label, d in v["by_auth"].items():
-                    ok = 200 <= d["status"] < 300
-                    schema_ok = d.get("schema_ok")
-                    marker = ("OK" if ok else f"{d['status']}")
-                    if ok and schema_ok is False:
-                        marker += " (schema drift)"
-                    badges.append(f"`{label}: {marker}`")
-                line = "**Live-verified** (" + " - ".join(badges) + f", {verified_at})\n\n"
-                op["description"] = line + (op.get("description") or "")
-                op["x-fsr-status"] = "verified"
-                op["x-fsr-verification"] = v["by_auth"]
-
-            # Replace the synthesized 2xx response example with the real
-            # captured response from whichever auth mode succeeded. The
-            # verifier already sanitized it.
-            real_resp = None
-            real_req = None
-            for label in ("apikey", "jwt"):
-                d = v["by_auth"].get(label)
-                if d and 200 <= d.get("status", 0) < 300 and isinstance(d.get("sample_response"), (dict, list)):
-                    real_resp = d["sample_response"]
-                    real_req = (d.get("sent_request") or {}).get("body")
-                    break
-            if real_resp is not None:
-                for code, resp in op.get("responses", {}).items():
-                    if not str(code).startswith("2"):
-                        continue
-                    ct = resp.get("content", {}).get("application/json")
-                    if ct is not None:
-                        ct["example"] = _truncate_lists(real_resp)
-                    break
-            if real_req is not None:
-                rb = op.get("requestBody", {}).get("content", {}).get("application/json")
-                if rb is not None:
-                    if isinstance(rb.get("examples"), dict):
-                        # Multi-example op - add the captured one as a
-                        # named entry so curated examples stay alongside.
-                        rb["examples"]["live-captured"] = {
-                            "summary": f"Live-captured (verified {data.get('generated_at') or _dt.date.today().isoformat()})",
-                            "value": _truncate_lists(real_req),
-                        }
-                    else:
-                        rb["example"] = _truncate_lists(real_req)
-
-            # Surface the actually-sent query params as per-parameter
-            # `example` fields so readers see real values, not just the
-            # schema default.
-            real_params = None
-            for label in ("apikey", "jwt"):
-                d = v["by_auth"].get(label)
-                if d and 200 <= d.get("status", 0) < 300:
-                    real_params = (d.get("sent_request") or {}).get("params") or {}
-                    break
-            if real_params:
-                # Combine path-item-level + op-level params lists.
-                for plist in (item.get("parameters") or [], op.get("parameters") or []):
-                    for p in plist:
-                        if p.get("in") == "query" and p.get("name") in real_params:
-                            p["example"] = real_params[p["name"]]
 
 
 # Implementation-detail tokens that must NOT appear in the rendered
@@ -5607,17 +5482,25 @@ def _scan_for_leaks(spec) -> list[tuple[str, str, str]]:
     return hits
 
 
+# Cap lists in live-captured examples so a paged collection doesn't ship inline.
+LIST_CAP = 2
+
+
+def _truncate_lists(obj):
+    if isinstance(obj, list):
+        head = [_truncate_lists(x) for x in obj[:LIST_CAP]]
+        return head + ([f"... <{len(obj) - LIST_CAP} more items truncated>"] if len(obj) > LIST_CAP else [])
+    if isinstance(obj, dict):
+        return {k: _truncate_lists(v) for k, v in obj.items()}
+    return obj
+
+
 def _apply_live_observations(spec: dict) -> int:
     """Overlay captured live request/response bodies onto matching ops.
 
-    Reads `build/live_observations.json` (written by `src/live_test.py`).
-    Each op was exercised under every available auth mode; we surface:
-
-    - The example body from a 2xx run (prefer JWT, fall back to API-KEY).
-    - `x-verified-live`: list of auth modes that returned 2xx for this op.
-    - A "**Auth coverage:**" line appended to the description showing the
-      observed status code per auth mode, so docs flag JWT-only / API-KEY-
-      only endpoints.
+    Reads `build/live_observations.json` (written by `src/live_test.py`) and
+    uses the body from a 2xx run, JWT preferred. Says nothing about which
+    credentials an op accepts - that is `_apply_auth_support`'s job.
     """
     path = OUT.parent / "live_observations.json"
     if not path.exists():
@@ -5630,66 +5513,74 @@ def _apply_live_observations(spec: dict) -> int:
     applied = 0
     for key, rec in obs.items():
         method, template = key.split(" ", 1)
-        if template not in paths:
-            continue
-        op = paths[template].get(method.lower())
+        op = paths.get(template, {}).get(method.lower())
         if not op:
             continue
-        by_auth = rec.get("by_auth") or {}
-        # Pick the auth run to source examples from: any 2xx, JWT preferred.
-        successful = {m: r for m, r in by_auth.items()
-                      if r.get("response_status") is not None
-                      and 200 <= r["response_status"] < 300}
+        successful = {m: r for m, r in (rec.get("by_auth") or {}).items()
+                      if r.get("response_status") and 200 <= r["response_status"] < 300}
         if not successful:
-            # No mode succeeded - still record coverage so docs say so.
-            op["x-verified-live"] = {m: r.get("response_status") for m, r in by_auth.items()}
-            op["description"] = (op.get("description", "") + _auth_coverage_line(by_auth)).strip()
-            applied += 1
             continue
-        preferred = "jwt" if "jwt" in successful else next(iter(successful))
-        src = successful[preferred]
+        src = successful["jwt"] if "jwt" in successful else next(iter(successful.values()))
         if src.get("request_body") is not None:
-            rb = op.setdefault("requestBody", {})
-            content = rb.setdefault("content", {}).setdefault("application/json", {})
+            content = op.setdefault("requestBody", {}).setdefault("content", {}).setdefault("application/json", {})
             content["example"] = src["request_body"]
-        status = str(src.get("response_status", 200))
         if src.get("response_body") is not None:
-            responses = op.setdefault("responses", {})
-            resp = responses.setdefault(status, {"description": "Live-captured response."})
-            content = resp.setdefault("content", {}).setdefault("application/json", {})
-            content["example"] = src["response_body"]
-        op["x-verified-live"] = sorted(successful.keys())
-        op["description"] = (op.get("description", "") + _auth_coverage_line(by_auth)).strip()
+            resp = op.setdefault("responses", {}).setdefault(str(src["response_status"]), {"description": "Live-captured response."})
+            resp.setdefault("content", {}).setdefault("application/json", {})["example"] = _truncate_lists(src["response_body"])
+        op["x-live-captured"] = True
         applied += 1
     return applied
 
 
-def _auth_coverage_line(by_auth: dict) -> str:
-    """Format an Auth coverage markdown line summarizing per-mode statuses.
+AUTH_PROBE_FILE = OUT.parent / "auth_probe.json"
+_AUTH_SCHEMES = {"apikey": "apiKeyAuth", "jwt": "bearerJwt"}
 
-    Three states are surfaced (no emojis - labels only):
-      `<auth>: OK`     - 2xx response observed.
-      `<auth>: NNN`    - request reached the server and was rejected.
-      `<auth>: gated`  - an upstream gate blocked us before this op was
-                         reached; treat as unavailable under that auth.
+
+def _apply_auth_support(spec: dict) -> int:
+    """Stamp each op with a YES / NO per credential, from `build/auth_probe.json`.
+
+    The probe's verdict wins; an op the probe could not settle (too destructive
+    to send, or a route that answers before auth) is a Yes only if a live
+    scenario got a 2xx with that credential. The op's `security` is narrowed to
+    the schemes that are Yes, so the renderer's auth selector agrees with the
+    line at the top of the description.
     """
-    if not by_auth:
-        return ""
-    parts = []
-    for mode in sorted(by_auth):
-        rec = by_auth[mode]
-        label = {"jwt": "Bearer JWT", "apikey": "API-KEY"}.get(mode, mode)
-        if rec.get("gated_upstream"):
-            parts.append(f"`{label}: gated`")
+    if not AUTH_PROBE_FILE.exists():
+        return 0
+    probe = json.loads(AUTH_PROBE_FILE.read_text())
+    obs_path = OUT.parent / "live_observations.json"
+    obs = json.loads(obs_path.read_text()) if obs_path.exists() else {}
+    version = (probe.get("fsr_version") or "").split("-")[0]
+    applied = 0
+    for key, rec in probe.get("ops", {}).items():
+        method, template = key.split(" ", 1)
+        op = spec["paths"].get(template, {}).get(method.lower())
+        if not op:
             continue
-        code = rec.get("response_status")
-        if code is None:
-            continue
-        marker = "OK" if 200 <= code < 300 else str(code)
-        parts.append(f"`{label}: {marker}`")
-    if not parts:
-        return ""
-    return "\n\n**Auth coverage:** " + " · ".join(parts)
+        live = (obs.get(key) or {}).get("by_auth") or {}
+        support = {}
+        for mode in ("apikey", "jwt"):
+            verdict = rec[mode]["verdict"]
+            if verdict in ("YES", "PUBLIC", "NO"):
+                support[mode] = verdict
+            elif 200 <= ((live.get(mode) or {}).get("response_status") or 0) < 300:
+                support[mode] = "YES"
+            else:
+                support[mode] = "UNTESTED"
+        op["x-auth"] = {m: v.lower() for m, v in support.items()}
+        if all(v == "PUBLIC" for v in support.values()):
+            op["security"] = []
+            line = "**No authentication required.**"
+        else:
+            yes = [_AUTH_SCHEMES[m] for m in ("apikey", "jwt") if support[m] == "YES"]
+            if yes:
+                op["security"] = [{s: []} for s in yes]
+            word = {"YES": "Yes", "NO": "No", "UNTESTED": "Not tested"}
+            line = f"**API key: {word[support['apikey']]} · JWT: {word[support['jwt']]}**"
+        line += f" (measured on FortiSOAR {version})" if version else ""
+        op["description"] = line + "\n\n" + (op.get("description") or "")
+        applied += 1
+    return applied
 
 
 def main():
@@ -5720,12 +5611,8 @@ def main():
     _ensure_examples(SPEC)
     _apply_curated_examples(SPEC)
     _apply_cross_links(SPEC)
-    # Live observations from `src/live_test.py` are the authoritative source
-    # for verification badges. The older `_merge_verification` (from the
-    # stateless verifier) is intentionally not invoked here - it produced a
-    # parallel "Live-verified" line that duplicated the per-auth coverage
-    # surfaced by `_apply_live_observations`.
     live_applied = _apply_live_observations(SPEC)
+    auth_applied = _apply_auth_support(SPEC)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     leaks = _scan_for_leaks(SPEC)
     if leaks:
@@ -5740,7 +5627,7 @@ def main():
     OUT.write_text(yaml.safe_dump(SPEC, sort_keys=False, default_flow_style=False, width=120))
     op_count = sum(1 for path in PATHS.values() for k in path if k in {"get", "post", "put", "delete", "patch"})
     print(f"Wrote {OUT} ({op_count} operations across {len(PATHS)} paths, "
-          f"{live_applied} live-verified, {pyfsr_applied} with a pyfsr sample, "
+          f"{live_applied} live-captured, {auth_applied} with measured auth, {pyfsr_applied} with a pyfsr sample, "
           f"{pyfsr_models_applied} with a pyfsr response model, {ai_paths} AI/MCP paths)")
 
 

@@ -355,7 +355,8 @@ def open_session() -> Session:
     pw = os.environ.get("FSR_PASSWORD", "")
 
     # Try to acquire BOTH auth modes -- every scenario then runs once per mode
-    # so the docs can surface "JWT only" / "API-KEY only" / "both" per op.
+    # so either mode can supply a live example. Which credentials an op accepts
+    # is measured by src/auth_probe.py, not inferred from these runs.
     modes: dict[str, str] = {}
     if user and pw:
         r = requests.post(f"{base}/auth/authenticate",
@@ -773,16 +774,16 @@ def scenario_smoke(s: Session) -> None:
 def scenario_ai(s: Session) -> None:
     """Exercise 8.0+ AI / MCP surface (GETs + safe POSTs).
 
-    Uses the spec-canonical ``/ai/`` prefix (not ``/api/ai/``) so observations
+    Uses the spec-canonical ``/api/ai/`` prefix (not ``/api/ai/``) so observations
     key against the curated OpenAPI paths.
     """
     _ok = (200, 401, 403)
     _post = (200, 201, 202, 204, 400, 404, 422, 500, 401, 403)
 
     print("[ai] agent list + LLM config + MCP server list")
-    _, agent_list = s.call("GET", "/ai/agent/", want=_ok)
-    _, llm_list = s.call("GET", "/ai/llm/config", want=_ok)
-    s.call("GET", "/ai/mcp", want=(200, 201, 401, 403))
+    _, agent_list = s.call("GET", "/api/ai/agent/", want=_ok)
+    _, llm_list = s.call("GET", "/api/ai/llm/config", want=_ok)
+    s.call("GET", "/api/ai/mcp", want=(200, 201, 401, 403))
 
     print("[ai] MCP CRUD store + connector candidates + activity")
     s.call("GET", "/api/3/mcp_configurations", want=_ok)
@@ -790,13 +791,13 @@ def scenario_ai(s: Session) -> None:
     s.call("GET", "/api/3/llm_activity_logs", want=_ok)
 
     print("[ai] insight list + default agent config")
-    s.call("GET", "/ai/insight/", want=_ok)
-    s.call("GET", "/ai/agent/config/default", want=_ok)
+    s.call("GET", "/api/ai/insight/", want=_ok)
+    s.call("GET", "/api/ai/agent/config/default", want=_ok)
 
     print("[ai] agent activate + prompt validate + triage")
-    s.call("POST", "/ai/agent/activate", want=(200, 401, 403), json={"uuids": [], "active": True})
-    s.call("POST", "/ai/prompt/validate", want=(200, 201, 401, 403), json={})
-    s.call("POST", "/ai/triage/alert", want=(202, 400, 401, 403), json={})
+    s.call("POST", "/api/ai/agent/activate", want=(200, 401, 403), json={"uuids": [], "active": True})
+    s.call("POST", "/api/ai/prompt/validate", want=(200, 201, 401, 403), json={})
+    s.call("POST", "/api/ai/triage/alert", want=(202, 400, 401, 403), json={})
 
     print("[ai] agent detail (by name/version + by uuid)")
     agents = agent_list if isinstance(agent_list, list) else []
@@ -804,14 +805,14 @@ def scenario_ai(s: Session) -> None:
         a = agents[0]
         a_name, a_ver, a_uuid = a.get("name"), a.get("version"), a.get("uuid")
         if a_name and a_ver:
-            s.call("GET", "/ai/agent/{name}/{version}", want=_ok,
+            s.call("GET", "/api/ai/agent/{name}/{version}", want=_ok,
                    path_params={"name": a_name, "version": a_ver})
-            s.call("GET", "/ai/agent/{name}/{version}/relationships", want=_ok,
+            s.call("GET", "/api/ai/agent/{name}/{version}/relationships", want=_ok,
                    path_params={"name": a_name, "version": a_ver})
-            s.call("GET", "/ai/agent/config/{agent_name}/{version}", want=(200, 404, 500, 401, 403),
+            s.call("GET", "/api/ai/agent/config/{agent_name}/{version}", want=(200, 404, 500, 401, 403),
                    path_params={"agent_name": a_name, "version": a_ver})
         if a_uuid:
-            s.call("GET", "/ai/agent/{uuid}", want=_ok,
+            s.call("GET", "/api/ai/agent/{uuid}", want=_ok,
                    path_params={"uuid": a_uuid})
 
     print("[ai] LLM config detail + verify")
@@ -819,9 +820,9 @@ def scenario_ai(s: Session) -> None:
     if llms:
         llm_uuid = llms[0].get("uuid")
         if llm_uuid:
-            s.call("GET", "/ai/llm/config/{uuid}", want=_ok,
+            s.call("GET", "/api/ai/llm/config/{uuid}", want=_ok,
                    path_params={"uuid": llm_uuid})
-            s.call("GET", "/ai/llm/config/{uuid}/verify", want=(200, 422, 500, 401, 403),
+            s.call("GET", "/api/ai/llm/config/{uuid}/verify", want=(200, 422, 500, 401, 403),
                    path_params={"uuid": llm_uuid},
                    params={"model_id": llm_uuid})
 
@@ -829,40 +830,40 @@ def scenario_ai(s: Session) -> None:
     if agents:
         a_name = agents[0].get("name")
         if a_name:
-            s.call("POST", "/ai/agents/{agent_name}/trigger", want=_post,
+            s.call("POST", "/api/ai/agents/{agent_name}/trigger", want=_post,
                    path_params={"agent_name": a_name}, json={})
     _dummy = "00000000-0000-0000-0000-000000000000"
-    s.call("GET", "/ai/agents/{task_id}/result", want=(200, 404, 422, 401, 403),
+    s.call("GET", "/api/ai/agents/{task_id}/result", want=(200, 404, 422, 401, 403),
            path_params={"task_id": _dummy})
-    s.call("GET", "/ai/agents/{task_id}/status", want=(200, 404, 422, 401, 403),
+    s.call("GET", "/api/ai/agents/{task_id}/status", want=(200, 404, 422, 401, 403),
            path_params={"task_id": _dummy})
-    s.call("POST", "/ai/agents/{task_id}/acceptance", want=(200, 404, 422, 401, 403),
+    s.call("POST", "/api/ai/agents/{task_id}/acceptance", want=(200, 404, 422, 401, 403),
            path_params={"task_id": _dummy}, json={})
 
     print("[ai] insight plan + chain_of_thoughts + execute + schedule")
-    s.call("POST", "/ai/insight/plan", want=_post, json={})
-    s.call("POST", "/ai/insight/chain_of_thoughts", want=_post, json={})
-    s.call("POST", "/ai/insight/plan/execute", want=_post, json={})
-    s.call("POST", "/ai/insight/trigger/schedule", want=_post, json={})
-    s.call("GET", "/ai/insight/plan/{task_id}/result", want=(200, 404, 422, 401, 403),
+    s.call("POST", "/api/ai/insight/plan", want=_post, json={})
+    s.call("POST", "/api/ai/insight/chain_of_thoughts", want=_post, json={})
+    s.call("POST", "/api/ai/insight/plan/execute", want=_post, json={})
+    s.call("POST", "/api/ai/insight/trigger/schedule", want=_post, json={})
+    s.call("GET", "/api/ai/insight/plan/{task_id}/result", want=(200, 404, 422, 401, 403),
            path_params={"task_id": _dummy})
-    s.call("GET", "/ai/insight/plan/{task_id}/status", want=(200, 404, 422, 401, 403),
+    s.call("GET", "/api/ai/insight/plan/{task_id}/status", want=(200, 404, 422, 401, 403),
            path_params={"task_id": _dummy})
 
     print("[ai] chat + enrich + mcp validate")
-    s.call("POST", "/ai/chat/", want=_post, json={})
-    s.call("POST", "/ai/enrich/context", want=_post, json={})
-    s.call("POST", "/ai/enrich/context/index", want=_post, json={})
-    s.call("POST", "/ai/enrich/index/build", want=_post, json={})
-    s.call("POST", "/ai/mcp/validate", want=_post, json={})
+    s.call("POST", "/api/ai/chat/", want=_post, json={})
+    s.call("POST", "/api/ai/enrich/context", want=_post, json={})
+    s.call("POST", "/api/ai/enrich/context/index", want=_post, json={})
+    s.call("POST", "/api/ai/enrich/index/build", want=_post, json={})
+    s.call("POST", "/api/ai/mcp/validate", want=_post, json={})
 
     print("[ai] agent config write + export/import")
-    s.call("POST", "/ai/agent/config", want=_post, json={})
-    s.call("POST", "/ai/agent/config/default", want=_post, json={})
+    s.call("POST", "/api/ai/agent/config", want=_post, json={})
+    s.call("POST", "/api/ai/agent/config/default", want=_post, json={})
     if agents:
         a_id = agents[0].get("id") or agents[0].get("uuid")
         if a_id:
-            s.call("POST", "/ai/agent/export/{agent_id}", want=_post,
+            s.call("POST", "/api/ai/agent/export/{agent_id}", want=_post,
                    path_params={"agent_id": str(a_id)}, json={})
     s.call("POST", "/ai/agent/import", want=_post, json={})
 
@@ -989,9 +990,9 @@ def scenario_misc_reads(s: Session) -> None:
     s.call("POST", "/mcp/config/export", want=_post, json={})
 
     print("[misc] AI LLM config POST + insight detail")
-    s.call("POST", "/ai/llm/config", want=_post, json={})
+    s.call("POST", "/api/ai/llm/config", want=_post, json={})
     _dummy = "00000000-0000-0000-0000-000000000000"
-    s.call("GET", "/ai/insight/{insight_id}", want=(200, 404, 500, 401, 403),
+    s.call("GET", "/api/ai/insight/{insight_id}", want=(200, 404, 500, 401, 403),
            path_params={"insight_id": _dummy})
 
     print("[misc] MCP config detail + agent heartbeat + PUT stubs")
@@ -1811,22 +1812,6 @@ def main() -> int:
     print("--- post-sweep ---")
     n = sweep(s)
     print(f"  removed {n} record(s)")
-
-    # Fill in `gated_upstream` markers: if an op was touched under one auth
-    # mode but not another, the other auth was blocked upstream (the scenario
-    # aborted before reaching this call). For documentation purposes we treat
-    # that as "unavailable under that auth" -- a caller using that mode cannot
-    # practically reach this endpoint via the documented flow.
-    today = _dt.date.today().isoformat()
-    for op_key, op_rec in s.observations.items():
-        by_auth = op_rec.setdefault("by_auth", {})
-        for mode in s.auth_modes:
-            if mode not in by_auth:
-                by_auth[mode] = {
-                    "response_status": None,
-                    "gated_upstream": True,
-                    "captured_at": today,
-                }
 
     if s.observations:
         OBSERVATIONS_PATH.parent.mkdir(parents=True, exist_ok=True)

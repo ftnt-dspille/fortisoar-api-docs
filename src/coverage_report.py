@@ -255,8 +255,8 @@ def _normalize_path(path: str) -> str:
     """Normalize a path for cross-referencing.
 
     - Strip trailing slashes.
-    - Collapse ``/api/ai/`` → ``/ai/`` (the spec uses ``/ai/`` for all AI paths;
-      pyfsr uses ``/api/ai/`` - both prefixes work on the live appliance).
+    - Collapse ``/api/ai/`` → ``/ai/`` so the gateway and direct forms of an AI
+      route match (the spec documents ``/api/ai/``; agent import stays ``/ai/``).
     """
     path = path.rstrip("/")
     if path.startswith("/api/ai/"):
