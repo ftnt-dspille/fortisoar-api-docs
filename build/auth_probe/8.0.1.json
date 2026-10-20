@@ -1458,21 +1458,6 @@
       },
       "probed": "/api/integration/connectors/"
     },
-    "GET /api/integration/connectors/agents/{name}/{version}/": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 405,
-        "verdict": "YES",
-        "why": "405 from the handler (bogus gets 401)"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 405,
-        "verdict": "YES",
-        "why": "405 from the handler (bogus gets 401)"
-      },
-      "probed": "/api/integration/connectors/agents/authprobe-nonexistent/0.0.0/"
-    },
     "GET /api/integration/connectors/dependencies_check/{connector}/{version}/": {
       "apikey": {
         "bogus_status": 401,
@@ -2930,20 +2915,20 @@
       },
       "probed": "/api/query/alerts"
     },
-    "POST /api/query/{collection}/{queryId}": {
+    "POST /api/query/{collection}/{id}/{field}": {
       "apikey": {
-        "bogus_status": 404,
+        "bogus_status": 401,
         "status": 404,
-        "verdict": "INCONCLUSIVE",
-        "why": "404 for valid and bogus alike (route answers before auth)"
+        "verdict": "YES",
+        "why": "real body: 200"
       },
       "jwt": {
-        "bogus_status": 404,
+        "bogus_status": 401,
         "status": 404,
-        "verdict": "INCONCLUSIVE",
-        "why": "404 for valid and bogus alike (route answers before auth)"
+        "verdict": "YES",
+        "why": "real body: 200"
       },
-      "probed": "/api/query/alerts/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/query/alerts/00000000-0000-0000-0000-000000000000/authprobe-nonexistent"
     },
     "POST /api/rule/api/system-notification/notifications/": {
       "apikey": {

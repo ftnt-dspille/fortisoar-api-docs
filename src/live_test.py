@@ -1034,7 +1034,7 @@ def scenario_queries(s: Session) -> None:
     Steps:
       1. POST /api/query/alerts          -> ad-hoc query (read-only).
       2. POST /api/3/query_objects       -> persist a saved query (live-* name).
-      3. POST /api/query/alerts/{qid}    -> execute the persisted query.
+      3. POST /api/query/alerts/{id}/indicators -> the indicators linked to one alert.
       4. POST /api/search                -> global ES search (may return 500
          on some 7.6 builds; accept that here so coverage still records).
       5. Cleanup: DELETE the persisted query.
@@ -1080,16 +1080,13 @@ def scenario_queries(s: Session) -> None:
             s.track("user_query", qid)
             print(f"  saved query uuid = {qid}")
 
-    if qid:
-        # The execute path documented in build_curated.py
-        # (`POST /api/query/{collection}/{queryId}`) returns 404 on this 7.6.x
-        # build under several collection slugs. Capture the observation so the
-        # doc surfaces "tested -> 404" instead of claiming success.
-        print("[queries] step 3: execute persisted query (best-effort)")
-        s.call("POST", "/api/query/{collection}/{queryId}",
-               want=(200, 400, 404),
-               path_params={"collection": "alerts", "queryId": qid},
-               json={"$limit": 1, "$page": 1})
+    print("[queries] step 3: indicators linked to one alert")
+    r = s.request("GET", "/api/3/alerts?$limit=1")
+    alerts = extract_members(r.json()) if r.ok else []
+    if alerts:
+        s.call("POST", "/api/query/{collection}/{id}/{field}", want=200,
+               path_params={"collection": "alerts", "id": alerts[0]["uuid"], "field": "indicators"},
+               params={"$limit": 2}, json={"logic": "AND", "filters": []})
 
     print("[queries] step 4: /api/search (may 500 on 7.6.x)")
     s.call("POST", "/api/search", want=(200, 400, 500),

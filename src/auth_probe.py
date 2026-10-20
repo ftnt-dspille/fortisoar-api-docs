@@ -212,6 +212,16 @@ def _verdict_of(call) -> tuple[str, str]:
     return "YES", "real body: accepted"
 
 
+def _deep_query_related(client: FortiSOAR) -> tuple[str, str]:
+    """The indicators linked to a real alert (a made-up id only 404s)."""
+    alerts = _jwt_from_env(client).request("GET", "/api/3/alerts", params={"$limit": 1}).json()["hydra:member"]
+    if not alerts:
+        return "ERROR", "real body: no alert to read links from"
+    path = f"/api/query/alerts/{alerts[0]['uuid']}/indicators"
+    verdict, why, _ = _step(client, "POST", path, data={"logic": "AND", "filters": []}, params={"$limit": 1})
+    return verdict, why
+
+
 def _deep_auth_config(client: FortiSOAR) -> tuple[str, str]:
     """Write an auth option back to the value it already has (a no-op change)."""
     current = _jwt_from_env(client).auth_config.get("API-KEYS")["api_key_validity_max"]
@@ -361,6 +371,7 @@ DEEP_CHECKS = {
     "POST /api/3/logout": _deep_logout,
     "PUT /api/auth/config": _deep_auth_config,
     "PUT /api/auth/users": _deep_auth_users,
+    "POST /api/query/{collection}/{id}/{field}": _deep_query_related,
     "POST /mcp/modules/": _deep_mcp("modules"),
     "POST /mcp/playbooks/": _deep_mcp("playbooks"),
     "POST /mcp/utility/": _deep_mcp("utility", ("get_current_datetime", {})),
@@ -459,6 +470,9 @@ def _probe(args: argparse.Namespace, clients: dict[str, FortiSOAR]) -> int:
     # --only re-probes a slice and keeps everything else from the last run.
     results: dict[str, dict] = (json.loads(out_path.read_text())["ops"]
                                 if args.only and out_path.exists() else {})
+    # ... minus ops the spec no longer has (a renamed or deleted route).
+    in_spec = {f"{m.upper()} {path}" for path, item in spec["paths"].items() for m in METHODS if item.get(m)}
+    results = {op: rec for op, rec in results.items() if op in in_spec}
     for path, item in spec["paths"].items():
         if args.only and not path.startswith(args.only):
             continue

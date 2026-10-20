@@ -7764,6 +7764,9 @@ paths:
       tags:
       - Records (generic)
       summary: Create a record in any module
+      description: "**API key: Yes \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0, 8.0.1)\n\n**See:** [Concepts](#description/concepts)\
+        \ - [Pagination & response shape](#description/pagination-response-shape)\n\nAn API key cannot create or change `people`,\
+        \ `appliances` or `api_keys` records: FortiSOAR answers 403 whatever the key's role. Use a JWT for those."
       requestBody:
         required: true
         content:
@@ -7796,8 +7799,6 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
-      description: "**API key: Yes \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0, 8.0.1)\n\n**See:** [Concepts](#description/concepts)\
-        \ - [Pagination & response shape](#description/pagination-response-shape)\n\n"
       x-live-captured: true
       x-auth: &id053
         apikey: 'yes'
@@ -8203,7 +8204,8 @@ paths:
         \ untouched. Each ref may be a full IRI (`/api/3/assets/<uuid>`) or `<module>:<uuid>` shorthand; a bare uuid is rejected\
         \ since the related module can't be inferred. Live-verified: linking an `Asset` onto an `Alert`'s `assets` field,\
         \ confirmed via `GET /api/3/alerts/<uuid>/assets`, then unlinked and reconfirmed empty. See `$relationships` above\
-        \ for the read side of the same relationship fields."
+        \ for the read side of the same relationship fields.\n\nAn API key cannot create or change `people`, `appliances`\
+        \ or `api_keys` records: FortiSOAR answers 403 whatever the key's role. Use a JWT for those."
       requestBody:
         required: true
         content:
@@ -10511,51 +10513,76 @@ paths:
       security:
       - apiKeyAuth: []
       - bearerJwt: []
-  /api/query/{collection}/{queryId}:
+  /api/query/{collection}/{id}/{field}:
     parameters:
     - name: collection
       in: path
       required: true
       schema:
         type: string
-    - name: queryId
+      description: Module of the record, e.g. `alerts`.
+    - name: id
       in: path
       required: true
       schema:
         $ref: '#/components/schemas/UUID'
+      description: uuid of the record whose links to read.
+    - name: field
+      in: path
+      required: true
+      schema:
+        type: string
+      description: A to-many relationship on the module, e.g. `indicators`. `owners`, `files`, `userOwners` and `datasets`
+        are excluded.
+    - name: $limit
+      in: query
+      required: false
+      schema:
+        type: integer
+    - name: $page
+      in: query
+      required: false
+      schema:
+        type: integer
     post:
       tags:
       - Query
-      summary: Execute a persisted query
-      description: '**Not found on FortiSOAR 8.0.0, 8.0.1** (404 for every credential, before authentication)
-
-
-        **See:** [Persisted queries](#description/query-reference) (Query reference -> Persisted queries)
-
-
-        The API guide documents this as `GET`, with `queryId` a `/api/3/query_objects` uuid. On 8.0.0 neither answers: this
-        route 404s for `GET` and `POST`, with a real `/api/3/user_queries` uuid, and `/api/3/query_objects` itself 404s. For
-        an ad-hoc query use `POST /api/query/{collection}`.'
+      summary: Query the records linked to one record
+      description: "**API key: Yes \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0, 8.0.1)\n\n**See:** [Persisted queries](#description/query-reference)\
+        \ (Query reference -> Persisted queries)\n\nReturns the records on the other side of one record's to-many relationship\
+        \ (an alert's `indicators`, an incident's `alerts`), narrowed by the usual Query body. The body needs both `logic`\
+        \ and `filters`: an empty body is a 400. Page with `$limit`/`$page`.\n\nThere is no route that runs a saved query\
+        \ by id (`POST /api/query/{collection}/{queryId}` 404s). To run one, read it from `/api/3/user_queries` or `/api/3/system_queries`\
+        \ and post its `query` to `POST /api/query/{collection}`."
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+              - logic
+              - filters
               properties:
-                $limit:
-                  type: integer
-                $page:
-                  type: integer
-                $orderby:
+                logic:
                   type: string
+                  enum:
+                  - AND
+                  - OR
+                filters:
+                  type: array
+                  items:
+                    type: object
+                sort:
+                  type: array
+                  items:
+                    type: object
             example:
-              $limit: 30
-              $page: 1
-              $orderby: -createDate
+              logic: AND
+              filters: []
       responses:
         '200':
-          description: Hydra collection.
+          description: Hydra collection of the linked records.
           content:
             application/json:
               schema:
@@ -10575,25 +10602,28 @@ paths:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nqid = \"6f1c9e2a-6b7a-4b0a-9a1e-2f6a5c9b3d10\"\nprint(client.search.run_persisted(\"\
-          alerts\", qid, limit=50)[\"hydra:totalItems\"])"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.post(\"/api/query/alerts/alert-uuid/indicators\"\
+          , data={\"logic\": \"AND\", \"filters\": []})"
       x-auth: &id076
-        apikey: missing
-        jwt: missing
+        apikey: 'yes'
+        jwt: 'yes'
       x-auth-by-version:
         8.0.0:
-          apikey: missing
-          jwt: missing
+          apikey: 'yes'
+          jwt: 'yes'
         8.0.1: *id076
+      security:
+      - apiKeyAuth: []
+      - bearerJwt: []
   /api/3/user_queries:
     post:
       tags:
       - Query
       summary: Save a user query
-      description: "**API key: Yes \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0, 8.0.1)\n\nPersists a Query body so it can\
-        \ later be executed via `POST /api/query/{collection}/{queryId}` without re-shipping the filter grammar. Each saved\
-        \ query is scoped to one module (`models` IRI). System-shipped equivalents live under `/api/3/system_queries`; ad-hoc\
-        \ one-shots under `/api/3/queries`."
+      description: "**API key: Yes \xB7 JWT: Yes** (measured on FortiSOAR 8.0.0, 8.0.1)\n\nPersists a Query body. FortiSOAR\
+        \ has no run-by-id route: to run it, read the record and post its `query` to `POST /api/query/{collection}`. Each\
+        \ saved query is scoped to one module (`models` IRI). System-shipped equivalents live under `/api/3/system_queries`;\
+        \ ad-hoc one-shots under `/api/3/queries`."
       requestBody:
         required: true
         content:
