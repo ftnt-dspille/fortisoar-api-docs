@@ -129,14 +129,13 @@ info:
     \n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/` - resume a\
     \ `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).\n- `POST /api/wf/api/workflows/{pk}/retry/`\
     \ - retry a failed run from the failed step.\n- `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.\n\
-    \n**Resuming an `awaiting` manual-input run** (verified live end-to-end 2026-05-29; the run advances to `finished`):\n\
-    \n1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true` \u2192 the run's awaiting execution-step ids (the correlation\
-    \ anchor).\n2. `POST /api/wf/api/manual-wf-input/list_wfinput/` \u2192 the pending input whose `step_id` is one of those\
-    \ ids \u2192 `manual_input_id`. (`workflow` on the list member is an *encrypted* token, not the run pk, so `step_id` is\
-    \ the only honest link.)\n3. `POST /api/wf/api/manual-wf-input/{manual_input_id}/retrieve_wfinput/` \u2192 `response_mapping.options[]`\
-    \ (the buttons; each has a `step_iri`).\n4. `POST /api/wf/api/workflows/{run_pk}/wfinput_resume/` with `{input, step_iri:\
-    \ <chosen option's step_iri>, step_id, manual_input_id}` (add `approved: <bool>` for `is_approval` gates).\n\n**Correction\
-    \ (was wrong here before):** `wfinput_resume` is the **real** path - it is NOT a decoy. `PUT /api/wf/api/manual-wf-input/{id}/`\
+    \n**Resuming an `awaiting` manual-input run** (verified live end-to-end; the run advances to `finished`):\n\n1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true`\
+    \ \u2192 the run's awaiting execution-step ids (the correlation anchor).\n2. `POST /api/wf/api/manual-wf-input/list_wfinput/`\
+    \ \u2192 the pending input whose `step_id` is one of those ids \u2192 `manual_input_id`. (`workflow` on the list member\
+    \ is an *encrypted* token, not the run pk, so `step_id` is the only honest link.)\n3. `POST /api/wf/api/manual-wf-input/{manual_input_id}/retrieve_wfinput/`\
+    \ \u2192 `response_mapping.options[]` (the buttons; each has a `step_iri`).\n4. `POST /api/wf/api/workflows/{run_pk}/wfinput_resume/`\
+    \ with `{input, step_iri: <chosen option's step_iri>, step_id, manual_input_id}` (add `approved: <bool>` for `is_approval`\
+    \ gates).\n\n**Correction (was wrong here before):** `wfinput_resume` is the **real** path - it is NOT a decoy. `PUT /api/wf/api/manual-wf-input/{id}/`\
     \ returns 200 but does **not** advance the run; don't use it to resume.\n\n### Triggers\n\nThree ways to fire a playbook\
     \ from outside:\n\n- **`POST /api/triggers/1/{name}`** - hits a Custom API Endpoint trigger (named via the trigger config).\
     \ Allows alternate auth (Basic / no-auth) for external webhooks, by design - keeps the core API token-locked while letting\
@@ -13482,8 +13481,7 @@ paths:
       - Playbook runs
       summary: Update a manual-input record (does NOT resume the run)
       description: 'Returns 200 and updates the record, but **does not advance an `awaiting` run** - a common trap. To actually
-        resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live 2026-05-29: PUT here left the run in
-        `awaiting`.'
+        resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live: PUT here left the run in `awaiting`.'
       requestBody:
         required: false
         content:
@@ -15415,8 +15413,8 @@ paths:
         changes made via the Studio editor, and it is the supported escape hatch when a same-version tgz upload has left stale
         code cached in the integrations service (publish triggers a service refresh that the standard `$replace=true` install
         path does not). `replace=true` overwrites an existing installed version of the same name + version. `discard` controls
-        the dev-workspace twin's lifecycle, NOT whether edits are published - see the field description. Verified empirically
-        2026-05-27 against ghost-handler v5.0.0.
+        the dev-workspace twin's lifecycle, NOT whether edits are published - see the field description. Verified live against
+        a custom connector.
       requestBody:
         required: true
         content:
