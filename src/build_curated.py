@@ -12,8 +12,8 @@ expansions in TODOS.md.
 
 Outputs build/fortisoar.curated.openapi.yaml.
 Live inputs, both optional: build/live_observations.json (src/live_test.py)
-supplies real request/response examples; build/auth_probe.json
-(src/auth_probe.py) supplies each op's API key / JWT support.
+supplies real request/response examples; build/auth_probe/<version>.json
+(src/auth_probe.py, one per measured FortiSOAR) supplies API key / JWT support.
 """
 from __future__ import annotations
 
@@ -1440,9 +1440,10 @@ PATHS["/api/query/{collection}/{queryId}"] = {
         "tags": ["Query"],
         "summary": "Execute a persisted query",
         "description": (
-            "Runs a saved Query previously created via `POST /api/3/user_queries` "
-            "(persistent store; system-owned queries live under `/api/3/system_queries`). "
-            "Body may override pagination / sort."
+            "The API guide documents this as `GET`, with `queryId` a `/api/3/query_objects` uuid. "
+            "On 8.0.0 neither answers: this route 404s for `GET` and `POST`, with a real "
+            "`/api/3/user_queries` uuid, and `/api/3/query_objects` itself 404s. For an ad-hoc "
+            "query use `POST /api/query/{collection}`."
         ),
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
@@ -2223,7 +2224,11 @@ PATHS["/api/triggers/1/{name}"] = {
 PATHS["/api/triggers/1/deferred/{name}"] = {
     "parameters": [{"name": "name", "in": "path", "required": True, "schema": {"type": "string"}}],
     "post": {"tags": ["Run a playbook"], "summary": "Run a playbook by its API endpoint name, asynchronously",
-             "description": "Same shape as `POST /api/triggers/1/{name}` but always returns 202 and runs the playbook on a worker.",
+             "description": (
+                 "Documented in the API guide as the same trigger run on a worker (202). On 8.0.0 it 404s before "
+                 "authentication even for a real endpoint name, while `POST /api/triggers/1/{name}` answers the "
+                 "same name - use that route."
+             ),
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {},
              }}},
@@ -2703,9 +2708,17 @@ PATHS["/api/integration/connectors/agents/{name}/{version}/"] = {
          "schema": {"type": "string"},
          "description": "Connector version (e.g. `1.0.4`)."},
     ],
-    "get": {"tags": ["Connectors"],
+    "post": {"tags": ["Connectors"],
             "summary": "List agents that have this connector installed",
+            "parameters": [
+                {"name": "format", "in": "query", "schema": {"type": "string", "default": "json"}},
+                {"name": "active", "in": "query", "schema": {"type": "boolean"},
+                 "description": "Only active agents."},
+            ],
+            "requestBody": {"required": False, "content": {"application/json": {
+                "schema": {"type": "object"}, "example": {}}}},
             "description": (
+                "**POST**, with an empty body: a `GET` answers 405 `Method \"GET\" not allowed`. "
                 "Returns the set of agents on which the named `{name}/{version}` connector is "
                 "installed, alongside per-agent install status. Use this to discover which "
                 "remote agents already have a given connector before issuing "
@@ -4105,7 +4118,7 @@ TAG_DESCRIPTIONS = {
         "|---|---|---|\n"
         "| Any (by playbook UUID; trigger conditions skipped) | `POST /api/triggers/1/notrigger/{workflowId}` | `client.playbooks.trigger(name_or_uuid)` |\n"
         "| Custom API Endpoint | `POST /api/triggers/1/{name}` | `client.playbooks.trigger_by_name(name)` |\n"
-        "| Custom API Endpoint, run on a worker (202) | `POST /api/triggers/1/deferred/{name}` | `client.playbooks.trigger_by_name(name, deferred=True)` |\n"
+        "| Custom API Endpoint, run on a worker (202) - **not found on 8.0.0** | `POST /api/triggers/1/deferred/{name}` | `client.playbooks.trigger_by_name(name, deferred=True)` |\n"
         "| Manual (record action button) | `POST /api/triggers/1/action/{routeUuid}` | `client.playbooks.trigger_action(route_uuid, module=..., record_uuid=...)` |\n\n"
         "Every route answers with a `task_id`. Track it with `GET /api/wf/api/workflows/?task_id=<task_id>&parent_wf__isnull=True` "
         "(see **Playbook runs**), or call `client.playbooks.run_and_wait(...)`. Worked example: "
@@ -4241,6 +4254,7 @@ Some endpoints accept only one method. Every operation starts with a line like *
 - **Yes** - that credential gets past authentication. Measured by sending the request with the real credential and with a garbage one of the same kind: if the answers differ, the credential was accepted.
 - **No** - the real credential gets the same rejection as a garbage one, or a 401/403 access denial.
 - **Not tested** - the call is too destructive to probe and no live capture covers it.
+- **Not found on FortiSOAR x.y.z** - the route answers 404 to every credential, garbage included, so it does not exist on that version.
 
 The operation's lock icon / auth selector lists only the methods marked **Yes**.
 
@@ -5532,66 +5546,101 @@ def _apply_live_observations(spec: dict) -> int:
     return applied
 
 
-AUTH_PROBE_FILE = OUT.parent / "auth_probe.json"
+AUTH_PROBE_DIR = OUT.parent / "auth_probe"
 
 
 def _version_tuple(v: str) -> tuple[int, ...]:
     return tuple(int(x) for x in re.findall(r"\d+", v)[:3])
+
+
 _AUTH_SCHEMES = {"apikey": "apiKeyAuth", "jwt": "bearerJwt"}
+_AUTH_WORD = {"yes": "Yes", "no": "No", "public": "No auth needed", "untested": "Not tested",
+              "missing": "Not found", "unreleased": "Not in this version"}
+
+
+def _support_on(rec: dict, op: dict, version: str, live: dict) -> dict[str, str]:
+    """One box's answer for one op: ``{"apikey": state, "jwt": state}``."""
+    needs = (op.get("x-fsr-version") or "").rstrip("+")
+    if needs and _version_tuple(needs) > _version_tuple(version):
+        # The route does not exist there; its 404 would read as "got past auth".
+        return {"apikey": "unreleased", "jwt": "unreleased"}
+    if all(rec[m]["verdict"] == "INCONCLUSIVE" and rec[m].get("status") == 404
+           and rec[m].get("bogus_status") == 404 for m in ("apikey", "jwt")):
+        # 404 to every credential, garbage included: routing answered before auth.
+        return {"apikey": "missing", "jwt": "missing"}
+    support = {}
+    for mode in ("apikey", "jwt"):
+        verdict = rec[mode]["verdict"]
+        if verdict in ("YES", "PUBLIC", "NO"):
+            support[mode] = verdict.lower()
+        elif 200 <= ((live.get(mode) or {}).get("response_status") or 0) < 300:
+            support[mode] = "yes"
+        else:
+            support[mode] = "untested"
+    return support
 
 
 def _apply_auth_support(spec: dict) -> int:
-    """Stamp each op with a YES / NO per credential, from `build/auth_probe.json`.
+    """Stamp each op with a Yes / No per credential, from `build/auth_probe/<version>.json`.
 
-    The probe's verdict wins; an op the probe could not settle (too destructive
-    to send, or a route that answers before auth) is a Yes only if a live
-    scenario got a 2xx with that credential. The op's `security` is narrowed to
-    the schemes that are Yes, so the renderer's auth selector agrees with the
-    line at the top of the description. An op newer than the measured box
-    (`x-fsr-version`) is Not tested: there it 404s, which reads as "got past auth".
+    One file per measured FortiSOAR version. The probe's verdict wins; an op
+    the probe could not settle is a Yes only if a live scenario got a 2xx with
+    that credential (live captures come from the `.env` box, so only its file
+    uses them). An op newer than a box (`x-fsr-version`) is "Not in this
+    version" there. When versions agree the line says so once; when they
+    differ it names each. `security` follows the newest version that has the op.
     """
-    if not AUTH_PROBE_FILE.exists():
+    boxes = []
+    for f in sorted(AUTH_PROBE_DIR.glob("*.json")) if AUTH_PROBE_DIR.exists() else []:
+        probe = json.loads(f.read_text())
+        boxes.append(((probe.get("fsr_version") or f.stem).split("-")[0], probe))
+    if not boxes:
         return 0
-    probe = json.loads(AUTH_PROBE_FILE.read_text())
+    boxes.sort(key=lambda b: _version_tuple(b[0]))
     obs_path = OUT.parent / "live_observations.json"
     obs = json.loads(obs_path.read_text()) if obs_path.exists() else {}
-    version = (probe.get("fsr_version") or "").split("-")[0]
     applied = 0
-    for key, rec in probe.get("ops", {}).items():
-        method, template = key.split(" ", 1)
-        op = spec["paths"].get(template, {}).get(method.lower())
-        if not op:
-            continue
-        live = (obs.get(key) or {}).get("by_auth") or {}
-        needs = (op.get("x-fsr-version") or "").rstrip("+")
-        if version and needs and _version_tuple(needs) > _version_tuple(version):
-            op["x-auth"] = {"apikey": "untested", "jwt": "untested"}
-            op["description"] = (f"**API key: Not tested · JWT: Not tested** (needs FortiSOAR {needs}; "
-                                 f"measured on {version})\n\n") + (op.get("description") or "")
-            applied += 1
-            continue
-        support = {}
-        for mode in ("apikey", "jwt"):
-            verdict = rec[mode]["verdict"]
-            if verdict in ("YES", "PUBLIC", "NO"):
-                support[mode] = verdict
-            elif 200 <= ((live.get(mode) or {}).get("response_status") or 0) < 300:
-                support[mode] = "YES"
+    for path, item in spec["paths"].items():
+        for method, op in item.items():
+            if method not in ("get", "post", "put", "patch", "delete"):
+                continue
+            key = f"{method.upper()} {path}"
+            live = (obs.get(key) or {}).get("by_auth") or {}
+            by_version = {v: _support_on(p["ops"][key], op, v, live if p.get("live_box") else {})
+                          for v, p in boxes if key in p.get("ops", {})}
+            if not by_version:
+                continue
+            versions = list(by_version)
+            measured = f" (measured on FortiSOAR {', '.join(versions)})"
+            states = {s for v in by_version.values() for s in v.values()}
+            if states == {"public"}:
+                line = "**No authentication required.**" + measured
+            elif states <= {"missing", "unreleased"}:
+                where = [v for v in versions if by_version[v]["jwt"] == "missing"]
+                line = (f"**Not found on FortiSOAR {', '.join(where)}** (404 for every credential, before "
+                        f"authentication)") if where else f"**Not in FortiSOAR {', '.join(versions)}**"
+                line += f"; needs {op['x-fsr-version']}" if op.get("x-fsr-version") and len(where) < len(versions) else ""
             else:
-                support[mode] = "UNTESTED"
-        op["x-auth"] = {m: v.lower() for m, v in support.items()}
-        if all(v == "PUBLIC" for v in support.values()):
-            op["security"] = []
-            line = "**No authentication required.**"
-        else:
-            yes = [_AUTH_SCHEMES[m] for m in ("apikey", "jwt") if support[m] == "YES"]
-            if yes:
-                op["security"] = [{s: []} for s in yes]
-            word = {"YES": "Yes", "NO": "No", "UNTESTED": "Not tested"}
-            line = f"**API key: {word[support['apikey']]} · JWT: {word[support['jwt']]}**"
-        line += f" (measured on FortiSOAR {version})" if version else ""
-        op["description"] = line + "\n\n" + (op.get("description") or "")
-        applied += 1
+                parts = []
+                for mode, label in (("apikey", "API key"), ("jwt", "JWT")):
+                    words = {v: _AUTH_WORD[by_version[v][mode]] for v in versions}
+                    if len(set(words.values())) == 1:
+                        parts.append(f"{label}: {next(iter(words.values()))}")
+                    else:
+                        parts.append(f"{label}: " + ", ".join(f"{w} on {v}" for v, w in words.items()))
+                line = "**" + " · ".join(parts) + "**" + measured
+            newest = next((by_version[v] for v in reversed(versions)
+                           if not set(by_version[v].values()) <= {"missing", "unreleased"}), by_version[versions[-1]])
+            op["x-auth"] = newest
+            op["x-auth-by-version"] = by_version
+            if set(newest.values()) == {"public"}:
+                op["security"] = []
+            else:
+                yes = [_AUTH_SCHEMES[m] for m in ("apikey", "jwt") if newest[m] == "yes"]
+                if yes:
+                    op["security"] = [{s: []} for s in yes]
+            op["description"] = line + "\n\n" + (op.get("description") or "")
+            applied += 1
     return applied
 
 

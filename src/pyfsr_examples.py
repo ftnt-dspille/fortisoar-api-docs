@@ -172,7 +172,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("put", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.upgrade_connector"),
     ("delete", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.uninstall_connector"),
     ("get", "/api/integration/agent-heartbeat/{agent}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.heartbeat"),
-    ("get", "/api/integration/connectors/agents/{name}/{version}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.connector_install_status"),
+    ("post", "/api/integration/connectors/agents/{name}/{version}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.connector_install_status"),
     # API-key users (JWT-only - all four doctests use demo_client_jwt()).
     ("get", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.get"),
     ("post", "/api/auth/users"): ("doctest", "pyfsr.api.api_users:ApiKeyUsersAPI.create"),

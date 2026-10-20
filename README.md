@@ -15,7 +15,7 @@ envelopes leak into the docs.
 ```
 src/build_curated.py        →  build/fortisoar.curated.openapi.yaml
 src/live_test.py            →  build/live_observations.json   (real examples)
-src/auth_probe.py           →  build/auth_probe.json          (API key / JWT: Yes or No per op)
+src/auth_probe.py           →  build/auth_probe/<version>.json (API key / JWT: Yes or No per op)
 src/spec_health.py          →  drift report (live/auth/request/response/...)
 web/index.html              →  Scalar renderer (CDN)
 TODOS.md                    →  what's next: coverage backlog + accuracy work
@@ -128,7 +128,7 @@ next `src/build_curated.py` invocation
     │    1. replace request example with the actual sent body (JWT-preferred)
     │    2. replace 2xx response example with the captured body
     │    3. mark the op `x-live-captured`
-    │  Then, from build/auth_probe.json, for every op:
+    │  Then, from build/auth_probe/<version>.json, for every op:
     │    4. prepend `**API key: Yes · JWT: No**` and narrow `security` to match
     ▼
 docs render with real wire shapes, one measured auth line, no fabrication
@@ -139,20 +139,40 @@ docs render with real wire shapes, one measured auth line, no fabrication
 `src/auth_probe.py` answers that, not `live_test.py`. A status code alone
 cannot: a 400 or 404 means "bad request" as often as "bad credential". The
 probe sends every op (through pyfsr) with a real JWT, a real API key, and a
-garbage credential of each kind. Same answer as garbage: **No**. Anything
-else: **Yes**. Path params are ids that cannot exist and write bodies are a
-bare JSON string, so a call that passes auth fails in the handler. Ops a junk
-body cannot make safe (param-less DELETE, publish, logout, ...) are only sent
-with garbage credentials and come out **Not tested** unless a live capture got
-a 2xx. Handlers that re-check the credential after the gateway (bulkupsert)
-get a real-body check in `DEEP_CHECKS`, as does config export (an API key's export
-job is created but never runs).
+garbage credential of each kind:
 
-The build puts **API key: Yes · JWT: Yes** at the top of every op and
-narrows the op's `security` to the schemes that are Yes.
+| Answer | Means |
+|---|---|
+| **Yes** | the real credential got a different answer from garbage (2xx, or the handler's own 400/404) |
+| **No** | same answer as garbage, or a 401/403 denial |
+| **Not found** | 404 to every credential, garbage included: the route is not on that version |
+| **Not in this version** | the op's `x-fsr-version` is newer than the box |
+| **Not tested** | too destructive to send (`UNSAFE`), and no live capture got a 2xx |
 
-The API key under test needs a role that can do everything the JWT user can
-(Full App Permissions), or RBAC 403s and team-ownership 403s read as "No".
+Path params are ids that cannot exist and write bodies are a bare JSON string,
+so a call that passes auth fails in the handler. Then, to turn "got past auth"
+into "works":
+
+- a `GET .../{id}` is re-sent with a real id taken from its parent list;
+- `DEEP_CHECKS` re-measures ops where passing auth is not enough with a real
+  request on throwaway objects: bulkupsert (the handler rejects API keys),
+  config export (an API key's job never runs), logout, and the `/api/auth`
+  config and user writes.
+
+**The API key is minted per run** (`src/mirror_key.py`) with exactly the JWT
+user's roles and teams, and revoked after, so the auth method is the only
+difference. A key with no team 403s on every write, which reads as "API keys
+don't work". `live_test.py` uses the same mirror key (`--env-key` for the old
+`FSR_API_KEY` behavior).
+
+**One file per version.** `--env <file>` measures another box; results land in
+`build/auth_probe/<version>.json`. The build merges them: one answer when the
+versions agree, `No on 8.0.0, Yes on 8.0.1` when they don't.
+
+```bash
+.venv/bin/python src/auth_probe.py                         # the .env box
+.venv/bin/python src/auth_probe.py --env ../.env.fsr801-beta  # another version
+```
 
 ### Read-only by default, destructive by opt-in
 

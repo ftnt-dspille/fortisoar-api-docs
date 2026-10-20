@@ -1,5 +1,6 @@
 {
-  "fsr_version": "8.0.0-6034",
+  "fsr_version": "8.0.1-6077",
+  "live_box": false,
   "ops": {
     "DELETE /api/3/agents/{uuid}": {
       "apikey": {
@@ -65,14 +66,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: 500 \"['DELETE method for object at index ## in the requ\""
       },
       "jwt": {
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: 204"
       },
       "probed": "/api/3/delete/alerts"
     },
@@ -1069,17 +1070,18 @@
     "GET /api/ai/llm/config/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 500,
+        "status": 200,
         "verdict": "YES",
-        "why": "500 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 500,
+        "status": 200,
         "verdict": "YES",
-        "why": "500 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/ai/llm/config/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/ai/llm/config/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/ai/llm/config/1bfa20df-3ca8-4b70-904c-4da36370bc10"
     },
     "GET /api/ai/llm/config/{uuid}/verify": {
       "apikey": {
@@ -1114,165 +1116,165 @@
     "GET /api/ai/traces/": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "probed": "/api/ai/traces/"
     },
     "GET /api/ai/traces/health": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "probed": "/api/ai/traces/health"
     },
     "GET /api/ai/traces/spans/{span_id}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000"
     },
     "GET /api/ai/traces/spans/{span_id}/children": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/children"
     },
     "GET /api/ai/traces/spans/{span_id}/lineage": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 500,
+        "verdict": "YES",
+        "why": "500 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/lineage"
     },
     "GET /api/ai/traces/spans/{span_id}/tree": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/traces/spans/00000000-0000-0000-0000-000000000000/tree"
     },
     "GET /api/ai/traces/tokens/session/{session_id}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "probed": "/api/ai/traces/tokens/session/00000000-0000-0000-0000-000000000000"
     },
     "GET /api/ai/traces/tokens/{trace_id}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
       },
       "probed": "/api/ai/traces/tokens/00000000-0000-0000-0000-000000000000"
     },
     "GET /api/ai/traces/{trace_id}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000"
     },
     "GET /api/ai/traces/{trace_id}/execution-tree": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000/execution-tree"
     },
     "GET /api/ai/traces/{trace_id}/spans": {
       "apikey": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 403,
-        "verdict": "NO",
-        "why": "403 'AccessDeniedException Access Denied.' (bogus gets 401)"
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/traces/00000000-0000-0000-0000-000000000000/spans"
     },
@@ -1579,15 +1581,15 @@
     "GET /api/taxii/1/collections": {
       "apikey": {
         "bogus_status": 401,
-        "status": 200,
+        "status": 400,
         "verdict": "YES",
-        "why": "200"
+        "why": "400 from the handler (bogus gets 401)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 200,
+        "status": 400,
         "verdict": "YES",
-        "why": "200"
+        "why": "400 from the handler (bogus gets 401)"
       },
       "probed": "/api/taxii/1/collections"
     },
@@ -1656,13 +1658,13 @@
         "bogus_status": 200,
         "status": 200,
         "verdict": "PUBLIC",
-        "why": "200, a bogus credential also gets 200"
+        "why": "no credential needed: no Authorization gets 200"
       },
       "jwt": {
         "bogus_status": 200,
         "status": 200,
         "verdict": "PUBLIC",
-        "why": "200, a bogus credential also gets 200"
+        "why": "no credential needed: no Authorization gets 200"
       },
       "probed": "/api/version"
     },
@@ -1744,17 +1746,18 @@
     "GET /api/wf/api/historical-workflows/{pk}/": {
       "apikey": {
         "bogus_status": 401,
-        "status": 500,
+        "status": 200,
         "verdict": "YES",
-        "why": "500 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 500,
+        "status": 200,
         "verdict": "YES",
-        "why": "500 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/wf/api/historical-workflows/authprobe-nonexistent/"
+      "probed": "/api/wf/api/historical-workflows/authprobe-nonexistent/",
+      "probed_real": "/api/wf/api/historical-workflows/622/"
     },
     "GET /api/wf/api/manual-wf-input/": {
       "apikey": {
@@ -1819,17 +1822,18 @@
     "GET /api/wf/api/workflows/{pk}/": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/wf/api/workflows/authprobe-nonexistent/"
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/",
+      "probed_real": "/api/wf/api/workflows/624/"
     },
     "GET /api/wf/workflow/config/": {
       "apikey": {
@@ -2045,14 +2049,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: 500 APIError Invalid credentials."
       },
       "jwt": {
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: accepted"
       },
       "probed": "/api/3/insert/alerts"
     },
@@ -2060,14 +2064,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "NO",
+        "why": "real logout of a disposable credential: 400, then reuse: 200"
       },
       "jwt": {
         "bogus_status": 401,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "YES",
+        "why": "real logout of a disposable credential: 200, then reuse: 401"
       },
       "probed": "/api/3/logout"
     },
@@ -2791,6 +2795,21 @@
       },
       "probed": "/api/integration/connector_output_schema/authprobe-nonexistent/0.0.0/"
     },
+    "POST /api/integration/connectors/agents/{name}/{version}/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/integration/connectors/agents/authprobe-nonexistent/0.0.0/"
+    },
     "POST /api/integration/connectors/dependencies_check/{connector}/{version}/": {
       "apikey": {
         "bogus_status": 401,
@@ -2885,14 +2904,14 @@
       "apikey": {
         "bogus_status": 400,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 400"
       },
       "jwt": {
         "bogus_status": 400,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 400"
       },
       "probed": "/api/public/license"
     },
@@ -3245,14 +3264,14 @@
       "apikey": {
         "bogus_status": 500,
         "status": 500,
-        "verdict": "INCONCLUSIVE",
-        "why": "500 for valid and bogus alike (route answers before auth)"
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 500"
       },
       "jwt": {
         "bogus_status": 500,
         "status": 500,
-        "verdict": "INCONCLUSIVE",
-        "why": "500 for valid and bogus alike (route answers before auth)"
+        "verdict": "PUBLIC",
+        "why": "no credential needed: no Authorization gets 500"
       },
       "probed": "/auth/authenticate"
     },
@@ -3485,14 +3504,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: 500 \"['PUT method for object at index ## in the request\""
       },
       "jwt": {
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: 200"
       },
       "probed": "/api/3/update/alerts"
     },
@@ -3530,14 +3549,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "NO",
+        "why": "real body: 403 PermissionError Access Denied.\n\nIf this is a newly created module,"
       },
       "jwt": {
         "bogus_status": 401,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "YES",
+        "why": "real body: accepted"
       },
       "probed": "/api/auth/config"
     },
@@ -3545,14 +3564,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "NO",
+        "why": "real body: 403 PermissionError Access Denied.\n\nIf this is a newly created module,"
       },
       "jwt": {
         "bogus_status": 401,
         "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "verdict": "YES",
+        "why": "real body: accepted"
       },
       "probed": "/api/auth/users"
     },
