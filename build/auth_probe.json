@@ -3559,15 +3559,15 @@
     "PUT /api/export": {
       "apikey": {
         "bogus_status": 401,
-        "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "status": 400,
+        "verdict": "NO",
+        "why": "real body: export job never ran (status=None, 0%)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": null,
-        "verdict": "UNTESTED",
-        "why": "unsafe to send with a valid credential"
+        "status": 400,
+        "verdict": "YES",
+        "why": "real body: export finished"
       },
       "probed": "/api/export"
     },

@@ -40,11 +40,12 @@ import os
 import re
 import secrets
 import sys
+import time
 from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
-from pyfsr import FortiSOAR
+from pyfsr import ExportTemplate, FortiSOAR
 
 ROOT = Path(__file__).resolve().parent.parent
 SPEC_PATH = ROOT / "build" / "fortisoar.curated.openapi.yaml"
@@ -62,7 +63,6 @@ UNSAFE = {
     ("POST", "/api/public/license"),
     ("PUT", "/api/publish"),
     ("PUT", "/api/publish/revert"),
-    ("PUT", "/api/export"),
     ("PUT", "/api/3/changepassword"),
     ("PUT", "/api/auth/users"),
     ("PUT", "/api/auth/config"),
@@ -145,10 +145,36 @@ def _deep_bulkupsert(client: FortiSOAR) -> tuple[str, str]:
     return "YES", "real body: row upserted (and deleted)"
 
 
-# Ops whose handler re-checks the credential after the gateway let it in, so
-# the junk-body probe would say YES. Each is re-measured with a real request.
+def _deep_export(client: FortiSOAR) -> tuple[str, str]:
+    """Export a one-picklist template, then delete the job, file and template.
+    An API key's export job is created and never runs, so a 2xx on the
+    trigger proves nothing; only a finished job does."""
+    exports = client.export_config
+    tmpl = exports.create_template(ExportTemplate(f"authprobe-{secrets.token_hex(4)}").add_picklist("Severity"))
+    job = None
+    try:
+        job = exports._trigger_export(tmpl["uuid"], "authprobe.zip")["jobUuid"]
+        deadline = time.monotonic() + 60
+        while time.monotonic() < deadline:
+            status = exports._get_export_status(job)
+            if status.status == "Export Complete":
+                return "YES", "real body: export finished"
+            time.sleep(3)
+        return "NO", f"real body: export job never ran (status={status.status!r}, {status.progressPercent}%)"
+    finally:
+        if job:
+            rec = client.request("GET", f"/api/3/export_jobs/{job}", raise_on_status=False).json()
+            client.request("DELETE", f"/api/3/export_jobs/{job}", raise_on_status=False)
+            if isinstance(rec.get("file"), dict):
+                client.request("DELETE", rec["file"]["@id"], raise_on_status=False)
+        exports.delete_template(tmpl["uuid"])
+
+
+# Ops where getting past auth does not mean it works: the handler re-checks
+# the credential, or the work never runs. Each is re-measured with a real request.
 DEEP_CHECKS = {
     "POST /api/3/bulkupsert/{moduleType}": _deep_bulkupsert,
+    "PUT /api/export": _deep_export,
 }
 
 
