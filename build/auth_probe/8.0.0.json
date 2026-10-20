@@ -1373,17 +1373,18 @@
     "GET /api/import/{job_uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "status": 200,
+        "verdict": "NO",
+        "why": "real body: import options never generated (60s)"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 400,
+        "status": 200,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: import options generated"
       },
-      "probed": "/api/import/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/import/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/import/0877d12f-bb98-493c-a66e-9d639e587739"
     },
     "GET /api/integration/agent-heartbeat/{agent}/": {
       "apikey": {
@@ -3581,14 +3582,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: import never finished (status='Reviewing')"
       },
       "jwt": {
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: import finished"
       },
       "probed": "/api/import/00000000-0000-0000-0000-000000000000"
     },

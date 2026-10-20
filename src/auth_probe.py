@@ -41,6 +41,7 @@ import os
 import re
 import secrets
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -324,6 +325,73 @@ def _picklist_name_chain(client: FortiSOAR) -> dict[str, tuple[str, str]]:
     return out
 
 
+_SEVERITY_EXPORT: dict[str, Path] = {}
+
+
+def _severity_export(jwt: FortiSOAR) -> Path:
+    """A one-picklist export bundle (made once per run, by JWT: API-key exports never run)."""
+    if "zip" not in _SEVERITY_EXPORT:
+        exports = jwt.export_config
+        tmpl = exports.create_template(ExportTemplate(f"authprobe-{secrets.token_hex(4)}").add_picklist("Severity"))
+        try:
+            out = Path(tempfile.mkdtemp(prefix="authprobe-")) / "severity.zip"
+            _SEVERITY_EXPORT["zip"] = Path(exports.export_by_template_uuid(tmpl["uuid"], str(out), poll_interval=3))
+        finally:
+            exports.delete_template(tmpl["uuid"])
+    return _SEVERITY_EXPORT["zip"]
+
+
+def _import_chain(client: FortiSOAR) -> dict[str, tuple[str, str]]:
+    """Import the Severity picklist back onto itself. Both import routes start a
+    background job, so a 2xx proves nothing: GET counts once the job's options
+    are generated, PUT once the job reports Import Complete. When this
+    credential cannot generate options, JWT prepares a fresh job so the trigger
+    is still measured with this credential."""
+    out: dict[str, tuple[str, str]] = {}
+    jwt = _jwt_from_env(client)
+    bundle = _severity_export(jwt)
+    made: list[tuple[str, str]] = []  # (job, file_iri) to delete
+
+    def new_job(c: FortiSOAR) -> str:
+        file_iri = c.files.upload(str(bundle))["@id"]
+        job = c.import_config.create_job(file_iri)
+        made.append((job, file_iri))
+        return job
+
+    def options_ready(c: FortiSOAR, job: str) -> bool:
+        c.import_config.generate_options(job)
+        try:
+            c.import_config.wait_for_options(job, timeout=60)
+            return True
+        except TimeoutError:
+            return False
+
+    op = "GET /api/import/{job_uuid}"
+    try:
+        job = new_job(client)
+        if options_ready(client, job):
+            out[op] = ("YES", "real body: import options generated")
+        else:
+            out[op] = ("NO", "real body: import options never generated (60s)")
+            job = new_job(jwt)
+            if not options_ready(jwt, job):
+                return out
+        op = "PUT /api/import/{job_uuid}"
+        client.import_config.trigger(job)
+        status = client.import_config.wait_for_import(job, timeout=120).status
+        out[op] = (("YES", "real body: import finished") if status == "Import Complete"
+                   else ("NO", f"real body: import never finished (status={status!r})"))
+    except Exception as exc:  # noqa: BLE001 -- recorded, not raised
+        code = getattr(exc, "status_code", None)
+        out.setdefault(op, ("NO" if code in (401, 403) else "ERROR",
+                            f"real body: {code} {type(exc).__name__} {str(exc)[:50]}"))
+    finally:
+        for job, file_iri in made:
+            jwt.request("DELETE", f"/api/3/import_jobs/{job}", raise_on_status=False)
+            jwt.request("DELETE", file_iri, raise_on_status=False)
+    return out
+
+
 def _api_key_binding_chain(client: FortiSOAR) -> dict[str, tuple[str, str]]:
     """JWT mints a key *user* (an /api/auth route); the credential under test binds,
     reads and renames it. JWT revokes it after."""
@@ -382,6 +450,7 @@ DEEP_CHECKS = {
     **_chain(["POST /api/3/picklist_names", "DELETE /api/3/picklist_names/{uuid}"], _picklist_name_chain),
     **_chain(["POST /api/3/api_keys", "GET /api/3/api_keys/{uuid}", "PUT /api/3/api_keys/{uuid}"],
              _api_key_binding_chain),
+    **_chain(["GET /api/import/{job_uuid}", "PUT /api/import/{job_uuid}"], _import_chain),
 }
 
 
