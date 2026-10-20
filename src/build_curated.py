@@ -4245,7 +4245,7 @@ REFERENCE_PROSE = r"""A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST
 
 > **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Request/response examples marked live-captured came from a real FortiSOAR; the rest are documented from the API guide and DB introspection only and are best-effort. Always validate against your own appliance before relying on it.
 
-Every operation starts with one line saying which credentials it accepts - see [Authentication](#description/authentication).
+Pills above each operation show which credentials it accepts - see [Authentication](#description/authentication).
 
 ## Concepts
 
@@ -4267,16 +4267,17 @@ Three documented methods; only two are recommended.
 | **Bearer JWT** | `Authorization: Bearer <jwt>` | Short-lived / interactive use. Obtain from `POST /auth/authenticate`. Default TTL ~30 min; re-auth on 401. |
 | HMAC | (legacy) | Documented in the public PDF for completeness. Out of scope here - most clients should use API key. |
 
-Some endpoints accept only one method. Every operation that needs a credential starts with a line like **API key: Yes · JWT: Yes**, measured against live FortiSOAR 8.0.0 and 8.0.1. A version is named only when the answers differ (**API key: No on 8.0.0, Yes on 8.0.1**).
+Some endpoints accept only one method. Each operation carries pills next to its title, measured against live FortiSOAR:
 
-- **Yes** - that credential gets past authentication. Measured by sending the request with the real credential and with a garbage one of the same kind: if the answers differ, the credential was accepted.
-- **No** - the real credential gets the same rejection as a garbage one, or a 401/403 access denial.
-- **Not tested** - the call is too destructive to probe and no live capture covers it.
-- **Not found on FortiSOAR x.y.z** - the route answers 404 to every credential, garbage included, so it does not exist on that version.
+- **API key** / **JWT** in green - that credential works. In red and struck through - it does not.
+- **Not tested** - the call is too destructive to run against a live box, so it is unverified.
+- **Not found** - the route answers 404 to every credential, so it does not exist on the versions measured.
+- A blue version pill (**8.0.1+**) - the FortiSOAR version that introduced the operation.
 
-The operation's lock icon / auth selector lists only the methods marked **Yes**.
+Calls that need no credential (`POST /auth/authenticate`, `/api/version`, `/api/public/license`) have no pills.
 
-`POST /auth/authenticate`, `/api/version` and `/api/public/license` take no credential.
+The operation's lock icon / auth selector lists only the methods in green.
+
 
 ## Pagination & response shape
 
@@ -5572,8 +5573,53 @@ def _version_tuple(v: str) -> tuple[int, ...]:
 
 
 _AUTH_SCHEMES = {"apikey": "apiKeyAuth", "jwt": "bearerJwt"}
-_AUTH_WORD = {"yes": "Yes", "no": "No", "public": "No auth needed", "untested": "Not tested",
-              "missing": "Not found", "unreleased": "Not in this version"}
+
+
+# Pill colors. web/index.html strikes through a pill drawn in the "no" color,
+# matching on this exact value, so change both together.
+_BADGE_COLOR = {"yes": "#1f8a4c", "no": "#b4372f", "version": "#2f6fde",
+                "untested": "#b7791f", "missing": "#6b7280"}
+
+
+def _auth_badges(by_version: dict[str, dict[str, str]], op: dict) -> list[dict[str, str]]:
+    """Scalar ``x-badges`` for one op: a pill per credential (green Yes, red No),
+    "Not tested" when no version measured it, "Not found" when the route is
+    missing everywhere, and the version that introduced the op when it is newer
+    than the oldest version measured. Credential-free ops get none: the empty
+    ``security`` already shows it."""
+    versions = list(by_version)
+    states = {s for v in by_version.values() for s in v.values()}
+    badges: list[dict[str, str]] = []
+
+    def pill(name: str, kind: str) -> None:
+        badges.append({"name": name, "position": "before", "color": _BADGE_COLOR[kind]})
+
+    if states == {"public"}:
+        return badges
+    if states <= {"missing", "unreleased"}:
+        pill("Not found", "missing")
+        return badges
+    untested = False
+    for mode, label in (("apikey", "API key"), ("jwt", "JWT")):
+        measured = [(v, by_version[v][mode]) for v in versions if by_version[v][mode] in ("yes", "no")]
+        if not measured:
+            untested = True
+            continue
+        answer = measured[-1][1]
+        since = measured[-1][0]
+        for v, state in reversed(measured):
+            if state != answer:
+                break
+            since = v
+        # Name a version only when an older one answered differently.
+        pill(label if since == measured[0][0] else f"{label} ({since}+)", answer)
+    if untested:
+        pill("Not tested", "untested")
+    present = [v for v in versions if not set(by_version[v].values()) <= {"missing", "unreleased"}]
+    introduced = op.get("x-fsr-version") or (f"{present[0]}+" if present and present[0] != versions[0] else "")
+    if introduced:
+        pill(introduced, "version")
+    return badges
 
 
 def _support_on(rec: dict, op: dict, version: str, live: dict) -> dict[str, str]:
@@ -5605,8 +5651,8 @@ def _apply_auth_support(spec: dict) -> int:
     the probe could not settle is a Yes only if a live scenario got a 2xx with
     that credential (live captures come from the `.env` box, so only its file
     uses them). An op newer than a box (`x-fsr-version`) is "Not in this
-    version" there. When versions agree the line says so once; when they
-    differ it names each. `security` follows the newest version that has the op.
+    version" there. The answers become pills (`x-badges`, see `_auth_badges`);
+    `security` follows the newest version that has the op.
     """
     boxes = []
     for f in sorted(AUTH_PROBE_DIR.glob("*.json")) if AUTH_PROBE_DIR.exists() else []:
@@ -5629,23 +5675,6 @@ def _apply_auth_support(spec: dict) -> int:
             if not by_version:
                 continue
             versions = list(by_version)
-            states = {s for v in by_version.values() for s in v.values()}
-            if states == {"public"}:
-                line = ""  # `security: []` already says so; a login op needs no "no auth" banner
-            elif states <= {"missing", "unreleased"}:
-                where = [v for v in versions if by_version[v]["jwt"] == "missing"]
-                line = (f"**Not found on FortiSOAR {', '.join(where)}**" if where
-                        else f"**Not in FortiSOAR {', '.join(versions)}**")
-                line += f"; needs {op['x-fsr-version']}" if op.get("x-fsr-version") and len(where) < len(versions) else ""
-            else:
-                parts = []
-                for mode, label in (("apikey", "API key"), ("jwt", "JWT")):
-                    words = {v: _AUTH_WORD[by_version[v][mode]] for v in versions}
-                    if len(set(words.values())) == 1:
-                        parts.append(f"{label}: {next(iter(words.values()))}")
-                    else:
-                        parts.append(f"{label}: " + ", ".join(f"{w} on {v}" for v, w in words.items()))
-                line = "**" + " · ".join(parts) + "**"
             newest = next((by_version[v] for v in reversed(versions)
                            if not set(by_version[v].values()) <= {"missing", "unreleased"}), by_version[versions[-1]])
             op["x-auth"] = newest
@@ -5656,8 +5685,9 @@ def _apply_auth_support(spec: dict) -> int:
                 yes = [_AUTH_SCHEMES[m] for m in ("apikey", "jwt") if newest[m] == "yes"]
                 if yes:
                     op["security"] = [{s: []} for s in yes]
-            if line:
-                op["description"] = line + "\n\n" + (op.get("description") or "")
+            badges = _auth_badges(by_version, op)
+            if badges:
+                op["x-badges"] = badges
             applied += 1
     return applied
 

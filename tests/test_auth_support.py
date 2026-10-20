@@ -1,4 +1,4 @@
-"""How probe results become the "API key: Yes · JWT: Yes" line on each op."""
+"""How probe results become the auth pills (Scalar x-badges) on each op."""
 
 from __future__ import annotations
 
@@ -33,33 +33,50 @@ def _apply(tmp_path, monkeypatch, spec, boxes):
     return spec["paths"]["/x"]["get"]
 
 
-def test_versions_that_agree_get_one_answer(tmp_path, monkeypatch):
+def _pills(op: dict) -> list[tuple[str, str]]:
+    kind = {c: k for k, c in build_curated._BADGE_COLOR.items()}
+    return [(b["name"], kind[b["color"]]) for b in op.get("x-badges", [])]
+
+
+def test_versions_that_agree_get_one_pill_each(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("YES", "YES"), "8.0.1": _rec("YES", "YES")})
-    assert op["description"] == "**API key: Yes · JWT: Yes**\n\nBody."
+    assert _pills(op) == [("API key", "yes"), ("JWT", "yes")]
+    assert op["description"] == "Body."  # the pills carry it; no banner line
     assert op["security"] == [{"apiKeyAuth": []}, {"bearerJwt": []}]
 
 
-def test_versions_that_differ_name_each(tmp_path, monkeypatch):
+def test_jwt_only_is_a_red_api_key_pill(tmp_path, monkeypatch):
+    op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("NO", "YES"), "8.0.1": _rec("NO", "YES")})
+    assert _pills(op) == [("API key", "no"), ("JWT", "yes")]
+    assert op["security"] == [{"bearerJwt": []}]
+
+
+def test_versions_that_differ_name_where_the_answer_starts(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("NO", "YES"), "8.0.1": _rec("YES", "YES")})
-    assert op["description"].startswith("**API key: No on 8.0.0, Yes on 8.0.1 · JWT: Yes**")
+    assert _pills(op) == [("API key (8.0.1+)", "yes"), ("JWT", "yes")]
     assert op["security"] == [{"apiKeyAuth": []}, {"bearerJwt": []}]  # newest version decides
 
 
 def test_route_missing_everywhere_is_not_found(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("INCONCLUSIVE", "INCONCLUSIVE", 404, 404)})
-    assert op["description"].startswith("**Not found on FortiSOAR 8.0.0**\n\n")
+    assert _pills(op) == [("Not found", "missing")]
     assert op["x-auth"] == {"apikey": "missing", "jwt": "missing"}
 
 
-def test_op_newer_than_the_box_is_not_in_that_version(tmp_path, monkeypatch):
+def test_newer_op_gets_the_version_that_introduced_it(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(**{"x-fsr-version": "8.0.1+"}),
                 {"8.0.0": _rec("YES", "YES", 404), "8.0.1": _rec("NO", "YES")})
-    assert op["description"].startswith("**API key: Not in this version on 8.0.0, No on 8.0.1 · JWT: "
-                                         "Not in this version on 8.0.0, Yes on 8.0.1**")
+    assert _pills(op) == [("API key", "no"), ("JWT", "yes"), ("8.0.1+", "version")]
     assert op["security"] == [{"bearerJwt": []}]
 
 
-def test_public_route(tmp_path, monkeypatch):
+def test_untested_op_says_so(tmp_path, monkeypatch):
+    op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("UNTESTED", "UNTESTED")})
+    assert _pills(op) == [("Not tested", "untested")]
+
+
+def test_public_route_has_no_pills(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("PUBLIC", "PUBLIC")})
-    assert op["description"] == "Body."  # no banner: security [] says it
+    assert _pills(op) == []
+    assert op["description"] == "Body."
     assert op["security"] == []

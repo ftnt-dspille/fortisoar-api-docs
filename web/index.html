@@ -162,6 +162,25 @@
       background: #7aa2ff; color: #0b1020; border-color: #7aa2ff;
     }
     #fsr-modal button.fsr-primary:hover { background: #92b4ff; border-color: #92b4ff; }
+
+    /* ---------- Auth pills (x-badges from build_curated._auth_badges) ----------
+       Scalar gives a badge no class of its own, only its color, so a red
+       "API key" / "JWT" pill (credential not accepted) is matched on that
+       color. Keep in sync with _BADGE_COLOR["no"]. */
+    .badge[style*="#b4372f"] { text-decoration: line-through; text-decoration-thickness: 1px; }
+    /* Scalar's own .badge-colored rule is scoped and does not reach these
+       pills, so tint them from --badge-color here: a soft fill, a matching
+       border, and text in the pill's color (lightened on the dark theme). */
+    .badge.badge-colored {
+      font-weight: 600;
+      background: color-mix(in srgb, var(--badge-color) 14%, transparent) !important;
+      border-color: color-mix(in srgb, var(--badge-color) 45%, transparent) !important;
+      color: var(--badge-color) !important;
+    }
+    .dark-mode .badge.badge-colored {
+      background: color-mix(in srgb, var(--badge-color) 22%, transparent) !important;
+      color: color-mix(in srgb, var(--badge-color) 55%, white) !important;
+    }
   </style>
 </head>
 <body>
