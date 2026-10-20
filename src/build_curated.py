@@ -274,7 +274,7 @@ SCHEMAS = {
                 "required": ["loginid", "password"],
                 "properties": {
                     "loginid": {"type": "string", "example": "csadmin"},
-                    "password": {"type": "string", "format": "password"},
+                    "password": {"type": "string", "description": "The user's password."},
                 },
             },
         },
@@ -4075,8 +4075,8 @@ PATHS["/api/3/changepassword"] = {
                  "properties": {
                      "uuid": {"type": "string", "format": "uuid"},
                      "loginId": {"type": "string"},
-                     "oldPassword": {"type": "string", "format": "password"},
-                     "newPassword": {"type": "string", "format": "password"},
+                     "oldPassword": {"type": "string", "description": "The current password."},
+                     "newPassword": {"type": "string", "description": "The new password; must meet the password policy."},
                  }},
             }}},
             "responses": {"200": _resp("Password changed."), "400": {"description": "Policy violation or same password."}}},
@@ -4267,7 +4267,7 @@ Three documented methods; only two are recommended.
 | **Bearer JWT** | `Authorization: Bearer <jwt>` | Short-lived / interactive use. Obtain from `POST /auth/authenticate`. Default TTL ~30 min; re-auth on 401. |
 | HMAC | (legacy) | Documented in the public PDF for completeness. Out of scope here - most clients should use API key. |
 
-Some endpoints accept only one method. Every operation starts with a line like **API key: Yes · JWT: Yes**, measured against a live FortiSOAR (the version is in the line):
+Some endpoints accept only one method. Every operation that needs a credential starts with a line like **API key: Yes · JWT: Yes**, measured against live FortiSOAR 8.0.0 and 8.0.1. A version is named only when the answers differ (**API key: No on 8.0.0, Yes on 8.0.1**).
 
 - **Yes** - that credential gets past authentication. Measured by sending the request with the real credential and with a garbage one of the same kind: if the answers differ, the credential was accepted.
 - **No** - the real credential gets the same rejection as a garbage one, or a 401/403 access denial.
@@ -4276,7 +4276,7 @@ Some endpoints accept only one method. Every operation starts with a line like *
 
 The operation's lock icon / auth selector lists only the methods marked **Yes**.
 
-The `/api/version` and `/api/public/license` endpoints are **public** (no auth required).
+`POST /auth/authenticate`, `/api/version` and `/api/public/license` take no credential.
 
 ## Pagination & response shape
 
@@ -5629,14 +5629,13 @@ def _apply_auth_support(spec: dict) -> int:
             if not by_version:
                 continue
             versions = list(by_version)
-            measured = f" (measured on FortiSOAR {', '.join(versions)})"
             states = {s for v in by_version.values() for s in v.values()}
             if states == {"public"}:
-                line = "**No authentication required.**" + measured
+                line = ""  # `security: []` already says so; a login op needs no "no auth" banner
             elif states <= {"missing", "unreleased"}:
                 where = [v for v in versions if by_version[v]["jwt"] == "missing"]
-                line = (f"**Not found on FortiSOAR {', '.join(where)}** (404 for every credential, before "
-                        f"authentication)") if where else f"**Not in FortiSOAR {', '.join(versions)}**"
+                line = (f"**Not found on FortiSOAR {', '.join(where)}**" if where
+                        else f"**Not in FortiSOAR {', '.join(versions)}**")
                 line += f"; needs {op['x-fsr-version']}" if op.get("x-fsr-version") and len(where) < len(versions) else ""
             else:
                 parts = []
@@ -5646,7 +5645,7 @@ def _apply_auth_support(spec: dict) -> int:
                         parts.append(f"{label}: {next(iter(words.values()))}")
                     else:
                         parts.append(f"{label}: " + ", ".join(f"{w} on {v}" for v, w in words.items()))
-                line = "**" + " · ".join(parts) + "**" + measured
+                line = "**" + " · ".join(parts) + "**"
             newest = next((by_version[v] for v in reversed(versions)
                            if not set(by_version[v].values()) <= {"missing", "unreleased"}), by_version[versions[-1]])
             op["x-auth"] = newest
@@ -5657,7 +5656,8 @@ def _apply_auth_support(spec: dict) -> int:
                 yes = [_AUTH_SCHEMES[m] for m in ("apikey", "jwt") if newest[m] == "yes"]
                 if yes:
                     op["security"] = [{s: []} for s in yes]
-            op["description"] = line + "\n\n" + (op.get("description") or "")
+            if line:
+                op["description"] = line + "\n\n" + (op.get("description") or "")
             applied += 1
     return applied
 
