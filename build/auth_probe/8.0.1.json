@@ -1437,21 +1437,6 @@
       },
       "probed": "/api/integration/configuration/00000000-0000-0000-0000-000000000000/"
     },
-    "GET /api/integration/connector/development/entity/": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 405,
-        "verdict": "YES",
-        "why": "405 from the handler (bogus gets 401)"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 405,
-        "verdict": "YES",
-        "why": "405 from the handler (bogus gets 401)"
-      },
-      "probed": "/api/integration/connector/development/entity/"
-    },
     "GET /api/integration/connectors/": {
       "apikey": {
         "bogus_status": 401,
@@ -2609,7 +2594,7 @@
       },
       "probed": "/api/ingest-feeds/indicators"
     },
-    "POST /api/ingest-feeds/observables": {
+    "POST /api/ingest-feeds/{module}": {
       "apikey": {
         "bogus_status": 401,
         "status": 400,
@@ -2622,52 +2607,7 @@
         "verdict": "YES",
         "why": "400 from the handler (bogus gets 401)"
       },
-      "probed": "/api/ingest-feeds/observables"
-    },
-    "POST /api/ingest-feeds/reputation": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "probed": "/api/ingest-feeds/reputation"
-    },
-    "POST /api/ingest-feeds/stix-bundle": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "probed": "/api/ingest-feeds/stix-bundle"
-    },
-    "POST /api/ingest-feeds/threatintel": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "probed": "/api/ingest-feeds/threatintel"
+      "probed": "/api/ingest-feeds/alerts"
     },
     "POST /api/insert-feeds/{recordType}": {
       "apikey": {
