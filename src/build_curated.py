@@ -1026,6 +1026,13 @@ PATHS["/api/3/{module}/{recordId}/comments"] = {
 }
 
 # Generic templated record CRUD - documents the pattern
+# cyops-api refuses an API key's create/update of an Actor (people,
+# appliances, api_keys) whatever the key's role; measured on 8.0.0 and 8.0.1.
+ACTOR_WRITE_NOTE = (
+    "An API key cannot create or change `people`, `appliances` or `api_keys` records: "
+    "FortiSOAR answers 403 whatever the key's role. Use a JWT for those."
+)
+
 PATHS["/api/3/{collection}"] = {
     "parameters": [{"name": "collection", "in": "path", "required": True, "schema": {"type": "string"},
                     "description": "Plural module name. Examples: alerts, incidents, indicators, tasks, people, workflows, connectors."}],
@@ -1048,6 +1055,7 @@ PATHS["/api/3/{collection}"] = {
     "post": {
         "tags": ["Records (generic)"],
         "summary": "Create a record in any module",
+        "description": ACTOR_WRITE_NOTE,
         "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
         "responses": {"201": _resp("Created.")},
     },
@@ -1071,7 +1079,8 @@ PATHS["/api/3/{collection}/{uuid}"] = {
                 "rejected since the related module can't be inferred. Live-verified: linking an "
                 "`Asset` onto an `Alert`'s `assets` field, confirmed via `GET "
                 "/api/3/alerts/<uuid>/assets`, then unlinked and reconfirmed empty. See "
-                "`$relationships` above for the read side of the same relationship fields."
+                "`$relationships` above for the read side of the same relationship fields.\n\n"
+                + ACTOR_WRITE_NOTE
             ),
             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
             "responses": {"200": _resp("Updated.")}},
@@ -1431,29 +1440,38 @@ PATHS["/api/query/{collection}"] = {
     },
 }
 
-PATHS["/api/query/{collection}/{queryId}"] = {
+PATHS["/api/query/{collection}/{id}/{field}"] = {
     "parameters": [
-        {"name": "collection", "in": "path", "required": True, "schema": {"type": "string"}},
-        {"name": "queryId", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}},
+        {"name": "collection", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "Module of the record, e.g. `alerts`."},
+        {"name": "id", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+         "description": "uuid of the record whose links to read."},
+        {"name": "field", "in": "path", "required": True, "schema": {"type": "string"},
+         "description": "A to-many relationship on the module, e.g. `indicators`. "
+                        "`owners`, `files`, `userOwners` and `datasets` are excluded."},
+        {"name": "$limit", "in": "query", "required": False, "schema": {"type": "integer"}},
+        {"name": "$page", "in": "query", "required": False, "schema": {"type": "integer"}},
     ],
     "post": {
         "tags": ["Query"],
-        "summary": "Execute a persisted query",
+        "summary": "Query the records linked to one record",
         "description": (
-            "The API guide documents this as `GET`, with `queryId` a `/api/3/query_objects` uuid. "
-            "On 8.0.0 neither answers: this route 404s for `GET` and `POST`, with a real "
-            "`/api/3/user_queries` uuid, and `/api/3/query_objects` itself 404s. For an ad-hoc "
-            "query use `POST /api/query/{collection}`."
+            "Returns the records on the other side of one record's to-many relationship (an alert's "
+            "`indicators`, an incident's `alerts`), narrowed by the usual Query body. The body needs both "
+            "`logic` and `filters`: an empty body is a 400. Page with `$limit`/`$page`.\n\n"
+            "There is no route that runs a saved query by id (`POST /api/query/{collection}/{queryId}` 404s). "
+            "To run one, read it from `/api/3/user_queries` or `/api/3/system_queries` and post its `query` "
+            "to `POST /api/query/{collection}`."
         ),
-        "requestBody": {"required": False, "content": {"application/json": {
-            "schema": {"type": "object", "properties": {
-                "$limit": {"type": "integer"},
-                "$page": {"type": "integer"},
-                "$orderby": {"type": "string"},
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["logic", "filters"], "properties": {
+                "logic": {"type": "string", "enum": ["AND", "OR"]},
+                "filters": {"type": "array", "items": {"type": "object"}},
+                "sort": {"type": "array", "items": {"type": "object"}},
             }},
-            "example": {"$limit": 30, "$page": 1, "$orderby": "-createDate"},
+            "example": {"logic": "AND", "filters": []},
         }}},
-        "responses": {"200": _resp("Hydra collection.", ref="HydraCollection")},
+        "responses": {"200": _resp("Hydra collection of the linked records.", ref="HydraCollection")},
     },
 }
 
@@ -1462,8 +1480,8 @@ PATHS["/api/3/user_queries"] = {
         "tags": ["Query"],
         "summary": "Save a user query",
         "description": (
-            "Persists a Query body so it can later be executed via "
-            "`POST /api/query/{collection}/{queryId}` without re-shipping the filter grammar. "
+            "Persists a Query body. FortiSOAR has no run-by-id route: to run it, read the record "
+            "and post its `query` to `POST /api/query/{collection}`. "
             "Each saved query is scoped to one module (`models` IRI). System-shipped equivalents "
             "live under `/api/3/system_queries`; ad-hoc one-shots under `/api/3/queries`."
         ),
@@ -5324,7 +5342,7 @@ CROSS_LINKS = {
     "/api/publish/error": "[Publish blast radius](#description/publish-blast-radius)",
     # Query
     "/api/query/{collection}": "[Query reference](#description/query-reference)",
-    "/api/query/{collection}/{queryId}": "[Persisted queries](#description/query-reference) (Query reference -> Persisted queries)",
+    "/api/query/{collection}/{id}/{field}": "[Persisted queries](#description/query-reference) (Query reference -> Persisted queries)",
     "/api/search": "[Query reference](#description/query-reference) (`/api/search` section)",
     # Audit
     "/api/gateway/audit/activities": "[Audit gateway quirks](#description/audit-gateway-quirks)",

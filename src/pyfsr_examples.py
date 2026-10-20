@@ -229,7 +229,9 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/product/feature-access"): ("doctest", "pyfsr.api.system:SystemAPI.feature_access"),
     # Search
     ("post", "/api/search"): ("doctest", "pyfsr.api.search:SearchAPI.search"),
-    ("post", "/api/query/{collection}/{queryId}"): ("doctest", "pyfsr.api.search:SearchAPI.run_persisted"),
+    # client.search.query_related() once the pyfsr release that has it is the floor.
+    ("post", "/api/query/{collection}/{id}/{field}"): (
+        "manual", 'client.post("/api/query/alerts/alert-uuid/indicators", data={"logic": "AND", "filters": []})'),
     # Feeds (trigger-bypassing bulk ingest)
     ("post", "/api/ingest-feeds/indicators"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.indicators"),
     ("post", "/api/ingest-feeds/observables"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.observables"),

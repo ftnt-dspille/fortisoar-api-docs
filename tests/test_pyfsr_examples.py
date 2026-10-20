@@ -309,7 +309,7 @@ def _fake_request(self, method, url, **kwargs):
             "total": 1,
             "hits": [{"_source": {"severity": "Low"}}],
         }}).encode())
-    # run_persisted (POST /api/query/{collection}/{queryId}) - BEFORE workflow_logs
+    # /api/query/... (ad-hoc and related-record queries) - BEFORE workflow_logs
     if method == "POST" and "/api/query/" in url and "/api/3/" not in url and "workflow_logs" not in url:
         return _fake_response(200, json.dumps({"hydra:totalItems": 1, "hydra:member": []}).encode())
     # --- Feeds (trigger-bypassing bulk ingest) ---
