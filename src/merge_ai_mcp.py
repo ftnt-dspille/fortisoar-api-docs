@@ -344,9 +344,9 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    # --- /ai/traces - AI trace observability (pyfsr-only, not in service OpenAPI) ---
+    # --- /api/ai/traces - AI trace observability (pyfsr-only, not in service OpenAPI) ---
     _t = "AI Traces"
-    PYFSR_ONLY_PATHS["/ai/traces/"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/"] = {
         "get": {
             "tags": [_t],
             "summary": "List AI execution traces",
@@ -356,7 +356,7 @@ def _build_pyfsr_only_paths():
                 "(page size, default 50), `cursor` (start-time cursor for paging). "
                 "pyfsr: `client.ai.traces.list()`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "parameters": [
                 {"name": "status", "in": "query", "schema": {"type": "string"},
                  "description": "Filter by trace status: `OK`, `ERROR`, `RUNNING`."},
@@ -371,17 +371,17 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/health"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/health"] = {
         "get": {
             "tags": [_t],
             "summary": "Check tracer store health",
             "description": "Returns 200 when the trace store is reachable and serving queries.",
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "responses": {"200": _ai_resp("Health status.")},
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/{trace_id}"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/{trace_id}"] = {
         "parameters": [
             {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Trace id (also the `task_id` from an agent run)."},
@@ -391,12 +391,12 @@ def _build_pyfsr_only_paths():
             "summary": "Get a single trace as a span tree",
             "description": (
                 "Returns one trace with its own spans as a tree. Use "
-                "`GET /ai/traces/{trace_id}/execution-tree` for the full nested run "
+                "`GET /api/ai/traces/{trace_id}/execution-tree` for the full nested run "
                 "including sub-traces. Query params: `depth` (tree depth, default 3), "
                 "`io` (`summary` or `full` - full includes span input/output payloads). "
                 "pyfsr: `client.ai.traces.get(trace_id)`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "parameters": [
                 {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 3},
                  "description": "Maximum tree depth."},
@@ -407,7 +407,7 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/{trace_id}/execution-tree"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/{trace_id}/execution-tree"] = {
         "parameters": [
             {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Root trace id."},
@@ -421,7 +421,7 @@ def _build_pyfsr_only_paths():
                 "(default 10), `io` (`summary` or `full`), `max_traces` (cap on sub-traces, "
                 "default 25). pyfsr: `client.ai.traces.execution_tree(trace_id)`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "parameters": [
                 {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 10}},
                 {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"}},
@@ -431,7 +431,7 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/{trace_id}/spans"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/{trace_id}/spans"] = {
         "parameters": [
             {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Trace id."},
@@ -441,16 +441,16 @@ def _build_pyfsr_only_paths():
             "summary": "List all spans in a trace (flat)",
             "description": (
                 "Every span of one trace, flat, with full I/O. Use "
-                "`GET /ai/traces/{trace_id}` for the tree view, or "
-                "`GET /ai/traces/spans/{span_id}` for a single span's details. "
+                "`GET /api/ai/traces/{trace_id}` for the tree view, or "
+                "`GET /api/ai/traces/spans/{span_id}` for a single span's details. "
                 "pyfsr: `client.ai.traces.spans(trace_id)`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "responses": {"200": _ai_resp("Flat array of spans."), "404": {"description": "Trace not found."}},
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/spans/{span_id}"] = {
         "parameters": [
             {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Span id."},
@@ -462,12 +462,12 @@ def _build_pyfsr_only_paths():
                 "One span with full input/output - the Step Details panel. "
                 "pyfsr: `client.ai.traces.span(span_id)`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "responses": {"200": _ai_resp("Span detail."), "404": {"description": "Span not found."}},
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}/children"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/spans/{span_id}/children"] = {
         "parameters": [
             {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Span id."},
@@ -476,12 +476,12 @@ def _build_pyfsr_only_paths():
             "tags": [_t],
             "summary": "List direct children of a span",
             "description": "Returns the immediate child spans (one level deep).",
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "responses": {"200": _ai_resp("Array of child spans."), "404": {"description": "Span not found."}},
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}/lineage"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/spans/{span_id}/lineage"] = {
         "parameters": [
             {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Span id."},
@@ -494,7 +494,7 @@ def _build_pyfsr_only_paths():
                 "`direction` (`upstream`, `downstream`, or `both` - default `both`), "
                 "`max_hops` (default 5). Always fails on fsr-ai 8.0.1 (HTTP 500)."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "parameters": [
                 {"name": "direction", "in": "query", "schema": {"type": "string", "default": "both"}},
                 {"name": "max_hops", "in": "query", "schema": {"type": "integer", "default": 5}},
@@ -503,7 +503,7 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/spans/{span_id}/tree"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/spans/{span_id}/tree"] = {
         "parameters": [
             {"name": "span_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Span id."},
@@ -516,7 +516,7 @@ def _build_pyfsr_only_paths():
                 "run. Query params: `depth` (default 10), `io` (`summary` or `full`). "
                 "On fsr-ai 8.0.1 `GET .../tree` redirects to `.../subtree`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "parameters": [
                 {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 10}},
                 {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"}},
@@ -525,7 +525,7 @@ def _build_pyfsr_only_paths():
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/tokens/{trace_id}"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/tokens/{trace_id}"] = {
         "parameters": [
             {"name": "trace_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Trace id."},
@@ -534,12 +534,12 @@ def _build_pyfsr_only_paths():
             "tags": [_t],
             "summary": "Token totals for a trace",
             "description": "Prompt, completion, and total token counts for all LLM calls in the trace.",
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "responses": {"200": _ai_resp("Token totals."), "404": {"description": "Trace not found."}},
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/tokens/session/{session_id}"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/tokens/session/{session_id}"] = {
         "parameters": [
             {"name": "session_id", "in": "path", "required": True, "schema": {"type": "string"},
              "description": "Chat session id."},
@@ -548,12 +548,12 @@ def _build_pyfsr_only_paths():
             "tags": [_t],
             "summary": "Token totals across a chat session",
             "description": "Aggregate token usage for every trace in a chat session.",
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "responses": {"200": _ai_resp("Session token totals."), "404": {"description": "Session not found."}},
         },
     }
 
-    PYFSR_ONLY_PATHS["/ai/traces/delete"] = {
+    PYFSR_ONLY_PATHS["/api/ai/traces/delete"] = {
         "delete": {
             "tags": [_t],
             "summary": "Purge traces older than a cutoff",
@@ -563,7 +563,7 @@ def _build_pyfsr_only_paths():
                 "`{\"before\": \"2026-01-01T00:00:00Z\"}`. pyfsr: "
                 "`client.ai.traces.purge_older_than(days=30)`."
             ),
-            "x-fsr-version": "8.0+",
+            "x-fsr-version": "8.0.1+",
             "requestBody": {"required": True, "content": {"application/json": {"schema": {
                 "type": "object",
                 "properties": {
@@ -589,7 +589,7 @@ AI_TAG_FOR_PREFIX = [
     ("/api/ai/agents",   "AI Agents"),
     ("/api/ai/triage",   "AI Agents"),   # /api/ai/triage is a re-mount of /api/ai/agents
     ("/api/ai/agent",    "AI Agents"),
-    ("/ai/traces",   "AI Traces"),
+    ("/api/ai/traces",   "AI Traces"),
     ("/api/ai/chat",     "AI Chat"),
     ("/api/ai/llm",      "AI LLM"),
     ("/api/ai/enrich",   "AI Enrichment"),
@@ -694,13 +694,13 @@ AI_MCP_TAG_DESCRIPTIONS = {
     "AI Traces": (
         "OpenTelemetry-style trace observability for AI agent runs. Each run "
         "produces a trace with spans (LLM calls, tool calls, sub-agent steps). "
-        "Use `GET /ai/traces/` to list, `GET /ai/traces/{trace_id}` to inspect a "
-        "single trace, `GET /ai/traces/{trace_id}/execution-tree` for the full "
-        "nested run tree, and `GET /ai/traces/{trace_id}/spans` for a flat span "
-        "list. Per-span detail: `GET /ai/traces/spans/{span_id}`. Token usage: "
-        "`GET /ai/traces/tokens/{trace_id}` (per-trace) or "
-        "`GET /ai/traces/tokens/session/{session_id}` (per-chat-session). "
-        "`DELETE /ai/traces/delete` purges traces older than a cutoff."
+        "Use `GET /api/ai/traces/` to list, `GET /api/ai/traces/{trace_id}` to inspect a "
+        "single trace, `GET /api/ai/traces/{trace_id}/execution-tree` for the full "
+        "nested run tree, and `GET /api/ai/traces/{trace_id}/spans` for a flat span "
+        "list. Per-span detail: `GET /api/ai/traces/spans/{span_id}`. Token usage: "
+        "`GET /api/ai/traces/tokens/{trace_id}` (per-trace) or "
+        "`GET /api/ai/traces/tokens/session/{session_id}` (per-chat-session). "
+        "`DELETE /api/ai/traces/delete` purges traces older than a cutoff."
     ),
 }
 
@@ -879,8 +879,6 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
         # fsr-ai: JWT only. The same routes through the API gateway at
         # /api/ai/... take an API key too, so that is the URL we document.
         # Multipart agent import stays on /ai/ (the gateway drops the file).
-        # (The traces routes, also kept on /ai/, are added in PYFSR_ONLY_PATHS:
-        # the gateway answers 403 to both credentials for those on 8.0.0.)
         if path != "/ai/agent/import":
             path = "/api" + path
         tag = _ai_tag(path)

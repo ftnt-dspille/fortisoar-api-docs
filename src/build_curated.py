@@ -5533,6 +5533,10 @@ def _apply_live_observations(spec: dict) -> int:
 
 
 AUTH_PROBE_FILE = OUT.parent / "auth_probe.json"
+
+
+def _version_tuple(v: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in re.findall(r"\d+", v)[:3])
 _AUTH_SCHEMES = {"apikey": "apiKeyAuth", "jwt": "bearerJwt"}
 
 
@@ -5543,7 +5547,8 @@ def _apply_auth_support(spec: dict) -> int:
     to send, or a route that answers before auth) is a Yes only if a live
     scenario got a 2xx with that credential. The op's `security` is narrowed to
     the schemes that are Yes, so the renderer's auth selector agrees with the
-    line at the top of the description.
+    line at the top of the description. An op newer than the measured box
+    (`x-fsr-version`) is Not tested: there it 404s, which reads as "got past auth".
     """
     if not AUTH_PROBE_FILE.exists():
         return 0
@@ -5558,6 +5563,13 @@ def _apply_auth_support(spec: dict) -> int:
         if not op:
             continue
         live = (obs.get(key) or {}).get("by_auth") or {}
+        needs = (op.get("x-fsr-version") or "").rstrip("+")
+        if version and needs and _version_tuple(needs) > _version_tuple(version):
+            op["x-auth"] = {"apikey": "untested", "jwt": "untested"}
+            op["description"] = (f"**API key: Not tested · JWT: Not tested** (needs FortiSOAR {needs}; "
+                                 f"measured on {version})\n\n") + (op.get("description") or "")
+            applied += 1
+            continue
         support = {}
         for mode in ("apikey", "jwt"):
             verdict = rec[mode]["verdict"]
