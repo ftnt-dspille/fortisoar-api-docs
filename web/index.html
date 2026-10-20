@@ -168,7 +168,7 @@
        "API key" / "JWT" pill (credential not accepted) is matched on that
        color. Keep in sync with _BADGE_COLOR["no"]. */
     .badge[style*="#b4372f"] { text-decoration: line-through; text-decoration-thickness: 1px; }
-    .fsr-pills { margin-top: 6px; }
+    .fsr-pills { margin-top: 4px; }
     /* Scalar's own .badge-colored rule is scoped and does not reach these
        pills, so tint them from --badge-color here: a soft fill, a matching
        border, and text in the pill's color (lightened on the dark theme). */
@@ -466,16 +466,20 @@
           if (!title || !badge) return;
           const row = badge.parentElement;
           row.classList.add('fsr-hidden');
-          const next = title.nextElementSibling;
-          if (next && next.hasAttribute('data-fsr-pills')) {
-            if (next.textContent === row.textContent) return;
-            next.remove();
+          // Append to the end of the title block, after Scalar's hover-only
+          // "Copy link" button: inserted straight after the <h3>, the pills
+          // push that button onto an empty line of its own.
+          const block = title.closest('.operation-title') || title.parentElement;
+          const last = block.lastElementChild;
+          if (last && last.hasAttribute('data-fsr-pills')) {
+            if (last.textContent === row.textContent) return;
+            last.remove();
           }
           const copy = row.cloneNode(true);
           copy.classList.remove('fsr-hidden');
           copy.classList.add('fsr-pills');
           copy.setAttribute('data-fsr-pills', '');
-          title.after(copy);
+          block.appendChild(copy);
         });
       }
 
