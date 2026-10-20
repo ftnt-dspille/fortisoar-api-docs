@@ -10,7 +10,7 @@ info:
     \ This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations\
     \ are still missing. Request/response examples marked live-captured came from a real FortiSOAR; the rest are documented\
     \ from the API guide and DB introspection only and are best-effort. Always validate against your own appliance before\
-    \ relying on it.\n\nPills above each operation show which credentials it accepts - see [Authentication](#description/authentication).\n\
+    \ relying on it.\n\nPills under each operation's title show which credentials it accepts - see [Authentication](#description/authentication).\n\
     \n## Concepts\n\nResponses follow the **JSON-LD + Hydra** convention. In practice that means every record has an `@id`\
     \ URL you can copy and reuse as a reference, plus an `@type` (the module name) and `@context` (model URL). List endpoints\
     \ wrap their results in a `hydra:member` envelope - see [Pagination & response shape](#description/pagination-response-shape).\n\
@@ -122,7 +122,7 @@ info:
     \ matching. Don't rely on it.\n7. **No server-side sort control.** Records arrive `id DESC` (newest first). No `sort`\
     \ param honored. Sort client-side if you need anything else.\n8. **`displayName` arrives dirty.** Some records have extra\
     \ whitespace, embedded UUIDs, even unrelated text from other fields. Sanitize on read.\n9. **JWT lifetime is short.**\
-    \ Default ~30 min; long-running syncs need to re-auth on 401 or use a service-account token with extended TTL.\n\nThe\
+    \ Default ~30 min; long-running syncs need to re-auth on 401, or use an API key where the operation takes one.\n\nThe\
     \ 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynamically from `GET /api/gateway/audit/operations`.\n\
     \n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints below cover the most common control flows;\
     \ less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`) are tracked as a future expansion.\n\
@@ -174,34 +174,34 @@ info:
     \ `task_id` in response.** Usually means the trigger name is wrong (404 was masked by a redirect) or the playbook is inactive.\
     \ The endpoint returns 200 with an empty body in some edge cases - always check before subscripting.\n- **`parent_wf__isnull=True`\
     \ is required** for playbooks that fan out via `Execute Sub Playbook`. Without it the first match may be a child run that\
-    \ finishes before the parent.\n - **API-KEY vs Bearer.** API-KEY tokens don't expire, so they're the right choice for\
-    \ long-running tracker scripts; JWTs typically die after ~30 minutes mid-poll.\n\n## Modules\n\nA **module** is FortiSOAR's\
-    \ unit of schema: a named table with a list of fields\n(\"attributes\"). Every record collection (`alerts`, `incidents`,\
-    \ custom modules) is\nbacked by a module definition. The schema lives in two stores, and a third endpoint\nmoves changes\
-    \ between them:\n\n- **Staging** (`/api/3/staging_model_metadatas`) - the editable draft. Creating a module\n  or changing\
-    \ a field edits staging only; nothing is live yet.\n- **Published** (`/api/3/model_metadatas`) - the committed schema\
-    \ records are read from.\n  `GET /api/3/model_metadatas` is the drift-resistant source of truth for what fields a\n  module\
-    \ actually has on this appliance.\n- **Publish** is a single appliance-wide `PUT /api/publish` that promotes *all* pending\n\
-    \  staged changes to live. It is **not per-module** - one illegally-named draft anywhere\n  can fail the whole migrate,\
-    \ so validate drafts before publishing.\n\n### Field types - two axes\n\nEvery field (attribute) carries a **storage type**\
-    \ (`type`) and a **display type**\n(`formType`). These are different axes and a correct field needs both:\n\n- `type`\
-    \ is the column kind the platform stores: `string`, `integer`, `float`,\n  `boolean`, `picklists`, `object`, `array`,\
-    \ or a target module type for a relationship.\n  There is **no `text` storage type** - text-like fields store `string`.\
-    \ Publishing a\n  field whose `type` is `text` fails validation (\"Attribute type 'text' does not\n  exist\").\n- `formType`\
-    \ is the editor widget: `text`, `textarea`, `richtext`, `html`, `email`,\n  `url`, `phone`, `password`, `filehash`, `ipv4`,\
-    \ `ipv6`, `domain`, `file`, `integer`,\n  `decimal`, `datetime`, `checkbox`, `json`, `object`, `picklist`,\n  `multiselectpicklist`,\
-    \ `lookup`, `manyToMany`, `oneToMany`.\n\nA `lookup` is a one-directional many-to-one pointer (no reverse field is created).\
-    \ A\n`manyToMany` is a collection relationship; with the **default** inverse the platform\nauto-creates the reverse field,\
-    \ with a **custom** `inversedField` you create the mirror\nyourself. A `oneToMany` needs a matching `lookup` on its target\
-    \ - it will not publish\nwithout one.\n\n### Publish blast radius\n\nPublish is synchronous in effect but asynchronous\
-    \ in execution - the PUT only *starts*\nthe migrate; the backup + commit then runs server-side, during which some surfaces\
-    \ may\nbe briefly unavailable. The impact is version- and change-dependent:\n\n- On older builds every publish - even\
-    \ a no-op - runs the full backup + migrate + cache\n  rebuild, during which the entire `/api/3` surface returns 503 for\
-    \ the whole window\n  (~50-57s observed).\n- On newer builds the impact is greatly reduced. A minor field-only edit (toggling\n\
-    \  *visibility* or setting *required-by-condition*) commits in ~3s with no observable\n  outage. A **structural** change\
-    \ (adding a field/module) takes longer (~30s) and\n  disrupts only the *record/query layer*: record-list endpoints return\
-    \ transient 404\n  for ~13s and `/api/query` returns 400/401 for ~2.5s while the migrate runs - **not** a\n  global 503.\
-    \ Module-metadata, view-resolve, and picklist surfaces stay available\n  throughout. That record-layer blip is instance-wide,\
+    \ finishes before the parent.\n - **API-KEY vs Bearer.** An API key lasts for its validity period (1 to 365 days, set\
+    \ when it is created), so it suits long-running tracker scripts; a JWT typically dies after ~30 minutes mid-poll.\n\n\
+    ## Modules\n\nA **module** is FortiSOAR's unit of schema: a named table with a list of fields\n(\"attributes\"). Every\
+    \ record collection (`alerts`, `incidents`, custom modules) is\nbacked by a module definition. The schema lives in two\
+    \ stores, and a third endpoint\nmoves changes between them:\n\n- **Staging** (`/api/3/staging_model_metadatas`) - the\
+    \ editable draft. Creating a module\n  or changing a field edits staging only; nothing is live yet.\n- **Published** (`/api/3/model_metadatas`)\
+    \ - the committed schema records are read from.\n  `GET /api/3/model_metadatas` is the drift-resistant source of truth\
+    \ for what fields a\n  module actually has on this appliance.\n- **Publish** is a single appliance-wide `PUT /api/publish`\
+    \ that promotes *all* pending\n  staged changes to live. It is **not per-module** - one illegally-named draft anywhere\n\
+    \  can fail the whole migrate, so validate drafts before publishing.\n\n### Field types - two axes\n\nEvery field (attribute)\
+    \ carries a **storage type** (`type`) and a **display type**\n(`formType`). These are different axes and a correct field\
+    \ needs both:\n\n- `type` is the column kind the platform stores: `string`, `integer`, `float`,\n  `boolean`, `picklists`,\
+    \ `object`, `array`, or a target module type for a relationship.\n  There is **no `text` storage type** - text-like fields\
+    \ store `string`. Publishing a\n  field whose `type` is `text` fails validation (\"Attribute type 'text' does not\n  exist\"\
+    ).\n- `formType` is the editor widget: `text`, `textarea`, `richtext`, `html`, `email`,\n  `url`, `phone`, `password`,\
+    \ `filehash`, `ipv4`, `ipv6`, `domain`, `file`, `integer`,\n  `decimal`, `datetime`, `checkbox`, `json`, `object`, `picklist`,\n\
+    \  `multiselectpicklist`, `lookup`, `manyToMany`, `oneToMany`.\n\nA `lookup` is a one-directional many-to-one pointer\
+    \ (no reverse field is created). A\n`manyToMany` is a collection relationship; with the **default** inverse the platform\n\
+    auto-creates the reverse field, with a **custom** `inversedField` you create the mirror\nyourself. A `oneToMany` needs\
+    \ a matching `lookup` on its target - it will not publish\nwithout one.\n\n### Publish blast radius\n\nPublish is synchronous\
+    \ in effect but asynchronous in execution - the PUT only *starts*\nthe migrate; the backup + commit then runs server-side,\
+    \ during which some surfaces may\nbe briefly unavailable. The impact is version- and change-dependent:\n\n- On older builds\
+    \ every publish - even a no-op - runs the full backup + migrate + cache\n  rebuild, during which the entire `/api/3` surface\
+    \ returns 503 for the whole window\n  (~50-57s observed).\n- On newer builds the impact is greatly reduced. A minor field-only\
+    \ edit (toggling\n  *visibility* or setting *required-by-condition*) commits in ~3s with no observable\n  outage. A **structural**\
+    \ change (adding a field/module) takes longer (~30s) and\n  disrupts only the *record/query layer*: record-list endpoints\
+    \ return transient 404\n  for ~13s and `/api/query` returns 400/401 for ~2.5s while the migrate runs - **not** a\n  global\
+    \ 503. Module-metadata, view-resolve, and picklist surfaces stay available\n  throughout. That record-layer blip is instance-wide,\
     \ not scoped to the changed module.\n\n`GET /api/publish/error` reports the last publish's status\n(`{\"status\": \"Success\"\
     |\"Failed\"|..., \"last_publish_time\": <epoch>}`) - it returns HTTP\n400 (rather than 200) when a prior error is on record,\
     \ with the same JSON body, so poll\nit status-agnostically until `last_publish_time` advances.\n\n## Imports & exports\n\
@@ -346,16 +346,17 @@ tags:
 - name: Workflow tools
   description: Global ("dynamic") variables referenced in playbooks as `{{ globalVars.<name> }}`. List and create via `/api/wf/api/dynamic-variable/`.
 - name: Access management
-  description: "API keys, roles, teams.\n\n**Flow - create \u2192 bind \u2192 use \u2192 lifecycle \u2192 revoke:**\n\n1.\
-    \ **Create the API-key user** - `POST /api/auth/users` with body `{\"type\": 9, \"status\": 1, \"api_key_validity\": <1..365>}`.\
-    \ All three are integers - the published PDF shows quoted strings, which the appliance rejects with 400. Response carries\
-    \ the user `uuid` and the plaintext key.\n2. **Bind it to roles and teams** - `POST /api/3/api_keys` with `name`, `roles`\
-    \ (IRIs), `teams` (IRIs), and `userId` (the uuid from step 1). Required to make the key actually usable.\n3. **Read the\
-    \ scope** - `GET /api/3/api_keys/{uuid}` for one binding, or `GET /api/3/api_keys` for the full list.\n4. **Lifecycle\
-    \ operations** - `PUT /api/auth/users` with `uuid`, `key_type: API_KEY`, and `operation` \u2208 `{REVOKE, ACTIVATE, DEACTIVATE,\
-    \ REGENERATE, RESET_VALIDITY}`. `REGENERATE` and `RESET_VALIDITY` also need `api_key_validity`.\n5. **Bulk fetch with\
-    \ plaintext** - `POST /api/auth/query/users` with `{users: [<uuid>, ...], show_api_key: true}` (only returns plaintext\
-    \ for keys whose user was created with `retrievable_mode` enabled in `/api/auth/config`)."
+  description: "API keys, roles, teams.\n\n**Flow - create \u2192 bind \u2192 use \u2192 lifecycle \u2192 revoke:** run steps\
+    \ 1, 2, 4 and 5 with a JWT. An API key cannot manage keys: `/api/auth/*` refuses it, and so does creating or changing\
+    \ an `api_keys` binding.\n\n1. **Create the API-key user** - `POST /api/auth/users` with body `{\"type\": 9, \"status\"\
+    : 1, \"api_key_validity\": <1..365>}`. All three are integers - the published PDF shows quoted strings, which the appliance\
+    \ rejects with 400. Response carries the user `uuid` and the plaintext key.\n2. **Bind it to roles and teams** - `POST\
+    \ /api/3/api_keys` with `name`, `roles` (IRIs), `teams` (IRIs), and `userId` (the uuid from step 1). Required to make\
+    \ the key actually usable.\n3. **Read the scope** - `GET /api/3/api_keys/{uuid}` for one binding, or `GET /api/3/api_keys`\
+    \ for the full list.\n4. **Lifecycle operations** - `PUT /api/auth/users` with `uuid`, `key_type: API_KEY`, and `operation`\
+    \ \u2208 `{REVOKE, ACTIVATE, DEACTIVATE, REGENERATE, RESET_VALIDITY}`. `REGENERATE` and `RESET_VALIDITY` also need `api_key_validity`.\n\
+    5. **Bulk fetch with plaintext** - `POST /api/auth/query/users` with `{users: [<uuid>, ...], show_api_key: true}` (only\
+    \ returns plaintext for keys whose user was created with `retrievable_mode` enabled in `/api/auth/config`)."
 - name: Import / export
   description: Configuration import/export. Read the `import_jobs` description carefully - the inline-envelope shape is a
     silent no-op.
@@ -940,7 +941,7 @@ paths:
       tags:
       - System
       summary: Public license API (deploy / status / info)
-      description: '**Public, no auth required** (since 7.0.0). One endpoint with three behaviors keyed off the `action` discriminator:
+      description: 'One endpoint with three behaviors keyed off the `action` discriminator:
 
 
         - `action: deploy_license` - install a license on a fresh / unlicensed appliance.   Body: `license_key`, `nodeId`,
@@ -1019,7 +1020,7 @@ paths:
       tags:
       - System
       summary: Build version
-      description: '**Public, no auth required.** Cheap unauthenticated probe.'
+      description: Cheap probe for the build version; also a quick health check.
       security: []
       responses:
         '200':
@@ -11622,8 +11623,7 @@ paths:
       description: '**See:** [Audit gateway quirks](#description/audit-gateway-quirks)
 
 
-        Documented Fortinet recipe to **stop automatic purging of audit logs**. `DELETE` with `Authorization: Bearer <token>`
-        returns 200.'
+        Documented Fortinet recipe to **stop automatic purging of audit logs**. Returns 200.'
       responses:
         '200':
           description: Disabled.
