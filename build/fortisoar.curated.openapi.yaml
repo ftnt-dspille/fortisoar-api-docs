@@ -10578,8 +10578,8 @@ paths:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.post(\"/api/query/alerts/alert-uuid/indicators\"\
-          , data={\"logic\": \"AND\", \"filters\": []})"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\naid = \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\nprint(client.search.query_related(\"\
+          alerts\", aid, \"indicators\")[\"hydra:totalItems\"])"
       x-auth: &id076
         apikey: 'yes'
         jwt: 'yes'
