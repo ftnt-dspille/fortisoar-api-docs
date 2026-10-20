@@ -67,7 +67,7 @@
         "bogus_status": 401,
         "status": 400,
         "verdict": "NO",
-        "why": "real body: 500 ''"
+        "why": "real body: 500 \"['DELETE method for object at index ## in the requ\""
       },
       "jwt": {
         "bogus_status": 401,
@@ -425,17 +425,18 @@
     "GET /api/3/agents/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/agents/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/agents/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/agents/1153d008-7646-437c-af4c-f63c49a6cb97"
     },
     "GET /api/3/alerts": {
       "apikey": {
@@ -455,17 +456,18 @@
     "GET /api/3/alerts/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/alerts/b78a2149-7f4f-4b45-8e96-c7031189fb7a"
     },
     "GET /api/3/api_keys": {
       "apikey": {
@@ -516,17 +518,18 @@
     "GET /api/3/comments/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/comments/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/comments/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/comments/0008ba8c-0aad-4db0-9011-acb79b400055"
     },
     "GET /api/3/contexts/{shortName}": {
       "apikey": {
@@ -576,17 +579,18 @@
     "GET /api/3/incidents/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/incidents/9d2f3e4a-5b6c-4d7e-8f90-1a2b3c4d5e61"
     },
     "GET /api/3/llm_activity_logs": {
       "apikey": {
@@ -621,17 +625,18 @@
     "GET /api/3/mcp_configurations/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/mcp_configurations/2e541107-0b55-4623-b297-dfac495a863e"
     },
     "GET /api/3/model_metadatas": {
       "apikey": {
@@ -651,17 +656,18 @@
     "GET /api/3/model_metadatas/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/model_metadatas/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/model_metadatas/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/model_metadatas/02c06d04-1ccb-4757-83c7-498b463209d5"
     },
     "GET /api/3/picklist_names": {
       "apikey": {
@@ -757,17 +763,18 @@
     "GET /api/3/staging_model_metadatas/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/staging_model_metadatas/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/staging_model_metadatas/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/staging_model_metadatas/02c06d04-1ccb-4757-83c7-498b463209d5"
     },
     "GET /api/3/tasks": {
       "apikey": {
@@ -787,17 +794,18 @@
     "GET /api/3/tasks/{uuid}": {
       "apikey": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
       "jwt": {
         "bogus_status": 401,
-        "status": 404,
+        "status": 200,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "200 on a real id"
       },
-      "probed": "/api/3/tasks/00000000-0000-0000-0000-000000000000"
+      "probed": "/api/3/tasks/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/tasks/07bb9092-08eb-473e-858f-7b9974903e5c"
     },
     "GET /api/3/teams": {
       "apikey": {
@@ -1745,7 +1753,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/wf/api/historical-workflows/authprobe-nonexistent/",
-      "probed_real": "/api/wf/api/historical-workflows/141391/"
+      "probed_real": "/api/wf/api/historical-workflows/142383/"
     },
     "GET /api/wf/api/manual-wf-input/": {
       "apikey": {
@@ -1821,7 +1829,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/wf/api/workflows/authprobe-nonexistent/",
-      "probed_real": "/api/wf/api/workflows/141571/"
+      "probed_real": "/api/wf/api/workflows/142402/"
     },
     "GET /api/wf/workflow/config/": {
       "apikey": {
@@ -3493,7 +3501,7 @@
         "bogus_status": 401,
         "status": 400,
         "verdict": "NO",
-        "why": "real body: 500 ''"
+        "why": "real body: 500 \"['PUT method for object at index ## in the request\""
       },
       "jwt": {
         "bogus_status": 401,

@@ -129,7 +129,7 @@ next `src/build_curated.py` invocation
     │    2. replace 2xx response example with the captured body
     │    3. mark the op `x-live-captured`
     │  Then, from build/auth_probe/<version>.json, for every op:
-    │    4. prepend `**API key: Yes · JWT: No**` and narrow `security` to match
+    │    4. add `x-badges` pills (API key / JWT, Not tested, introduced-in version) and narrow `security` to match
     ▼
 docs render with real wire shapes, one measured auth line, no fabrication
 ```
