@@ -35,7 +35,7 @@ def _apply(tmp_path, monkeypatch, spec, boxes):
 
 def test_versions_that_agree_get_one_answer(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("YES", "YES"), "8.0.1": _rec("YES", "YES")})
-    assert op["description"].startswith("**API key: Yes · JWT: Yes** (measured on FortiSOAR 8.0.0, 8.0.1)")
+    assert op["description"] == "**API key: Yes · JWT: Yes**\n\nBody."
     assert op["security"] == [{"apiKeyAuth": []}, {"bearerJwt": []}]
 
 
@@ -47,7 +47,7 @@ def test_versions_that_differ_name_each(tmp_path, monkeypatch):
 
 def test_route_missing_everywhere_is_not_found(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("INCONCLUSIVE", "INCONCLUSIVE", 404, 404)})
-    assert op["description"].startswith("**Not found on FortiSOAR 8.0.0**")
+    assert op["description"].startswith("**Not found on FortiSOAR 8.0.0**\n\n")
     assert op["x-auth"] == {"apikey": "missing", "jwt": "missing"}
 
 
@@ -61,5 +61,5 @@ def test_op_newer_than_the_box_is_not_in_that_version(tmp_path, monkeypatch):
 
 def test_public_route(tmp_path, monkeypatch):
     op = _apply(tmp_path, monkeypatch, _spec(), {"8.0.0": _rec("PUBLIC", "PUBLIC")})
-    assert op["description"].startswith("**No authentication required.**")
+    assert op["description"] == "Body."  # no banner: security [] says it
     assert op["security"] == []
