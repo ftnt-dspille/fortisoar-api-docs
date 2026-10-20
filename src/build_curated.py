@@ -826,7 +826,7 @@ PATHS["/api/public/license"] = {
         "tags": ["System"],
         "summary": "Public license API (deploy / status / info)",
         "description": (
-            "**Public, no auth required** (since 7.0.0). One endpoint with three behaviors keyed off "
+            "One endpoint with three behaviors keyed off "
             "the `action` discriminator:\n\n"
             "- `action: deploy_license` - install a license on a fresh / unlicensed appliance. "
             "  Body: `license_key`, `nodeId`, `action`. Returns 200 OK on success. This is the "
@@ -885,7 +885,7 @@ PATHS["/api/version"] = {
     "get": {
         "tags": ["System"],
         "summary": "Build version",
-        "description": "**Public, no auth required.** Cheap unauthenticated probe.",
+        "description": "Cheap probe for the build version; also a quick health check.",
         "security": [],
         "responses": {"200": _resp("Version string.", example={"version": "7.6.5-5662"})},
     },
@@ -1640,7 +1640,7 @@ PATHS["/api/gateway/audit/operations"] = {
 
 PATHS["/api/gateway/audit/activities/ttl"] = {
     "delete": {"tags": ["Audit"], "summary": "Disable TTL (stop auto-purge of audit logs)",
-               "description": "Documented Fortinet recipe to **stop automatic purging of audit logs**. `DELETE` with `Authorization: Bearer <token>` returns 200.",
+               "description": "Documented Fortinet recipe to **stop automatic purging of audit logs**. Returns 200.",
                "responses": {"200": _resp("Disabled.")}},
 }
 
@@ -4215,7 +4215,9 @@ TAG_DESCRIPTIONS = {
     ),
     "Access management": (
         "API keys, roles, teams.\n\n"
-        "**Flow - create → bind → use → lifecycle → revoke:**\n\n"
+        "**Flow - create → bind → use → lifecycle → revoke:** run steps 1, 2, 4 and 5 with a JWT. "
+        "An API key cannot manage keys: `/api/auth/*` refuses it, and so does creating or changing "
+        "an `api_keys` binding.\n\n"
         "1. **Create the API-key user** - `POST /api/auth/users` with body `{\"type\": 9, \"status\": 1, \"api_key_validity\": <1..365>}`. All three are integers - the published PDF shows quoted strings, which the appliance rejects with 400. Response carries the user `uuid` and the plaintext key.\n"
         "2. **Bind it to roles and teams** - `POST /api/3/api_keys` with `name`, `roles` (IRIs), `teams` (IRIs), and `userId` (the uuid from step 1). Required to make the key actually usable.\n"
         "3. **Read the scope** - `GET /api/3/api_keys/{uuid}` for one binding, or `GET /api/3/api_keys` for the full list.\n"
@@ -4245,7 +4247,7 @@ REFERENCE_PROSE = r"""A hand-shaped OpenAPI 3.1 reference for the FortiSOAR REST
 
 > **Disclaimer.** This reference is a community effort and is **not exhaustive**. Coverage is the surface I use day-to-day; many operations are still missing. Request/response examples marked live-captured came from a real FortiSOAR; the rest are documented from the API guide and DB introspection only and are best-effort. Always validate against your own appliance before relying on it.
 
-Pills above each operation show which credentials it accepts - see [Authentication](#description/authentication).
+Pills under each operation's title show which credentials it accepts - see [Authentication](#description/authentication).
 
 ## Concepts
 
@@ -4450,7 +4452,7 @@ Persisted queries are stored in `/api/3/queries` (ad-hoc), `/api/3/system_querie
 6. **`search` is brittle.** `{"search": "Login"}` returned 0 hits even with many "Login" titles in the data. Probably searches a specific subset of fields with prefix-only matching. Don't rely on it.
 7. **No server-side sort control.** Records arrive `id DESC` (newest first). No `sort` param honored. Sort client-side if you need anything else.
 8. **`displayName` arrives dirty.** Some records have extra whitespace, embedded UUIDs, even unrelated text from other fields. Sanitize on read.
-9. **JWT lifetime is short.** Default ~30 min; long-running syncs need to re-auth on 401 or use a service-account token with extended TTL.
+9. **JWT lifetime is short.** Default ~30 min; long-running syncs need to re-auth on 401, or use an API key where the operation takes one.
 
 The 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynamically from `GET /api/gateway/audit/operations`.
 
@@ -4545,7 +4547,7 @@ If the last step produced no output, `result` is `null` even on `status: finishe
 - **Poll interval.** 5 s is a sensible floor; the executor batches log writes. Tighter polling just multiplies the request count without buying any latency.
 - **No `task_id` in response.** Usually means the trigger name is wrong (404 was masked by a redirect) or the playbook is inactive. The endpoint returns 200 with an empty body in some edge cases - always check before subscripting.
 - **`parent_wf__isnull=True` is required** for playbooks that fan out via `Execute Sub Playbook`. Without it the first match may be a child run that finishes before the parent.
- - **API-KEY vs Bearer.** API-KEY tokens don't expire, so they're the right choice for long-running tracker scripts; JWTs typically die after ~30 minutes mid-poll.
+ - **API-KEY vs Bearer.** An API key lasts for its validity period (1 to 365 days, set when it is created), so it suits long-running tracker scripts; a JWT typically dies after ~30 minutes mid-poll.
 
 ## Modules
 
