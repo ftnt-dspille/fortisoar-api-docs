@@ -2049,7 +2049,7 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
         "summary": "Update a manual-input record (does NOT resume the run)",
         "description": (
             "Returns 200 and updates the record, but **does not advance an `awaiting` run** - a common trap. "
-            "To actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live 2026-05-29: "
+            "To actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live: "
             "PUT here left the run in `awaiting`."
         ),
         "requestBody": {"required": False, "content": {"application/json": {
@@ -2632,7 +2632,7 @@ PATHS["/api/integration/connector/development/entity/{id}/publish/"] = {
             "that the standard `$replace=true` install path does not). `replace=true` overwrites an existing "
             "installed version of the same name + version. `discard` controls the dev-workspace "
             "twin's lifecycle, NOT whether edits are published - see the field description. "
-            "Verified empirically 2026-05-27 against ghost-handler v5.0.0."
+            "Verified live against a custom connector."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
@@ -4463,7 +4463,7 @@ Run control lives under `/api/wf/*`. The endpoints below cover the most common c
 - `POST /api/wf/api/workflows/{pk}/retry/` - retry a failed run from the failed step.
 - `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.
 
-**Resuming an `awaiting` manual-input run** (verified live end-to-end 2026-05-29; the run advances to `finished`):
+**Resuming an `awaiting` manual-input run** (verified live end-to-end; the run advances to `finished`):
 
 1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true` → the run's awaiting execution-step ids (the correlation anchor).
 2. `POST /api/wf/api/manual-wf-input/list_wfinput/` → the pending input whose `step_id` is one of those ids → `manual_input_id`. (`workflow` on the list member is an *encrypted* token, not the run pk, so `step_id` is the only honest link.)
