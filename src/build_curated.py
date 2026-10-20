@@ -1126,76 +1126,49 @@ for verb, op_method, op_summary, op_desc, body_shape in [
         op_method: op_def,
     }
 
+_INGEST_BODY = {"required": True, "content": {"application/json": {
+    "schema": {"type": "object", "required": ["data"], "properties": {
+        "data": {"type": "array", "items": {"type": "object"},
+                 "description": "Rows keyed by the module's field names."}}},
+    "example": {"data": [{"value": "evil.example.com"}]}}}}
+
 PATHS["/api/ingest-feeds/indicators"] = {
     "post": {
         "tags": ["Bulk operations"],
         "summary": "Threat-intel feed bulk ingest",
         "description": (
             "Bulk-insert TI indicators. Distinct from `POST /api/3/insert/indicators`: the feed-ingest "
-            "path bypasses on-create playbook triggers (intentional for high-volume feeds)."
+            "path bypasses on-create playbook triggers (intentional for high-volume feeds). The body "
+            "wraps the rows in `data`; rows that match an existing record on the module's unique "
+            "key update it. This is `POST /api/ingest-feeds/{module}` with `module` = `indicators`."
         ),
-        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
-        "responses": {"200": _resp("Ingest result.")},
+        "requestBody": _INGEST_BODY,
+        "responses": {"200": _resp("Ingest result.", "FeedIngestResult")},
     },
 }
 
-PATHS["/api/ingest-feeds/observables"] = {
+PATHS["/api/ingest-feeds/{module}"] = {
+    "parameters": [{"name": "module", "in": "path", "required": True, "schema": {"type": "string"},
+                    "example": "threat_intel_feeds",
+                    "description": "Module type (`type` in `GET /api/3/model_metadatas`), e.g. "
+                                   "`indicators` or `threat_intel_feeds`."}],
     "post": {
         "tags": ["Bulk operations"],
-        "summary": "Observables bulk ingest",
+        "summary": "Feed bulk ingest into any module",
         "description": (
-            "Bulk-insert observables (the lower-level \"anything that can be seen on the wire\" record type "
-            "that sits below indicators). Same trigger-bypass behavior as `/api/ingest-feeds/indicators`. "
-            "Payload field names follow the `observables` module schema - see `GET /api/3/contexts/Observable`."
+            "Bulk-insert rows into the module named in the path, skipping on-create playbook "
+            "triggers. One SQL `INSERT ... ON CONFLICT DO UPDATE` on the module's unique key, so "
+            "a row matching an existing record updates it. `threat_intel_feeds` also links "
+            "related feeds.\n\n"
+            "The path segment must be a real module type. There are no `observables`, "
+            "`reputation`, `threatintel` or `stix-bundle` routes: those names are looked up as "
+            "modules and fail with 400 `MappingException` (8.0.0 and 8.0.1). To load STIX, map "
+            "each object to module rows first."
         ),
-        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
-        "responses": {"200": _resp("Ingest result.")},
-    },
-}
-
-PATHS["/api/ingest-feeds/stix-bundle"] = {
-    "post": {
-        "tags": ["Bulk operations"],
-        "summary": "STIX bundle ingest",
-        "description": (
-            "Accepts a STIX 2.x bundle and fans it out into FortiSOAR's threat-intel record types "
-            "(indicators, threat actors, campaigns, malware, attack patterns, etc.) according to each "
-            "STIX object's `type`. Bypasses on-create playbook triggers like the rest of the "
-            "`/api/ingest-feeds/*` family.\n\n"
-            "For pull-based STIX/TAXII ingest, consume FortiSOAR's own TAXII server at `/api/taxii/1/` "
-            "(see the **Threat intel (TAXII)** tag)."
-        ),
-        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
-        "responses": {"200": _resp("Ingest result.")},
-    },
-}
-
-PATHS["/api/ingest-feeds/threatintel"] = {
-    "post": {
-        "tags": ["Bulk operations"],
-        "summary": "Threat-intel records bulk ingest",
-        "description": (
-            "Bulk-insert records into the `threat_intel` module - the top-level container that links "
-            "indicators, campaigns, threat actors, and reports together. Field names match the "
-            "`threat_intel` module schema (see `GET /api/3/contexts/ThreatIntel`). Trigger-bypass applies."
-        ),
-        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
-        "responses": {"200": _resp("Ingest result.")},
-    },
-}
-
-PATHS["/api/ingest-feeds/reputation"] = {
-    "post": {
-        "tags": ["Bulk operations"],
-        "summary": "Reputation scores bulk ingest",
-        "description": (
-            "Bulk-upsert reputation scores for indicators / observables. Used by enrichment pipelines "
-            "that score IOCs from multiple sources and need to write the result back without firing "
-            "playbook triggers. Field names match the reputation record type - see "
-            "`GET /api/3/contexts/Reputation` for the schema."
-        ),
-        "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
-        "responses": {"200": _resp("Ingest result.")},
+        "requestBody": _INGEST_BODY,
+        "responses": {"200": _resp("Ingest result.", "FeedIngestResult"),
+                      "400": {"description": "Unknown module (`MappingException`) or a row the "
+                                             "database rejects (`Error: ...`)."}},
     },
 }
 
@@ -2052,9 +2025,13 @@ PATHS["/api/wf/api/manual-wf-input/{pk}/"] = {
             "To actually resume, use `POST /api/wf/api/workflows/{pk}/wfinput_resume/`. Verified live: "
             "PUT here left the run in `awaiting`."
         ),
-        "requestBody": {"required": False, "content": {"application/json": {
-            "schema": {"type": "object"}, "example": {"input": {}}}}},
-        "responses": {"200": _resp("Record updated (run NOT advanced).")},
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["workflow"], "properties": {
+                "workflow": {"type": "integer", "description": "Numeric run id (from `retrieve_wfinput`)."},
+                "input": {"type": "object"}}},
+            "example": {"workflow": 142560, "input": {}}}}},
+        "responses": {"200": _resp("Record updated (run NOT advanced)."),
+                      "400": {"description": "`{\"workflow\": [\"This field is required.\"]}`"}},
     },
     "delete": {
         "tags": ["Playbook runs"],
@@ -2506,7 +2483,7 @@ PATHS["/api/integration/configuration/{config_id}/"] = {
                      "teams": {"type": "array", "items": {"type": "string"}},
                  }},
              }}},
-             "responses": {"200": _resp("Updated configuration."), "404": {"description": "Not found."}}},
+             "responses": {"201": _resp("Updated configuration."), "404": {"description": "Not found."}}},
     "delete": {"tags": ["Connectors"], "summary": "Delete a connector configuration",
                 "description": (
                     "**Two non-obvious requirements:** the path param must be the uuid (`config_id`), not "
@@ -2540,19 +2517,6 @@ PATHS["/api/integration/configuration/{config_id}/"] = {
 # `fortisoar/FORTISOAR_ARCHITECTURE.md` Connector upload + install pipeline
 # section for the full reproduction.
 
-PATHS["/api/integration/connector/development/entity/"] = {
-    "get": {
-        "tags": ["Connectors"],
-        "summary": "List dev-workspace connectors",
-        "description": (
-            "Returns the connector entries currently checked out into the Connector Studio "
-            "development workspace. These are the same connectors you see in the Studio's "
-            "left-hand tree on the appliance."
-        ),
-        "responses": {"200": _resp("Hydra collection of dev-workspace entities.")},
-    },
-}
-
 PATHS["/api/integration/connector/development/entity/{id}/"] = {
     "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "integer"},
                     "description": "Integer connector id of a dev-workspace entity."}],
@@ -2560,10 +2524,12 @@ PATHS["/api/integration/connector/development/entity/{id}/"] = {
         "tags": ["Connectors"],
         "summary": "Enter edit mode on a dev-workspace connector",
         "description": (
-            "Used by Connector Studio when the user clicks Edit. Body `{\"edit_repo_connector\": true}` "
-            "opens the entity for editing and returns its full operations + configuration schema + "
-            "file tree. Pair with the `/files/` endpoints to read and write source files, then "
-            "`/publish/` to land the changes."
+            "Used by Connector Studio when the user clicks Edit. Pass the **installed** "
+            "connector's integer id with `{\"edit_repo_connector\": true}`: the server clones it "
+            "into the dev workspace and returns the twin (a new integer `id`, `development: true`) "
+            "with its operations, configuration schema and file tree. Use the twin's id with the "
+            "`/files/` endpoints, then `/publish/`. There is no list route: "
+            "`GET .../development/entity/` answers 405 on 8.0.0 and 8.0.1."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
@@ -2632,7 +2598,9 @@ PATHS["/api/integration/connector/development/entity/{id}/publish/"] = {
             "that the standard `$replace=true` install path does not). `replace=true` overwrites an existing "
             "installed version of the same name + version. `discard` controls the dev-workspace "
             "twin's lifecycle, NOT whether edits are published - see the field description. "
-            "Verified live against a custom connector."
+            "The published connector gets a **new integer id**; look it up again by name "
+            "afterwards. Publishing also recycles the integrations workers, so "
+            "`/api/integration/*` can answer 502 for a few seconds."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "properties": {
@@ -2675,7 +2643,12 @@ PATHS["/api/integration/install-connector/"] = {
                  "  (the `agent` value from `GET /api/integration/configuration/?agent=...`, "
                  "  not the agent record uuid). Omit to target the self-agent.\n\n"
                  "Use `PUT` on the same path to upgrade an installed connector to a different "
-                 "version, and `DELETE` to uninstall it from the agent."
+                 "version, and `DELETE` to uninstall it from the agent.\n\n"
+                 "**Also needs the connector's rpm name.** With only `name`/`version`/`agent_id`, "
+                 "8.0.0 answers 400 `Invalid Input :: No connector rpm name or rpm_full_name was "
+                 "provided` (DELETE: `No connector rpm name was provided`). Connectors installed "
+                 "from content-hub bundles report an empty `rpm_full_name`. No 2xx body has been "
+                 "captured for these three operations."
              ),
              "requestBody": {"required": True, "content": {"application/json": {
                  "schema": {"type": "object", "required": ["name", "version"], "properties": {
@@ -2882,11 +2855,11 @@ PATHS["/api/integration/data-import/"] = {
     "post": {"tags": ["Connectors"],
              "summary": "Save ingestion metadata",
              "description": (
-                 "Create or update an ingestion metadata record. pyfsr: "
-                 "`client.connectors.save_ingestion_metadata(metadata)`."
+                 "Create an ingestion metadata record. Returns 201 with the record. pyfsr: "
+                 "`client.connectors.save_ingestion_metadata(config_id, connector=..., version=..., name=...)`."
              ),
              "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
-             "responses": {"200": _resp("Saved metadata record.")}},
+             "responses": {"201": _resp("Saved metadata record.")}},
 }
 
 
@@ -3938,30 +3911,43 @@ PATHS["/api/views/1/app"] = {
 PATHS["/api/views/1/{name}"] = {
     "parameters": [
         {"name": "name", "in": "path", "required": True, "schema": {"type": "string"},
-         "description": "Template name (e.g. `Custom Detail Layout`)."},
+         "example": "modules-alerts-list",
+         "description": (
+             "View key, not a template name: `modules-<module>-<list|detail|form>`, "
+             "`pages-<page>` (detail view), or a bare name such as `app`."
+         )},
     ],
-    "get": {"tags": ["Views"], "summary": "Get a named view template",
+    "get": {"tags": ["Views"], "summary": "Get the layout for a view",
             "description": (
-                "Fetch a view template by name. The record carries `name`, `config`, "
-                "`module`, `viewOptions`, `uuid`, `type`, `isDefault`. pyfsr: "
-                "`client.view_templates.get_template(name)`."
+                "Returns the layout the caller sees for this view: their own saved copy "
+                "(user view template) if they have one, otherwise the default system view "
+                "template. A system template's display name (`Default Layout`, ...) is not a "
+                "valid key and returns 404. To list system templates use "
+                "`GET /api/3/system_view_templates`."
             ),
-            "responses": {"200": _resp("View template record."), "404": {"description": "Not found."}}},
-    "post": {"tags": ["Views"], "summary": "Create a named view template",
+            "responses": {"200": _resp("View template record."), "404": {"description": "No template for that key."}}},
+    "post": {"tags": ["Views"], "summary": "Save the caller's own layout for a view",
              "description": (
-                 "Create a new view template. Required body fields: `name`, `config`, "
-                 "`module`, `viewOptions`. Optional: `type` (default `rows`), `isDefault` "
-                 "(default false). pyfsr: `client.view_templates.create_template(...)`."
+                 "Creates or updates the **caller's own** layout for the view (a user view "
+                 "template); it does not create a system template, and other users keep theirs. "
+                 "Same handler as PUT. Send `type`, `module`, `viewOptions`, `config` and "
+                 "`isDefault: true`. The server only reads back a user copy whose `isDefault` is "
+                 "true, so a copy saved without it is never used and the next write fails with "
+                 "409 (`module, viewoptions, name, owner` must be unique). User view templates "
+                 "cannot be deleted through the API."
              ),
-             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
-             "responses": {"201": _resp("Created."), "400": {"description": "Invalid template."}}},
-    "put": {"tags": ["Views"], "summary": "Update a named view template",
-            "description": (
-                "Update an existing view template. Send only the fields to change. "
-                "pyfsr: `client.view_templates.update_template(name, config=..., ...)`."
-            ),
+             "requestBody": {"required": True, "content": {"application/json": {
+                 "schema": {"type": "object"},
+                 "example": {"type": "rows", "module": "alerts", "viewOptions": "list",
+                             "isDefault": True, "config": {}}}}},
+             "responses": {"200": _resp("Saved view template."),
+                           "400": {"description": "Missing body, or a required column such as `module`."},
+                           "409": {"description": "A non-default copy already exists for this user."}}},
+    "put": {"tags": ["Views"], "summary": "Update the caller's own layout for a view",
+            "description": "Same handler and body as POST.",
             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
-            "responses": {"200": _resp("Updated."), "404": {"description": "Not found."}}},
+            "responses": {"200": _resp("Saved view template."),
+                          "409": {"description": "A non-default copy already exists for this user."}}},
 }
 
 
@@ -3991,7 +3977,7 @@ PATHS["/api/wf/api/dynamic-variable/"] = {
                      "default_value": {"type": "string"},
                  }},
              }}},
-             "responses": {"201": _resp("Created."), "409": {"description": "Name already exists."}}},
+             "responses": {"200": _resp("Created."), "409": {"description": "Name already exists."}}},
 }
 
 
@@ -4230,8 +4216,9 @@ TAG_DESCRIPTIONS = {
         "and any custom collections you create). Discovery lives at `/api/taxii/1/`; collections, "
         "objects, and manifest endpoints follow.\n\n"
         "The server is **read-only**: every default collection advertises `can_write: false` and "
-        "`POST` to `objects/` is not routed. To push STIX into FortiSOAR, use "
-        "`POST /api/ingest-feeds/stix-bundle` instead.\n\n"
+        "`POST` to `objects/` is not routed, and there is no STIX bundle ingest route. To push "
+        "threat intel into FortiSOAR, map it to module rows and use "
+        "`POST /api/ingest-feeds/{module}`.\n\n"
         "Response envelope for `objects/` and `manifest/` is `{totalItems, objects: []}` - a "
         "FortiSOAR-specific shape, not the standard TAXII 2.1 `more` / `next` cursor. Paginate with "
         "`?limit=` and `?added_after=<ISO-8601>`.\n\n"
@@ -4948,14 +4935,8 @@ CURATED_EXAMPLES = {
                                           {"status": "updated", "uuid": _UUID2}]}},
     },
     ("POST", "/api/ingest-feeds/indicators"): {
-        "request": [
-            {"value": "192.0.2.50", "type": "IP Address", "tlp": "WHITE",
-             "source": "FortiGuard", "confidence": 80, "reputation": "Malicious"},
-            {"value": "evil.example.com", "type": "Domain", "tlp": "AMBER",
-             "source": "FortiGuard", "confidence": 90},
-        ],
-        "response": {"200": {"totalCount": 2, "successCount": 2, "failureCount": 0,
-                              "skipTriggers": True}},
+        "request": {"data": [{"value": "192.0.2.50"}, {"value": "evil.example.com"}]},
+        "response": {"200": {"status": "success", "uuids": [_UUID, _UUID2]}},
     },
     ("POST", "/api/insert-feeds/{recordType}"): {
         "request": [{"name": "feed-record-1", "source": "MISP"}],

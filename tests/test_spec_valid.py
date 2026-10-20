@@ -74,3 +74,40 @@ def test_spec_matches_generator():
         "(`.venv/bin/python src/build_curated.py`) and commit the result.\n"
         + diff.stdout[-3000:]
     )
+
+
+# 2xx responses with no captured body, and why. Everything else must show one:
+# Scalar renders a bodyless response as "No Body", which reads as a bug.
+NO_BODY_YET = {
+    ("post", "/api/auth/license"): "deploys a license; not run against a lab box",
+    ("post", "/api/integration/install-connector/"): "needs an rpm-installed connector and a remote agent",
+    ("put", "/api/integration/install-connector/"): "needs an rpm-installed connector and a remote agent",
+    ("delete", "/api/integration/install-connector/"): "needs an rpm-installed connector and a remote agent",
+}
+
+
+def test_success_responses_show_a_body():
+    """Every 2xx other than 204 carries a schema or an example."""
+    spec = _load_spec()
+    missing = []
+    for path, item in spec["paths"].items():
+        for method, op in item.items():
+            if method not in ("get", "put", "post", "patch", "delete"):
+                continue
+            for code, resp in op.get("responses", {}).items():
+                if code.startswith("2") and code != "204" and "content" not in resp \
+                        and (method, path) not in NO_BODY_YET:
+                    missing.append(f"{method.upper()} {path} {code}")
+    assert not missing, "2xx responses with no body (capture one with src/capture_bodies.py):\n" + "\n".join(missing)
+
+
+def test_no_body_exemptions_are_current():
+    """An exemption whose op now has a body (or is gone) should be removed."""
+    spec = _load_spec()
+    stale = []
+    for method, path in NO_BODY_YET:
+        op = spec["paths"].get(path, {}).get(method)
+        if op is None or all("content" in r for c, r in op.get("responses", {}).items()
+                             if c.startswith("2") and c != "204"):
+            stale.append(f"{method.upper()} {path}")
+    assert not stale, "remove these from NO_BODY_YET: " + ", ".join(stale)

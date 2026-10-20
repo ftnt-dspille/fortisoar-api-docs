@@ -168,9 +168,6 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/3/agents"): ("doctest", "pyfsr.api.agents:AgentsAPI.create"),
     ("delete", "/api/3/agents/{uuid}"): ("doctest", "pyfsr.api.agents:AgentsAPI.delete"),
     ("post", "/api/integration/agent-installer/"): ("doctest", "pyfsr.api.agents:AgentsAPI.installer"),
-    ("post", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.install_connector"),
-    ("put", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.upgrade_connector"),
-    ("delete", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.uninstall_connector"),
     ("get", "/api/integration/agent-heartbeat/{agent}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.heartbeat"),
     ("post", "/api/integration/connectors/agents/{name}/{version}/"): ("doctest", "pyfsr.api.agents:AgentsAPI.connector_install_status"),
     # API-key users (JWT-only - all four doctests use demo_client_jwt()).
@@ -232,10 +229,6 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/query/{collection}/{id}/{field}"): ("doctest", "pyfsr.api.search:SearchAPI.query_related"),
     # Feeds (trigger-bypassing bulk ingest)
     ("post", "/api/ingest-feeds/indicators"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.indicators"),
-    ("post", "/api/ingest-feeds/observables"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.observables"),
-    ("post", "/api/ingest-feeds/reputation"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.reputation"),
-    ("post", "/api/ingest-feeds/threatintel"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.threatintel"),
-    ("post", "/api/ingest-feeds/stix-bundle"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.stix_bundle"),
     ("post", "/api/insert-feeds/{recordType}"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.insert"),
     # TAXII 2.1
     ("get", "/api/taxii/1/"): ("doctest", "pyfsr.api.taxii:TaxiiAPI.discovery"),
@@ -349,9 +342,6 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("put", "/api/integration/configuration/{config_id}/"): ("manual", 'client.connectors.update_configuration("mitre-attack", "c21", {"api_key": "..."}, name="prod")'),
     # Views & view templates (pyfsr-discovered)
     ("get", "/api/views/1/app"): ("manual", "client.views.app()"),
-    ("get", "/api/views/1/{name}"): ("manual", 'client.view_templates.get_template("Custom Detail Layout")'),
-    ("post", "/api/views/1/{name}"): ("manual", 'client.view_templates.create_template("My View", {"rows": []}, module="alerts", viewOptions="detail")'),
-    ("put", "/api/views/1/{name}"): ("manual", 'client.view_templates.update_template("My View", config={"rows": []})'),
     # Dynamic variables (pyfsr-discovered)
     ("get", "/api/wf/api/dynamic-variable/"): ("manual", "client.wf_tools.dynamic_variables()"),
     ("post", "/api/wf/api/dynamic-variable/"): ("manual", 'client.wf_tools.set_dynamic_variable("My_Var", "value123")'),

@@ -136839,9 +136839,22 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-10-19",
         "request_body": null,
-        "response_body": null,
+        "response_body": {
+          "action": "health-check",
+          "agent": "<self-agent>",
+          "configuration": null,
+          "connector": null,
+          "created": "2024-01-01T00:00:00Z",
+          "id": 86,
+          "log_records": null,
+          "modified": "2024-01-01T00:00:00Z",
+          "remote_status": {
+            "status": "in-progress"
+          },
+          "request_payload": {},
+          "result": {}
+        },
         "response_status": 200
       }
     }
@@ -136917,6 +136930,32 @@
           "previousPage": null,
           "status": "Success",
           "totalItems": 48
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/integration/configuration/{config_id}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "agent": "<self-agent>",
+          "config": {
+            "api_key": "REDACTED",
+            "protocol": "HTTP",
+            "server_url": "https://api.ipstack.example.com",
+            "verify_ssl": true
+          },
+          "config_id": "<uuid>",
+          "connector": 884,
+          "default": false,
+          "health_status": {},
+          "id": 1217,
+          "name": "live-capture-d757b411",
+          "remote_status": {},
+          "status": 1,
+          "teams": []
         },
         "response_status": 200
       }
@@ -137028,6 +137067,17 @@
       }
     }
   },
+  "GET /api/integration/connectors/dependencies_check/{connector}/{version}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "dependencies_installed": true
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/integration/connectors/healthcheck/{name}/{version}/": {
     "by_auth": {
       "apikey": {
@@ -137055,6 +137105,70 @@
           "request_id": null,
           "status": "Available",
           "version": "1.0.4"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/integration/data-import/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "data": [
+            {
+              "configuration": "<uuid>",
+              "created_at": "2024-01-01T00:00:00Z",
+              "created_by": "<uuid>",
+              "data_mapping": [],
+              "description": "Metadata for REDACTED",
+              "id": 9,
+              "metadata": {
+                "scheduleId": "REDACTED==",
+                "scheduleName": "REDACTED",
+                "scheduleStatus": false
+              },
+              "modified_at": "2024-01-01T00:00:00Z",
+              "modified_by": "<uuid>",
+              "name": "REDACTED",
+              "owners": [
+                "public"
+              ],
+              "playbooks": [],
+              "previous_config_id": null,
+              "sample_data": {},
+              "status": null
+            },
+            {
+              "configuration": "<uuid>",
+              "created_at": "2024-01-01T00:00:00Z",
+              "created_by": "<uuid>",
+              "data_mapping": [],
+              "description": "Metadata for REDACTED",
+              "id": 10,
+              "metadata": {
+                "scheduleId": "REDACTED==",
+                "scheduleName": "REDACTED",
+                "scheduleStatus": true
+              },
+              "modified_at": "2024-01-01T00:00:00Z",
+              "modified_by": "<uuid>",
+              "name": "REDACTED",
+              "owners": [
+                "public"
+              ],
+              "playbooks": [],
+              "previous_config_id": null,
+              "sample_data": {},
+              "status": null
+            },
+            "... <1 more>"
+          ],
+          "itemsPerPage": 30,
+          "nextPage": null,
+          "previousPage": null,
+          "status": "Success",
+          "totalItems": 7
         },
         "response_status": 200
       }
@@ -140188,6 +140302,475 @@
       }
     }
   },
+  "GET /api/views/1/app": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "config": {
+            "navigation": [
+              {
+                "editMode": false,
+                "exists": true,
+                "icon": "icon icon-dashboard",
+                "include": true,
+                "mergeType": "merge",
+                "require": {
+                  "action": "read",
+                  "module": "dashboard"
+                },
+                "state": {
+                  "name": "main.dashboard",
+                  "parameters": []
+                },
+                "title": "Dashboard"
+              },
+              {
+                "editMode": false,
+                "exists": false,
+                "icon": "icon icon-automation",
+                "include": true,
+                "items": [
+                  {
+                    "editMode": false,
+                    "icon": "icon icon-playbooks",
+                    "require": {
+                      "action": "read",
+                      "module": "workflows"
+                    },
+                    "state": {
+                      "name": "main.workflow"
+                    },
+                    "title": "Playbooks"
+                  },
+                  {
+                    "editMode": false,
+                    "icon": "icon icon-connectors",
+                    "require": {
+                      "action": "read",
+                      "module": "connectors"
+                    },
+                    "state": {
+                      "name": "main.connectors"
+                    },
+                    "title": "Connectors"
+                  },
+                  "... <2 more>"
+                ],
+                "mergeType": "merge",
+                "title": "Orchestration"
+              },
+              "... <10 more>"
+            ]
+          },
+          "filters": [],
+          "importedBy": [],
+          "isDefault": true,
+          "module": "app",
+          "name": "Default Layout",
+          "system": true,
+          "type": "app",
+          "uuid": "<uuid>",
+          "viewOptions": "detail",
+          "visible": true
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/views/1/{name}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "config": {
+            "metadata": {
+              "customTemplateTitle": "Alerts",
+              "originalTemplateTitle": "Alerts"
+            },
+            "rows": [
+              {
+                "_collapsed": false,
+                "collapsible": false,
+                "collapsibleIndex": 0,
+                "columns": [
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "severity"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "severity",
+                                "field": "severity.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "severity.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Severity",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "type"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "type",
+                                "field": "type.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "type.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Type",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  "... <2 more>"
+                ],
+                "container": false,
+                "wid": "<uuid>"
+              },
+              {
+                "_collapsed": false,
+                "columns": [
+                  {
+                    "style": "col-lg-12",
+                    "widgets": [
+                      {
+                        "config": {
+                          "actionButtons": [
+                            {
+                              "icon": "fa fa-play",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Sample > Create Sample Records"
+                            },
+                            {
+                              "icon": "fa fa-level-up",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Escalate"
+                            },
+                            "... <2 more>"
+                          ],
+                          "checkboxStatus": false,
+                          "columns": [
+                            "id",
+                            "aIVerdict",
+                            "... <8 more>"
+                          ],
+                          "expandableCol": [],
+                          "module": "alerts",
+                          "query": {
+                            "filters": [],
+                            "limit": 30,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "_fieldName": "id",
+                                "_fieldTitle": "ID",
+                                "direction": "DESC",
+                                "field": "id"
+                              }
+                            ]
+                          },
+                          "relationshipField": [],
+                          "title": "",
+                          "wid": "<uuid>"
+                        },
+                        "type": "grid"
+                      }
+                    ]
+                  }
+                ],
+                "wid": "<uuid>"
+              }
+            ],
+            "wid": "<uuid>"
+          },
+          "filters": [],
+          "importedBy": [
+            {
+              "apiName": "sOARFramework",
+              "name": "SOAR Framework",
+              "version": "4.0.0"
+            }
+          ],
+          "isDefault": true,
+          "module": "alerts",
+          "name": "Default Layout",
+          "system": true,
+          "type": "rows",
+          "uuid": "<uuid>",
+          "viewOptions": "list",
+          "visible": true
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/wf/api/dynamic-variable/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/wf/api/dynamic-variable/context/",
+          "hydra:firstPage": "/wf/api/dynamic-variable/?limit=3",
+          "hydra:itemsPerPage": 3,
+          "hydra:lastPage": "/wf/api/dynamic-variable/?limit=3&offset=45",
+          "hydra:member": [
+            {
+              "default_value": null,
+              "id": 1,
+              "name": "Current_User",
+              "value": "{{vars.currentUser}}"
+            },
+            {
+              "default_value": null,
+              "id": 2,
+              "name": "Default_Email",
+              "value": "noreply@example.com"
+            },
+            "... <1 more>"
+          ],
+          "hydra:nextPage": "/wf/api/dynamic-variable/?limit=3&offset=3",
+          "hydra:previousPage": null,
+          "hydra:totalItems": 48
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/wf/api/historical-steps/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/wf/api/historical-steps/context/",
+          "hydra:firstPage": "/wf/api/historical-steps/?limit=1",
+          "hydra:itemsPerPage": 1,
+          "hydra:lastPage": "/wf/api/historical-steps/?limit=1&offset=164761",
+          "hydra:member": [
+            {
+              "@id": "/wf/api/historical-steps/1277323/",
+              "@type": "HistoricalStep",
+              "args": {
+                "__triggerLimit": true,
+                "_eval_input_params_from_env": true,
+                "env": {
+                  "__triggerLimit": true,
+                  "_eval_input_params_from_env": true,
+                  "debug": true,
+                  "ingestedData": [
+                    {
+                      "confidence": 15,
+                      "created": "2024-01-01T00:00:00Z",
+                      "description": "threat_types:malware_cnc; tags:Malware CnC,Remcos,Remcos C2",
+                      "id": "indicator--<uuid>",
+                      "kill_chain_phases": [
+                        {
+                          "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                          "phase_name": "command-and-control"
+                        }
+                      ],
+                      "labels": [
+                        "threat_types:malware_cnc",
+                        "tags:Malware CnC,Remcos,Remcos C2"
+                      ],
+                      "modified": "2024-01-01T00:00:00Z",
+                      "name": "ip_port: your-soar.example.com:14649",
+                      "pattern": "[network-traffic:dst_ref.type = 'ipv4-addr' AND network-traffic:dst_ref.value = 'your-soar.example.com' AND network-traffic:dst_port = 14649]",
+                      "pattern_type": "stix",
+                      "spec_version": "2.1",
+                      "type": "indicator",
+                      "valid_from": "2024-01-01T00:00:00Z",
+                      "valid_until": "2024-01-01T00:00:00Z"
+                    },
+                    {
+                      "confidence": 15,
+                      "created": "2024-01-01T00:00:00Z",
+                      "description": "threat_types:malware; tags:Mozi,Malware",
+                      "id": "indicator--<uuid>",
+                      "kill_chain_phases": [
+                        {
+                          "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                          "phase_name": "installation"
+                        }
+                      ],
+                      "labels": [
+                        "threat_types:malware",
+                        "tags:Mozi,Malware"
+                      ],
+                      "modified": "2024-01-01T00:00:00Z",
+                      "name": "url: http://your-soar.example.com:46909/bin.sh",
+                      "pattern": "[url:value = 'http://your-soar.example.com:46909/bin.sh']",
+                      "pattern_type": "stix",
+                      "spec_version": "2.1",
+                      "type": "indicator",
+                      "valid_from": "2024-01-01T00:00:00Z",
+                      "valid_until": "2024-01-01T00:00:00Z"
+                    },
+                    "... <1 more>"
+                  ],
+                  "parent_wf": 142527,
+                  "priority": {
+                    "itemValue": "Low"
+                  },
+                  "request": {},
+                  "task_id": "<uuid>",
+                  "triggerOnReplicate": false,
+                  "triggerOnSource": true
+                },
+                "parent_wf": 142527,
+                "priority": {
+                  "itemValue": "Low"
+                },
+                "step_id": 1277060,
+                "step_variables": {
+                  "__eval_seq": [
+                    "_configuration_schema"
+                  ],
+                  "_configuration_schema": "[\n  {\n    \"title\": \"Confidence\",\n    \"name\": \"confidence\",\n    \"type\": \"integer\",\n    \"tooltip\": \"Default Confidence score to be set for the feeds, in case the feed record doesn't have a confidence score\",\n    \"required\": false,\n    \"editable\": true,\n    \"visible\": true,\n    \"value\": 50,\n    \"valida...",
+                  "input": {
+                    "params": []
+                  }
+                },
+                "triggerOnReplicate": false,
+                "triggerOnSource": true
+              },
+              "completed": "2024-01-01T00:00:00Z",
+              "created": "2024-01-01T00:00:00Z",
+              "data": {},
+              "initial": true,
+              "input": {},
+              "metadata": {
+                "id": 24584,
+                "metadata": {
+                  "globalMockUsed": false,
+                  "group": null,
+                  "ignore_errors": false,
+                  "left": "40",
+                  "mockOutputUsed": false,
+                  "stepType": {
+                    "background": null,
+                    "displayName": "Referenced",
+                    "icon": "icon icon-referenced"
+                  },
+                  "top": "40",
+                  "uuid": "<uuid>",
+                  "when": true
+                },
+                "template_iri": "/api/3/workflow_steps/<uuid>",
+                "wf_metadata": 2113
+              },
+              "modified": "2024-01-01T00:00:00Z",
+              "name": "Start",
+              "parent_id": null,
+              "result": {
+                "__triggerLimit": true,
+                "_eval_input_params_from_env": true,
+                "debug": true,
+                "parent_wf": 142527,
+                "priority": {
+                  "itemValue": "Low"
+                },
+                "task_id": "<uuid>",
+                "triggerOnReplicate": false,
+                "triggerOnSource": true
+              },
+              "started": "2024-01-01T00:00:00Z",
+              "status": "finished",
+              "task_id": "<uuid>",
+              "workflow_id": 142558
+            }
+          ],
+          "hydra:nextPage": "/wf/api/historical-steps/?limit=1&offset=1",
+          "hydra:previousPage": null,
+          "hydra:totalItems": 164762
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/wf/api/historical-workflows/": {
     "by_auth": {
       "apikey": {
@@ -142554,6 +143137,24 @@
       }
     }
   },
+  "GET /api/wf/api/manual-wf-input/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/wf/api/manual-wf-input/context/",
+          "hydra:firstPage": "/wf/api/manual-wf-input/?limit=3",
+          "hydra:itemsPerPage": 3,
+          "hydra:lastPage": "/wf/api/manual-wf-input/?limit=3&offset=-3",
+          "hydra:member": [],
+          "hydra:nextPage": null,
+          "hydra:previousPage": null,
+          "hydra:totalItems": 0
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/wf/api/scheduled/": {
     "by_auth": {
       "apikey": {
@@ -144571,6 +145172,20 @@
           "tags": "system",
           "template_iri": "/api/3/workflows/<uuid>",
           "user": ""
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/wf/workflow/config/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "daily_action_limit": -1,
+          "last_update_time": -1.0,
+          "remaining_actions": 0,
+          "reset_time": -1
         },
         "response_status": 200
       }
@@ -147638,10 +148253,117 @@
         "response_status": 400
       },
       "jwt": {
-        "captured_at": "2026-10-19",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 400
+        "request_body": {
+          "attributes": [
+            {
+              "descriptions": {
+                "singular": "Name"
+              },
+              "formType": "text",
+              "name": "name",
+              "type": "string",
+              "validation": {
+                "required": false
+              },
+              "visibility": true,
+              "writeable": true
+            }
+          ],
+          "descriptions": {
+            "plural": "live-capture-d757b411",
+            "singular": "live-capture-d757b411"
+          },
+          "displayName": "live-capture-d757b411",
+          "module": "live_capture_d757b411",
+          "ownable": false,
+          "queueable": false,
+          "softDeleteable": false,
+          "tableName": "live_capture_d757b411",
+          "taggable": false,
+          "type": "live_capture_d757b411"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/StagingModelMetadata",
+          "@id": "/api/3/staging_model_metadatas/<uuid>",
+          "@type": "StagingModelMetadata",
+          "archivable": false,
+          "archivalCriteria": {
+            "delete_primary_data_after": 60,
+            "keep_primary_data_for": 24
+          },
+          "archivalFilters": [],
+          "attributes": [
+            {
+              "@id": "/api/3/attribute_metadatas/<uuid>",
+              "@type": "AttributeMetadata",
+              "bulkAction": null,
+              "collection": false,
+              "dataSource": null,
+              "dataSourceFilters": null,
+              "defaultValue": null,
+              "descriptions": {
+                "singular": "Name"
+              },
+              "displayName": null,
+              "encrypted": false,
+              "formType": "text",
+              "gridColumn": false,
+              "htmlEscape": false,
+              "identifier": null,
+              "importedBy": [],
+              "inversedField": null,
+              "length": null,
+              "name": "name",
+              "orderIndex": null,
+              "orphanRemoval": null,
+              "ownsRelationship": null,
+              "peerReplicable": true,
+              "readable": true,
+              "recommend": false,
+              "sattrib": "/api/3/staging_model_metadatas/<uuid>",
+              "searchable": false,
+              "skipSerialization": false,
+              "system": false,
+              "tooltip": null,
+              "type": "string",
+              "unique": false,
+              "uuid": "<uuid>",
+              "validation": {
+                "required": false
+              },
+              "visibility": true,
+              "writeable": true
+            }
+          ],
+          "defaultSort": [],
+          "descriptions": {
+            "plural": "live-capture-d757b411",
+            "singular": "live-capture-d757b411"
+          },
+          "displayName": "live-capture-d757b411",
+          "enableReplication": true,
+          "importedBy": [],
+          "indexable": true,
+          "module": "live_capture_d757b411",
+          "ownable": false,
+          "parentType": null,
+          "partitionBy": "modifyDate",
+          "paused": false,
+          "peerReplicable": false,
+          "queueable": false,
+          "replicationFilters": [],
+          "softDeleteable": false,
+          "system": false,
+          "tableName": "live_capture_d757b411",
+          "taggable": false,
+          "trackable": false,
+          "type": "live_capture_d757b411",
+          "uniqueConstraint": [],
+          "userOwnable": false,
+          "uuid": "<uuid>",
+          "writable": true
+        },
+        "response_status": 201
       }
     }
   },
@@ -149556,6 +150278,26 @@
       }
     }
   },
+  "POST /api/ingest-feeds/{module}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "data": [
+            {
+              "value": "d757b411.capture.example.com"
+            }
+          ]
+        },
+        "response_body": {
+          "status": "success",
+          "uuids": [
+            "<uuid>"
+          ]
+        },
+        "response_status": 200
+      }
+    }
+  },
   "POST /api/insert-feeds/{recordType}": {
     "by_auth": {
       "apikey": {
@@ -149648,6 +150390,744 @@
       }
     }
   },
+  "POST /api/integration/connector/development/entity/{id}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "edit_repo_connector": true
+        },
+        "response_body": {
+          "active": true,
+          "agent": "<self-agent>",
+          "category": [
+            "Threat Intelligence"
+          ],
+          "config_count": 0,
+          "config_schema": {
+            "fields": [
+              {
+                "description": "URL of the IPStack endpoint server to which you will connect and perform the automated operations",
+                "editable": true,
+                "name": "server_url",
+                "required": true,
+                "title": " Server URL",
+                "type": "text",
+                "value": "api.ipstack.com",
+                "visible": true
+              },
+              {
+                "description": "API key to access the IPStack endpoint to which you will connect and perform the automated operations",
+                "editable": true,
+                "name": "api_key",
+                "required": true,
+                "title": "API Key",
+                "type": "password",
+                "value": "",
+                "visible": true
+              },
+              "... <1 more>"
+            ]
+          },
+          "configuration": [],
+          "contributor": null,
+          "created": "2024-01-01T00:00:00Z",
+          "cs_approved": false,
+          "cs_compatible": true,
+          "data": {
+            "active": true,
+            "category": "Threat Intelligence",
+            "configuration": {
+              "fields": [
+                {
+                  "description": "URL of the IPStack endpoint server to which you will connect and perform the automated operations",
+                  "editable": true,
+                  "name": "server_url",
+                  "required": true,
+                  "title": " Server URL",
+                  "type": "text",
+                  "value": "api.ipstack.com",
+                  "visible": true
+                },
+                {
+                  "description": "API key to access the IPStack endpoint to which you will connect and perform the automated operations",
+                  "editable": true,
+                  "name": "api_key",
+                  "required": true,
+                  "title": "API Key",
+                  "type": "password",
+                  "value": "",
+                  "visible": true
+                },
+                "... <1 more>"
+              ]
+            },
+            "contributor": null,
+            "cs_compatible": true,
+            "description": "IPStack provides geolocation facility for IP Address or Domain.",
+            "development": true,
+            "help_online": "https://your-soar.example.com/document/fortisoar/1.0.1/ipstack/368/ipstack-v1-0-1",
+            "icon_large": "data:image/jpeg;base64,REDACTED=",
+            "icon_large_name": "ipstack_large.png",
+            "icon_small": "data:image/jpeg;base64,REDACTED",
+            "icon_small_name": "ipstack_small.png",
+            "id": 145,
+            "installed": false,
+            "label": "IPStack",
+            "name": "ipstack",
+            "operations": [
+              {
+                "annotation": "geolocation",
+                "category": "investigation",
+                "description": "Search geolocation of IP Address",
+                "enabled": true,
+                "operation": "ip_locate",
+                "output_schema": [
+                  {
+                    "city": "",
+                    "continent_code": "",
+                    "continent_name": "",
+                    "country_code": "",
+                    "country_name": "",
+                    "ip": "",
+                    "latitude": "",
+                    "location": {
+                      "calling_code": "",
+                      "capital": "",
+                      "country_flag": "",
+                      "country_flag_emoji": "",
+                      "country_flag_emoji_unicode": "",
+                      "geoname_id": "",
+                      "is_eu": "",
+                      "languages": [
+                        {
+                          "code": "",
+                          "name": "",
+                          "native": ""
+                        }
+                      ]
+                    },
+                    "longitude": "",
+                    "region_code": "",
+                    "region_name": "",
+                    "type": "",
+                    "zip": ""
+                  }
+                ],
+                "parameters": [
+                  {
+                    "description": "Specify the IP address for which you want to retrieve a geolocate",
+                    "editable": true,
+                    "name": "query",
+                    "required": true,
+                    "title": "IP Address",
+                    "type": "text",
+                    "value": "",
+                    "visible": true
+                  },
+                  {
+                    "description": "Specify the keys that you want to in the results of this operation. Eg, If country_code specified, returns only the country_code object",
+                    "editable": true,
+                    "name": "fields",
+                    "required": false,
+                    "title": "Specify Response Fields",
+                    "tooltip": "Eg, If country_code specified, returns only the country_code object",
+                    "type": "text",
+                    "value": "",
+                    "visible": true
+                  },
+                  "... <1 more>"
+                ],
+                "title": "Geolocate IP"
+              },
+              {
+                "annotation": "geolocation",
+                "category": "investigation",
+                "description": "Search geolocation of Domain",
+                "enabled": true,
+                "operation": "domain_locate",
+                "output_schema": [
+                  {
+                    "city": "",
+                    "continent_code": "",
+                    "continent_name": "",
+                    "country_code": "",
+                    "country_name": "",
+                    "ip": "",
+                    "latitude": "",
+                    "location": {
+                      "calling_code": "",
+                      "capital": "",
+                      "country_flag": "",
+                      "country_flag_emoji": "",
+                      "country_flag_emoji_unicode": "",
+                      "geoname_id": "",
+                      "is_eu": "",
+                      "languages": [
+                        {
+                          "code": "",
+                          "name": "",
+                          "native": ""
+                        }
+                      ]
+                    },
+                    "longitude": "",
+                    "region_code": "",
+                    "region_name": "",
+                    "type": "",
+                    "zip": ""
+                  }
+                ],
+                "parameters": [
+                  {
+                    "description": "Specify the domain for which you want to retrieve a geolocate",
+                    "editable": true,
+                    "name": "query",
+                    "required": true,
+                    "title": "Domain",
+                    "type": "text",
+                    "value": "",
+                    "visible": true
+                  },
+                  {
+                    "description": "Specify the keys that you want to in the results of this operation. Eg, If country_code specified, returns only the country_code object",
+                    "editable": true,
+                    "name": "fields",
+                    "required": false,
+                    "title": "Specify Response Fields",
+                    "tooltip": "Eg, If country_code specified, returns only the country_code object",
+                    "type": "text",
+                    "value": "",
+                    "visible": true
+                  },
+                  "... <1 more>"
+                ],
+                "title": "Geolocate Domain"
+              }
+            ],
+            "playbook_collections": [
+              {
+                "@id": "/api/3/workflow_collections/<uuid>",
+                "description": "Sample playbooks for \"IPStack\" connector. If you are planning to use any of the sample playbooks in your environment, ensure that you clone those playbooks and move them to a different collection, since the sample playbook collection gets deleted during connector upgrade and delete.",
+                "image": null,
+                "name": "Sample - IPStack - 1.0.1"
+              }
+            ],
+            "publisher": "",
+            "system": false,
+            "vendor_version": null,
+            "version": "1.0.1_dev"
+          },
+          "description": "IPStack provides geolocation facility for IP Address or Domain.",
+          "development": true,
+          "help_file": null,
+          "help_online": "https://your-soar.example.com/document/fortisoar/1.0.1/ipstack/368/ipstack-v1-0-1",
+          "icon_large": "data:image/jpeg;base64,REDACTED=",
+          "icon_large_name": "ipstack_large.png",
+          "icon_small": "data:image/jpeg;base64,REDACTED",
+          "icon_small_name": "ipstack_small.png",
+          "id": 885,
+          "ingestion_supported": false,
+          "install_result": {
+            "message": "Success",
+            "output": ""
+          },
+          "installed": false,
+          "label": "IPStack",
+          "modified": "2024-01-01T00:00:00Z",
+          "name": "ipstack",
+          "operations": [
+            {
+              "annotation": "geolocation",
+              "category": "investigation",
+              "connector": 885,
+              "description": "Search geolocation of IP Address",
+              "enabled": true,
+              "id": 24505,
+              "operation": "ip_locate",
+              "output_schema": [
+                {
+                  "city": "",
+                  "continent_code": "",
+                  "continent_name": "",
+                  "country_code": "",
+                  "country_name": "",
+                  "ip": "",
+                  "latitude": "",
+                  "location": {
+                    "calling_code": "",
+                    "capital": "",
+                    "country_flag": "",
+                    "country_flag_emoji": "",
+                    "country_flag_emoji_unicode": "",
+                    "geoname_id": "",
+                    "is_eu": "",
+                    "languages": [
+                      {
+                        "code": "",
+                        "name": "",
+                        "native": ""
+                      }
+                    ]
+                  },
+                  "longitude": "",
+                  "region_code": "",
+                  "region_name": "",
+                  "type": "",
+                  "zip": ""
+                }
+              ],
+              "parameters": [
+                {
+                  "description": "Specify the IP address for which you want to retrieve a geolocate",
+                  "editable": true,
+                  "name": "query",
+                  "required": true,
+                  "title": "IP Address",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                {
+                  "description": "Specify the keys that you want to in the results of this operation. Eg, If country_code specified, returns only the country_code object",
+                  "editable": true,
+                  "name": "fields",
+                  "required": false,
+                  "title": "Specify Response Fields",
+                  "tooltip": "Eg, If country_code specified, returns only the country_code object",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                "... <1 more>"
+              ],
+              "roles": [],
+              "title": "Geolocate IP",
+              "visible": true
+            },
+            {
+              "annotation": "geolocation",
+              "category": "investigation",
+              "connector": 885,
+              "description": "Search geolocation of Domain",
+              "enabled": true,
+              "id": 24506,
+              "operation": "domain_locate",
+              "output_schema": [
+                {
+                  "city": "",
+                  "continent_code": "",
+                  "continent_name": "",
+                  "country_code": "",
+                  "country_name": "",
+                  "ip": "",
+                  "latitude": "",
+                  "location": {
+                    "calling_code": "",
+                    "capital": "",
+                    "country_flag": "",
+                    "country_flag_emoji": "",
+                    "country_flag_emoji_unicode": "",
+                    "geoname_id": "",
+                    "is_eu": "",
+                    "languages": [
+                      {
+                        "code": "",
+                        "name": "",
+                        "native": ""
+                      }
+                    ]
+                  },
+                  "longitude": "",
+                  "region_code": "",
+                  "region_name": "",
+                  "type": "",
+                  "zip": ""
+                }
+              ],
+              "parameters": [
+                {
+                  "description": "Specify the domain for which you want to retrieve a geolocate",
+                  "editable": true,
+                  "name": "query",
+                  "required": true,
+                  "title": "Domain",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                {
+                  "description": "Specify the keys that you want to in the results of this operation. Eg, If country_code specified, returns only the country_code object",
+                  "editable": true,
+                  "name": "fields",
+                  "required": false,
+                  "title": "Specify Response Fields",
+                  "tooltip": "Eg, If country_code specified, returns only the country_code object",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                "... <1 more>"
+              ],
+              "roles": [],
+              "title": "Geolocate Domain",
+              "visible": true
+            }
+          ],
+          "playbook_collections": [],
+          "publisher": "",
+          "remote_status": {
+            "message": "Success",
+            "output": "",
+            "status": "finished"
+          },
+          "requirements_installed": "In-Progress",
+          "rpm_full_name": "",
+          "rpm_installed": false,
+          "status": "Completed",
+          "system": false,
+          "tags": [],
+          "tree": {
+            "ipstack_1_0_1_dev": {
+              "files": {
+                "connector.py": {
+                  "name": "connector.py",
+                  "type": "python",
+                  "xpath": "ipstack_1_0_1_dev/connector.py"
+                },
+                "images": {
+                  "files": {
+                    "ipstack_large.png": {
+                      "name": "ipstack_large.png",
+                      "type": "image",
+                      "xpath": "ipstack_1_0_1_dev/images/ipstack_large.png"
+                    },
+                    "ipstack_small.png": {
+                      "name": "ipstack_small.png",
+                      "type": "image",
+                      "xpath": "ipstack_1_0_1_dev/images/ipstack_small.png"
+                    }
+                  },
+                  "name": "images",
+                  "type": "folder",
+                  "xpath": "ipstack_1_0_1_dev/images"
+                },
+                "info.json": {
+                  "name": "info.json",
+                  "type": "json",
+                  "xpath": "ipstack_1_0_1_dev/info.json"
+                },
+                "operations.py": {
+                  "name": "operations.py",
+                  "type": "python",
+                  "xpath": "ipstack_1_0_1_dev/operations.py"
+                },
+                "playbooks": {
+                  "files": {
+                    "playbooks.json": {
+                      "name": "playbooks.json",
+                      "type": "json",
+                      "xpath": "ipstack_1_0_1_dev/playbooks/playbooks.json"
+                    }
+                  },
+                  "name": "playbooks",
+                  "type": "folder",
+                  "xpath": "ipstack_1_0_1_dev/playbooks"
+                },
+                "release_notes.md": {
+                  "name": "release_notes.md",
+                  "type": "markdown",
+                  "xpath": "ipstack_1_0_1_dev/release_notes.md"
+                }
+              },
+              "name": "ipstack_1_0_1_dev",
+              "open": true,
+              "primaryFolder": true,
+              "setting": true,
+              "type": "folder"
+            }
+          },
+          "vendor_version": null,
+          "version": "1.0.1_dev"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/connector/development/entity/{id}/files/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "xpath": "ipstack_1_0_1_dev/info.json"
+        },
+        "response_body": {
+          "fileContent": "{\n    \"name\": \"ipstack\",\n    \"version\": \"1.0.1\",\n    \"label\": \"IPStack\",\n    \"description\": \"IPStack provides geolocation facility for IP Address or Domain.\",\n    \"publisher\": \"\",\n    \"icon_small_name\": \"ipstack_small.png\",\n    \"icon_large_name\": \"ipstack_large.png\",\n    \"id\": 145,\n    \"configuratio..."
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/connector/development/entity/{id}/publish/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "discard": true,
+          "replace": true
+        },
+        "response_body": {
+          "active": true,
+          "agent": "<self-agent>",
+          "category": [
+            "Threat Intelligence"
+          ],
+          "config_count": 0,
+          "configuration": [],
+          "contributor": null,
+          "created": "2024-01-01T00:00:00Z",
+          "cs_approved": false,
+          "cs_compatible": true,
+          "description": "IPStack provides geolocation facility for IP Address or Domain.",
+          "development": false,
+          "help_file": null,
+          "help_online": "https://your-soar.example.com/document/fortisoar/1.0.1/ipstack/368/ipstack-v1-0-1",
+          "icon_large": "data:image/jpeg;base64,REDACTED=",
+          "icon_large_name": "ipstack_large.png",
+          "icon_small_name": "ipstack_small.png",
+          "id": 886,
+          "ingestion_supported": false,
+          "install_result": {
+            "message": "Success",
+            "output": ""
+          },
+          "installed": true,
+          "label": "IPStack",
+          "modified": "2024-01-01T00:00:00Z",
+          "name": "ipstack",
+          "operations": [
+            {},
+            {}
+          ],
+          "playbook_collections": [
+            {
+              "@id": "/api/3/workflow_collections/<uuid>",
+              "description": "Sample playbooks for \"IPStack\" connector. If you are planning to use any of the sample playbooks in your environment, ensure that you clone those playbooks and move them to a different collection, since the sample playbook collection gets deleted during connector upgrade and delete.",
+              "image": null,
+              "name": "Sample - IPStack - 1.0.1"
+            }
+          ],
+          "publisher": "",
+          "remote_status": {
+            "message": "Success",
+            "output": "",
+            "status": "finished"
+          },
+          "requirements_installed": "In-Progress",
+          "rpm_full_name": "",
+          "rpm_installed": false,
+          "status": "Completed",
+          "system": false,
+          "tags": [],
+          "vendor_version": null,
+          "version": "1.0.1",
+          "workspace_connector": true
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/connector_details/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "connector": "mitre-attack"
+        },
+        "response_body": {
+          "data": [
+            {
+              "active": true,
+              "agent_id": "<self-agent>",
+              "config_count": 2,
+              "configuration": [
+                {
+                  "config_id": "<uuid>",
+                  "default": false,
+                  "id": 239,
+                  "name": "patch-pipeline"
+                },
+                {
+                  "config_id": "<uuid>",
+                  "default": true,
+                  "id": 839,
+                  "name": "cert-automation-ca"
+                }
+              ],
+              "icon_small": "data:image/jpeg;base64,REDACTED",
+              "id": 180,
+              "label": "HTTP",
+              "name": "http",
+              "operations": [
+                {
+                  "annotation": "request_post",
+                  "category": "investigation",
+                  "connector": 180,
+                  "description": "Perform HTTP POST request on configured server with provided input parameters",
+                  "enabled": true,
+                  "has_permissions": true,
+                  "id": 4461,
+                  "operation": "http_post",
+                  "output_schema": {},
+                  "parameters": [
+                    {
+                      "editable": true,
+                      "name": "rest_api",
+                      "placehoder": "e.g. path/to/endpoint",
+                      "required": true,
+                      "title": "Rest API",
+                      "tooltip": "you can provid path/to/endpoint?query=string or path/",
+                      "type": "text",
+                      "visible": true
+                    },
+                    {
+                      "editable": true,
+                      "name": "header",
+                      "required": false,
+                      "title": "Request Header",
+                      "type": "json",
+                      "visible": true
+                    },
+                    "... <2 more>"
+                  ],
+                  "roles": [],
+                  "title": "HTTP POST Request",
+                  "visible": true
+                },
+                {
+                  "annotation": "request_get",
+                  "category": "investigation",
+                  "connector": 180,
+                  "description": "Perform HTTP GET request on configured server with provided input parameters",
+                  "enabled": true,
+                  "has_permissions": true,
+                  "id": 4462,
+                  "operation": "http_get",
+                  "output_schema": {},
+                  "parameters": [
+                    {
+                      "editable": true,
+                      "name": "rest_api",
+                      "placeholder": "e.g. path/to/endpoint",
+                      "required": true,
+                      "title": "Rest API",
+                      "tooltip": "you can provid path/to/endpoint?query=string or path/",
+                      "type": "text",
+                      "visible": true
+                    },
+                    {
+                      "editable": true,
+                      "name": "header",
+                      "required": false,
+                      "title": "Request Header",
+                      "type": "json",
+                      "visible": true
+                    },
+                    "... <1 more>"
+                  ],
+                  "roles": [],
+                  "title": "HTTP GET Request",
+                  "visible": true
+                },
+                "... <5 more>"
+              ],
+              "status": "Completed",
+              "version": "1.0.0"
+            },
+            {
+              "active": true,
+              "agent_id": "<self-agent>",
+              "config_count": 1,
+              "configuration": [
+                {
+                  "config_id": "<uuid>",
+                  "default": false,
+                  "id": 167,
+                  "name": "Default"
+                }
+              ],
+              "icon_small": "",
+              "id": 185,
+              "label": "Code Runner (Unrestricted)",
+              "name": "code-runner",
+              "operations": [
+                {
+                  "annotation": "run_python",
+                  "category": "investigation",
+                  "connector": 185,
+                  "description": "Execute the supplied Python with full builtins and filesystem access. Use 'return <value>' to set code_output.",
+                  "enabled": true,
+                  "has_permissions": true,
+                  "id": 4640,
+                  "operation": "run_python",
+                  "output_schema": {},
+                  "parameters": [
+                    {
+                      "editable": true,
+                      "name": "code",
+                      "required": true,
+                      "title": "Python Code",
+                      "tooltip": "Python to execute. A top-level 'return <value>' sets code_output. The 'params' dict (from Input) and 'config' are in scope. open()/import are unrestricted.",
+                      "type": "codeEditor",
+                      "visible": true
+                    },
+                    {
+                      "editable": true,
+                      "name": "input",
+                      "required": false,
+                      "title": "Input",
+                      "tooltip": "Optional dict passed to the snippet as 'params' (e.g. {\"recipients\": \"user@example.com\"}).",
+                      "type": "json",
+                      "visible": true
+                    }
+                  ],
+                  "roles": [],
+                  "title": "Run Python (Unrestricted)",
+                  "visible": true
+                }
+              ],
+              "status": "Completed",
+              "version": "1.0.0"
+            },
+            "... <88 more>"
+          ],
+          "status": "Success"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/connector_output_schema/{connector}/{version}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "config": "",
+          "operation": "ip_cidr_check",
+          "params": {
+            "cidr_range": "your-soar.example.com/24",
+            "ip": "your-soar.example.com"
+          }
+        },
+        "response_body": {
+          "data": {
+            "output_schema": {
+              "ip_matched": "",
+              "matched_cidr_ip": {},
+              "unmatched_ips": {}
+            }
+          },
+          "status": "Success"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "POST /api/integration/connectors/agents/{name}/{version}/": {
     "by_auth": {
       "apikey": {
@@ -149660,6 +151140,241 @@
         "captured_at": "2026-10-19",
         "request_body": {},
         "response_body": [],
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/connectors/dependencies_check/{connector}/{version}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "message": "Dependencies installation completed"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/connectors/{connector}/{version}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {},
+        "response_body": {
+          "active": true,
+          "agent": "<self-agent>",
+          "category": [
+            "Threat Intelligence"
+          ],
+          "config_count": 0,
+          "config_schema": {
+            "fields": [
+              {
+                "description": "URL of the IPStack endpoint server to which you will connect and perform the automated operations",
+                "editable": true,
+                "name": "server_url",
+                "required": true,
+                "title": " Server URL",
+                "type": "text",
+                "value": "api.ipstack.com",
+                "visible": true
+              },
+              {
+                "description": "API key to access the IPStack endpoint to which you will connect and perform the automated operations",
+                "editable": true,
+                "name": "api_key",
+                "required": true,
+                "title": "API Key",
+                "type": "password",
+                "value": "",
+                "visible": true
+              },
+              "... <1 more>"
+            ]
+          },
+          "configuration": [],
+          "contributor": null,
+          "created": "2024-01-01T00:00:00Z",
+          "cs_approved": false,
+          "cs_compatible": true,
+          "description": "IPStack provides geolocation facility for IP Address or Domain.",
+          "development": false,
+          "help_file": null,
+          "help_online": "https://your-soar.example.com/document/fortisoar/1.0.1/ipstack/368/ipstack-v1-0-1",
+          "icon_large": "data:image/jpeg;base64,REDACTED=",
+          "icon_large_name": "ipstack_large.png",
+          "icon_small": "data:image/jpeg;base64,REDACTED",
+          "icon_small_name": "ipstack_small.png",
+          "id": 884,
+          "ingestion_supported": false,
+          "install_result": {
+            "message": "Success",
+            "output": ""
+          },
+          "installed": true,
+          "label": "IPStack",
+          "modified": "2024-01-01T00:00:00Z",
+          "name": "ipstack",
+          "operations": [
+            {
+              "annotation": "geolocation",
+              "category": "investigation",
+              "connector": 884,
+              "description": "Search geolocation of IP Address",
+              "enabled": true,
+              "id": 24503,
+              "operation": "ip_locate",
+              "output_schema": [
+                {
+                  "city": "",
+                  "continent_code": "",
+                  "continent_name": "",
+                  "country_code": "",
+                  "country_name": "",
+                  "ip": "",
+                  "latitude": "",
+                  "location": {
+                    "calling_code": "",
+                    "capital": "",
+                    "country_flag": "",
+                    "country_flag_emoji": "",
+                    "country_flag_emoji_unicode": "",
+                    "geoname_id": "",
+                    "is_eu": "",
+                    "languages": [
+                      {
+                        "code": "",
+                        "name": "",
+                        "native": ""
+                      }
+                    ]
+                  },
+                  "longitude": "",
+                  "region_code": "",
+                  "region_name": "",
+                  "type": "",
+                  "zip": ""
+                }
+              ],
+              "parameters": [
+                {
+                  "description": "Specify the IP address for which you want to retrieve a geolocate",
+                  "editable": true,
+                  "name": "query",
+                  "required": true,
+                  "title": "IP Address",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                {
+                  "description": "Specify the keys that you want to in the results of this operation. Eg, If country_code specified, returns only the country_code object",
+                  "editable": true,
+                  "name": "fields",
+                  "required": false,
+                  "title": "Specify Response Fields",
+                  "tooltip": "Eg, If country_code specified, returns only the country_code object",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                "... <1 more>"
+              ],
+              "roles": [],
+              "title": "Geolocate IP",
+              "visible": true
+            },
+            {
+              "annotation": "geolocation",
+              "category": "investigation",
+              "connector": 884,
+              "description": "Search geolocation of Domain",
+              "enabled": true,
+              "id": 24504,
+              "operation": "domain_locate",
+              "output_schema": [
+                {
+                  "city": "",
+                  "continent_code": "",
+                  "continent_name": "",
+                  "country_code": "",
+                  "country_name": "",
+                  "ip": "",
+                  "latitude": "",
+                  "location": {
+                    "calling_code": "",
+                    "capital": "",
+                    "country_flag": "",
+                    "country_flag_emoji": "",
+                    "country_flag_emoji_unicode": "",
+                    "geoname_id": "",
+                    "is_eu": "",
+                    "languages": [
+                      {
+                        "code": "",
+                        "name": "",
+                        "native": ""
+                      }
+                    ]
+                  },
+                  "longitude": "",
+                  "region_code": "",
+                  "region_name": "",
+                  "type": "",
+                  "zip": ""
+                }
+              ],
+              "parameters": [
+                {
+                  "description": "Specify the domain for which you want to retrieve a geolocate",
+                  "editable": true,
+                  "name": "query",
+                  "required": true,
+                  "title": "Domain",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                {
+                  "description": "Specify the keys that you want to in the results of this operation. Eg, If country_code specified, returns only the country_code object",
+                  "editable": true,
+                  "name": "fields",
+                  "required": false,
+                  "title": "Specify Response Fields",
+                  "tooltip": "Eg, If country_code specified, returns only the country_code object",
+                  "type": "text",
+                  "value": "",
+                  "visible": true
+                },
+                "... <1 more>"
+              ],
+              "roles": [],
+              "title": "Geolocate Domain",
+              "visible": true
+            }
+          ],
+          "playbook_collections": [
+            {
+              "@id": "/api/3/workflow_collections/<uuid>",
+              "description": "Sample playbooks for \"IPStack\" connector. If you are planning to use any of the sample playbooks in your environment, ensure that you clone those playbooks and move them to a different collection, since the sample playbook collection gets deleted during connector upgrade and delete.",
+              "image": null,
+              "name": "Sample - IPStack - 1.0.1"
+            }
+          ],
+          "publisher": "",
+          "remote_status": {
+            "message": "Success",
+            "output": "",
+            "status": "finished"
+          },
+          "requirements_installed": "Completed",
+          "rpm_full_name": "",
+          "rpm_installed": false,
+          "status": "Completed",
+          "system": false,
+          "tags": [],
+          "vendor_version": null,
+          "version": "1.0.1"
+        },
         "response_status": 200
       }
     }
@@ -150011,6 +151726,53 @@
           "version": "1.0.4"
         },
         "response_status": 200
+      }
+    }
+  },
+  "POST /api/integration/data-import/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "configuration": "<uuid>",
+          "connector": {
+            "name": "ipstack",
+            "version": ""
+          },
+          "created_by": "<uuid>",
+          "description": "Metadata for live-capture-d757b411",
+          "metadata": {
+            "scheduleId": null,
+            "scheduleName": "",
+            "scheduleStatus": false
+          },
+          "modified_by": "<uuid>",
+          "name": "live-capture-d757b411",
+          "owners": []
+        },
+        "response_body": {
+          "configuration": "<uuid>",
+          "created_at": "2024-01-01T00:00:00Z",
+          "created_by": "<uuid>",
+          "data_mapping": {},
+          "description": "Metadata for live-capture-d757b411",
+          "id": 38,
+          "metadata": {
+            "scheduleId": null,
+            "scheduleName": "",
+            "scheduleStatus": false
+          },
+          "modified_at": "2024-01-01T00:00:00Z",
+          "modified_by": "<uuid>",
+          "name": "live-capture-d757b411",
+          "owners": [
+            "public"
+          ],
+          "playbooks": {},
+          "previous_config_id": null,
+          "sample_data": {},
+          "status": null
+        },
+        "response_status": 201
       }
     }
   },
@@ -150840,6 +152602,417 @@
         "request_body": {},
         "response_body": null,
         "response_status": 404
+      }
+    }
+  },
+  "POST /api/views/1/{name}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "config": {
+            "metadata": {
+              "customTemplateTitle": "Alerts",
+              "originalTemplateTitle": "Alerts"
+            },
+            "rows": [
+              {
+                "_collapsed": false,
+                "collapsible": false,
+                "collapsibleIndex": 0,
+                "columns": [
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "severity"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "severity",
+                                "field": "severity.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "severity.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Severity",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "type"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "type",
+                                "field": "type.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "type.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Type",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  "... <2 more>"
+                ],
+                "container": false,
+                "wid": "<uuid>"
+              },
+              {
+                "_collapsed": false,
+                "columns": [
+                  {
+                    "style": "col-lg-12",
+                    "widgets": [
+                      {
+                        "config": {
+                          "actionButtons": [
+                            {
+                              "icon": "fa fa-play",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Sample > Create Sample Records"
+                            },
+                            {
+                              "icon": "fa fa-level-up",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Escalate"
+                            },
+                            "... <2 more>"
+                          ],
+                          "checkboxStatus": false,
+                          "columns": [
+                            "id",
+                            "aIVerdict",
+                            "... <8 more>"
+                          ],
+                          "expandableCol": [],
+                          "module": "alerts",
+                          "query": {
+                            "filters": [],
+                            "limit": 30,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "_fieldName": "id",
+                                "_fieldTitle": "ID",
+                                "direction": "DESC",
+                                "field": "id"
+                              }
+                            ]
+                          },
+                          "relationshipField": [],
+                          "title": "",
+                          "wid": "<uuid>"
+                        },
+                        "type": "grid"
+                      }
+                    ]
+                  }
+                ],
+                "wid": "<uuid>"
+              }
+            ],
+            "wid": "<uuid>"
+          },
+          "isDefault": true,
+          "module": "alerts",
+          "type": "rows",
+          "viewOptions": "list"
+        },
+        "response_body": {
+          "config": {
+            "metadata": {
+              "customTemplateTitle": "Alerts",
+              "originalTemplateTitle": "Alerts"
+            },
+            "rows": [
+              {
+                "_collapsed": false,
+                "collapsible": false,
+                "collapsibleIndex": 0,
+                "columns": [
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "severity"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "severity",
+                                "field": "severity.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "severity.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Severity",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "type"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "type",
+                                "field": "type.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "type.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Type",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  "... <2 more>"
+                ],
+                "container": false,
+                "wid": "<uuid>"
+              },
+              {
+                "_collapsed": false,
+                "columns": [
+                  {
+                    "style": "col-lg-12",
+                    "widgets": [
+                      {
+                        "config": {
+                          "actionButtons": [
+                            {
+                              "icon": "fa fa-play",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Sample > Create Sample Records"
+                            },
+                            {
+                              "icon": "fa fa-level-up",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Escalate"
+                            },
+                            "... <2 more>"
+                          ],
+                          "checkboxStatus": false,
+                          "columns": [
+                            "id",
+                            "aIVerdict",
+                            "... <8 more>"
+                          ],
+                          "expandableCol": [],
+                          "module": "alerts",
+                          "query": {
+                            "filters": [],
+                            "limit": 30,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "_fieldName": "id",
+                                "_fieldTitle": "ID",
+                                "direction": "DESC",
+                                "field": "id"
+                              }
+                            ]
+                          },
+                          "relationshipField": [],
+                          "title": "",
+                          "wid": "<uuid>"
+                        },
+                        "type": "grid"
+                      }
+                    ]
+                  }
+                ],
+                "wid": "<uuid>"
+              }
+            ],
+            "wid": "<uuid>"
+          },
+          "filters": [],
+          "isDefault": true,
+          "module": "alerts",
+          "name": "modules-alerts-list",
+          "owner": "/api/3/people/<uuid>",
+          "system": false,
+          "type": "rows",
+          "uuid": "<uuid>",
+          "viewOptions": "list",
+          "visible": true
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "POST /api/wf/api/dynamic-variable/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "default_value": "example",
+          "name": "live_capture_d757b411",
+          "value": "example"
+        },
+        "response_body": {
+          "default_value": "example",
+          "id": 87,
+          "name": "live_capture_d757b411",
+          "value": "example"
+        },
+        "response_status": 200
       }
     }
   },
@@ -152698,6 +154871,22 @@
       }
     }
   },
+  "PUT /api/3/changepassword": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "loginId": "livecapture2cee5c02",
+          "newPassword": "REDACTED",
+          "oldPassword": "REDACTED",
+          "uuid": "<uuid>"
+        },
+        "response_body": {
+          "message": "Password Changed successfully, mail not sent due to smtp connector failure"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "PUT /api/3/comments/{uuid}": {
     "by_auth": {
       "apikey": {
@@ -153480,6 +155669,97 @@
       }
     }
   },
+  "PUT /api/3/staging_model_metadatas/{uuid}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "displayName": "live-capture-d757b411 renamed"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/StagingModelMetadata",
+          "@id": "/api/3/staging_model_metadatas/<uuid>",
+          "@type": "StagingModelMetadata",
+          "archivable": false,
+          "archivalCriteria": {
+            "delete_primary_data_after": 60,
+            "keep_primary_data_for": 24
+          },
+          "archivalFilters": [],
+          "attributes": [
+            {
+              "@id": "/api/3/attribute_metadatas/<uuid>",
+              "@type": "AttributeMetadata",
+              "bulkAction": null,
+              "collection": false,
+              "dataSource": null,
+              "dataSourceFilters": null,
+              "defaultValue": null,
+              "descriptions": {
+                "singular": "Name"
+              },
+              "displayName": null,
+              "encrypted": false,
+              "formType": "text",
+              "gridColumn": false,
+              "htmlEscape": false,
+              "identifier": null,
+              "importedBy": [],
+              "inversedField": null,
+              "length": null,
+              "name": "name",
+              "orderIndex": null,
+              "orphanRemoval": null,
+              "ownsRelationship": null,
+              "peerReplicable": true,
+              "readable": true,
+              "recommend": false,
+              "sattrib": "/api/3/staging_model_metadatas/<uuid>",
+              "searchable": false,
+              "skipSerialization": false,
+              "system": false,
+              "tooltip": null,
+              "type": "string",
+              "unique": false,
+              "uuid": "<uuid>",
+              "validation": {
+                "required": false
+              },
+              "visibility": true,
+              "writeable": true
+            }
+          ],
+          "defaultSort": [],
+          "descriptions": {
+            "plural": "live-capture-d757b411",
+            "singular": "live-capture-d757b411"
+          },
+          "displayName": "live-capture-d757b411 renamed",
+          "enableReplication": true,
+          "importedBy": [],
+          "indexable": true,
+          "module": "live_capture_d757b411",
+          "ownable": false,
+          "parentType": null,
+          "partitionBy": "modifyDate",
+          "paused": false,
+          "peerReplicable": false,
+          "queueable": false,
+          "replicationFilters": [],
+          "softDeleteable": false,
+          "system": false,
+          "tableName": "live_capture_d757b411",
+          "taggable": false,
+          "trackable": false,
+          "type": "live_capture_d757b411",
+          "uniqueConstraint": [],
+          "userOwnable": false,
+          "uuid": "<uuid>",
+          "writable": true
+        },
+        "response_status": 200
+      }
+    }
+  },
   "PUT /api/3/tasks/{uuid}": {
     "by_auth": {
       "apikey": {
@@ -153755,10 +156035,15 @@
         "response_status": 403
       },
       "jwt": {
-        "captured_at": "2026-10-19",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 500
+        "request_body": {
+          "option": "retrievable_mode",
+          "value": false
+        },
+        "response_body": {
+          "message": "Option [retrievable_mode] already set to [False]",
+          "status": "WARN"
+        },
+        "response_status": 200
       }
     }
   },
@@ -153791,6 +156076,124 @@
       }
     }
   },
+  "PUT /api/integration/configuration/{config_id}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "agent": "<self-agent>",
+          "config": {
+            "api_key": "REDACTED",
+            "protocol": "HTTP",
+            "server_url": "https://api.ipstack.example.com",
+            "verify_ssl": true
+          },
+          "connector": 884,
+          "default": false,
+          "name": "live-capture-d757b411-renamed",
+          "status": 1,
+          "teams": []
+        },
+        "response_body": {
+          "agent": "<self-agent>",
+          "config": {
+            "api_key": "REDACTED",
+            "protocol": "HTTP",
+            "server_url": "https://api.ipstack.example.com",
+            "verify_ssl": true
+          },
+          "config_id": "<uuid>",
+          "connector": 884,
+          "default": false,
+          "health_status": {},
+          "id": 1217,
+          "name": "live-capture-d757b411-renamed",
+          "remote_status": {},
+          "status": {
+            "message": "Configuration live-capture-d757b411-renamed has been updated successfully",
+            "status": "finished"
+          },
+          "teams": []
+        },
+        "response_status": 201
+      }
+    }
+  },
+  "PUT /api/integration/connector/development/entity/{id}/files/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "fileData": {
+            "fileContent": "{\n    \"name\": \"ipstack\",\n    \"version\": \"1.0.1\",\n    \"label\": \"IPStack\",\n    \"description\": \"IPStack provides geolocation facility for IP Address or Domain.\",\n    \"publisher\": \"\",\n    \"icon_small_name\": \"ipstack_small.png\",\n    \"icon_large_name\": \"ipstack_large.png\",\n    \"id\": 145,\n    \"configuratio...",
+            "xpath": "ipstack_1_0_1_dev/info.json"
+          }
+        },
+        "response_body": {
+          "status": "Success",
+          "tree": {
+            "ipstack_1_0_1_dev": {
+              "files": {
+                "connector.py": {
+                  "name": "connector.py",
+                  "type": "python",
+                  "xpath": "ipstack_1_0_1_dev/connector.py"
+                },
+                "images": {
+                  "files": {
+                    "ipstack_large.png": {
+                      "name": "ipstack_large.png",
+                      "type": "image",
+                      "xpath": "ipstack_1_0_1_dev/images/ipstack_large.png"
+                    },
+                    "ipstack_small.png": {
+                      "name": "ipstack_small.png",
+                      "type": "image",
+                      "xpath": "ipstack_1_0_1_dev/images/ipstack_small.png"
+                    }
+                  },
+                  "name": "images",
+                  "type": "folder",
+                  "xpath": "ipstack_1_0_1_dev/images"
+                },
+                "info.json": {
+                  "name": "info.json",
+                  "type": "json",
+                  "xpath": "ipstack_1_0_1_dev/info.json"
+                },
+                "operations.py": {
+                  "name": "operations.py",
+                  "type": "python",
+                  "xpath": "ipstack_1_0_1_dev/operations.py"
+                },
+                "playbooks": {
+                  "files": {
+                    "playbooks.json": {
+                      "name": "playbooks.json",
+                      "type": "json",
+                      "xpath": "ipstack_1_0_1_dev/playbooks/playbooks.json"
+                    }
+                  },
+                  "name": "playbooks",
+                  "type": "folder",
+                  "xpath": "ipstack_1_0_1_dev/playbooks"
+                },
+                "release_notes.md": {
+                  "name": "release_notes.md",
+                  "type": "markdown",
+                  "xpath": "ipstack_1_0_1_dev/release_notes.md"
+                }
+              },
+              "name": "ipstack_1_0_1_dev",
+              "open": true,
+              "primaryFolder": true,
+              "setting": true,
+              "type": "folder"
+            }
+          }
+        },
+        "response_status": 200
+      }
+    }
+  },
   "PUT /api/publish/revert": {
     "by_auth": {
       "apikey": {
@@ -153808,6 +156211,457 @@
         "response_body": {
           "@type": "Publish",
           "status": "reverted"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "PUT /api/views/1/{name}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "config": {
+            "metadata": {
+              "customTemplateTitle": "Alerts",
+              "originalTemplateTitle": "Alerts"
+            },
+            "rows": [
+              {
+                "_collapsed": false,
+                "collapsible": false,
+                "collapsibleIndex": 0,
+                "columns": [
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "severity"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "severity",
+                                "field": "severity.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "severity.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Severity",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "type"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "type",
+                                "field": "type.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "type.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Type",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  "... <2 more>"
+                ],
+                "container": false,
+                "wid": "<uuid>"
+              },
+              {
+                "_collapsed": false,
+                "columns": [
+                  {
+                    "style": "col-lg-12",
+                    "widgets": [
+                      {
+                        "config": {
+                          "actionButtons": [
+                            {
+                              "icon": "fa fa-play",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Sample > Create Sample Records"
+                            },
+                            {
+                              "icon": "fa fa-level-up",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Escalate"
+                            },
+                            "... <2 more>"
+                          ],
+                          "checkboxStatus": false,
+                          "columns": [
+                            "id",
+                            "aIVerdict",
+                            "... <8 more>"
+                          ],
+                          "expandableCol": [],
+                          "module": "alerts",
+                          "query": {
+                            "filters": [],
+                            "limit": 30,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "_fieldName": "id",
+                                "_fieldTitle": "ID",
+                                "direction": "DESC",
+                                "field": "id"
+                              }
+                            ]
+                          },
+                          "relationshipField": [],
+                          "title": "",
+                          "wid": "<uuid>"
+                        },
+                        "type": "grid"
+                      }
+                    ]
+                  }
+                ],
+                "wid": "<uuid>"
+              }
+            ],
+            "wid": "<uuid>"
+          },
+          "isDefault": true,
+          "module": "alerts",
+          "type": "rows",
+          "viewOptions": "list"
+        },
+        "response_body": {
+          "config": {
+            "metadata": {
+              "customTemplateTitle": "Alerts",
+              "originalTemplateTitle": "Alerts"
+            },
+            "rows": [
+              {
+                "_collapsed": false,
+                "collapsible": false,
+                "collapsibleIndex": 0,
+                "columns": [
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "severity"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "severity",
+                                "field": "severity.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "severity.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Severity",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  {
+                    "style": "col-lg-3",
+                    "widgets": [
+                      {
+                        "config": {
+                          "aggregate": true,
+                          "assignedToSetting": "all",
+                          "mapping": {
+                            "assignedToPerson": null,
+                            "fieldName": "type"
+                          },
+                          "query": {
+                            "aggregates": [
+                              {
+                                "alias": "total",
+                                "field": "*",
+                                "operator": "countdistinct"
+                              },
+                              {
+                                "alias": "type",
+                                "field": "type.itemValue",
+                                "operator": "groupby"
+                              },
+                              "... <2 more>"
+                            ],
+                            "filters": [
+                              {
+                                "_value": {
+                                  "@id": "/api/3/picklists/<uuid>",
+                                  "display": "Closed",
+                                  "itemValue": "Closed"
+                                },
+                                "field": "status",
+                                "operator": "neq",
+                                "type": "object",
+                                "value": "/api/3/picklists/<uuid>"
+                              }
+                            ],
+                            "limit": 10,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "direction": "ASC",
+                                "field": "type.orderIndex"
+                              }
+                            ]
+                          },
+                          "resource": "alerts",
+                          "title": "Open Alerts By Type",
+                          "wid": "<uuid>",
+                          "widgetAlwaysExpanded": true
+                        },
+                        "type": "cardTable-1.0.0"
+                      }
+                    ]
+                  },
+                  "... <2 more>"
+                ],
+                "container": false,
+                "wid": "<uuid>"
+              },
+              {
+                "_collapsed": false,
+                "columns": [
+                  {
+                    "style": "col-lg-12",
+                    "widgets": [
+                      {
+                        "config": {
+                          "actionButtons": [
+                            {
+                              "icon": "fa fa-play",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Sample > Create Sample Records"
+                            },
+                            {
+                              "icon": "fa fa-level-up",
+                              "id": "/api/3/workflows/<uuid>",
+                              "name": "Escalate"
+                            },
+                            "... <2 more>"
+                          ],
+                          "checkboxStatus": false,
+                          "columns": [
+                            "id",
+                            "aIVerdict",
+                            "... <8 more>"
+                          ],
+                          "expandableCol": [],
+                          "module": "alerts",
+                          "query": {
+                            "filters": [],
+                            "limit": 30,
+                            "logic": "AND",
+                            "sort": [
+                              {
+                                "_fieldName": "id",
+                                "_fieldTitle": "ID",
+                                "direction": "DESC",
+                                "field": "id"
+                              }
+                            ]
+                          },
+                          "relationshipField": [],
+                          "title": "",
+                          "wid": "<uuid>"
+                        },
+                        "type": "grid"
+                      }
+                    ]
+                  }
+                ],
+                "wid": "<uuid>"
+              }
+            ],
+            "wid": "<uuid>"
+          },
+          "filters": [],
+          "isDefault": true,
+          "module": "alerts",
+          "name": "modules-alerts-list",
+          "owner": "/api/3/people/<uuid>",
+          "system": false,
+          "type": "rows",
+          "uuid": "<uuid>",
+          "viewOptions": "list",
+          "visible": true
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "PUT /api/wf/api/manual-wf-input/{pk}/": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "input": {
+            "schema": {
+              "description": "Click Continue to resume the test playbook.",
+              "inputVariables": [],
+              "title": "E2E test gate"
+            }
+          },
+          "workflow": 142580
+        },
+        "response_body": {
+          "agent_id": null,
+          "assignment_type": "none",
+          "created": "2024-01-01T00:00:00Z",
+          "custom_fields": {
+            "custom_email_attachment_iris": null,
+            "custom_email_body": null,
+            "custom_email_subject": null
+          },
+          "external_channel_list": [],
+          "id": 609,
+          "inline_channel_list": [],
+          "input": {
+            "schema": {
+              "description": "Click Continue to resume the test playbook.",
+              "inputVariables": [],
+              "title": "E2E test gate"
+            }
+          },
+          "is_approval": false,
+          "owner_details": {},
+          "owners": [],
+          "record": "",
+          "response_mapping": {
+            "customSuccessMessage": "Awaiting Playbook resumed successfully.",
+            "duplicateOption": false,
+            "options": [
+              {
+                "option": "Continue",
+                "primary": true,
+                "step_iri": "/api/3/workflow_steps/<uuid>"
+              }
+            ]
+          },
+          "step_id": 1277447,
+          "timeout": null,
+          "timeout_details": null,
+          "type": "",
+          "unauthenticated_input": false,
+          "workflow": 142580
         },
         "response_status": 200
       }
