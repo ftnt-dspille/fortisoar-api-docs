@@ -127,81 +127,89 @@ info:
     \n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints below cover the most common control flows;\
     \ less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`) are tracked as a future expansion.\n\
     \n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/` - resume a\
-    \ `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).\n- `POST /api/wf/api/workflows/{pk}/retry/`\
-    \ - retry a failed run from the failed step.\n- `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.\n\
-    \n**Resuming an `awaiting` manual-input run** (verified live end-to-end; the run advances to `finished`):\n\n1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true`\
-    \ \u2192 the run's awaiting execution-step ids (the correlation anchor).\n2. `POST /api/wf/api/manual-wf-input/list_wfinput/`\
-    \ \u2192 the pending input whose `step_id` is one of those ids \u2192 `manual_input_id`. (`workflow` on the list member\
-    \ is an *encrypted* token, not the run pk, so `step_id` is the only honest link.)\n3. `POST /api/wf/api/manual-wf-input/{manual_input_id}/retrieve_wfinput/`\
-    \ \u2192 `response_mapping.options[]` (the buttons; each has a `step_iri`).\n4. `POST /api/wf/api/workflows/{run_pk}/wfinput_resume/`\
+    \ `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).\n- `GET /api/wf/api/workflows/{pk}/retry/`\
+    \ - retry a failed run from the failed step. **GET, not the guide's POST** (POST answers 405 on 8.0.0).\n- `POST /api/wf/api/workflows/{pk}/approval/`\
+    \ - approval-step shortcut.\n\n**Resuming an `awaiting` manual-input run** (verified live end-to-end; the run advances\
+    \ to `finished`):\n\n1. `GET /api/wf/api/workflows/{run_pk}/?step_detail=true` \u2192 the run's awaiting execution-step\
+    \ ids (the correlation anchor).\n2. `POST /api/wf/api/manual-wf-input/list_wfinput/` \u2192 the pending input whose `step_id`\
+    \ is one of those ids \u2192 `manual_input_id`. (`workflow` on the list member is an *encrypted* token, not the run pk,\
+    \ so `step_id` is the only honest link.)\n3. `POST /api/wf/api/manual-wf-input/{manual_input_id}/retrieve_wfinput/` \u2192\
+    \ `response_mapping.options[]` (the buttons; each has a `step_iri`).\n4. `POST /api/wf/api/workflows/{run_pk}/wfinput_resume/`\
     \ with `{input, step_iri: <chosen option's step_iri>, step_id, manual_input_id}` (add `approved: <bool>` for `is_approval`\
     \ gates).\n\n**Correction (was wrong here before):** `wfinput_resume` is the **real** path - it is NOT a decoy. `PUT /api/wf/api/manual-wf-input/{id}/`\
-    \ returns 200 but does **not** advance the run; don't use it to resume.\n\n### Triggers\n\nThree ways to fire a playbook\
-    \ from outside:\n\n- **`POST /api/triggers/1/{name}`** - hits a Custom API Endpoint trigger (named via the trigger config).\
-    \ Allows alternate auth (Basic / no-auth) for external webhooks, by design - keeps the core API token-locked while letting\
-    \ webhook senders use simpler auth.\n- **`POST /api/triggers/1/deferred/{name}`** - same as above but async (returns 202).\n\
-    - **`POST /api/triggers/1/notrigger/{workflowId}`** - direct execution of a workflow by UUID, bypassing trigger conditions.\
-    \ Useful for testing.\n\nThe notifier service has additional fan-out via STOMP-over-WebSocket at `/websocket/` (server\
-    \ pushes workflow updates on `/topic/workflows/`). No REST surface; out of scope here.\n\n### Triggering a playbook with\
-    \ an API key and tracking the task\n\nWorked end-to-end flow against a Custom API Endpoint trigger: fire the playbook,\
-    \ capture the `task_id`, poll the workflow log until it reaches a terminal state, then fetch full execution details. Same\
-    \ pattern works for `deferred/` (async) and `notrigger/<workflowId>` - only the trigger URL changes.\n\n**1. Fire the\
-    \ trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the playbook expects. Auth header is `Authorization:\
-    \ API-KEY <key>` (literal space, not a colon). The response always contains a `task_id` - that is the handle you track,\
-    \ not the workflow IRI.\n\n```python\nimport requests\n\nBASE_URL = \"https://fortisoar.example.com\"\nHEADERS = {\n \
-    \   \"Authorization\": f\"API-KEY {API_KEY}\",\n    \"Content-Type\": \"application/json\",\n}\n\nresp = requests.post(\n\
-    \    f\"{BASE_URL}/api/triggers/1/lookup_ip\",\n    headers=HEADERS,\n    json={\"value\": \"1.1.1.2\"},\n    verify=False,\n\
-    )\nresp.raise_for_status()\ntask_id = resp.json().get(\"task_id\") or resp.json()[\"data\"][\"task_id\"]\n```\n\nThe `task_id`\
-    \ field sometimes sits at the top level and sometimes inside `data` depending on the trigger flavor - check both. Synchronous\
-    \ triggers return 200; `deferred/` returns 202 with the same envelope.\n\n**2. Poll the workflow log by `task_id`.** The\
-    \ workflows endpoint indexes runs by `task_id` and returns the parent run when filtered with `parent_wf__isnull=True`\
-    \ (skips child sub-workflows). Order by `-modified` and take the first hit.\n\n```python\nurl = (\n    f\"{BASE_URL}/api/wf/api/workflows/\"\
-    \n    f\"?format=json&limit=1&offset=0&ordering=-modified\"\n    f\"&task_id={task_id}&parent_wf__isnull=True\"\n)\nlog\
-    \ = requests.get(url, headers=HEADERS, verify=False).json()[\"hydra:member\"][0]\nstatus = log[\"status\"]   # pending\
-    \ | running | finished | failed | terminated | skipped\nworkflow_id = log[\"@id\"].rstrip(\"/\").split(\"/\")[-1]\n```\n\
-    \nTerminal states are **`finished`**, **`failed`**, **`terminated`**, **`skipped`**. Anything else (`pending`, `running`,\
-    \ `awaiting`, ...) means keep polling. An empty `hydra:member` array right after trigger is normal - the log row is written\
-    \ on first executor pickup, not on trigger receipt.\n\n**3. Fetch full execution details.** Once terminal, hit the workflow\
-    \ record directly:\n\n```python\ndetails = requests.get(\n    f\"{BASE_URL}/api/wf/api/workflows/{workflow_id}/?format=json\"\
-    ,\n    headers=HEADERS, verify=False,\n).json()\n```\n\n- **`details[\"result\"]`** - the playbook's final output (the\
-    \ output of the last executed step). This is what 90% of callers want.\n- **`details[\"name\"]`** - playbook name.\n-\
-    \ **`details[\"status\"]`** - same terminal status as the log row.\n- **Per-step outputs** - the workflow record also\
-    \ carries a step-execution array (field name varies by FortiSOAR version); each entry has a step name + its output. Useful\
-    \ when you need an intermediate step's value rather than the last one. Inspect `details.keys()` on your appliance to confirm\
-    \ the field name before relying on it.\n\nIf the last step produced no output, `result` is `null` even on `status: finished`\
-    \ - that's expected, not an error.\n\n**Gotchas observed in practice:**\n\n- **Poll interval.** 5 s is a sensible floor;\
-    \ the executor batches log writes. Tighter polling just multiplies the request count without buying any latency.\n- **No\
-    \ `task_id` in response.** Usually means the trigger name is wrong (404 was masked by a redirect) or the playbook is inactive.\
-    \ The endpoint returns 200 with an empty body in some edge cases - always check before subscripting.\n- **`parent_wf__isnull=True`\
-    \ is required** for playbooks that fan out via `Execute Sub Playbook`. Without it the first match may be a child run that\
-    \ finishes before the parent.\n - **API-KEY vs Bearer.** An API key lasts for its validity period (1 to 365 days, set\
-    \ when it is created), so it suits long-running tracker scripts; a JWT typically dies after ~30 minutes mid-poll.\n\n\
-    ## Modules\n\nA **module** is FortiSOAR's unit of schema: a named table with a list of fields\n(\"attributes\"). Every\
-    \ record collection (`alerts`, `incidents`, custom modules) is\nbacked by a module definition. The schema lives in two\
-    \ stores, and a third endpoint\nmoves changes between them:\n\n- **Staging** (`/api/3/staging_model_metadatas`) - the\
-    \ editable draft. Creating a module\n  or changing a field edits staging only; nothing is live yet.\n- **Published** (`/api/3/model_metadatas`)\
-    \ - the committed schema records are read from.\n  `GET /api/3/model_metadatas` is the drift-resistant source of truth\
-    \ for what fields a\n  module actually has on this appliance.\n- **Publish** is a single appliance-wide `PUT /api/publish`\
-    \ that promotes *all* pending\n  staged changes to live. It is **not per-module** - one illegally-named draft anywhere\n\
-    \  can fail the whole migrate, so validate drafts before publishing.\n\n### Field types - two axes\n\nEvery field (attribute)\
-    \ carries a **storage type** (`type`) and a **display type**\n(`formType`). These are different axes and a correct field\
-    \ needs both:\n\n- `type` is the column kind the platform stores: `string`, `integer`, `float`,\n  `boolean`, `picklists`,\
-    \ `object`, `array`, or a target module type for a relationship.\n  There is **no `text` storage type** - text-like fields\
-    \ store `string`. Publishing a\n  field whose `type` is `text` fails validation (\"Attribute type 'text' does not\n  exist\"\
-    ).\n- `formType` is the editor widget: `text`, `textarea`, `richtext`, `html`, `email`,\n  `url`, `phone`, `password`,\
-    \ `filehash`, `ipv4`, `ipv6`, `domain`, `file`, `integer`,\n  `decimal`, `datetime`, `checkbox`, `json`, `object`, `picklist`,\n\
-    \  `multiselectpicklist`, `lookup`, `manyToMany`, `oneToMany`.\n\nA `lookup` is a one-directional many-to-one pointer\
-    \ (no reverse field is created). A\n`manyToMany` is a collection relationship; with the **default** inverse the platform\n\
-    auto-creates the reverse field, with a **custom** `inversedField` you create the mirror\nyourself. A `oneToMany` needs\
-    \ a matching `lookup` on its target - it will not publish\nwithout one.\n\n### Publish blast radius\n\nPublish is synchronous\
-    \ in effect but asynchronous in execution - the PUT only *starts*\nthe migrate; the backup + commit then runs server-side,\
-    \ during which some surfaces may\nbe briefly unavailable. The impact is version- and change-dependent:\n\n- On older builds\
-    \ every publish - even a no-op - runs the full backup + migrate + cache\n  rebuild, during which the entire `/api/3` surface\
-    \ returns 503 for the whole window\n  (~50-57s observed).\n- On newer builds the impact is greatly reduced. A minor field-only\
-    \ edit (toggling\n  *visibility* or setting *required-by-condition*) commits in ~3s with no observable\n  outage. A **structural**\
-    \ change (adding a field/module) takes longer (~30s) and\n  disrupts only the *record/query layer*: record-list endpoints\
-    \ return transient 404\n  for ~13s and `/api/query` returns 400/401 for ~2.5s while the migrate runs - **not** a\n  global\
-    \ 503. Module-metadata, view-resolve, and picklist surfaces stay available\n  throughout. That record-layer blip is instance-wide,\
+    \ returns 200 but does **not** advance the run; don't use it to resume.\n\n**Simpler linkage (live-verified on 8.0.0-6034):**\
+    \ the plain `GET /api/wf/api/manual-wf-input/` collection rows carry `workflow` as the **numeric run pk** (e.g. `144042`)\
+    \ - the same pk `wfinput_resume` wants - so a script that triggered the run itself can match its pending input by run\
+    \ pk alone, no `step_detail` correlation needed. `user` on the resume body is a `/api/3/people` IRI (resolve an admin\
+    \ from `GET /api/3/people`); omitting it 500s.\n\n### Triggers\n\nThree ways to fire a playbook from outside:\n\n- **`POST\
+    \ /api/triggers/1/{name}`** - hits a Custom API Endpoint trigger (named via the trigger config). Allows alternate auth\
+    \ (Basic / no-auth) for external webhooks, by design - keeps the core API token-locked while letting webhook senders use\
+    \ simpler auth.\n- ~~`POST /api/triggers/1/deferred/{name}`~~ - documented as the async variant (202) but **not routed\
+    \ on 8.0.0**: every name 404s before authentication. Use the sync route above.\n- **`POST /api/triggers/1/notrigger/{workflowId}`**\
+    \ - direct execution of a workflow by UUID, bypassing trigger conditions. Useful for testing.\n- **`POST /api/triggers/1/action/{routeUuid}`**\
+    \ - record-context execution via an action trigger's `route` uuid (from the playbook definition's trigger step). Answers\
+    \ `{\"task_ids\": [...]}` (plural), unlike `notrigger`'s scalar `task_id`.\n\nThe notifier service has additional fan-out\
+    \ via STOMP-over-WebSocket at `/websocket/` (server pushes workflow updates on `/topic/workflows/`). No REST surface;\
+    \ out of scope here.\n\n### Triggering a playbook with an API key and tracking the task\n\nWorked end-to-end flow against\
+    \ a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it reaches a terminal\
+    \ state, then fetch full execution details. The `deferred/` variant is not routed on 8.0.0; `notrigger/<workflowId>` and\
+    \ `action/<routeUuid>` fire with the same pattern (only the trigger URL changes).\n\n**1. Fire the trigger.** `POST /api/triggers/1/<endpoint-name>`\
+    \ with the body the playbook expects. Auth header is `Authorization: API-KEY <key>` (literal space, not a colon). The\
+    \ response always contains a `task_id` - that is the handle you track, not the workflow IRI.\n\n```python\nimport requests\n\
+    \nBASE_URL = \"https://fortisoar.example.com\"\nHEADERS = {\n    \"Authorization\": f\"API-KEY {API_KEY}\",\n    \"Content-Type\"\
+    : \"application/json\",\n}\n\nresp = requests.post(\n    f\"{BASE_URL}/api/triggers/1/lookup_ip\",\n    headers=HEADERS,\n\
+    \    json={\"value\": \"1.1.1.2\"},\n    verify=False,\n)\nresp.raise_for_status()\ntask_id = resp.json().get(\"task_id\"\
+    ) or resp.json()[\"data\"][\"task_id\"]\n```\n\nThe `task_id` field sometimes sits at the top level and sometimes inside\
+    \ `data` depending on the trigger flavor - check both. Synchronous triggers return 200; `deferred/` returns 202 with the\
+    \ same envelope.\n\n**2. Poll the workflow log by `task_id`.** The workflows endpoint indexes runs by `task_id` and returns\
+    \ the parent run when filtered with `parent_wf__isnull=True` (skips child sub-workflows). Order by `-modified` and take\
+    \ the first hit.\n\n```python\nurl = (\n    f\"{BASE_URL}/api/wf/api/workflows/\"\n    f\"?format=json&limit=1&offset=0&ordering=-modified\"\
+    \n    f\"&task_id={task_id}&parent_wf__isnull=True\"\n)\nlog = requests.get(url, headers=HEADERS, verify=False).json()[\"\
+    hydra:member\"][0]\nstatus = log[\"status\"]   # pending | running | finished | failed | terminated | skipped\nworkflow_id\
+    \ = log[\"@id\"].rstrip(\"/\").split(\"/\")[-1]\n```\n\nTerminal states are **`finished`**, **`failed`**, **`terminated`**,\
+    \ **`skipped`**. Anything else (`pending`, `running`, `awaiting`, ...) means keep polling. An empty `hydra:member` array\
+    \ right after trigger is normal - the log row is written on first executor pickup, not on trigger receipt.\n\n**3. Fetch\
+    \ full execution details.** Once terminal, hit the workflow record directly:\n\n```python\ndetails = requests.get(\n \
+    \   f\"{BASE_URL}/api/wf/api/workflows/{workflow_id}/?format=json\",\n    headers=HEADERS, verify=False,\n).json()\n```\n\
+    \n- **`details[\"result\"]`** - the playbook's final output (the output of the last executed step). This is what 90% of\
+    \ callers want.\n- **`details[\"name\"]`** - playbook name.\n- **`details[\"status\"]`** - same terminal status as the\
+    \ log row.\n- **Per-step outputs** - the workflow record also carries a step-execution array (field name varies by FortiSOAR\
+    \ version); each entry has a step name + its output. Useful when you need an intermediate step's value rather than the\
+    \ last one. Inspect `details.keys()` on your appliance to confirm the field name before relying on it.\n\nIf the last\
+    \ step produced no output, `result` is `null` even on `status: finished` - that's expected, not an error.\n\n**Gotchas\
+    \ observed in practice:**\n\n- **Poll interval.** 5 s is a sensible floor; the executor batches log writes. Tighter polling\
+    \ just multiplies the request count without buying any latency.\n- **No `task_id` in response.** Usually means the trigger\
+    \ name is wrong (404 was masked by a redirect) or the playbook is inactive. The endpoint returns 200 with an empty body\
+    \ in some edge cases - always check before subscripting.\n- **`parent_wf__isnull=True` is required** for playbooks that\
+    \ fan out via `Execute Sub Playbook`. Without it the first match may be a child run that finishes before the parent.\n\
+    \ - **API-KEY vs Bearer.** An API key lasts for its validity period (1 to 365 days, set when it is created), so it suits\
+    \ long-running tracker scripts; a JWT typically dies after ~30 minutes mid-poll.\n\n## Modules\n\nA **module** is FortiSOAR's\
+    \ unit of schema: a named table with a list of fields\n(\"attributes\"). Every record collection (`alerts`, `incidents`,\
+    \ custom modules) is\nbacked by a module definition. The schema lives in two stores, and a third endpoint\nmoves changes\
+    \ between them:\n\n- **Staging** (`/api/3/staging_model_metadatas`) - the editable draft. Creating a module\n  or changing\
+    \ a field edits staging only; nothing is live yet.\n- **Published** (`/api/3/model_metadatas`) - the committed schema\
+    \ records are read from.\n  `GET /api/3/model_metadatas` is the drift-resistant source of truth for what fields a\n  module\
+    \ actually has on this appliance.\n- **Publish** is a single appliance-wide `PUT /api/publish` that promotes *all* pending\n\
+    \  staged changes to live. It is **not per-module** - one illegally-named draft anywhere\n  can fail the whole migrate,\
+    \ so validate drafts before publishing.\n\n### Field types - two axes\n\nEvery field (attribute) carries a **storage type**\
+    \ (`type`) and a **display type**\n(`formType`). These are different axes and a correct field needs both:\n\n- `type`\
+    \ is the column kind the platform stores: `string`, `integer`, `float`,\n  `boolean`, `picklists`, `object`, `array`,\
+    \ or a target module type for a relationship.\n  There is **no `text` storage type** - text-like fields store `string`.\
+    \ Publishing a\n  field whose `type` is `text` fails validation (\"Attribute type 'text' does not\n  exist\").\n- `formType`\
+    \ is the editor widget: `text`, `textarea`, `richtext`, `html`, `email`,\n  `url`, `phone`, `password`, `filehash`, `ipv4`,\
+    \ `ipv6`, `domain`, `file`, `integer`,\n  `decimal`, `datetime`, `checkbox`, `json`, `object`, `picklist`,\n  `multiselectpicklist`,\
+    \ `lookup`, `manyToMany`, `oneToMany`.\n\nA `lookup` is a one-directional many-to-one pointer (no reverse field is created).\
+    \ A\n`manyToMany` is a collection relationship; with the **default** inverse the platform\nauto-creates the reverse field,\
+    \ with a **custom** `inversedField` you create the mirror\nyourself. A `oneToMany` needs a matching `lookup` on its target\
+    \ - it will not publish\nwithout one.\n\n### Publish blast radius\n\nPublish is synchronous in effect but asynchronous\
+    \ in execution - the PUT only *starts*\nthe migrate; the backup + commit then runs server-side, during which some surfaces\
+    \ may\nbe briefly unavailable. The impact is version- and change-dependent:\n\n- On older builds every publish - even\
+    \ a no-op - runs the full backup + migrate + cache\n  rebuild, during which the entire `/api/3` surface returns 503 for\
+    \ the whole window\n  (~50-57s observed).\n- On newer builds the impact is greatly reduced. A minor field-only edit (toggling\n\
+    \  *visibility* or setting *required-by-condition*) commits in ~3s with no observable\n  outage. A **structural** change\
+    \ (adding a field/module) takes longer (~30s) and\n  disrupts only the *record/query layer*: record-list endpoints return\
+    \ transient 404\n  for ~13s and `/api/query` returns 400/401 for ~2.5s while the migrate runs - **not** a\n  global 503.\
+    \ Module-metadata, view-resolve, and picklist surfaces stay available\n  throughout. That record-layer blip is instance-wide,\
     \ not scoped to the changed module.\n\n`GET /api/publish/error` reports the last publish's status\n(`{\"status\": \"Success\"\
     |\"Failed\"|..., \"last_publish_time\": <epoch>}`) - it returns HTTP\n400 (rather than 200) when a prior error is on record,\
     \ with the same JSON body, so poll\nit status-agnostically until `last_publish_time` advances.\n\n## Imports & exports\n\
@@ -2010,10 +2018,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Alert'
             example:
-              name: live-<run>-alert
-              severity: /api/3/picklists/<uuid>
-              source: live-test
-              status: /api/3/picklists/<uuid>
+              name: live-<run>-action
+              source: live_test
       responses:
         '201':
           description: Created.
@@ -11522,61 +11528,6 @@ paths:
       - name: JWT
         position: before
         color: '#1f8a4c'
-  /api/wf/api/workflows/{pk}/retry/:
-    parameters:
-    - name: pk
-      in: path
-      required: true
-      schema:
-        type: string
-    post:
-      tags:
-      - Playbook runs
-      summary: Workflow retry
-      description: '**See:** [Workflows & triggers](#description/workflows-triggers)
-
-
-        Retry a failed workflow from the failed step.'
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-            example: {}
-      responses:
-        '200':
-          description: Action result.
-          content:
-            application/json:
-              example:
-                status: retrying
-                workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
-                fromFailedStep: step-http-3
-      x-codeSamples:
-      - lang: python
-        label: pyfsr
-        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.retry(\"3\")\nprint(result.get(\"\
-          status\"))"
-      x-auth: &id109
-        apikey: 'yes'
-        jwt: 'yes'
-      x-auth-by-version:
-        8.0.0:
-          apikey: 'yes'
-          jwt: 'yes'
-        8.0.1: *id109
-      security:
-      - apiKeyAuth: []
-      - bearerJwt: []
-      x-badges:
-      - name: API key
-        position: before
-        color: '#1f8a4c'
-      - name: JWT
-        position: before
-        color: '#1f8a4c'
   /api/wf/api/workflows/{pk}/approval/:
     parameters:
     - name: pk
@@ -11615,14 +11566,14 @@ paths:
               example:
                 approvals: []
       x-live-captured: true
-      x-auth: &id110
+      x-auth: &id109
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id110
+        8.0.1: *id109
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -11633,6 +11584,31 @@ paths:
       - name: JWT
         position: before
         color: '#1f8a4c'
+  /api/wf/api/workflows/{pk}/retry/:
+    parameters:
+    - name: pk
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Playbook runs
+      summary: Retry a failed workflow from the failed step
+      description: '**See:** [Workflows & triggers](#description/workflows-triggers)
+
+
+        Re-queues a failed run from the step it failed on. **GET, not POST** on 8.0.0: the API guide''s POST answers 405 `Method
+        "POST" not allowed.` The response carries a fresh `task_id` for the retried run.'
+      responses:
+        '200':
+          description: Retry queued.
+          content:
+            application/json:
+              example:
+                result: workflow retry queued
+                task_id: <uuid>
+      x-live-captured: true
   /api/wf/api/jinja-editor/:
     post:
       tags:
@@ -11677,14 +11653,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\noutput = client.playbooks.render_jinja(\"Hello {{ name\
           \ }}\", {\"name\": \"World\"})\nprint(output)"
       x-live-captured: true
-      x-auth: &id111
+      x-auth: &id110
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id111
+        8.0.1: *id110
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -11759,14 +11735,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npending = client.manual_input.list(assigned_to=\"all\"\
           )\nprint(len(pending))\nprint(pending[0].title)"
       x-live-captured: true
-      x-auth: &id112
+      x-auth: &id111
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id112
+        8.0.1: *id111
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -11814,14 +11790,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nmi = client.manual_input.retrieve(1)\nprint(mi.title)\n\
           print(mi.input[\"schema\"][\"title\"])\nprint(mi.workflow)"
       x-live-captured: true
-      x-auth: &id113
+      x-auth: &id112
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id113
+        8.0.1: *id112
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -11873,12 +11849,11 @@ paths:
                   type: integer
                   description: list_wfinput[].id.
             example:
-              input:
-                ip_address: 1.1.1.1
-                reason: approved
-              step_iri: /api/3/workflow_steps/11bbde6b-7afd-5460-97fc-cf7eb96844dc
-              step_id: 5704059
-              manual_input_id: 411
+              input: {}
+              manual_input_id: 637
+              step_id: 1289474
+              step_iri: /api/3/workflow_steps/<uuid>
+              user: /api/3/people/<uuid>
       responses:
         '200':
           description: Resume accepted; run advances.
@@ -11897,14 +11872,15 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.manual_input.resume(\n    workflow_id=1,\n\
           \    step_iri=\"/api/wf/api/workflows/1/steps/100\",\n    step_id=100,\n    manual_input_id=1,\n    user=\"/api/3/people/00000000-0000-0000-0000-000000000001\"\
           ,\n    input={\"test_var\": \"test_value\"}\n)\nprint(result[\"message\"])"
-      x-auth: &id114
+      x-live-captured: true
+      x-auth: &id113
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id114
+        8.0.1: *id113
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -11997,14 +11973,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.playbooks.update_manual_input(\"123\", status=\"\
           done\")"
       x-live-captured: true
-      x-auth: &id115
+      x-auth: &id114
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id115
+        8.0.1: *id114
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12035,14 +12011,15 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.manual_input.delete(2)"
-      x-auth: &id116
+      x-live-captured: true
+      x-auth: &id115
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id116
+        8.0.1: *id115
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12137,14 +12114,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.list()"
       x-live-captured: true
-      x-auth: &id117
+      x-auth: &id116
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id117
+        8.0.1: *id116
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12282,14 +12259,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\niri = client.playbooks.resolve_iri(\"Nightly Recon\"\
           )\ntask = client.schedules.create(\"nightly-recon\", iri, \"7 2 * * *\")"
       x-live-captured: true
-      x-auth: &id118
+      x-auth: &id117
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id118
+        8.0.1: *id117
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12467,14 +12444,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.set_enabled(\"nightly-recon\", False)"
       x-live-captured: true
-      x-auth: &id119
+      x-auth: &id118
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id119
+        8.0.1: *id118
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12506,14 +12483,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.delete(\"nightly-recon\")"
       x-live-captured: true
-      x-auth: &id120
+      x-auth: &id119
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id120
+        8.0.1: *id119
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12553,7 +12530,7 @@ paths:
                   type: string
                   description: Fernet token from a fresh GET /api/wf/api/scheduled/ or from the POST that created the task.
             example:
-              id: gAAAAABq2N-NXNctRaxpvqSUWuE020cd-3A3XQ9q-C93RiQkti08Pc9WJy_TtdXR1-Fatm5heOHfAg8yrHW0WulILhcKkPGKfA==
+              id: gAAAAABq2O2eRXDLvtKQZkJsVNXt39I1Yc8TUJJ_F3Y3HXKQMXnwqpu91PDqYlIe-nKb_1JB5WQaYr5GsOL6KTVXO5n8ae0ewg==
       responses:
         '200':
           description: Trigger accepted.
@@ -12568,14 +12545,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.schedules.trigger_now(name=\"nightly-recon\"\
           ))"
       x-live-captured: true
-      x-auth: &id121
+      x-auth: &id120
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id121
+        8.0.1: *id120
       x-badges:
       - name: API key
         position: before
@@ -12610,10 +12587,7 @@ paths:
           application/json:
             schema:
               type: object
-            example:
-              alert:
-                name: ext-webhook-001
-                source: Webhook
+            example: {}
       responses:
         '200':
           description: Trigger accepted.
@@ -12632,14 +12606,15 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.playbooks.trigger_by_name(\"my-hook\").task_id)\n\
           print(client.playbooks.trigger_by_name(\"my-hook\", deferred=True).task_id)"
-      x-auth: &id122
+      x-live-captured: true
+      x-auth: &id121
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id122
+        8.0.1: *id121
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12665,7 +12640,9 @@ paths:
 
 
         Documented in the API guide as the same trigger run on a worker (202). On 8.0.0 it 404s before authentication even
-        for a real endpoint name, while `POST /api/triggers/1/{name}` answers the same name - use that route.'
+        for a real endpoint name (`No active workflow matching the given route.`), while `POST /api/triggers/1/{name}` answers
+        the same name - use that route.'
+      deprecated: true
       requestBody:
         required: false
         content:
@@ -12676,31 +12653,22 @@ paths:
               alert:
                 name: ext-webhook-002
       responses:
-        '202':
-          description: Accepted.
-          x-pyfsr-response-model: TriggerResponse
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TriggerResponse'
-              example:
-                status: accepted
-                executionId: exec-9d2f17
-                deferred: true
+        '404':
+          description: Not routed on 8.0.0 - use `POST /api/triggers/1/{name}`.
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.playbooks.trigger_by_name(\"my-hook\").task_id)\n\
           print(client.playbooks.trigger_by_name(\"my-hook\", deferred=True).task_id)"
-      x-auth: &id123
+      x-auth: &id122
         apikey: missing
         jwt: missing
       x-auth-by-version:
         8.0.0:
           apikey: missing
           jwt: missing
-        8.0.1: *id123
+        8.0.1: *id122
       x-badges:
       - name: Not found
         position: before
@@ -12731,9 +12699,7 @@ paths:
             schema:
               type: object
               description: Arbitrary input payload exposed to the workflow.
-            example:
-              data:
-                alert: /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+            example: {}
       responses:
         '200':
           description: Run result.
@@ -12748,14 +12714,15 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.playbooks.trigger(\"nightly-recon\")"
-      x-auth: &id124
+      x-live-captured: true
+      x-auth: &id123
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id124
+        8.0.1: *id123
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12805,10 +12772,11 @@ paths:
                   type: string
                   description: The playbook uuid. Some versions require it.
             example:
-              singleRecordExecution: true
               __resource: alerts
+              __uuid: <uuid>
               records:
-              - /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+              - /api/3/alerts/<uuid>
+              singleRecordExecution: true
       responses:
         '200':
           description: Run accepted.
@@ -12816,7 +12784,7 @@ paths:
             application/json:
               example:
                 task_ids:
-                - c0afba58-9dbe-44dd-a6e6-7227e33990dd
+                - <uuid>
               schema:
                 $ref: '#/components/schemas/TriggerResponse'
           x-pyfsr-response-model: TriggerResponse
@@ -12826,14 +12794,15 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nroute = \"2b6a1e8e-6f0a-4c6b-9e29-6c2f6a1d8b30\"\nprint(client.playbooks.trigger_action(\n\
           \    route, module=\"alerts\", record_uuid=\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\n).task_ids)"
-      x-auth: &id125
+      x-live-captured: true
+      x-auth: &id124
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id125
+        8.0.1: *id124
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -12951,14 +12920,14 @@ paths:
           \    resp = client.connectors.install_from_file(str(tgz))\nresult = (resp[\"id\"], resp[\"name\"], resp[\"version\"\
           ])\nprint(result)"
       x-live-captured: true
-      x-auth: &id126
+      x-auth: &id125
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id126
+        8.0.1: *id125
       x-badges:
       - name: API key
         position: before
@@ -12973,7 +12942,7 @@ paths:
       summary: List installed connectors
       description: Response envelope is a custom shape (`status`, `totalItems`, `data[]`), **not** a Hydra collection. Each
         `data[]` entry carries an integer `id`, `name`, `version`, `status` (e.g. `Completed`).
-      parameters: &id128
+      parameters: &id127
       - name: page_size
         in: query
         schema:
@@ -13050,14 +13019,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint([c.name for c in client.connectors.list_configured()[:3]])"
       x-live-captured: true
-      x-auth: &id127
+      x-auth: &id126
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id127
+        8.0.1: *id126
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13076,7 +13045,7 @@ paths:
       description: Returns the same envelope shape as `/api/integration/connectors/` (`data[]`, not Hydra). Each entry has
         `id` (int), `config_id` (uuid), `connector` (int connector id), `agent` (self-agent hash when remote), `config` (field
         map).
-      parameters: *id128
+      parameters: *id127
       responses:
         '200':
           description: Collection envelope.
@@ -13119,14 +13088,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nconfigs = client.connectors.list_configurations()\nprint([(c.name,\
           \ c.connector) for c in configs])"
       x-live-captured: true
-      x-auth: &id129
+      x-auth: &id128
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id129
+        8.0.1: *id128
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13214,14 +13183,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.create_configuration(\"mitre-attack\"\
           , {\"api_key\": \"...\"}, name=\"prod\")"
       x-live-captured: true
-      x-auth: &id130
+      x-auth: &id129
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id130
+        8.0.1: *id129
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13407,14 +13376,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\ndetail = client.connectors.connector_detail(\"smtp\"\
           )\nprint((detail[\"name\"], detail[\"version\"]))\nprint([op[\"operation\"] for op in detail[\"operations\"][:2]])"
       x-live-captured: true
-      x-auth: &id131
+      x-auth: &id130
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id131
+        8.0.1: *id130
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13439,14 +13408,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.uninstall(\"virustotal\")"
       x-live-captured: true
-      x-auth: &id132
+      x-auth: &id131
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id132
+        8.0.1: *id131
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13548,14 +13517,14 @@ paths:
           , \"get_known_exploited_vulnerability_cves\"\n)\nprint(result.ok)\nprint(result.data[\"title\"])\nprint(result.data[\"\
           vulnerabilities\"][0][\"cveID\"])"
       x-live-captured: true
-      x-auth: &id133
+      x-auth: &id132
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id133
+        8.0.1: *id132
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13616,14 +13585,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.connectors.healthcheck(\"mitre-attack\"\
           ).status)"
       x-live-captured: true
-      x-auth: &id134
+      x-auth: &id133
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id134
+        8.0.1: *id133
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13679,14 +13648,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.set_default_configuration(\"mitre-attack\"\
           , \"Demo\")"
       x-live-captured: true
-      x-auth: &id135
+      x-auth: &id134
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id135
+        8.0.1: *id134
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13767,14 +13736,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.update_configuration(\"mitre-attack\"\
           , \"c21\", {\"api_key\": \"...\"}, name=\"prod\")"
       x-live-captured: true
-      x-auth: &id136
+      x-auth: &id135
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id136
+        8.0.1: *id135
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -13801,14 +13770,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.delete_configuration(\"c21\")"
       x-live-captured: true
-      x-auth: &id137
+      x-auth: &id136
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id137
+        8.0.1: *id136
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -14223,14 +14192,14 @@ paths:
                 vendor_version: null
                 version: 1.0.1_dev
       x-live-captured: true
-      x-auth: &id138
+      x-auth: &id137
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id138
+        8.0.1: *id137
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -14280,14 +14249,14 @@ paths:
                   \  \"description\": \"IPStack provides geolocation facility for IP Address or Domain.\",\n    \"publisher\"\
                   : \"\",\n    \"icon_small_name... <103 more characters>"
       x-live-captured: true
-      x-auth: &id139
+      x-auth: &id138
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id139
+        8.0.1: *id138
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -14384,14 +14353,14 @@ paths:
                     setting: true
                     type: folder
       x-live-captured: true
-      x-auth: &id140
+      x-auth: &id139
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id140
+        8.0.1: *id139
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -14500,14 +14469,14 @@ paths:
                 version: 1.0.1
                 workspace_connector: true
       x-live-captured: true
-      x-auth: &id141
+      x-auth: &id140
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id141
+        8.0.1: *id140
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -14563,24 +14532,41 @@ paths:
                   type: string
                   description: Agent hash identifier. Omit to install on the appliance's self-agent.
             example:
-              name: example
-              version: example
-              agent_id: example
+              agent:
+              - <self-agent>
+              category:
+              - Utilities
+              description: ''
+              label: cyops_utilities
+              name: cyops_utilities
+              publisher: Fortinet
+              rpm_full_name: ''
+              version: 3.7.2
       responses:
         '200':
           description: Install accepted.
-      x-auth: &id142
+          content:
+            application/json:
+              example:
+                message: Installing connector cyops_utilities version 3.7.2
+                remote_status:
+                  status: awaiting
+      x-live-captured: true
+      x-auth: &id141
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
-          apikey: untested
-          jwt: untested
-        8.0.1: *id142
+          apikey: 'yes'
+          jwt: 'yes'
+        8.0.1: *id141
       x-badges:
-      - name: Not tested
+      - name: API key
         position: before
-        color: '#b7791f'
+        color: '#1f8a4c'
+      - name: JWT
+        position: before
+        color: '#1f8a4c'
     put:
       tags:
       - Connectors
@@ -14610,14 +14596,14 @@ paths:
       responses:
         '200':
           description: Upgrade accepted.
-      x-auth: &id143
+      x-auth: &id142
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
           jwt: untested
-        8.0.1: *id143
+        8.0.1: *id142
       x-badges:
       - name: Not tested
         position: before
@@ -14651,14 +14637,14 @@ paths:
       responses:
         '200':
           description: Uninstall accepted.
-      x-auth: &id144
+      x-auth: &id143
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
           jwt: untested
-        8.0.1: *id144
+        8.0.1: *id143
       x-badges:
       - name: Not tested
         position: before
@@ -14717,14 +14703,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrows = client.agents.connector_install_status(\"cyops_utilities\"\
           , \"3.7.1\")\nprint(rows[0].status)"
       x-live-captured: true
-      x-auth: &id145
+      x-auth: &id144
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id145
+        8.0.1: *id144
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -14754,20 +14740,36 @@ paths:
       responses:
         '200':
           description: Heartbeat reply.
+          content:
+            application/json:
+              example:
+                action: health-check
+                agent: <self-agent>
+                configuration: null
+                connector: null
+                created: '2024-01-01T00:00:00Z'
+                id: 86
+                log_records: null
+                modified: '2024-01-01T00:00:00Z'
+                remote_status:
+                  status: in-progress
+                request_payload: {}
+                result: {}
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.heartbeat(\"edge-1\")[\"status\"\
           ])"
-      x-auth: &id146
+      x-live-captured: true
+      x-auth: &id145
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id146
+        8.0.1: *id145
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15005,14 +15007,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.definition(\"mitre-attack\", version=\"\
           1.0.0\")"
       x-live-captured: true
-      x-auth: &id147
+      x-auth: &id146
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id147
+        8.0.1: *id146
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15064,14 +15066,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.dependencies_status(\"mitre-attack\"\
           , version=\"1.0.0\")"
       x-live-captured: true
-      x-auth: &id148
+      x-auth: &id147
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id148
+        8.0.1: *id147
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15109,14 +15111,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.install_dependencies(\"mitre-attack\"\
           , version=\"1.0.0\")"
       x-live-captured: true
-      x-auth: &id149
+      x-auth: &id148
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id149
+        8.0.1: *id148
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15182,14 +15184,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.output_schema(\"mitre-attack\", \"\
           get_indicators\", version=\"1.0.0\")"
       x-live-captured: true
-      x-auth: &id150
+      x-auth: &id149
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id150
+        8.0.1: *id149
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15354,14 +15356,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.ingestion_sources()"
       x-live-captured: true
-      x-auth: &id151
+      x-auth: &id150
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id151
+        8.0.1: *id150
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15436,14 +15438,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.ingestion_metadata(\"config-123\")"
       x-live-captured: true
-      x-auth: &id152
+      x-auth: &id151
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id152
+        8.0.1: *id151
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15512,14 +15514,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.save_ingestion_metadata(\"config-123\"\
           , connector=\"mitre-attack\", version=\"1.0.0\", name=\"prod\")"
       x-live-captured: true
-      x-auth: &id153
+      x-auth: &id152
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id153
+        8.0.1: *id152
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -15851,14 +15853,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nagents = client.agents.list()\nprint(agents[0].agentId)"
       x-live-captured: true
-      x-auth: &id154
+      x-auth: &id153
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id154
+        8.0.1: *id153
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16113,14 +16115,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrouter = \"/api/3/routers/3a2b1c0d-9e8f-4a7b-6c5d-4e3f2a1b0c9d\"\
           \nprint(client.agents.create(\"edge-1\", router=router).agentId)"
       x-live-captured: true
-      x-auth: &id155
+      x-auth: &id154
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id155
+        8.0.1: *id154
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16335,14 +16337,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.get(\"6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f\"\
           ).name)"
       x-live-captured: true
-      x-auth: &id156
+      x-auth: &id155
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id156
+        8.0.1: *id155
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16370,14 +16372,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.agents.delete(\"6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f\"\
           )"
       x-live-captured: true
-      x-auth: &id157
+      x-auth: &id156
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id157
+        8.0.1: *id156
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16505,14 +16507,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrouters = client.routers.list()\nprint(len(routers))"
       x-live-captured: true
-      x-auth: &id158
+      x-auth: &id157
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id158
+        8.0.1: *id157
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16596,14 +16598,15 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nblob = client.agents.installer(\"edge-1\")\nprint(isinstance(blob,\
           \ bytes))"
-      x-auth: &id159
+      x-live-captured: true
+      x-auth: &id158
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id159
+        8.0.1: *id158
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16632,7 +16635,7 @@ paths:
         row with an **empty** `attributes` list (~1.6 KB); adding `$relationships=true` populates all fields (~227 KB for
         `alerts`). The result is identical to the by-uuid GET apart from an added `@context`, so there is no reason to list
         every module and then fetch by uuid.'
-      parameters: &id162
+      parameters: &id161
       - *id015
       - *id016
       - *id017
@@ -16799,14 +16802,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.system_queries.model_iri(\"threat_intel_feeds\"\
           ))"
       x-live-captured: true
-      x-auth: &id160
+      x-auth: &id159
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id160
+        8.0.1: *id159
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16885,14 +16888,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nadmin = client.modules_admin\nprint(admin.is_published(\"\
           alerts\"))\nprint(admin.pending_changes())"
       x-live-captured: true
-      x-auth: &id161
+      x-auth: &id160
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id161
+        8.0.1: *id160
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -16921,7 +16924,7 @@ paths:
         row with an **empty** `attributes` list (~1.6 KB); adding `$relationships=true` populates all fields (~227 KB for
         `alerts`). The result is identical to the by-uuid GET apart from an added `@context`, so there is no reason to list
         every module and then fetch by uuid.'
-      parameters: *id162
+      parameters: *id161
       responses:
         '200':
           description: Hydra collection of staging ModelMetadata records.
@@ -16979,14 +16982,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.list_modules()[:3])\nprint(client.describe_module(\"\
           incidents\")[\"fields\"][0])"
       x-live-captured: true
-      x-auth: &id163
+      x-auth: &id162
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id163
+        8.0.1: *id162
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17106,10 +17109,10 @@ paths:
               ownable: true
               peerReplicable: false
               queueable: false
-              tableName: live849de15e_module
+              tableName: live4bedaf08_module
               taggable: false
               trackable: true
-              type: live849de15emodule
+              type: live4bedaf08module
               uniqueConstraint: []
               userOwnable: true
       responses:
@@ -17196,14 +17199,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.create_module(\"my_module\")"
       x-live-captured: true
-      x-auth: &id164
+      x-auth: &id163
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id164
+        8.0.1: *id163
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17284,14 +17287,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.get_staging(\"alerts\")"
       x-live-captured: true
-      x-auth: &id165
+      x-auth: &id164
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id165
+        8.0.1: *id164
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17425,14 +17428,14 @@ paths:
                 uuid: <uuid>
                 writable: true
       x-live-captured: true
-      x-auth: &id166
+      x-auth: &id165
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id166
+        8.0.1: *id165
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17464,14 +17467,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.discard_staging_draft(\"alerts\"\
           )"
       x-live-captured: true
-      x-auth: &id167
+      x-auth: &id166
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id167
+        8.0.1: *id166
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17529,14 +17532,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/api/publish\")"
-      x-auth: &id168
+      x-auth: &id167
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
           jwt: untested
-        8.0.1: *id168
+        8.0.1: *id167
       x-badges:
       - name: Not tested
         position: before
@@ -17573,14 +17576,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/api/publish/revert\")"
       x-live-captured: true
-      x-auth: &id169
+      x-auth: &id168
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id169
+        8.0.1: *id168
       x-badges:
       - name: API key
         position: before
@@ -17626,14 +17629,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/publish/error\", raise_on_status=False)"
       x-live-captured: true
-      x-auth: &id170
+      x-auth: &id169
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id170
+        8.0.1: *id169
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17704,14 +17707,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-live-captured: true
-      x-auth: &id171
+      x-auth: &id170
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id171
+        8.0.1: *id170
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17759,14 +17762,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )\nprint((alert.name, type(alert).__name__))"
       x-live-captured: true
-      x-auth: &id172
+      x-auth: &id171
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id172
+        8.0.1: *id171
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17793,14 +17796,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )"
       x-live-captured: true
-      x-auth: &id173
+      x-auth: &id172
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id173
+        8.0.1: *id172
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17878,14 +17881,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\npage = client.records(\"alerts\").list(limit=10)\nprint((page.total,\
           \ len(page.members), page.members[0].name))"
       x-live-captured: true
-      x-auth: &id174
+      x-auth: &id173
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id174
+        8.0.1: *id173
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -17921,8 +17924,8 @@ paths:
                   default: false
                   description: Platform-managed flag. Custom lists are `false`.
             example:
-              name: live849de15eList
-              system: false
+              description: live test
+              name: live-picklist-name
       responses:
         '201':
           description: The created picklist taxonomy record.
@@ -17942,14 +17945,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-live-captured: true
-      x-auth: &id175
+      x-auth: &id174
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id175
+        8.0.1: *id174
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18022,14 +18025,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").get(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )\nprint((alert.name, type(alert).__name__))"
       x-live-captured: true
-      x-auth: &id176
+      x-auth: &id175
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id176
+        8.0.1: *id175
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18057,14 +18060,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )"
       x-live-captured: true
-      x-auth: &id177
+      x-auth: &id176
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id177
+        8.0.1: *id176
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18368,14 +18371,14 @@ paths:
                     '@type': '@id'
                   warroomsCount: Alert/warroomsCount
       x-live-captured: true
-      x-auth: &id178
+      x-auth: &id177
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id178
+        8.0.1: *id177
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18514,14 +18517,14 @@ paths:
                   rdfs:label: Actor
                 - '... <1 more items truncated>'
       x-live-captured: true
-      x-auth: &id179
+      x-auth: &id178
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id179
+        8.0.1: *id178
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18579,14 +18582,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.publish(\"widget-uuid\")"
       x-live-captured: true
-      x-auth: &id180
+      x-auth: &id179
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id180
+        8.0.1: *id179
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18674,14 +18677,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
-      x-auth: &id181
+      x-auth: &id180
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id181
+        8.0.1: *id180
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18734,14 +18737,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.export(\"widget-uuid\", \"/tmp/widget.zip\"\
           )"
       x-live-captured: true
-      x-auth: &id182
+      x-auth: &id181
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id182
+        8.0.1: *id181
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18785,14 +18788,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.remove(\"widget-uuid\")"
-      x-auth: &id183
+      x-auth: &id182
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
           jwt: untested
-        8.0.1: *id183
+        8.0.1: *id182
       x-badges:
       - name: Not tested
         position: before
@@ -18850,14 +18853,14 @@ paths:
           \ as tmp:\n    p = Path(tmp) / \"report.csv\"\n    _ = p.write_text(\"a,b\\n1,2\\n\")\n    record = client.files.upload(str(p))\n\
           print(record.filename)\nprint(record[\"@id\"])"
       x-live-captured: true
-      x-auth: &id184
+      x-auth: &id183
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id184
+        8.0.1: *id183
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18917,14 +18920,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nroles = client.roles.list()\nprint(len(roles))\nprint(roles[0].name)\n\
           print(roles[1].name)"
       x-live-captured: true
-      x-auth: &id185
+      x-auth: &id184
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id185
+        8.0.1: *id184
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -18971,14 +18974,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-live-captured: true
-      x-auth: &id186
+      x-auth: &id185
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id186
+        8.0.1: *id185
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -19034,14 +19037,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nteams = client.teams.list()\nprint(len(teams))\nprint(teams[0].name)"
       x-live-captured: true
-      x-auth: &id187
+      x-auth: &id186
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id187
+        8.0.1: *id186
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -19091,14 +19094,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-live-captured: true
-      x-auth: &id188
+      x-auth: &id187
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id188
+        8.0.1: *id187
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -19280,14 +19283,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkeys = client.api_keys.list()\nprint(len(keys))\nprint(keys[0][\"\
           name\"])"
       x-live-captured: true
-      x-auth: &id189
+      x-auth: &id188
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id189
+        8.0.1: *id188
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -19420,14 +19423,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkey = client.api_keys.create(\n    name=\"test-key\"\
           ,\n    user_uuid=\"550e8400-e29b-41d4-a716-446655440007\"\n)\nprint(key[\"name\"])"
       x-live-captured: true
-      x-auth: &id190
+      x-auth: &id189
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id190
+        8.0.1: *id189
       security:
       - bearerJwt: []
       x-badges:
@@ -19536,14 +19539,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkey = client.api_keys.get(\"660e8400-e29b-41d4-a716-446655440008\"\
           )\nprint(key[\"name\"])\nprint(key[\"userId\"])"
       x-live-captured: true
-      x-auth: &id191
+      x-auth: &id190
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id191
+        8.0.1: *id190
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -19671,14 +19674,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nkey = client.api_keys.update(\"660e8400-e29b-41d4-a716-446655440008\"\
           , name=\"updated-key\")\nprint(key[\"name\"])"
       x-live-captured: true
-      x-auth: &id192
+      x-auth: &id191
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id192
+        8.0.1: *id191
       security:
       - bearerJwt: []
       x-badges:
@@ -19741,14 +19744,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nu = client.api_users.get(\"550e8400-e29b-41d4-a716-446655440007\"\
           )\nprint(u[\"uuid\"])\nprint(u[\"user_type\"])"
       x-live-captured: true
-      x-auth: &id193
+      x-auth: &id192
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id193
+        8.0.1: *id192
       security:
       - bearerJwt: []
       x-badges:
@@ -19818,14 +19821,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nu = client.api_users.create(api_key_validity=365)\nprint(u[\"\
           uuid\"])\nprint(u[\"user_type\"])\nprint(u[\"status\"])"
       x-live-captured: true
-      x-auth: &id194
+      x-auth: &id193
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id194
+        8.0.1: *id193
       security:
       - bearerJwt: []
       x-badges:
@@ -19906,14 +19909,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nu = client.api_users.lifecycle(\"550e8400-e29b-41d4-a716-446655440007\"\
           , \"REVOKE\")\nprint(u[\"uuid\"])"
       x-live-captured: true
-      x-auth: &id195
+      x-auth: &id194
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id195
+        8.0.1: *id194
       security:
       - bearerJwt: []
       x-badges:
@@ -19984,14 +19987,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nusers = client.api_users.query([\"550e8400-e29b-41d4-a716-446655440007\"\
           ])\nprint(len(users))\nprint(users[0][\"uuid\"])"
       x-live-captured: true
-      x-auth: &id196
+      x-auth: &id195
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id196
+        8.0.1: *id195
       security:
       - bearerJwt: []
       x-badges:
@@ -20034,14 +20037,14 @@ paths:
                 - '... <1 more items truncated>'
                 hydra:totalItems: 3
       x-live-captured: true
-      x-auth: &id197
+      x-auth: &id196
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id197
+        8.0.1: *id196
       security:
       - bearerJwt: []
       x-badges:
@@ -20082,14 +20085,14 @@ paths:
               example:
                 response: Success
       x-live-captured: true
-      x-auth: &id198
+      x-auth: &id197
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id198
+        8.0.1: *id197
       security:
       - bearerJwt: []
       x-badges:
@@ -20245,14 +20248,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\njob_uuid = client.import_config.create_job(\"/api/3/files/880e8400-e29b-41d4-a716-446655440010\"\
           )\nprint(job_uuid)"
       x-live-captured: true
-      x-auth: &id199
+      x-auth: &id198
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id199
+        8.0.1: *id198
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -20298,14 +20301,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.import_config.generate_options(\"job-uuid\")"
-      x-auth: &id200
+      x-auth: &id199
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id200
+        8.0.1: *id199
       security:
       - bearerJwt: []
       x-badges:
@@ -20349,14 +20352,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.import_config.trigger(\"job-uuid\")"
-      x-auth: &id201
+      x-auth: &id200
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id201
+        8.0.1: *id200
       security:
       - bearerJwt: []
       x-badges:
@@ -20488,14 +20491,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
       x-live-captured: true
-      x-auth: &id202
+      x-auth: &id201
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id202
+        8.0.1: *id201
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -20629,14 +20632,14 @@ paths:
           alerts\", query=Query(module=\"alerts\").eq(\"status\", \"Open\"), limit=5000)\n)\ncreated = client.export_config.create_template(tmpl)\n\
           print(created[\"name\"])\nprint(created[\"@id\"])"
       x-live-captured: true
-      x-auth: &id203
+      x-auth: &id202
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id203
+        8.0.1: *id202
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -20668,14 +20671,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )"
-      x-auth: &id204
+      x-auth: &id203
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id204
+        8.0.1: *id203
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -20736,14 +20739,14 @@ paths:
           \ needs JWT (API keys are rejected)\nwith tempfile.TemporaryDirectory() as tmp:\n    out = client.export_config.export_by_template_uuid(\n\
           \        template_uuid=\"123e4567-e89b-12d3-a456-426655440000\",\n        output_path=str(Path(tmp) / \"config.zip\"\
           ),\n        poll_interval=0,\n    )\n    archive = Path(out).read_bytes()\nprint(archive)"
-      x-auth: &id205
+      x-auth: &id204
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id205
+        8.0.1: *id204
       security:
       - bearerJwt: []
       x-badges:
@@ -20821,14 +20824,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.views.app()"
       x-live-captured: true
-      x-auth: &id206
+      x-auth: &id205
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id206
+        8.0.1: *id205
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -20997,14 +21000,14 @@ paths:
         '404':
           description: No template for that key.
       x-live-captured: true
-      x-auth: &id207
+      x-auth: &id206
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id207
+        8.0.1: *id206
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21294,14 +21297,14 @@ paths:
         '409':
           description: A non-default copy already exists for this user.
       x-live-captured: true
-      x-auth: &id208
+      x-auth: &id207
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id208
+        8.0.1: *id207
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21585,14 +21588,14 @@ paths:
         '409':
           description: A non-default copy already exists for this user.
       x-live-captured: true
-      x-auth: &id209
+      x-auth: &id208
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id209
+        8.0.1: *id208
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21639,14 +21642,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.wf_tools.dynamic_variables()"
       x-live-captured: true
-      x-auth: &id210
+      x-auth: &id209
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id210
+        8.0.1: *id209
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21702,14 +21705,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.wf_tools.set_dynamic_variable(\"My_Var\", \"value123\"\
           )"
       x-live-captured: true
-      x-auth: &id211
+      x-auth: &id210
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id211
+        8.0.1: *id210
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21875,14 +21878,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.playbooks.historical_steps(\"abc123\")"
       x-live-captured: true
-      x-auth: &id212
+      x-auth: &id211
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id212
+        8.0.1: *id211
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21921,14 +21924,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/wf/api/manual-wf-input/\")"
       x-live-captured: true
-      x-auth: &id213
+      x-auth: &id212
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id213
+        8.0.1: *id212
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -21973,14 +21976,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.system.daily_action_count()"
       x-live-captured: true
-      x-auth: &id214
+      x-auth: &id213
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id214
+        8.0.1: *id213
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22044,14 +22047,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.users.change_password(\"old-pass\", \"new-pass\"\
           )"
       x-live-captured: true
-      x-auth: &id215
+      x-auth: &id214
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
           jwt: 'yes'
-        8.0.1: *id215
+        8.0.1: *id214
       x-badges:
       - name: JWT
         position: before
@@ -22082,14 +22085,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nfeatures = client.system.feature_access()\nprint(features[\"\
           automation\"])\nprint(features[\"endpoint_management\"])"
       x-live-captured: true
-      x-auth: &id216
+      x-auth: &id215
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id216
+        8.0.1: *id215
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22136,14 +22139,14 @@ paths:
       x-fsr-status: requires-llm-config
       description: Generate a single-shot chain-of-thought reasoning trace for an investigation. Requires LLM configuration
         and investigation context in the body.
-      x-auth: &id217
+      x-auth: &id216
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id217
+        8.0.1: *id216
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22204,14 +22207,14 @@ paths:
       x-fsr-status: requires-llm-config
       description: Generate a structured, multi-step investigation plan. Requires investigation context and optional constraints
         in the body. Returns a plan object with ordered steps.
-      x-auth: &id218
+      x-auth: &id217
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id218
+        8.0.1: *id217
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22269,14 +22272,14 @@ paths:
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
       description: Execute a previously-generated investigation plan. The plan runs asynchronously; poll with `GET /api/ai/insight/plan/{task_id}/status`.
-      x-auth: &id219
+      x-auth: &id218
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id219
+        8.0.1: *id218
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22324,14 +22327,14 @@ paths:
       x-fsr-status: requires-llm-config
       description: Return the current status of an asynchronously-executing investigation plan. Returns `pending`, `inprogress`,
         `completed`, or `failed`.
-      x-auth: &id220
+      x-auth: &id219
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id220
+        8.0.1: *id219
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22384,14 +22387,14 @@ paths:
       x-fsr-status: requires-llm-config
       description: Return the result of a completed investigation plan execution. Contains the plan output, evidence gathered,
         and analyst recommendations.
-      x-auth: &id221
+      x-auth: &id220
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id221
+        8.0.1: *id220
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22452,14 +22455,14 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      x-auth: &id222
+      x-auth: &id221
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id222
+        8.0.1: *id221
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -22506,14 +22509,14 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      x-auth: &id223
+      x-auth: &id222
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id223
+        8.0.1: *id222
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23419,14 +23422,14 @@ paths:
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
       x-live-captured: true
-      x-auth: &id224
+      x-auth: &id223
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id224
+        8.0.1: *id223
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23476,14 +23479,14 @@ paths:
       x-fsr-status: requires-llm-config
       description: Create or update a scheduled insight that runs at specified intervals. Requires playbook reference and
         schedule configuration in the body.
-      x-auth: &id225
+      x-auth: &id224
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id225
+        8.0.1: *id224
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23554,14 +23557,14 @@ paths:
           ,\n    {\"question\": \"Is this IP known malicious?\",\n     \"ioc\": [{\"type\": \"IP Address\", \"value\": \"\
           8.8.8.8\"}]},\n    wait=True,\n)\nprint(result.answer, result.confidence)"
       x-live-captured: true
-      x-auth: &id226
+      x-auth: &id225
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id226
+        8.0.1: *id225
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23614,14 +23617,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_status(\"abc123-def456\")"
-      x-auth: &id227
+      x-auth: &id226
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id227
+        8.0.1: *id226
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23687,14 +23690,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.submit_feedback(\"abc123-def456\", {\"accepted\"\
           : True})"
-      x-auth: &id228
+      x-auth: &id227
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id228
+        8.0.1: *id227
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23747,14 +23750,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_result(\"abc123-def456\")"
-      x-auth: &id229
+      x-auth: &id228
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id229
+        8.0.1: *id228
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23816,14 +23819,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.start_alert_investigation({\"name\": \"123e4567-e89b-12d3-a456-426614174000\"\
           })"
       x-live-captured: true
-      x-auth: &id230
+      x-auth: &id229
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id230
+        8.0.1: *id229
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -23885,14 +23888,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.import_agent(\"/path/to/agent.zip\")"
-      x-auth: &id231
+      x-auth: &id230
         apikey: 'no'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'no'
           jwt: 'yes'
-        8.0.1: *id231
+        8.0.1: *id230
       security:
       - bearerJwt: []
       x-badges:
@@ -23948,14 +23951,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.uninstall_agent(\"ioc-enrichment\")"
-      x-auth: &id232
+      x-auth: &id231
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id232
+        8.0.1: *id231
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24070,14 +24073,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_agent(\"ioc-enrichment\", \"latest\")"
       x-live-captured: true
-      x-auth: &id233
+      x-auth: &id232
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id233
+        8.0.1: *id232
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24128,14 +24131,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_default_agent_config()"
       x-live-captured: true
-      x-auth: &id234
+      x-auth: &id233
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id234
+        8.0.1: *id233
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24197,14 +24200,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.update_default_agent_config({\"model\": \"\
           gpt-4\"})"
       x-live-captured: true
-      x-auth: &id235
+      x-auth: &id234
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id235
+        8.0.1: *id234
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24261,14 +24264,14 @@ paths:
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
       x-live-captured: true
-      x-auth: &id236
+      x-auth: &id235
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id236
+        8.0.1: *id235
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24540,14 +24543,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.list_agents()"
       x-live-captured: true
-      x-auth: &id237
+      x-auth: &id236
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id237
+        8.0.1: *id236
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24614,14 +24617,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_agent_config(\"ioc-enrichment\", \"latest\"\
           )"
-      x-auth: &id238
+      x-auth: &id237
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id238
+        8.0.1: *id237
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24689,14 +24692,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.update_agent_config(\"ioc-enrichment\", \"\
           latest\", {\"model\": \"gpt-4\"})"
-      x-auth: &id239
+      x-auth: &id238
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id239
+        8.0.1: *id238
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24753,14 +24756,14 @@ paths:
           application/json:
             example: {}
       x-live-captured: true
-      x-auth: &id240
+      x-auth: &id239
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id240
+        8.0.1: *id239
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24865,14 +24868,14 @@ paths:
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
       x-live-captured: true
-      x-auth: &id241
+      x-auth: &id240
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id241
+        8.0.1: *id240
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -24939,14 +24942,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.activate_agent([\"123e4567-e89b-12d3-a456-426614174000\"\
           ])"
       x-live-captured: true
-      x-auth: &id242
+      x-auth: &id241
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id242
+        8.0.1: *id241
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25009,14 +25012,14 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      x-auth: &id243
+      x-auth: &id242
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id243
+        8.0.1: *id242
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25081,14 +25084,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.list_llm_configs()"
       x-live-captured: true
-      x-auth: &id244
+      x-auth: &id243
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id244
+        8.0.1: *id243
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25168,14 +25171,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.create_llm_config([{\"name\": \"test\", \"\
           provider\": \"openai\"}])"
-      x-auth: &id245
+      x-auth: &id244
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id245
+        8.0.1: *id244
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25241,14 +25244,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_llm_config(\"abc123-def456\")"
       x-live-captured: true
-      x-auth: &id246
+      x-auth: &id245
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id246
+        8.0.1: *id245
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25298,14 +25301,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.delete_llm_config(\"abc123-def456\")"
-      x-auth: &id247
+      x-auth: &id246
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id247
+        8.0.1: *id246
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25374,14 +25377,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.verify_llm_config(\"abc123-def456\")"
-      x-auth: &id248
+      x-auth: &id247
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id248
+        8.0.1: *id247
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25443,14 +25446,14 @@ paths:
                 hydra:title: An error occurred
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
-      x-auth: &id249
+      x-auth: &id248
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id249
+        8.0.1: *id248
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25505,14 +25508,14 @@ paths:
                 hydra:title: An error occurred
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
-      x-auth: &id250
+      x-auth: &id249
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id250
+        8.0.1: *id249
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25555,14 +25558,14 @@ paths:
                 hydra:title: An error occurred
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
-      x-auth: &id251
+      x-auth: &id250
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id251
+        8.0.1: *id250
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25593,14 +25596,14 @@ paths:
           application/json:
             example: {}
       x-live-captured: true
-      x-auth: &id252
+      x-auth: &id251
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id252
+        8.0.1: *id251
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25641,14 +25644,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.list_mcp_servers()"
       x-live-captured: true
-      x-auth: &id253
+      x-auth: &id252
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id253
+        8.0.1: *id252
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25703,14 +25706,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.validate_mcp_server({\"name\": \"...\", \"\
           url\": \"...\"})"
-      x-auth: &id254
+      x-auth: &id253
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id254
+        8.0.1: *id253
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25763,14 +25766,14 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-live-captured: true
-      x-auth: &id255
+      x-auth: &id254
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id255
+        8.0.1: *id254
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25812,14 +25815,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.post(\"/mcp/add/tools\", data={\"mcp_configuration\"\
           : {\"name\": \"my-server\", \"uuid\": \"abc123\"}, \"tools\": []})"
-      x-auth: &id256
+      x-auth: &id255
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id256
+        8.0.1: *id255
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25852,14 +25855,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.export_mcp_server_tools([{\"name\": \"my-server\"\
           }])"
-      x-auth: &id257
+      x-auth: &id256
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id257
+        8.0.1: *id256
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25911,14 +25914,14 @@ paths:
       x-fsr-version: 8.0+
       description: 'Import a previously-exported MCP server configuration. Reverses `POST /mcp/config/export`. Body: JSON
         payload from export.'
-      x-auth: &id258
+      x-auth: &id257
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id258
+        8.0.1: *id257
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -25976,14 +25979,14 @@ paths:
       x-fsr-version: 8.0+
       description: 'Update which tools a specific MCP server may expose. Body: tool names to enable or disable for the given
         server configuration uuid.'
-      x-auth: &id259
+      x-auth: &id258
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id259
+        8.0.1: *id258
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26021,14 +26024,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.delete_mcp_tools([{\"name\": \"my-tool\"}])"
-      x-auth: &id260
+      x-auth: &id259
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
           jwt: untested
-        8.0.1: *id260
+        8.0.1: *id259
       x-badges:
       - name: Not tested
         position: before
@@ -26083,14 +26086,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.mcp_connector_candidates()"
       x-live-captured: true
-      x-auth: &id261
+      x-auth: &id260
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id261
+        8.0.1: *id260
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26164,14 +26167,14 @@ paths:
               description: Returned on `initialize`; required on every subsequent call.
         '406':
           description: 'Missing `Accept: text/event-stream`.'
-      x-auth: &id262
+      x-auth: &id261
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id262
+        8.0.1: *id261
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26241,14 +26244,14 @@ paths:
               description: Returned on `initialize`; required on every subsequent call.
         '406':
           description: 'Missing `Accept: text/event-stream`.'
-      x-auth: &id263
+      x-auth: &id262
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id263
+        8.0.1: *id262
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26312,14 +26315,14 @@ paths:
               description: Returned on `initialize`; required on every subsequent call.
         '406':
           description: 'Missing `Accept: text/event-stream`.'
-      x-auth: &id264
+      x-auth: &id263
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id264
+        8.0.1: *id263
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26389,14 +26392,14 @@ paths:
         schema:
           type: string
         description: Connector slug as registered via `POST /mcp/add/tools`.
-      x-auth: &id265
+      x-auth: &id264
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id265
+        8.0.1: *id264
       x-badges:
       - name: API key
         position: before
@@ -26520,14 +26523,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.mcp_configs()"
       x-live-captured: true
-      x-auth: &id266
+      x-auth: &id265
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id266
+        8.0.1: *id265
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26580,14 +26583,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.register_mcp_server({\"name\": \"my-server\"\
           , \"url\": \"http://example.com/mcp\"})"
       x-live-captured: true
-      x-auth: &id267
+      x-auth: &id266
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id267
+        8.0.1: *id266
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26631,68 +26634,38 @@ paths:
                 command: ''
                 createDate: 1700000000
                 createUser:
-                  '@id': /api/3/people/<uuid>
-                  '@settings': /api/3/user_settings/<uuid>
-                  '@type': Person
-                  accessType: Named
+                  '@id': /api/3/appliances/<uuid>
+                  '@type': Appliance
                   avatar: null
-                  companyId: null
                   createDate: 1700000000
-                  createUser: /api/3/people/<uuid>
-                  csActive: true
-                  department: null
-                  description: null
-                  email: admin@example.com
-                  firstname: CS
-                  id: 3
-                  lastname: Admin
+                  createUser: null
+                  id: 1
                   modifyDate: 1700000000
-                  modifyUser: /api/3/people/<uuid>
-                  phoneFax: null
-                  phoneHome: null
-                  phoneMobile: null
-                  phoneWork: '+16462759691'
-                  sourceControlUsername: null
-                  title: Admin
-                  type: null
+                  modifyUser: null
+                  name: Playbook
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
                 description: MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and
                   query module data directly within FortiSOAR. It provides a centralized interface for managing and intera...
                   <41 more characters>
-                id: 17
+                id: 1
                 metadata: null
                 modifyDate: 1700000000
                 modifyUser:
-                  '@id': /api/3/people/<uuid>
-                  '@settings': /api/3/user_settings/<uuid>
-                  '@type': Person
-                  accessType: Named
+                  '@id': /api/3/appliances/<uuid>
+                  '@type': Appliance
                   avatar: null
-                  companyId: null
                   createDate: 1700000000
-                  createUser: /api/3/people/<uuid>
-                  csActive: true
-                  department: null
-                  description: null
-                  email: admin@example.com
-                  firstname: CS
-                  id: 3
-                  lastname: Admin
+                  createUser: null
+                  id: 1
                   modifyDate: 1700000000
-                  modifyUser: /api/3/people/<uuid>
-                  phoneFax: null
-                  phoneHome: null
-                  phoneMobile: null
-                  phoneWork: '+16462759691'
-                  sourceControlUsername: null
-                  title: Admin
-                  type: null
+                  modifyUser: null
+                  name: Playbook
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: live-<run>-mcp
+                name: FortiSOAR Module Management
                 recordTags: []
                 timeout: null
                 transport: http
@@ -26708,14 +26681,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_mcp_config(\"123e4567-e89b-12d3-a456-426614174000\"\
           )"
       x-live-captured: true
-      x-auth: &id268
+      x-auth: &id267
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id268
+        8.0.1: *id267
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26906,14 +26879,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.update_mcp_server(\"123e4567-e89b-12d3-a456-426614174000\"\
           , {\"name\": \"my-server\"})"
       x-live-captured: true
-      x-auth: &id269
+      x-auth: &id268
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id269
+        8.0.1: *id268
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26945,14 +26918,14 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.delete_mcp_server(\"123e4567-e89b-12d3-a456-426614174000\"\
           )"
       x-live-captured: true
-      x-auth: &id270
+      x-auth: &id269
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id270
+        8.0.1: *id269
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -26992,14 +26965,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.mcp_connector_candidates()"
       x-live-captured: true
-      x-auth: &id271
+      x-auth: &id270
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id271
+        8.0.1: *id270
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27045,14 +27018,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/mcp/tools/abc123\", data={\"uuid\": \"\
           abc123\", \"tools\": []})"
-      x-auth: &id272
+      x-auth: &id271
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id272
+        8.0.1: *id271
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27149,14 +27122,14 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.tool_usage()"
       x-live-captured: true
-      x-auth: &id273
+      x-auth: &id272
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: 'yes'
           jwt: 'yes'
-        8.0.1: *id273
+        8.0.1: *id272
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27210,14 +27183,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.list()"
-      x-auth: &id274
+      x-auth: &id273
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id274
+        8.0.1: *id273
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27248,14 +27221,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.health()"
-      x-auth: &id275
+      x-auth: &id274
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id275
+        8.0.1: *id274
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27310,14 +27283,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.get(\"abc123\")"
-      x-auth: &id276
+      x-auth: &id275
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id276
+        8.0.1: *id275
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27375,14 +27348,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.execution_tree(\"abc123\")"
-      x-auth: &id277
+      x-auth: &id276
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id277
+        8.0.1: *id276
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27423,14 +27396,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.spans(\"abc123\")"
-      x-auth: &id278
+      x-auth: &id277
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id278
+        8.0.1: *id277
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27470,14 +27443,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span(\"span-xyz\")"
-      x-auth: &id279
+      x-auth: &id278
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id279
+        8.0.1: *id278
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27517,14 +27490,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_children(\"span-xyz\")"
-      x-auth: &id280
+      x-auth: &id279
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id280
+        8.0.1: *id279
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27576,14 +27549,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_lineage(\"span-xyz\")"
-      x-auth: &id281
+      x-auth: &id280
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id281
+        8.0.1: *id280
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27635,14 +27608,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.span_subtree(\"span-xyz\")"
-      x-auth: &id282
+      x-auth: &id281
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id282
+        8.0.1: *id281
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27682,14 +27655,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.tokens(\"abc123\")"
-      x-auth: &id283
+      x-auth: &id282
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id283
+        8.0.1: *id282
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27729,14 +27702,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.session_tokens(\"sess-xyz\")"
-      x-auth: &id284
+      x-auth: &id283
         apikey: 'yes'
         jwt: 'yes'
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id284
+        8.0.1: *id283
       security:
       - apiKeyAuth: []
       - bearerJwt: []
@@ -27786,14 +27759,14 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.traces.purge_older_than(days=30)"
-      x-auth: &id285
+      x-auth: &id284
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: unreleased
           jwt: unreleased
-        8.0.1: *id285
+        8.0.1: *id284
       x-badges:
       - name: Not tested
         position: before

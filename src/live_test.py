@@ -275,6 +275,7 @@ class Session:
         want: int | tuple[int, ...] | None = None,
         path_params: dict[str, str] | None = None,
         files: dict | None = None,
+        capture_body: bool = True,
         **kw,
     ) -> tuple[requests.Response, dict | list | None]:
         """Make a request against a path *template* and record the observation.
@@ -314,12 +315,16 @@ class Session:
             resp_body = None
         # Record BEFORE assertion so failure cases (e.g. apikey 403 on an
         # admin endpoint) still surface in the per-auth coverage report.
+        # capture_body=False records the status but no bodies -- for binary
+        # responses (installer .bin) whose megabytes must not land in the
+        # examples store. The op still counts as live-captured (2xx).
         key = f"{method.upper()} {template}"
         per_op = self.observations.setdefault(key, {"by_auth": {}})
         per_op["by_auth"][self.current_auth] = {
-            "request_body": captured_req,
+            "request_body": captured_req if capture_body else None,
             "response_status": r.status_code,
-            "response_body": _scrub(resp_body) if r.status_code < 400 else None,
+            "response_body": (_scrub(resp_body) if r.status_code < 400 else None)
+            if capture_body else None,
             "captured_at": _dt.date.today().isoformat(),
         }
         if want is not None:
@@ -416,6 +421,7 @@ def sweep(s: Session) -> int:
     removed += _sweep_mcp_configs(s)
     removed += _sweep_scheduled(s)
     removed += _sweep_indicators(s)
+    removed += _sweep_live_playbooks(s)
     return removed
 
 
@@ -960,22 +966,17 @@ def scenario_misc_reads(s: Session) -> None:
                path_params={"pk": wf_pk}, json={})
         s.call("POST", "/api/wf/api/workflows/{pk}/resume/", want=_post,
                path_params={"pk": wf_pk}, json={})
-        s.call("POST", "/api/wf/api/workflows/{pk}/retry/", want=_post,
-               path_params={"pk": wf_pk}, json={})
         s.call("POST", "/api/wf/api/workflows/{pk}/approval/", want=_post,
                path_params={"pk": wf_pk}, json={})
-        s.call("POST", "/api/wf/api/workflows/{pk}/wfinput_resume/", want=_post,
-               path_params={"pk": wf_pk}, json={})
+    # NOTE: wfinput_resume / retry / notrigger / triggers-1-{name} are owned by
+    # the wf_triggers_lifecycle scenario (real 2xx lifecycles); stub calls here
+    # would overwrite those captures with 4xx shapes.
     s.call("POST", "/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/", want=_post,
            path_params={"pk": wf_pk or "1"}, json={})
 
     print("[misc] triggers + notifications")
-    s.call("POST", "/api/triggers/1/{name}", want=_post,
-           path_params={"name": "nonexistent"}, json={})
     s.call("POST", "/api/triggers/1/deferred/{name}", want=_post,
            path_params={"name": "nonexistent"}, json={})
-    s.call("POST", "/api/triggers/1/notrigger/{workflowId}", want=_post,
-           path_params={"workflowId": wf_pk or "1"}, json={})
     s.call("POST", "/api/rule/api/system-notification/notifications/", want=_post, json={})
     s.call("POST", "/api/rule/api/system-notification/purge/", want=_post, json={})
 
@@ -1027,14 +1028,14 @@ def scenario_misc_reads(s: Session) -> None:
             if mc_uuid:
                 s.call("GET", "/api/3/mcp_configurations/{uuid}", want=_ok,
                        path_params={"uuid": mc_uuid})
-    # Heartbeat against a REAL agent when one exists (a bogus name 500s on
-    # 8.0.0, which flips the capture non-2xx run-to-run); fallback keeps the
-    # 500 shape documented when the appliance has no agents.
+    # Heartbeat against a REAL agent's `agentId` (the 32-hex bus identity —
+    # the record uuid 500s on 8.0.0). Falls back to the uuid shape only when
+    # the appliance has no agent records, keeping that failure documented.
     r7 = s.request("GET", "/api/3/agents", params={"$limit": 1})
-    agent_id = next((a.get("uuid") or a.get("id")
-                     for a in extract_members(r7.json()) if r7.ok), None)
+    agent = next((a for a in extract_members(r7.json()) if r7.ok), None)
+    agent_key = (agent or {}).get("agentId") or (agent or {}).get("uuid") or "nonexistent"
     s.call("GET", "/api/integration/agent-heartbeat/{agent}/", want=(200, 404, 500, 401, 403),
-           path_params={"agent": str(agent_id or "nonexistent")})
+           path_params={"agent": str(agent_key)})
     # auth/config write-back: flip the retrievable_mode boolean and put it
     # back, so the 2xx capture is deterministic (writing the CURRENT value
     # 500s with "already set to [..]" on 8.0.0). Final state == initial.
@@ -1482,6 +1483,269 @@ def scenario_api3_lifecycles(s: Session) -> None:
             saved, s.headers["Authorization"] = s.headers["Authorization"], f"Bearer {r.json()['token']}"
             s.call("POST", "/api/3/logout", want=(200, 204, 401, 403))
             s.headers["Authorization"] = saved
+
+
+def _awaiting_agent(s: Session) -> dict | None:
+    """The agent record whose configurationHealth reads 'Awaiting Remote Node
+    Connection' — install-connector against it queues without executing."""
+    r = s.request("GET", "/api/3/agents", params={"$limit": 50})
+    agents = extract_members(r.json()) if r.ok else []
+    iris = {a.get("configurationHealth", {}).get("@id") for a in agents
+            if isinstance(a.get("configurationHealth"), dict) and a["configurationHealth"].get("@id")}
+    labels: dict[str, str] = {}
+    if iris:
+        rp = s.request("GET", "/api/3/picklists", params={"$limit": 1000})
+        for p in extract_members(rp.json()) if rp.ok else []:
+            if p.get("@id") in iris:
+                labels[p["@id"]] = p.get("itemValue") or ""
+    for a in agents:
+        h = a.get("configurationHealth")
+        iri = h.get("@id") if isinstance(h, dict) else h
+        if labels.get(iri) == "Awaiting Remote Node Connection" and a.get("agentId"):
+            return a
+    return None
+
+
+def _catalog_version(s: Session, name: str) -> str | None:
+    r = s.request("GET", "/api/integration/connectors/",
+                  params={"name": name, "format": "json"})
+    data = (r.json() or {}).get("data") or [] if r.ok else []
+    return (data[0] or {}).get("version") if data else None
+
+
+def _sweep_live_playbooks(s: Session) -> int:
+    """Delete live-* playbook clones and any manual inputs paused on their runs.
+
+    The pending-input linkage goes input.workflow (numeric run id) -> run
+    detail -> run name, so we only ever abandon inputs that belong to OUR
+    cloned playbooks.
+    """
+    removed = 0
+    r = s.request("GET", "/api/wf/api/manual-wf-input/", params={"format": "json", "limit": 100})
+    rows = r.json() if r.ok else []
+    rows = rows if isinstance(rows, list) else (rows or {}).get("hydra:member") or []
+    for row in rows:
+        run_pk = row.get("workflow")
+        if not run_pk:
+            continue
+        det = s.request("GET", f"/api/wf/api/workflows/{run_pk}/", params={"format": "json"})
+        name = (det.json() or {}).get("name") or "" if det.ok else ""
+        if not name.startswith(LIVE_PREFIX):
+            continue
+        if s.request("DELETE", f"/api/wf/api/manual-wf-input/{row['id']}/",
+                     params={"format": "json"}).ok:
+            removed += 1
+            print(f"  swept manual input {row['id']} (run {run_pk} of {name})")
+    # the clones themselves ($search is the only working fuzzy filter on this
+    # route; `name=` needs the exact full name and `name__startswith` is not
+    # supported). Leftover clones are inert (their triggers do not self-fire);
+    # the paused inputs above were the operational risk.
+    r = s.request("GET", "/api/3/workflows", params={"$search": LIVE_PREFIX, "$limit": 100})
+    for m in extract_members(r.json()) if r.ok else []:
+        if not (m.get("name") or "").startswith(LIVE_PREFIX):
+            continue
+        uuid_ = m.get("uuid") or (m.get("@id", "").rsplit("/", 1)[-1])
+        if uuid_ and s.request("DELETE", f"/api/3/workflows/{uuid_}").ok:
+            removed += 1
+            print(f"  swept playbook {m['name']} ({uuid_})")
+    return removed
+
+
+@scenario("wf_triggers_lifecycle")
+def scenario_wf_triggers_lifecycle(s: Session) -> None:
+    """Run-control + trigger-route lifecycles against playbooks we own.
+
+    Own-things contract: the manual-input gate runs on a CLONE of the
+    appliance's own "E2E - Manual Input" test playbook (renamed live-<run>-...,
+    deleted at the end, inputs swept on crash); the webhook route fired is the
+    clone's own route; the action trigger runs against an alert this scenario
+    created and deletes. `retry` re-runs a run that ALREADY failed on its own
+    (the platform's recovery action; it creates/deletes nothing). On 8.0.0:
+      - workflow retry is a **GET** (the documented POST answers 405),
+      - /api/triggers/1/deferred/{name} 404s for every route name,
+      - wfinput_resume needs {input, step_iri, step_id, manual_input_id, user}
+        where `user` is a /api/3/people IRI.
+    """
+    _ok = (200, 201, 401, 403)
+    from pyfsr import FortiSOAR
+
+    def fsr() -> FortiSOAR:
+        return FortiSOAR(
+            s.base, username=os.environ.get("FSR_USERNAME", ""),
+            password=os.environ.get("FSR_PASSWORD", ""),
+            verify_ssl=s.verify, suppress_insecure_warnings=True)
+
+    # --- retry: newest already-failed run (GET, not the documented POST) ---
+    r = s.request("POST", "/api/wf/api/workflows/log_list/",
+                  params={"status": "failed", "limit": 1}, json={})
+    failed = extract_members(r.json()) if r.ok else []
+    if failed:
+        pk = (failed[0].get("@id") or "").rstrip("/").rsplit("/", 1)[-1]
+        s.call("GET", "/api/wf/api/workflows/{pk}/retry/", want=(200, 404, 405, 401, 403),
+               path_params={"pk": pk}, params={"format": "json"})
+
+    # --- manual-input lifecycle on our own clone of the E2E test playbook ---
+    # Template playbooks are resolved by NAME (pack content is stable across
+    # appliances; uuids are not), so this scenario ports to any 8.0.0 box.
+    # Clone names include the auth mode: the (name, collection) uniqueness
+    # constraint still sees a just-deleted clone in the recycle bin, so the
+    # jwt and apikey passes of the same run must not collide on a name.
+    E2E_NAME = "E2E - Manual Input"
+    clone_uuid = None
+    e2e_uuid = _find_pb_by_name(s, E2E_NAME)
+    try:
+        if e2e_uuid:
+            clone = fsr().playbooks.clone(e2e_uuid, s.live_name(f"input-test-{s.current_auth}"),
+                                          is_active=True)
+            clone_uuid = clone.get("uuid")
+        else:
+            print(f"  template playbook {E2E_NAME!r} not found; skipping manual-input flow")
+
+        if clone_uuid:
+            st, trig = s.call("POST", "/api/triggers/1/notrigger/{workflowId}", want=_ok,
+                              path_params={"workflowId": clone_uuid}, json={})
+            task_id = (trig or {}).get("task_id") if isinstance(trig, dict) else None
+            run_pk = _run_pk_for_task(s, task_id) if task_id else None
+
+            row = _wait_pending_input(s, run_pk) if run_pk else None
+            if row:
+                mi_id = row.get("id")
+                det = s.request("GET", f"/api/wf/api/manual-wf-input/{mi_id}/",
+                                params={"format": "json"}).json()
+                opt = ((det.get("response_mapping") or {}).get("options") or [{}])[0]
+                user = _resolve_user_iri(s)
+                s.call("POST", "/api/wf/api/workflows/{pk}/wfinput_resume/", want=_ok,
+                       path_params={"pk": str(run_pk)}, params={"format": "json"},
+                       json={"input": {}, "step_iri": opt.get("step_iri"),
+                             "step_id": det.get("step_id"),
+                             "manual_input_id": mi_id, "user": user})
+
+                # second run: abandon its input via DELETE (the op under test)
+                st, trig2 = s.call("POST", "/api/triggers/1/notrigger/{workflowId}", want=_ok,
+                                   path_params={"workflowId": clone_uuid}, json={})
+                task2 = (trig2 or {}).get("task_id") if isinstance(trig2, dict) else None
+                run2 = _run_pk_for_task(s, task2) if task2 else None
+                row2 = _wait_pending_input(s, run2) if run2 else None
+                if row2:
+                    s.call("DELETE", "/api/wf/api/manual-wf-input/{pk}/", want=(204, 401, 403, 404),
+                           path_params={"pk": str(row2["id"])}, params={"format": "json"})
+    finally:
+        if clone_uuid:
+            s.request("DELETE", f"/api/3/workflows/{clone_uuid}")
+
+    # --- webhook route: clone the API-endpoint test playbook, fire OUR route ---
+    API_TEST_NAME = "FortiSOAR Playbook API test 2"
+    route_name = f"live{s.run_id}{s.current_auth}route"
+    web_uuid = None
+    try:
+        api_test_uuid = _find_pb_by_name(s, API_TEST_NAME)
+        web = fsr().playbooks.clone(api_test_uuid, s.live_name(f"webhook-{s.current_auth}"),
+                                    is_active=True,
+                                    transform=lambda b: _set_route(b, route_name)) \
+            if api_test_uuid else None
+        web_uuid = web.get("uuid") if web else None
+        if web_uuid:
+            s.call("POST", "/api/triggers/1/{name}", want=(200, 404, 401, 403),
+                   path_params={"name": route_name}, json={})
+        else:
+            print(f"  template playbook {API_TEST_NAME!r} not found; skipping webhook flow")
+    finally:
+        if web_uuid:
+            s.request("DELETE", f"/api/3/workflows/{web_uuid}")
+
+    # --- action route: clone the export playbook, run it on OUR alert -------
+    EXPORT_NAME = "Export Records As CSV"
+    act_uuid = None
+    alert_iri = None
+    try:
+        export_uuid = _find_pb_by_name(s, EXPORT_NAME)
+        act = fsr().playbooks.clone(export_uuid, s.live_name(f"action-pb-{s.current_auth}"),
+                                    is_active=True) if export_uuid else None
+        act_uuid = act.get("uuid") if act else None
+        if act_uuid:
+            st, created = s.call("POST", "/api/3/alerts", want=_ok,
+                                 json={"name": s.live_name("action"), "source": "live_test"})
+            if isinstance(created, dict):
+                alert_iri = created.get("@id")
+            route = _action_route(s, act_uuid)
+            if route and alert_iri:
+                s.call("POST", "/api/triggers/1/action/{routeUuid}", want=_ok,
+                       path_params={"routeUuid": route},
+                       json={"singleRecordExecution": True, "__resource": "alerts",
+                             "records": [alert_iri], "__uuid": act_uuid})
+        else:
+            print(f"  template playbook {EXPORT_NAME!r} not found; skipping action flow")
+    finally:
+        if alert_iri:
+            s.request("DELETE", alert_iri)
+        if act_uuid:
+            s.request("DELETE", f"/api/3/workflows/{act_uuid}")
+
+
+def _find_pb_by_name(s: Session, name: str) -> str | None:
+    """A playbook uuid by exact name (pack templates are stable; uuids are not)."""
+    r = s.request("GET", "/api/3/workflows", params={"name": name, "$limit": 10})
+    for m in extract_members(r.json()) if r.ok else []:
+        if m.get("name") == name:
+            return m.get("uuid") or (m.get("@id", "").rsplit("/", 1)[-1])
+    return None
+
+
+def _RUN_IDHolder(s: Session) -> None:  # noqa: ARG001 - placeholder, kept for name stability
+    return None
+
+
+def _set_route(body: dict, route_name: str) -> dict:
+    """Clone transform: point the (api_call) trigger step's route at ours."""
+    for step in body.get("steps") or []:
+        args = step.get("arguments") if isinstance(step.get("arguments"), dict) else {}
+        if "route" in args:
+            args["route"] = route_name
+    return body
+
+
+def _run_pk_for_task(s: Session, task_id: str) -> str | None:
+    for _ in range(6):  # the run registers a beat after the trigger returns
+        r = s.request("POST", "/api/wf/api/workflows/log_list/",
+                      params={"task_id": task_id, "limit": 1}, json={})
+        rows = extract_members(r.json()) if r.ok else []
+        if rows:
+            return str((rows[0].get("@id") or "").rstrip("/").rsplit("/", 1)[-1])
+        time.sleep(2)
+    return None
+
+
+def _wait_pending_input(s: Session, run_pk: str, tries: int = 20) -> dict | None:
+    for _ in range(tries):
+        r = s.request("GET", "/api/wf/api/manual-wf-input/",
+                      params={"format": "json", "limit": 50})
+        rows = r.json() if r.ok else []
+        rows = rows if isinstance(rows, list) else (rows or {}).get("hydra:member") or []
+        for row in rows:
+            if str(row.get("workflow")) == str(run_pk):
+                return row
+        time.sleep(3)
+    return None
+
+
+def _resolve_user_iri(s: Session) -> str | None:
+    r = s.request("GET", "/api/3/people", params={"$limit": 50})
+    members = [m for m in extract_members(r.json()) if r.ok]
+    for m in members:  # prefer an admin (same recipe as pyfsr)
+        name = f"{m.get('firstname') or ''} {m.get('lastname') or ''}".lower()
+        if "admin" in name:
+            return m["@id"]
+    return members[0]["@id"] if members else None
+
+
+def _action_route(s: Session, pb_uuid: str) -> str | None:
+    r = s.request("GET", f"/api/3/workflows/{pb_uuid}", params={"$relationships": "true"})
+    ts = (r.json() or {}).get("triggerStep") if r.ok else None
+    if isinstance(ts, str) and ts.startswith("/api/3/workflow_steps/"):
+        ts = s.request("GET", ts).json()
+    if isinstance(ts, dict):
+        return (ts.get("arguments") or {}).get("route")
+    return None
 
 
 @scenario("audit_query")
@@ -1952,14 +2216,16 @@ def scenario_agents_lifecycle(s: Session) -> None:
     s.call("GET", "/api/3/agents/{uuid}", want=200, path_params={"uuid": uuid_})
 
     print("[agents] step 6: request installer .bin (binary response, not asserted)")
-    # The installer endpoint returns a multi-MB binary; using `request` rather
-    # than `call` avoids persisting the body in the captured-examples store.
-    r = s.request("POST", "/api/integration/agent-installer/",
-                  params={"format": "json"},
-                  json={"agent": agent_id, "connectors": [],
-                        "include_last_known_configurations": False},
-                  timeout=120)
-    print(f"  installer download -> {r.status_code} ({len(r.content)} bytes)")
+    # The installer endpoint returns a multi-MB binary; capture_body=False
+    # records the 2xx (so the op counts as live-captured) without persisting
+    # the binary into the examples store.
+    s.call("POST", "/api/integration/agent-installer/",
+           want=(200, 400, 401, 403, 404),
+           capture_body=False,
+           params={"format": "json"},
+           json={"agent": agent_id, "connectors": [],
+                 "include_last_known_configurations": False},
+           timeout=120)
 
     print("[agents] step 7: probe connector-on-agent routes (read-only)")
     # These routes proxy to the remote agent over SME. With a lab agent record
@@ -1973,6 +2239,23 @@ def scenario_agents_lifecycle(s: Session) -> None:
     s.call("GET", "/api/integration/agent-heartbeat/{agent}/",
            want=(200, 400, 404),
            path_params={"agent": agent_id})
+
+    print("[agents] step 7b: queue a connector install on the awaiting agent")
+    # install-connector on an agent that is still "Awaiting Remote Node
+    # Connection" queues the request (200, remote_status "awaiting") without
+    # executing anything on a VM. The queue row is an upsert keyed on
+    # (connector, version, agent), so repeated runs do not accumulate rows.
+    awaiting = _awaiting_agent(s)
+    version = _catalog_version(s, "cyops_utilities")
+    if awaiting and version:
+        s.call("POST", "/api/integration/install-connector/", want=(200, 400, 401, 403, 500),
+               params={"format": "json"},
+               json={"name": "cyops_utilities", "label": "cyops_utilities",
+                     "version": version, "rpm_full_name": "", "category": ["Utilities"],
+                     "description": "", "publisher": "Fortinet",
+                     "agent": [awaiting["agentId"]]})
+    else:
+        print(f"  skipping install-connector (awaiting={bool(awaiting)}, version={version})")
 
     print("[agents] step 8: cleanup")
     r, _ = s.call("DELETE", "/api/3/agents/{uuid}", want=(204,),
