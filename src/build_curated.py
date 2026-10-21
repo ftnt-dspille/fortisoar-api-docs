@@ -3268,7 +3268,12 @@ PATHS["/api/publish"] = {
             "illegally-named draft anywhere can fail the whole migrate with a cryptic error that "
             "does not name the offender - validate drafts before publishing. Schema validation "
             "errors (e.g. a relationship with no matching reverse field) are returned "
-            "synchronously on the PUT itself."
+            "synchronously on the PUT itself.\n\n"
+            "Live-verified on 8.0.0 with an empty staging table: `200 {\"@type\": \"Publish\", "
+            "\"status\": \"started\"}`. NOT exercise-captured on the reference appliance: its "
+            "staging table permanently holds ~78 foreign staged rows, and a publish here would "
+            "flush those into the live schema. The live-test runner only calls this op when the "
+            "staging table is empty and skips otherwise."
         ),
         "requestBody": {"required": False, "content": {"application/json": {
             "schema": {"type": "object"}, "example": {},

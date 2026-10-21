@@ -21,7 +21,7 @@ web/index.html              →  Scalar renderer (CDN, pinned version)
 TODOS.md                    →  what's next: coverage backlog + accuracy work
 ```
 
-Spec at the time of writing: **245 ops, 189 paths, 184 live-verified, 192 with a pyfsr sample, 39 with a pyfsr response model.** Current numbers: `python src/spec_health.py --quiet` and `python src/coverage_report.py --quiet` (this line dates fast — trust those).
+Spec at the time of writing: **245 ops, 189 paths, 212 live-verified, 193 with a pyfsr sample, 39 with a pyfsr response model.** Current numbers: `python src/spec_health.py --quiet` and `python src/coverage_report.py --quiet` (this line dates fast — trust those).
 
 ---
 

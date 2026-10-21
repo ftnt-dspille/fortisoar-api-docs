@@ -241,8 +241,16 @@ def _fake_request(self, method, url, **kwargs):
     if method == "DELETE" and url.endswith(f"/api/3/agents/{_AGENT_UUID}"):
         return _fake_response(204, b"")
     # agents.heartbeat (GET /api/integration/agent-heartbeat/{agent}/)
+    # Real 8.0.0 shape: the 200 body is the queued health-check REQUEST row
+    # (remote_status starts "in-progress") -- not a {"status": "alive"} pong.
     if method == "GET" and "/api/integration/agent-heartbeat/" in url:
-        return _fake_response(200, json.dumps({"status": "alive"}).encode())
+        return _fake_response(200, json.dumps({
+            "id": 89, "result": {}, "action": "health-check",
+            "remote_status": {"status": "in-progress"}, "request_payload": {},
+            "created": "2026-01-01T00:00:00Z", "modified": "2026-01-01T00:00:00Z",
+            "log_records": None, "connector": None, "configuration": None,
+            "agent": "0123456789abcdef0123456789abcdef",
+        }).encode())
     # agents.installer (POST /api/integration/agent-installer/) - returns bytes
     if method == "POST" and "/api/integration/agent-installer/" in url:
         return _fake_response(200, b"\x1f\x8b\x08\x00binary-installer-blob")
@@ -424,6 +432,11 @@ def _fake_request(self, method, url, **kwargs):
     # --- Playbooks ---
     if method == "GET" and url.endswith("/api/wf/api/workflows/count/"):
         return _fake_response(200, json.dumps({"count": 42}).encode())
+    # workflow retry is a GET on 8.0.0 (the documented POST answers 405);
+    # live shape: {"result": "workflow retry queued", "task_id": ...}
+    # (must precede the generic {pk} handler below, which 404s unknown pks)
+    if method == "GET" and "/api/wf/api/workflows/" in url and url.rstrip("/").endswith("/retry"):
+        return _fake_response(200, json.dumps({"result": "workflow retry queued", "task_id": "abc123-def456"}).encode())
     # Distinguish workflows/{pk}/ (single run) from workflows/ (collection)
     # using the parsed path segments, not the raw URL.
     _wf_path = urlparse(url).path

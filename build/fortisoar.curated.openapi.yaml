@@ -6956,6 +6956,316 @@ paths:
                 - status: success
                   uuid: a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
                   '@id': /api/3/alerts/a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
+        '201':
+          description: Live-captured response.
+          content:
+            application/json:
+              example:
+                '@type': hydra:Collection
+                hydra:member:
+                - '@context': /api/3/contexts/Alert
+                  '@id': /api/3/alerts/<uuid>
+                  '@type': Alert
+                  aISummary: null
+                  aIVerdict:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#8E98AC'
+                    icon: null
+                    id: 467
+                    importedBy: []
+                    itemValue: Not Investigated
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  ackDate: null
+                  ackSLApausedon: null
+                  ackSlaStatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#25A5AE'
+                    icon: null
+                    id: 441
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  alertDetectionDate: null
+                  alertRemainingAckSLA: null
+                  alertRemainingRespSLA: null
+                  alerts: []
+                  assets: []
+                  assignedTo: null
+                  assigneddate: null
+                  assignee: ''
+                  attachmentNames: null
+                  attachments: []
+                  bESCyberSystems: []
+                  bucketName: null
+                  bytesTransferred: null
+                  cVEs: []
+                  campaigns: []
+                  closureNotes: null
+                  closureReason: null
+                  commandLine: null
+                  comments: []
+                  communications: []
+                  companies: []
+                  computerName: null
+                  conflict: false
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  decodedCommandLine: null
+                  description: null
+                  destinationID: null
+                  destinationIp: null
+                  destinationPort: null
+                  deviceOwner: null
+                  deviceSerialNo: null
+                  deviceType: null
+                  deviceUID: null
+                  domain: null
+                  dueBy: null
+                  emailBody: null
+                  emailClassification: null
+                  emailFrom: null
+                  emailHeaders: null
+                  emailSubject: null
+                  emailTo: null
+                  epochTime: null
+                  escalatedtoincident:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#A4ACBC'
+                    icon: null
+                    id: 355
+                    importedBy: []
+                    itemValue: 'No'
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  escalationReason: null
+                  eventTime: null
+                  events: []
+                  fileEmail: null
+                  fileHash: null
+                  fileHashes: null
+                  fileName: null
+                  fileNames: null
+                  filePath: null
+                  fsrQueue: null
+                  hostCountry: null
+                  hostIPAddress: null
+                  hostMACAddress: null
+                  hostName: null
+                  hunt: []
+                  iCSAdvisories: []
+                  iPAddresses: null
+                  id: 12310
+                  identities: []
+                  incidents: []
+                  indicators: []
+                  jiraTicketID: null
+                  killChainPhase: null
+                  latestLogin: null
+                  metrics: null
+                  mitreTechnique: null
+                  mitre_sub_techniques: []
+                  mitre_techniques: []
+                  mitreattackid: null
+                  mitregroups: []
+                  mitremitigations: []
+                  mitresoftware: []
+                  mitretactics: []
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: live-<run>-insert
+                  owners:
+                  - /api/3/teams/<uuid>
+                  - /api/3/teams/<uuid>
+                  - '... <1 more items truncated>'
+                  parentProcessCmdLine: null
+                  parentProcessName: null
+                  parentProcessPid: null
+                  persons: []
+                  priorityWeight: 1
+                  processGuid: null
+                  processId: null
+                  processName: null
+                  processTree: null
+                  recipientEmailAddress: null
+                  recordTags: []
+                  registryKey: null
+                  registryKeyValue: null
+                  reporter: null
+                  reporterEmailBody: null
+                  resolvedAutomatedly: null
+                  resolveddate: null
+                  respDate: null
+                  respDueDate: null
+                  respSLApausedon: null
+                  respSlaStatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#25A5AE'
+                    icon: null
+                    id: 441
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  responseSLAResumeDate: null
+                  returnPath: null
+                  rule: null
+                  scans: []
+                  scheduledTask: null
+                  securityIncidents: []
+                  senderDomain: null
+                  senderEmailAddress: null
+                  services: null
+                  severity:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#DE7A13'
+                    icon: null
+                    id: 444
+                    importedBy: []
+                    itemValue: High
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 3
+                    uuid: <uuid>
+                  source: live_test
+                  sourceId: null
+                  sourceIp: null
+                  sourcePort: null
+                  sourceProcess: null
+                  sourceTool: null
+                  sourceType: null
+                  sourcedata: null
+                  state:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 198
+                    importedBy: []
+                    itemValue: New
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  status:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#264EA1'
+                    icon: null
+                    id: 201
+                    importedBy: []
+                    itemValue: Open
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  subSource: null
+                  targetAsset: null
+                  targetProcess: null
+                  tasks: []
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 12310
+                  ticketID: null
+                  triagetaskid: null
+                  type:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 227
+                    importedBy: []
+                    itemValue: Other / Unknown
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 19
+                    uuid: <uuid>
+                  url: null
+                  userDetails: null
+                  userName: null
+                  userOwners: []
+                  users: []
+                  uuid: <uuid>
+                  vulnerabilities: []
+                  vulnerabilitySeverity: null
+                  warrooms: []
+                hydra:totalItems: 1
       requestBody:
         required: true
         content:
@@ -7313,7 +7623,7 @@ paths:
             example:
               data:
               - '@id': /api/3/alerts/<uuid>
-                description: updated by run 849de15e
+                description: updated by run 4a3c029b
       x-live-captured: true
       x-auth: &id057
         apikey: 'no'
@@ -8179,8 +8489,7 @@ paths:
               example:
                 status: success
                 uuids:
-                - f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                - a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
+                - <uuid>
           x-pyfsr-response-model: FeedIngestResult
       x-codeSamples:
       - lang: python
@@ -8503,9 +8812,73 @@ paths:
                 - '@id': /api/3/threat_intel_feeds/<uuid>
                   '@type': ThreatIntel
                   confidence: 85
-                  created: '2025-07-26T20:27:14.000000Z'
-                  description: threat_types:scanner,anonymization; tags:Anonymization,Tor,Scanner
-                  expiresOn: '2026-10-20T00:01:05.000000Z'
+                  created: '2022-11-09T23:01:03.000000Z'
+                  description: threat_types:malware_cnc,anonymization; tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx
+                    Sleet,JetBrains TeamCity RCE,CVE-2023-42793,Lazarus,Lazarus RAT Attack,HazyLoad
+                  expiresOn: '2026-10-21T23:03:16.000000Z'
+                  feedType: indicator
+                  id: <uuid>
+                  indicatorTypes:
+                  - ipv4-addr
+                  killChainPhases:
+                  - Installation
+                  label:
+                  - threat_types:malware_cnc,anonymization
+                  - tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx Sleet,JetBrains TeamCity RCE,CVE-2023-42793,Lazarus,Lazarus
+                    RAT Attack,HazyLoad
+                  lastSeen: null
+                  modified: '2026-10-14T22:00:16.000000Z'
+                  name: 162.19.71.175
+                  pattern: '[ipv4-addr:value = ''162.19.71.175'']'
+                  patternType: stix
+                  patternVersion: '2.1'
+                  recordTags:
+                  - Anonymization
+                  - APT
+                  - '... <1 more items truncated>'
+                  reputation: Malicious
+                  source: FortiGuard Threat Intelligence
+                  sourceData:
+                    confidence: 85
+                    created: '2022-11-09T23:01:03.856Z'
+                    description: threat_types:malware_cnc,anonymization; tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx
+                      Sleet,JetBrains TeamCity RCE,CVE-2023-42793,Lazarus,Lazarus RAT Attack,HazyLoad
+                    id: indicator--<uuid>
+                    kill_chain_phases:
+                    - kill_chain_name: lockheed-martin-cyber-kill-chain
+                      phase_name: installation
+                    - kill_chain_name: lockheed-martin-cyber-kill-chain
+                      phase_name: command-and-control
+                    labels:
+                    - threat_types:malware_cnc,anonymization
+                    - tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx Sleet,JetBrains TeamCity
+                      RCE,CVE-2023-42793,Lazarus,Lazarus RAT Attack,HazyLoad
+                    modified: '2026-10-14T22:00:16.436Z'
+                    name: 'ip: 162.19.71.175'
+                    pattern: '[ipv4-addr:value = ''162.19.71.175'']'
+                    pattern_type: stix
+                    spec_version: '2.1'
+                    type: indicator
+                    valid_from: '2022-11-09T23:01:03.856Z'
+                  sourceId: <uuid>
+                  specVersion: '2.1'
+                  tLP: Amber
+                  threatTypes:
+                  - Anonymization
+                  - Malware C2
+                  type: indicator
+                  typeOfFeed: IP Address
+                  uuid: <uuid>
+                  validFrom: '2022-11-09T23:01:03.000000Z'
+                  validUntil: '2026-10-21T23:03:16.000000Z'
+                  value: 162.19.71.175
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: 85
+                  created: '2021-12-24T11:39:25.000000Z'
+                  description: threat_types:scanner,malware_cnc,anonymization; tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2
+                    Vulnerability
+                  expiresOn: '2026-10-21T23:02:28.000000Z'
                   feedType: indicator
                   id: <uuid>
                   indicatorTypes:
@@ -8513,107 +8886,55 @@ paths:
                   killChainPhases:
                   - Exploitation
                   label:
-                  - threat_types:scanner,anonymization
-                  - tags:Anonymization,Tor,Scanner
+                  - threat_types:scanner,malware_cnc,anonymization
+                  - tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2 Vulnerability
                   lastSeen: null
-                  modified: '2026-10-12T23:32:39.000000Z'
-                  name: 146.19.254.157
-                  pattern: '[ipv4-addr:value = ''146.19.254.157'']'
+                  modified: '2026-10-14T22:02:45.000000Z'
+                  name: 77.81.139.66
+                  pattern: '[ipv4-addr:value = ''77.81.139.66'']'
                   patternType: stix
                   patternVersion: '2.1'
                   recordTags:
                   - Anonymization
-                  - Scanner
+                  - Havoc
                   - '... <1 more items truncated>'
                   reputation: Malicious
                   source: FortiGuard Threat Intelligence
                   sourceData:
                     confidence: 85
-                    created: '2025-07-26T20:27:14.171Z'
-                    description: threat_types:scanner,anonymization; tags:Anonymization,Tor,Scanner
+                    created: '2021-12-24T11:39:25Z'
+                    description: threat_types:scanner,malware_cnc,anonymization; tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2
+                      Vulnerability
                     id: indicator--<uuid>
                     kill_chain_phases:
                     - kill_chain_name: lockheed-martin-cyber-kill-chain
                       phase_name: exploitation
+                    - kill_chain_name: lockheed-martin-cyber-kill-chain
+                      phase_name: command-and-control
                     labels:
-                    - threat_types:scanner,anonymization
-                    - tags:Anonymization,Tor,Scanner
-                    modified: '2026-10-12T23:32:39.114Z'
-                    name: 'ip: 146.19.254.157'
-                    pattern: '[ipv4-addr:value = ''146.19.254.157'']'
+                    - threat_types:scanner,malware_cnc,anonymization
+                    - tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2 Vulnerability
+                    modified: '2026-10-14T22:02:45.032Z'
+                    name: 'ip: 77.81.139.66'
+                    pattern: '[ipv4-addr:value = ''77.81.139.66'']'
                     pattern_type: stix
                     spec_version: '2.1'
                     type: indicator
-                    valid_from: '2025-07-26T20:27:14.171Z'
+                    valid_from: '2021-12-24T11:39:25Z'
                   sourceId: <uuid>
                   specVersion: '2.1'
                   tLP: Amber
                   threatTypes:
                   - Anonymization
-                  - Scanner
-                  type: indicator
-                  typeOfFeed: IP Address
-                  uuid: <uuid>
-                  validFrom: '2025-07-26T20:27:14.000000Z'
-                  validUntil: '2026-10-20T00:01:05.000000Z'
-                  value: 146.19.254.157
-                - '@id': /api/3/threat_intel_feeds/<uuid>
-                  '@type': ThreatIntel
-                  confidence: 85
-                  created: '2023-11-15T02:15:11.000000Z'
-                  description: threat_types:malware_cnc; tags:Malware CnC,Urelas,Urelas C2
-                  expiresOn: '2026-10-20T01:00:26.000000Z'
-                  feedType: indicator
-                  id: <uuid>
-                  indicatorTypes:
-                  - ipv4-addr
-                  killChainPhases:
-                  - Command & Control
-                  label:
-                  - threat_types:malware_cnc
-                  - tags:Malware CnC,Urelas,Urelas C2
-                  lastSeen: null
-                  modified: '2026-10-13T00:17:30.000000Z'
-                  name: 218.54.47.74
-                  pattern: '[ipv4-addr:value = ''218.54.47.74'']'
-                  patternType: stix
-                  patternVersion: '2.1'
-                  recordTags:
-                  - Malware CnC
-                  - Urelas
-                  - '... <1 more items truncated>'
-                  reputation: Malicious
-                  source: FortiGuard Threat Intelligence
-                  sourceData:
-                    confidence: 85
-                    created: '2023-11-15T02:15:11.374Z'
-                    description: threat_types:malware_cnc; tags:Malware CnC,Urelas,Urelas C2
-                    id: indicator--<uuid>
-                    kill_chain_phases:
-                    - kill_chain_name: lockheed-martin-cyber-kill-chain
-                      phase_name: command-and-control
-                    labels:
-                    - threat_types:malware_cnc
-                    - tags:Malware CnC,Urelas,Urelas C2
-                    modified: '2026-10-13T00:17:30.324Z'
-                    name: 'ip: 218.54.47.74'
-                    pattern: '[ipv4-addr:value = ''218.54.47.74'']'
-                    pattern_type: stix
-                    spec_version: '2.1'
-                    type: indicator
-                    valid_from: '2026-10-13T00:17:30.324Z'
-                  sourceId: <uuid>
-                  specVersion: '2.1'
-                  tLP: Amber
-                  threatTypes:
                   - Malware C2
+                  - '... <1 more items truncated>'
                   type: indicator
                   typeOfFeed: IP Address
                   uuid: <uuid>
-                  validFrom: '2026-10-13T00:17:30.000000Z'
-                  validUntil: '2026-10-20T01:00:26.000000Z'
-                  value: 218.54.47.74
-                totalItems: 1457
+                  validFrom: '2021-12-24T11:39:25.000000Z'
+                  validUntil: '2026-10-21T23:02:28.000000Z'
+                  value: 77.81.139.66
+                totalItems: 1448
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -8725,9 +9046,73 @@ paths:
                 - '@id': /api/3/threat_intel_feeds/<uuid>
                   '@type': ThreatIntel
                   confidence: 85
-                  created: '2025-07-26T20:27:14.000000Z'
-                  description: threat_types:scanner,anonymization; tags:Anonymization,Tor,Scanner
-                  expiresOn: '2026-10-20T00:01:05.000000Z'
+                  created: '2022-11-09T23:01:03.000000Z'
+                  description: threat_types:malware_cnc,anonymization; tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx
+                    Sleet,JetBrains TeamCity RCE,CVE-2023-42793,Lazarus,Lazarus RAT Attack,HazyLoad
+                  expiresOn: '2026-10-21T23:03:16.000000Z'
+                  feedType: indicator
+                  id: <uuid>
+                  indicatorTypes:
+                  - ipv4-addr
+                  killChainPhases:
+                  - Installation
+                  label:
+                  - threat_types:malware_cnc,anonymization
+                  - tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx Sleet,JetBrains TeamCity RCE,CVE-2023-42793,Lazarus,Lazarus
+                    RAT Attack,HazyLoad
+                  lastSeen: null
+                  modified: '2026-10-14T22:00:16.000000Z'
+                  name: 162.19.71.175
+                  pattern: '[ipv4-addr:value = ''162.19.71.175'']'
+                  patternType: stix
+                  patternVersion: '2.1'
+                  recordTags:
+                  - Anonymization
+                  - APT
+                  - '... <1 more items truncated>'
+                  reputation: Malicious
+                  source: FortiGuard Threat Intelligence
+                  sourceData:
+                    confidence: 85
+                    created: '2022-11-09T23:01:03.856Z'
+                    description: threat_types:malware_cnc,anonymization; tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx
+                      Sleet,JetBrains TeamCity RCE,CVE-2023-42793,Lazarus,Lazarus RAT Attack,HazyLoad
+                    id: indicator--<uuid>
+                    kill_chain_phases:
+                    - kill_chain_name: lockheed-martin-cyber-kill-chain
+                      phase_name: installation
+                    - kill_chain_name: lockheed-martin-cyber-kill-chain
+                      phase_name: command-and-control
+                    labels:
+                    - threat_types:malware_cnc,anonymization
+                    - tags:Malware,APT,Operation Blacksmith,Malware CnC,Anonymization,Proxy,Onyx Sleet,JetBrains TeamCity
+                      RCE,CVE-2023-42793,Lazarus,Lazarus RAT Attack,HazyLoad
+                    modified: '2026-10-14T22:00:16.436Z'
+                    name: 'ip: 162.19.71.175'
+                    pattern: '[ipv4-addr:value = ''162.19.71.175'']'
+                    pattern_type: stix
+                    spec_version: '2.1'
+                    type: indicator
+                    valid_from: '2022-11-09T23:01:03.856Z'
+                  sourceId: <uuid>
+                  specVersion: '2.1'
+                  tLP: Amber
+                  threatTypes:
+                  - Anonymization
+                  - Malware C2
+                  type: indicator
+                  typeOfFeed: IP Address
+                  uuid: <uuid>
+                  validFrom: '2022-11-09T23:01:03.000000Z'
+                  validUntil: '2026-10-21T23:03:16.000000Z'
+                  value: 162.19.71.175
+                - '@id': /api/3/threat_intel_feeds/<uuid>
+                  '@type': ThreatIntel
+                  confidence: 85
+                  created: '2021-12-24T11:39:25.000000Z'
+                  description: threat_types:scanner,malware_cnc,anonymization; tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2
+                    Vulnerability
+                  expiresOn: '2026-10-21T23:02:28.000000Z'
                   feedType: indicator
                   id: <uuid>
                   indicatorTypes:
@@ -8735,107 +9120,55 @@ paths:
                   killChainPhases:
                   - Exploitation
                   label:
-                  - threat_types:scanner,anonymization
-                  - tags:Anonymization,Tor,Scanner
+                  - threat_types:scanner,malware_cnc,anonymization
+                  - tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2 Vulnerability
                   lastSeen: null
-                  modified: '2026-10-12T23:32:39.000000Z'
-                  name: 146.19.254.157
-                  pattern: '[ipv4-addr:value = ''146.19.254.157'']'
+                  modified: '2026-10-14T22:02:45.000000Z'
+                  name: 77.81.139.66
+                  pattern: '[ipv4-addr:value = ''77.81.139.66'']'
                   patternType: stix
                   patternVersion: '2.1'
                   recordTags:
                   - Anonymization
-                  - Scanner
+                  - Havoc
                   - '... <1 more items truncated>'
                   reputation: Malicious
                   source: FortiGuard Threat Intelligence
                   sourceData:
                     confidence: 85
-                    created: '2025-07-26T20:27:14.171Z'
-                    description: threat_types:scanner,anonymization; tags:Anonymization,Tor,Scanner
+                    created: '2021-12-24T11:39:25Z'
+                    description: threat_types:scanner,malware_cnc,anonymization; tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2
+                      Vulnerability
                     id: indicator--<uuid>
                     kill_chain_phases:
                     - kill_chain_name: lockheed-martin-cyber-kill-chain
                       phase_name: exploitation
+                    - kill_chain_name: lockheed-martin-cyber-kill-chain
+                      phase_name: command-and-control
                     labels:
-                    - threat_types:scanner,anonymization
-                    - tags:Anonymization,Tor,Scanner
-                    modified: '2026-10-12T23:32:39.114Z'
-                    name: 'ip: 146.19.254.157'
-                    pattern: '[ipv4-addr:value = ''146.19.254.157'']'
+                    - threat_types:scanner,malware_cnc,anonymization
+                    - tags:Malware CnC,Havoc C2,Anonymization,Proxy,Log4Shell,Havoc,Scanner,M247,Log4j2 Vulnerability
+                    modified: '2026-10-14T22:02:45.032Z'
+                    name: 'ip: 77.81.139.66'
+                    pattern: '[ipv4-addr:value = ''77.81.139.66'']'
                     pattern_type: stix
                     spec_version: '2.1'
                     type: indicator
-                    valid_from: '2025-07-26T20:27:14.171Z'
+                    valid_from: '2021-12-24T11:39:25Z'
                   sourceId: <uuid>
                   specVersion: '2.1'
                   tLP: Amber
                   threatTypes:
                   - Anonymization
-                  - Scanner
-                  type: indicator
-                  typeOfFeed: IP Address
-                  uuid: <uuid>
-                  validFrom: '2025-07-26T20:27:14.000000Z'
-                  validUntil: '2026-10-20T00:01:05.000000Z'
-                  value: 146.19.254.157
-                - '@id': /api/3/threat_intel_feeds/<uuid>
-                  '@type': ThreatIntel
-                  confidence: 85
-                  created: '2023-11-15T02:15:11.000000Z'
-                  description: threat_types:malware_cnc; tags:Malware CnC,Urelas,Urelas C2
-                  expiresOn: '2026-10-20T01:00:26.000000Z'
-                  feedType: indicator
-                  id: <uuid>
-                  indicatorTypes:
-                  - ipv4-addr
-                  killChainPhases:
-                  - Command & Control
-                  label:
-                  - threat_types:malware_cnc
-                  - tags:Malware CnC,Urelas,Urelas C2
-                  lastSeen: null
-                  modified: '2026-10-13T00:17:30.000000Z'
-                  name: 218.54.47.74
-                  pattern: '[ipv4-addr:value = ''218.54.47.74'']'
-                  patternType: stix
-                  patternVersion: '2.1'
-                  recordTags:
-                  - Malware CnC
-                  - Urelas
-                  - '... <1 more items truncated>'
-                  reputation: Malicious
-                  source: FortiGuard Threat Intelligence
-                  sourceData:
-                    confidence: 85
-                    created: '2023-11-15T02:15:11.374Z'
-                    description: threat_types:malware_cnc; tags:Malware CnC,Urelas,Urelas C2
-                    id: indicator--<uuid>
-                    kill_chain_phases:
-                    - kill_chain_name: lockheed-martin-cyber-kill-chain
-                      phase_name: command-and-control
-                    labels:
-                    - threat_types:malware_cnc
-                    - tags:Malware CnC,Urelas,Urelas C2
-                    modified: '2026-10-13T00:17:30.324Z'
-                    name: 'ip: 218.54.47.74'
-                    pattern: '[ipv4-addr:value = ''218.54.47.74'']'
-                    pattern_type: stix
-                    spec_version: '2.1'
-                    type: indicator
-                    valid_from: '2026-10-13T00:17:30.324Z'
-                  sourceId: <uuid>
-                  specVersion: '2.1'
-                  tLP: Amber
-                  threatTypes:
                   - Malware C2
+                  - '... <1 more items truncated>'
                   type: indicator
                   typeOfFeed: IP Address
                   uuid: <uuid>
-                  validFrom: '2026-10-13T00:17:30.000000Z'
-                  validUntil: '2026-10-20T01:00:26.000000Z'
-                  value: 218.54.47.74
-                totalItems: 1457
+                  validFrom: '2021-12-24T11:39:25.000000Z'
+                  validUntil: '2026-10-21T23:02:28.000000Z'
+                  value: 77.81.139.66
+                totalItems: 1448
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -9754,77 +10087,162 @@ paths:
                 content:
                 - component: crudhub
                   data:
-                    firesCount:
-                      newData: 3002
-                      oldData: 3001
-                    lastVerdict:
-                      newData: 'ALARMING
-
-
-                        There is a persistent and ongoing pattern of high-severity C2 traffic between <lab-host> and new malware
-                        IPs (e.g., previous: 18.135.209.57, 124.71.172.61, 52.54.42.29, 45.79.207.53; now: 12... <236 more
-                        characters>'
-                      oldData: quiet -- no fresh Critical/High alerts since watermark
-                    ledger:
-                      newData: '> {"fresh": 0, "saw": 0, "ts": "2026-10-19T14:00:02.066367+00:00", "verdict": "QUIET (no fresh
-                        alerts)"}
-
-                        > {"alerts": ["Traffic from <lab-host> to C2 Tracker Malware IP 107.148.149.107", "Traffic from...
-                        <14630 more characters>'
-                      oldData: '> {"alerts": ["Traffic from <lab-host> to ThreatFox Malware URL https://pikchestop.com/test/",
-                        "Traffic from <lab-host> to C2 Tracker Malware IP 217.15.22.199"], "fresh": 2, "saw": 2, "ts": "2026-10-1...
-                        <14711 more characters>'
-                    seenIds:
-                      newData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
-                        <1199 more characters>
-                      oldData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
-                        <1199 more characters>
-                    watermark:
-                      newData: '2026-10-21T15:30:01.749778+00:00'
-                      oldData: '2026-10-21T15:00:02.717307+00:00'
-                  displayName: alarming-alert-sentinel
-                  entitySingularName: Sentinel State
-                  entityType: sentinel_states
+                    data:
+                    - '@type': WorkflowCollection
+                      name: live-<run>-action-pb-apikey-Restored
+                      visible: true
+                      workflows:
+                      - '@context': /api/3/contexts/Workflow
+                        '@type': Workflow
+                        collection: /api/3/workflow_collections/<uuid>
+                        createDate: 1700000000
+                        createUser: /api/3/people/<uuid>
+                        debug: true
+                        groups: []
+                        id: 7014
+                        importedBy: []
+                        isActive: true
+                        isEditable: true
+                        isPrivate: false
+                        modifyDate: 1700000000
+                        modifyUser: /api/3/people/<uuid>
+                        name: live-<run>-action-pb-apikey
+                        owners: []
+                        parameters: []
+                        playbookOrigin: /api/3/picklists/<uuid>
+                        priority: /api/3/picklists/<uuid>
+                        recordTags: []
+                        remoteExecutableFlag: false
+                        routes:
+                        - '@type': WorkflowRoute
+                          isExecuted: false
+                          name: Start -> Export Records
+                          sourceStep: /api/3/workflow_steps/<uuid>
+                          targetStep: /api/3/workflow_steps/<uuid>
+                          uuid: <uuid>
+                        singleRecordExecution: false
+                        steps:
+                        - '@type': WorkflowStep
+                          arguments:
+                            config: <uuid>
+                            connector: cyops-schedule-report
+                            name: Report Engine
+                            operation: generate_csv_export
+                            operationTitle: Generate CSV Export
+                            params:
+                              batchSize: '{{vars.input.params.batchSize}}'
+                              csvNeutralization: '{{vars.input.params.csvNeutralization}}'
+                              exportFileName: '{{vars.input.params.exportFileName}}'
+                              max_record_size: '{{vars.input.params.max_record_size}}'
+                              module: '{{vars.input.params.module}}'
+                              moduleName: '{{vars.input.params.moduleName}}'
+                              moduleType: '{{vars.input.params.moduleType}}'
+                              query: '{{vars.input.params.query}}'
+                              userId: '{{vars.input.params.userId}}'
+                            pickFromTenant: false
+                            step_variables: []
+                            version: 1.4.0
+                          left: '655'
+                          name: Export Records
+                          stepType: /api/3/workflow_step_types/<uuid>
+                          top: '126'
+                          uuid: <uuid>
+                        - '@type': WorkflowStep
+                          arguments:
+                            _promptexpanded: true
+                            executeButtonText: Execute
+                            inputVariables:
+                            - _expanded: true
+                              _previousName: ''
+                              allowedGridColumn: false
+                              collection: false
+                              dataType: object
+                              defaultValue: "{\n  \"sort\": [],\n  \"logic\": \"AND\",\n  \"filters\": []\n}"
+                              formType: object
+                              label: Query
+                              lengthConstraint: false
+                              mmdUpdate: true
+                              name: query
+                              required: true
+                              searchable: false
+                              templateUrl: app/components/form/fields/json.html
+                              title: JSON
+                              tooltip: ''
+                              type: object
+                              usable: true
+                              useRecordFieldDefault: false
+                            - _expanded: false
+                              _previousName: ''
+                              dataType: text
+                              formType: text
+                              label: Module Name
+                              name: moduleName
+                              required: false
+                              tooltip: Either Provide Module type or Module Name. If both are set preference will be given
+                                to the Module Type field
+                              type: string
+                              useRecordFieldDefault: false
+                            - '... <1 more items truncated>'
+                            noRecordExecution: true
+                            resources: []
+                            route: <uuid>
+                            showToasterMessage:
+                              messageVisible: true
+                              visible: false
+                            singleRecordExecution: false
+                            step_variables:
+                              input:
+                                params:
+                                  csvNeutralization: '{{vars.request.data["csvNeutralization"]}}'
+                                  exportFileName: '{{vars.request.data["exportFileName"]}}'
+                                  moduleName: '{{vars.request.data["moduleName"]}}'
+                                  moduleType: '{{vars.request.data["moduleType"]}}'
+                                  query: '{{vars.request.data["query"]}}'
+                                  userId: '{{vars.request.data["userId"]}}'
+                                records: '{{vars.input.records}}'
+                            title: Export Records CSV
+                            triggerOnReplicate: false
+                          left: '300'
+                          name: Start
+                          stepType: /api/3/workflow_step_types/<uuid>
+                          top: '30'
+                          uuid: <uuid>
+                        synchronous: false
+                        tag: '#FSR-Utilities'
+                        triggerStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                        versions: []
+                    type: workflow_collections
+                  displayName: live-<run>-action-pb-apikey
+                  entitySingularName: Playbook
+                  entityType: playbooks
                   entityUuid: <uuid>
-                  id: 446436
-                  operation: Update
-                  playbookIri: /api/3/workflows/<uuid>
-                  playbookName: Stateful Alarming Alert Sentinel
-                  source: 127.0.0.1
-                  subComponent: EntityRecord
-                  teamIris:
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - '... <1 more items truncated>'
-                  title: Attribute(s) [ledger, firesCount, watermark, seenIds, lastVerdict] Updated in Sentinel State [alarming-alert-sentinel]
-                  transactionDate: 1792596611629
-                  user: Playbook
-                  userId: <uuid>
-                  userOwnerIris: []
-                - component: crudhub
-                  data:
-                    '@id': /api/3/indicators/<uuid>
-                    Created By: authprobe-mirror-<run>
-                    Created On: 10-21-2026 15:29 PM UTC
-                    Id: 2229
-                    UUID: <uuid>
-                    Value: live-<run>-ioc.example.invalid
-                    recordTags: []
-                    tenant: Self
-                    tenantRecordId: 2229
-                  displayName: live-<run>-ioc.example.invalid
-                  entitySingularName: Indicator
-                  entityType: indicators
-                  entityUuid: <uuid>
-                  id: 446435
-                  operation: Delete
+                  id: 448814
+                  operation: Soft Delete
                   source: <lab-host>
                   subComponent: EntityRecord
                   teamIris:
                   - cs-non-ownable
-                  title: Indicator [live-<run>-ioc.example.invalid] Deleted
-                  transactionDate: 1792596598157
+                  title: Playbook [live-<run>-action-pb-apikey] Moved to bin
+                  transactionDate: 1792616544643
                   user: authprobe-mirror-<run>
+                  userId: <uuid>
+                  userOwnerIris: []
+                - component: crudhub
+                  data:
+                    UUIDs:
+                    - <uuid>
+                  entitySingularName: Statistic
+                  entityType: statistics
+                  id: 448813
+                  operation: Bulk Delete
+                  source: 127.0.0.1
+                  subComponent: EntityRecord
+                  teamIris:
+                  - cs-non-ownable
+                  title: Bulk Delete of 1 Statistics
+                  transactionDate: 1792616544275
+                  user: Playbook
                   userId: <uuid>
                   userOwnerIris: []
                 first: true
@@ -9951,50 +10369,145 @@ paths:
               example:
                 component: crudhub
                 data:
-                  firesCount:
-                    newData: 3002
-                    oldData: 3001
-                  lastVerdict:
-                    newData: 'ALARMING
-
-
-                      There is a persistent and ongoing pattern of high-severity C2 traffic between <lab-host> and new malware
-                      IPs (e.g., previous: 18.135.209.57, 124.71.172.61, 52.54.42.29, 45.79.207.53; now: 12... <236 more characters>'
-                    oldData: quiet -- no fresh Critical/High alerts since watermark
-                  ledger:
-                    newData: '> {"fresh": 0, "saw": 0, "ts": "2026-10-19T14:00:02.066367+00:00", "verdict": "QUIET (no fresh
-                      alerts)"}
-
-                      > {"alerts": ["Traffic from <lab-host> to C2 Tracker Malware IP 107.148.149.107", "Traffic from... <14630
-                      more characters>'
-                    oldData: '> {"alerts": ["Traffic from <lab-host> to ThreatFox Malware URL https://pikchestop.com/test/",
-                      "Traffic from <lab-host> to C2 Tracker Malware IP 217.15.22.199"], "fresh": 2, "saw": 2, "ts": "2026-10-1...
-                      <14711 more characters>'
-                  seenIds:
-                    newData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
-                      <1199 more characters>
-                    oldData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
-                      <1199 more characters>
-                  watermark:
-                    newData: '2026-10-21T15:30:01.749778+00:00'
-                    oldData: '2026-10-21T15:00:02.717307+00:00'
-                displayName: alarming-alert-sentinel
-                entitySingularName: Sentinel State
-                entityType: sentinel_states
+                  data:
+                  - '@type': WorkflowCollection
+                    name: live-<run>-action-pb-apikey-Restored
+                    visible: true
+                    workflows:
+                    - '@context': /api/3/contexts/Workflow
+                      '@type': Workflow
+                      collection: /api/3/workflow_collections/<uuid>
+                      createDate: 1700000000
+                      createUser: /api/3/people/<uuid>
+                      debug: true
+                      groups: []
+                      id: 7014
+                      importedBy: []
+                      isActive: true
+                      isEditable: true
+                      isPrivate: false
+                      modifyDate: 1700000000
+                      modifyUser: /api/3/people/<uuid>
+                      name: live-<run>-action-pb-apikey
+                      owners: []
+                      parameters: []
+                      playbookOrigin: /api/3/picklists/<uuid>
+                      priority: /api/3/picklists/<uuid>
+                      recordTags: []
+                      remoteExecutableFlag: false
+                      routes:
+                      - '@type': WorkflowRoute
+                        isExecuted: false
+                        name: Start -> Export Records
+                        sourceStep: /api/3/workflow_steps/<uuid>
+                        targetStep: /api/3/workflow_steps/<uuid>
+                        uuid: <uuid>
+                      singleRecordExecution: false
+                      steps:
+                      - '@type': WorkflowStep
+                        arguments:
+                          config: <uuid>
+                          connector: cyops-schedule-report
+                          name: Report Engine
+                          operation: generate_csv_export
+                          operationTitle: Generate CSV Export
+                          params:
+                            batchSize: '{{vars.input.params.batchSize}}'
+                            csvNeutralization: '{{vars.input.params.csvNeutralization}}'
+                            exportFileName: '{{vars.input.params.exportFileName}}'
+                            max_record_size: '{{vars.input.params.max_record_size}}'
+                            module: '{{vars.input.params.module}}'
+                            moduleName: '{{vars.input.params.moduleName}}'
+                            moduleType: '{{vars.input.params.moduleType}}'
+                            query: '{{vars.input.params.query}}'
+                            userId: '{{vars.input.params.userId}}'
+                          pickFromTenant: false
+                          step_variables: []
+                          version: 1.4.0
+                        left: '655'
+                        name: Export Records
+                        stepType: /api/3/workflow_step_types/<uuid>
+                        top: '126'
+                        uuid: <uuid>
+                      - '@type': WorkflowStep
+                        arguments:
+                          _promptexpanded: true
+                          executeButtonText: Execute
+                          inputVariables:
+                          - _expanded: true
+                            _previousName: ''
+                            allowedGridColumn: false
+                            collection: false
+                            dataType: object
+                            defaultValue: "{\n  \"sort\": [],\n  \"logic\": \"AND\",\n  \"filters\": []\n}"
+                            formType: object
+                            label: Query
+                            lengthConstraint: false
+                            mmdUpdate: true
+                            name: query
+                            required: true
+                            searchable: false
+                            templateUrl: app/components/form/fields/json.html
+                            title: JSON
+                            tooltip: ''
+                            type: object
+                            usable: true
+                            useRecordFieldDefault: false
+                          - _expanded: false
+                            _previousName: ''
+                            dataType: text
+                            formType: text
+                            label: Module Name
+                            name: moduleName
+                            required: false
+                            tooltip: Either Provide Module type or Module Name. If both are set preference will be given to
+                              the Module Type field
+                            type: string
+                            useRecordFieldDefault: false
+                          - '... <1 more items truncated>'
+                          noRecordExecution: true
+                          resources: []
+                          route: <uuid>
+                          showToasterMessage:
+                            messageVisible: true
+                            visible: false
+                          singleRecordExecution: false
+                          step_variables:
+                            input:
+                              params:
+                                csvNeutralization: '{{vars.request.data["csvNeutralization"]}}'
+                                exportFileName: '{{vars.request.data["exportFileName"]}}'
+                                moduleName: '{{vars.request.data["moduleName"]}}'
+                                moduleType: '{{vars.request.data["moduleType"]}}'
+                                query: '{{vars.request.data["query"]}}'
+                                userId: '{{vars.request.data["userId"]}}'
+                              records: '{{vars.input.records}}'
+                          title: Export Records CSV
+                          triggerOnReplicate: false
+                        left: '300'
+                        name: Start
+                        stepType: /api/3/workflow_step_types/<uuid>
+                        top: '30'
+                        uuid: <uuid>
+                      synchronous: false
+                      tag: '#FSR-Utilities'
+                      triggerStep: /api/3/workflow_steps/<uuid>
+                      uuid: <uuid>
+                      versions: []
+                  type: workflow_collections
+                displayName: live-<run>-action-pb-apikey
+                entitySingularName: Playbook
+                entityType: playbooks
                 entityUuid: <uuid>
-                id: 446436
-                operation: Update
-                playbookIri: /api/3/workflows/<uuid>
-                playbookName: Stateful Alarming Alert Sentinel
-                source: 127.0.0.1
+                id: 448814
+                operation: Soft Delete
+                source: <lab-host>
                 subComponent: EntityRecord
                 teamIris:
-                - /api/3/teams/<uuid>
-                - /api/3/teams/<uuid>
-                - '... <1 more items truncated>'
-                title: Attribute(s) [ledger, firesCount, watermark, seenIds, lastVerdict] Updated in Sentinel State [alarming-alert-sentinel]
-                transactionDate: 1792596611629
-                user: Playbook
+                - cs-non-ownable
+                title: Playbook [live-<run>-action-pb-apikey] Moved to bin
+                transactionDate: 1792616544643
+                user: authprobe-mirror-<run>
                 userId: <uuid>
                 userOwnerIris: []
       x-codeSamples:
@@ -11454,7 +11967,7 @@ paths:
             application/json:
               example:
                 task_id: <uuid>
-                url: https://localhost:8888/wf/api/workflows/122102/
+                url: https://localhost:8888/wf/api/workflows/144371/
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -11508,7 +12021,7 @@ paths:
           content:
             application/json:
               example:
-                message: 'CS-WF-48: The workflow ''Archived Data'' has already been resumed'
+                message: 'CS-WF-48: The workflow ''live-<run>-input-test-jwt'' has already been resumed'
       x-live-captured: true
       x-auth: &id108
         apikey: 'yes'
@@ -11557,7 +12070,9 @@ paths:
                   - rejected
                 comment:
                   type: string
-            example: {}
+            example:
+              comment: live-test run control
+              decision: approve
       responses:
         '200':
           description: Action result.
@@ -11608,6 +12123,12 @@ paths:
               example:
                 result: workflow retry queued
                 task_id: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.playbooks.retry(\"3\")\nprint(result[\"\
+          task_id\"])\nprint(result[\"result\"])"
       x-live-captured: true
   /api/wf/api/jinja-editor/:
     post:
@@ -11850,8 +12371,8 @@ paths:
                   description: list_wfinput[].id.
             example:
               input: {}
-              manual_input_id: 637
-              step_id: 1289474
+              manual_input_id: 658
+              step_id: 1291916
               step_iri: /api/3/workflow_steps/<uuid>
               user: /api/3/people/<uuid>
       responses:
@@ -11860,8 +12381,8 @@ paths:
           content:
             application/json:
               example:
-                task_id: "\u2026"
                 message: Awaiting Playbook resumed successfully.
+                task_id: <uuid>
               schema:
                 $ref: '#/components/schemas/ManualInputResume'
           x-pyfsr-response-model: ManualInputResume
@@ -12228,30 +12749,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/ScheduledTask'
               example:
-                id: gAAAAABkXyQ_placeholder_fernet_token
-                name: nightly-recon
-                task: workflow.tasks.periodic_task
-                enabled: true
+                args: '[]'
+                clocked: null
                 crontab:
-                  id: 42
-                  minute: '7'
-                  hour: '2'
+                  day_of_month: '1'
                   day_of_week: '*'
-                  day_of_month: '*'
-                  month_of_year: '*'
+                  hour: '3'
+                  id: 32
+                  minute: '7'
+                  month_of_year: '1'
                   timezone: UTC
-                kwargs:
-                  wf_iri: /api/3/workflows/c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
-                  exit_if_running: true
-                  timezone: UTC
-                  utcOffset: UTC+00:00
-                  name: nightly-recon
-                  description: nightly-recon
-                  auth: null
-                  schedule_entry_name: nightly-recon
-                schedule_id: 7
+                date_changed: '2026-10-21T21:00:19.390679Z'
+                description: live-<run>-schedule
+                enabled: false
+                exchange: null
+                expire_seconds: null
                 expires: null
+                headers: '{}'
+                id: gAAAAABq2SfjZQmb0neacZ8XpO0BV48y53E7MDGalj4Cv6Z_KV_lrZe2ZAhbY35C7ks0WQPXVGa_oq0yQE3fC0rS2gd2LbMMuw==
+                interval: null
+                kwargs:
+                  auth:
+                    auth_method: CS HMAC
+                  description: live-<run>-schedule
+                  exit_if_running: true
+                  name: live-<run>-schedule
+                  referenceid: null
+                  schedule_entry_name: live-<run>-schedule
+                  schedule_id: <uuid>
+                  timezone: UTC
+                  wf_iri: /api/3/workflows/<uuid>
+                last_run_at: null
+                name: live-<run>-schedule
+                one_off: false
+                priority: 3
+                queue: null
+                routing_key: null
+                solar: null
                 start_time: null
+                task: workflow.tasks.periodic_task
+                total_run_count: 0
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -12362,14 +12899,14 @@ paths:
                 minute: '7'
                 month_of_year: '1'
                 timezone: UTC
-              date_changed: '2026-10-21T15:53:09.636050Z'
+              date_changed: '2026-10-21T21:00:19.390679Z'
               description: live-<run>-schedule
               enabled: false
               exchange: null
               expire_seconds: null
               expires: null
               headers: '{}'
-              id: gAAAAABq2N_lG2SSlKnUC5k41OMQePW56yd7thxsyEQ3YW9e_f8NibAZjv96oObToNgDLCVmRnoCODjQZjGtj0XyVnNwtZFjXQ==
+              id: gAAAAABq2SfjZQmb0neacZ8XpO0BV48y53E7MDGalj4Cv6Z_KV_lrZe2ZAhbY35C7ks0WQPXVGa_oq0yQE3fC0rS2gd2LbMMuw==
               interval: null
               kwargs:
                 auth:
@@ -12530,7 +13067,7 @@ paths:
                   type: string
                   description: Fernet token from a fresh GET /api/wf/api/scheduled/ or from the POST that created the task.
             example:
-              id: gAAAAABq2O2eRXDLvtKQZkJsVNXt39I1Yc8TUJJ_F3Y3HXKQMXnwqpu91PDqYlIe-nKb_1JB5WQaYr5GsOL6KTVXO5n8ae0ewg==
+              id: gAAAAABq2SaAXv9VhP2DJufW9aYxbgqNFeFmqHbQMJPMH0Jelaol3jxPPu7FmsQZ187VKwzQOzH6TmUXK886dfROe8JhurFQEQ==
       responses:
         '200':
           description: Trigger accepted.
@@ -12594,9 +13131,7 @@ paths:
           content:
             application/json:
               example:
-                status: ok
-                workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
-                executionId: exec-7b1e94
+                task_id: <uuid>
               schema:
                 $ref: '#/components/schemas/TriggerResponse'
           x-pyfsr-response-model: TriggerResponse
@@ -12706,9 +13241,7 @@ paths:
           content:
             application/json:
               example:
-                status: ok
-                workflow: c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
-                executionId: exec-2c8a06
+                task_id: <uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -13148,7 +13681,7 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 889
+              connector: 893
               default: false
               name: live-<run>-hwcfg
               status: 1
@@ -14759,8 +15292,8 @@ paths:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.heartbeat(\"edge-1\")[\"status\"\
-          ])"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrow = client.agents.heartbeat(\"0123456789abcdef0123456789abcdef\"\
+          )\nprint(row[\"action\"])"
       x-live-captured: true
       x-auth: &id145
         apikey: 'yes'
@@ -17109,10 +17642,10 @@ paths:
               ownable: true
               peerReplicable: false
               queueable: false
-              tableName: live4bedaf08_module
+              tableName: live4a3c029b_module
               taggable: false
               trackable: true
-              type: live4bedaf08module
+              type: live4a3c029bmodule
               uniqueConstraint: []
               userOwnable: true
       responses:
@@ -17501,7 +18034,13 @@ paths:
 
         A no-op publish (nothing staged) returns right away with no migrate. One illegally-named draft anywhere can fail the
         whole migrate with a cryptic error that does not name the offender - validate drafts before publishing. Schema validation
-        errors (e.g. a relationship with no matching reverse field) are returned synchronously on the PUT itself.'
+        errors (e.g. a relationship with no matching reverse field) are returned synchronously on the PUT itself.
+
+
+        Live-verified on 8.0.0 with an empty staging table: `200 {"@type": "Publish", "status": "started"}`. NOT exercise-captured
+        on the reference appliance: its staging table permanently holds ~78 foreign staged rows, and a publish here would
+        flush those into the live schema. The live-test runner only calls this op when the staging table is empty and skips
+        otherwise.'
       requestBody:
         required: false
         content:
@@ -17924,8 +18463,8 @@ paths:
                   default: false
                   description: Platform-managed flag. Custom lists are `false`.
             example:
-              description: live test
-              name: live-picklist-name
+              name: live4a3c029bList
+              system: false
       responses:
         '201':
           description: The created picklist taxonomy record.
@@ -17933,11 +18472,14 @@ paths:
             application/json:
               example:
                 '@context': /api/3/contexts/PicklistName
-                '@id': /api/3/picklist_names/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+                '@id': /api/3/picklist_names/<uuid>
                 '@type': PicklistName
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                name: IncidentPhase
+                id: 173
+                importedBy: []
+                name: live-picklist-name
+                picklists: []
                 system: false
+                uuid: <uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -18647,36 +19189,109 @@ paths:
                   description: Epoch seconds (`int(time.time())`).
               description: Development manifest with `tree` removed and publish flags added.
             example:
-              '@id': /api/3/widgets/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-              name: accessControl
-              version: 2.1.0
               draft: false
-              installed: true
               enablePublish: false
+              installed: true
+              name: livewidget1792615330
+              publishedDate: 1792615331
               replace: true
               replaceVersions: []
-              publishedDate: 1736380800
+              version: 1.0.0
       responses:
         '200':
           description: The published widget record.
           content:
             application/json:
               example:
-                '@id': /api/3/widgets/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                '@type': WidgetRecord
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                name: accessControl
-                version: 2.1.0
+                '@context': /api/3/contexts/Widget
+                '@id': /api/3/widgets/<uuid>
+                '@type': Widget
+                active: null
+                category: []
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
                 draft: false
+                editController: null
+                editHtml: null
+                enablePublish: false
+                files: []
+                id: 146
+                importedBy: []
                 installed: true
-                published: true
-                publishedDate: 1736380800
+                isPrivate: false
+                label: live test widget
+                metadata: []
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: livewidget1792615330
+                publishedDate: 1792615331
+                subTitle: ''
+                title: live test widget
+                uuid: <uuid>
+                version: 1.0.0
+                viewController: null
+                viewHtml: null
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
+      x-live-captured: true
       x-auth: &id180
         apikey: 'yes'
         jwt: 'yes'
@@ -18779,7 +19394,7 @@ paths:
                   description: Widget uuids to delete.
             example:
               ids:
-              - f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+              - <uuid>
       responses:
         '204':
           description: Deleted.
@@ -18788,15 +19403,19 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.remove(\"widget-uuid\")"
+      x-live-captured: true
       x-auth: &id182
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
-          jwt: untested
+          jwt: 'yes'
         8.0.1: *id182
       x-badges:
+      - name: JWT
+        position: before
+        color: '#1f8a4c'
       - name: Not tested
         position: before
         color: '#b7791f'
@@ -20024,16 +20643,16 @@ paths:
             application/json:
               example:
                 hydra:member:
+                - dataType: boolean
+                  id: 62
+                  key: retrievable_mode
+                  section: API-KEYS
+                  value: false
                 - dataType: int
-                  id: 61
+                  id: 60
                   key: api_key_validity_min
                   section: API-KEYS
                   value: 1
-                - dataType: int
-                  id: 62
-                  key: api_key_validity_max
-                  section: API-KEYS
-                  value: 365
                 - '... <1 more items truncated>'
                 hydra:totalItems: 3
       x-live-captured: true
@@ -20289,18 +20908,15 @@ paths:
           content:
             application/json:
               example:
-                job_id: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                status: InProgress
-                progress:
-                - step: Extracting bundle
-                  status: done
-                - step: Building options tree
-                  status: running
+                '@type': ImportJob
+                status:
+                  result: Import job options populated
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.import_config.generate_options(\"job-uuid\")"
+      x-live-captured: true
       x-auth: &id199
         apikey: 'no'
         jwt: 'yes'
@@ -20343,15 +20959,16 @@ paths:
           content:
             application/json:
               example:
-                '@id': /api/3/import_jobs/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                status: Import In Progress
-                createDate: 1736380800
+                '@type': ImportJob
+                status:
+                  progress: 0
+                  result: Started import
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.import_config.trigger(\"job-uuid\")"
+      x-live-captured: true
       x-auth: &id200
         apikey: 'no'
         jwt: 'yes'
@@ -20671,6 +21288,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )"
+      x-live-captured: true
       x-auth: &id203
         apikey: 'yes'
         jwt: 'yes'
@@ -20727,10 +21345,8 @@ paths:
           content:
             application/json:
               example:
-                '@id': /api/3/export_jobs/a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
-                uuid: a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
-                status: Queued
-                createDate: 1736380800
+                '@type': ExportJob
+                jobUuid: <uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -20739,6 +21355,7 @@ paths:
           \ needs JWT (API keys are rejected)\nwith tempfile.TemporaryDirectory() as tmp:\n    out = client.export_config.export_by_template_uuid(\n\
           \        template_uuid=\"123e4567-e89b-12d3-a456-426655440000\",\n        output_path=str(Path(tmp) / \"config.zip\"\
           ),\n        poll_interval=0,\n    )\n    archive = Path(out).read_bytes()\nprint(archive)"
+      x-live-captured: true
       x-auth: &id204
         apikey: 'no'
         jwt: 'yes'
@@ -22115,8 +22732,8 @@ paths:
             schema:
               $ref: '#/components/schemas/InsightChainOfThoughtRequest'
             example:
-              socrole: example
-              query: example
+              query: 'Reply with the single word: pong'
+              socrole: SOC Analyst
         required: true
       responses:
         '200':
@@ -22124,6 +22741,9 @@ paths:
           content:
             application/json:
               schema: {}
+              example:
+                chain_of_thought:
+                - Validate if the received instruction matches the expected keyword intervention.
         '422':
           description: Validation Error
           content:
@@ -22137,8 +22757,9 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Generate a single-shot chain-of-thought reasoning trace for an investigation. Requires LLM configuration
-        and investigation context in the body.
+      description: 'Generate a single-shot chain-of-thought reasoning trace. Body: `{"socrole": "SOC Analyst", "query": "..."}`.
+        Returns `{"chain_of_thought": ["step", ...]}` -- feed that LIST to `POST /api/ai/insight/plan`.'
+      x-live-captured: true
       x-auth: &id216
         apikey: 'yes'
         jwt: 'yes'
@@ -22172,9 +22793,10 @@ paths:
             schema:
               $ref: '#/components/schemas/InsightPlanRequest'
             example:
-              socrole: example
-              query: example
-              chain_of_thought: []
+              chain_of_thought:
+              - Determine if a rapid, actionable response is needed.
+              query: 'Reply with the single word: pong'
+              socrole: SOC Analyst
         required: true
       responses:
         '200':
@@ -22184,13 +22806,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/PlanResponse'
               example:
-                objective: example
-                intent_interpretation: example
-                feasibility:
-                  status: null
-                  reason: example
-                  clarification_questions: []
                 entities: []
+                feasibility:
+                  clarification_questions:
+                  - Is the request intended to validate connectivity, or do you want to test an actual module capability with
+                    data retrieval?
+                  reason: No available agent in the FortiSOAR environment or its documented agents supports static keyword
+                    reply or echo commands. All agents are designed for actionable data analysis, not simple echo-response
+                    ... <13 more characters>
+                  status: infeasible
+                intent_interpretation: The user wants to validate system responsiveness using a simple echo command, not requiring
+                  any data retrieval, analysis, or SOAR action.
+                objective: Validate if the received instruction matches the expected keyword intervention.
                 steps: []
         '422':
           description: Validation Error
@@ -22205,8 +22832,10 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Generate a structured, multi-step investigation plan. Requires investigation context and optional constraints
-        in the body. Returns a plan object with ordered steps.
+      description: 'Generate a structured, multi-step investigation plan. Body: `{"socrole", "query", "chain_of_thought":
+        [<the list from chain_of_thoughts>]}` (the cot field must be a LIST; a boolean 422s). Returns `{"objective", "intent_interpretation",
+        "feasibility", "entities", "steps"}` -- note the plan does NOT echo `chain_of_thought`; stitch it back in before `plan/execute`.'
+      x-live-captured: true
       x-auth: &id217
         apikey: 'yes'
         jwt: 'yes'
@@ -22240,17 +22869,20 @@ paths:
             schema:
               $ref: '#/components/schemas/PlanExecuteRequest'
             example:
-              socrole: example
               plan:
-                objective: example
-                chain_of_thought: []
-                intent_interpretation: example
-                feasibility:
-                  status: null
-                  reason: example
-                  clarification_questions: []
+                chain_of_thought:
+                - Determine if a rapid, actionable response is needed.
                 entities: []
+                feasibility:
+                  clarification_questions: []
+                  reason: The requested action is to simply reply with a static word, not operate on or analyze FortiSOAR
+                    data or invoke agents. No step or module interaction is necessary or meaningful in this context.
+                  status: infeasible
+                intent_interpretation: "The user wants to verify promptness and connectivity\u2014there is no analytical task\
+                  \ to perform."
+                objective: 'Reply with the single word: pong'
                 steps: []
+              socrole: SOC Analyst
         required: true
       responses:
         '200':
@@ -22258,6 +22890,10 @@ paths:
           content:
             application/json:
               schema: {}
+              example:
+                planid: <uuid>
+                status: accepted
+                task_id: <uuid>
         '422':
           description: Validation Error
           content:
@@ -22271,7 +22907,11 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Execute a previously-generated investigation plan. The plan runs asynchronously; poll with `GET /api/ai/insight/plan/{task_id}/status`.
+      description: 'Execute an investigation plan. Body: `{"socrole", "plan": {**plan, "chain_of_thought": [<steps list>]}}`
+        -- `plan.chain_of_thought` is REQUIRED (422 without it) even though `plan` itself doesn''t return one. Returns `{"status":
+        "accepted", "planid", "task_id"}`; poll `GET /api/ai/insight/plan/{task_id}/status` (`inprogress` for tens of seconds)
+        then `GET .../result`.'
+      x-live-captured: true
       x-auth: &id218
         apikey: 'yes'
         jwt: 'yes'
@@ -22312,6 +22952,9 @@ paths:
           content:
             application/json:
               schema: {}
+              example:
+                status: pending
+                task_id: <uuid>
         '422':
           description: Validation Error
           content:
@@ -22325,8 +22968,9 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Return the current status of an asynchronously-executing investigation plan. Returns `pending`, `inprogress`,
-        `completed`, or `failed`.
+      description: 'Return the current status of an asynchronously-executing investigation plan: `{"task_id", "status"}` with
+        `inprogress` until done.'
+      x-live-captured: true
       x-auth: &id219
         apikey: 'yes'
         jwt: 'yes'
@@ -22369,9 +23013,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PlanExecutionResponse'
               example:
-                result: {}
                 execution_log: {}
                 last_executed: null
+                result: {}
         '422':
           description: Validation Error
           content:
@@ -22385,8 +23029,9 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Return the result of a completed investigation plan execution. Contains the plan output, evidence gathered,
-        and analyst recommendations.
+      description: 'Return the result envelope of an investigation plan execution: `{"result": {}, "execution_log": {}, "last_executed"}`
+        -- empty while the plan is still running.'
+      x-live-captured: true
       x-auth: &id220
         apikey: 'yes'
         jwt: 'yes'
@@ -22413,7 +23058,8 @@ paths:
       tags:
       - AI Insight
       summary: Get scheduled insight details
-      description: Return details for a scheduled insight including its configuration, associated playbook, and last-run status.
+      description: 'Return details for a saved insight: `{"insight_id", "title", "query", "planid", "plan": {"steps": [{"agent",
+        "title", "inputs"}, ...]}}`.'
       operationId: get_insight_by_id_ai_insight__insight_id__get
       parameters:
       - name: insight_id
@@ -22431,17 +23077,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/InsightResponse'
               example:
-                insight_id: example
-                title: example
-                query: example
-                planid: example
-                plan: {}
-                createuser: null
-                result: {}
+                createuser: <uuid>
                 execution_log: {}
-                last_executed: null
-                socrole: example
+                insight_id: <uuid>
+                last_executed: '2026-10-21T20:34:36.491783Z'
+                plan:
+                  chain_of_thought:
+                  - Validate if the received instruction matches the expected keyword intervention.
+                  entities: []
+                  feasibility:
+                    clarification_questions:
+                    - Is the request intended to validate connectivity, or do you want to test an actual module capability
+                      with data retrieval?
+                    reason: No available agent in the FortiSOAR environment or its documented agents supports static keyword
+                      reply or echo commands. All agents are designed for actionable data analysis, not simple echo-response
+                      ... <13 more characters>
+                    status: infeasible
+                  intent_interpretation: The user wants to validate system responsiveness using a simple echo command, not
+                    requiring any data retrieval, analysis, or SOAR action.
+                  objective: Validate if the received instruction matches the expected keyword intervention.
+                  steps: []
+                planid: <uuid>
+                query: 'Reply with the single word: pong'
+                result:
+                  error: ''
                 scheduleid: null
+                socrole: SOC Analyst
+                title: live-<run>-insight
         '422':
           description: Validation Error
           content:
@@ -22455,6 +23117,7 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-live-captured: true
       x-auth: &id221
         apikey: 'yes'
         jwt: 'yes'
@@ -22479,8 +23142,9 @@ paths:
     delete:
       tags:
       - AI Insight
-      summary: Delete a scheduled insight
-      description: Delete a previously-scheduled insight. The insight will stop running on its schedule.
+      summary: Delete a saved insight
+      description: 'Delete a saved insight. Returns `{"message": "Insight ''<uuid>'' was deleted"}`. The delete CASCADES:
+        the underlying `/api/3/insights` record is removed too (a follow-up api3 DELETE 404s).'
       operationId: delete_insight_ai_insight__insight_id__delete
       parameters:
       - name: insight_id
@@ -22496,6 +23160,8 @@ paths:
           content:
             application/json:
               schema: {}
+              example:
+                message: Insight '<uuid>' was deleted
         '422':
           description: Validation Error
           content:
@@ -22509,6 +23175,7 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-live-captured: true
       x-auth: &id222
         apikey: 'yes'
         jwt: 'yes'
@@ -23447,7 +24114,7 @@ paths:
     post:
       tags:
       - AI Insight
-      summary: Create or update a scheduled insight
+      summary: Run a saved insight now
       operationId: execute_insight_ai_insight_trigger_schedule_post
       requestBody:
         content:
@@ -23456,7 +24123,9 @@ paths:
               additionalProperties: true
               type: object
               title: Schedule
-            example: {}
+            example:
+              createUser: /api/3/people/<uuid>
+              referenceid: <uuid>
         required: true
       responses:
         '200':
@@ -23464,6 +24133,8 @@ paths:
           content:
             application/json:
               schema: {}
+              example:
+                message: Insight executed successfully. Please check the insight for the result.
         '422':
           description: Validation Error
           content:
@@ -23477,8 +24148,11 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Create or update a scheduled insight that runs at specified intervals. Requires playbook reference and
-        schedule configuration in the body.
+      description: 'Run a saved, active insight immediately (the endpoint the insight''s schedule calls). Body: `{"referenceid":
+        "<insight record uuid>", "createUser": "<owner /api/3/people IRI>"}` over an insight SAVED via `POST /api/3/insights`
+        (`{title, query, socrole, planid}`). Returns `{"message": "Insight executed successfully. Please check the insight
+        for the result."}`.'
+      x-live-captured: true
       x-auth: &id224
         apikey: 'yes'
         jwt: 'yes'
@@ -23505,8 +24179,11 @@ paths:
       tags:
       - AI Agents
       summary: Trigger a single agent run
-      description: Trigger a single agent run. Returns a dict with `task_id` and `status` (`pending`). Poll with `GET /api/ai/agents/{task_id}/status`
-        (returns one of `pending`, `inprogress`, `completed`, `failed`) and fetch results with `GET /api/ai/agents/{task_id}/result`.
+      description: 'Trigger a single agent run. **202 Accepted** for the whole task life (not 200). Body: `{"input_data":
+        {<fields from the agent''s inputformat contract>}, "context": {}, "user_id": "<any caller tag>"}` -- e.g. ioc-masking
+        wants `input_data: {data, action, detransform_map?}` (see `GET /api/ai/agent/{name}/{version}`). Returns `{"task_id",
+        "status": "pending"}`; poll `GET /api/ai/agents/{task_id}/status` (`pending` -> `inprogress` -> `completed`/`failed`)
+        and fetch `GET /api/ai/agents/{task_id}/result`.'
       operationId: agent_act_ai_agents__agent_name__trigger_post
       parameters:
       - name: agent_name
@@ -23525,17 +24202,21 @@ paths:
               type: object
               additionalProperties: true
               title: Data
-            example: {}
+            example:
+              context: {}
+              input_data:
+                action: mask
+                data: Contact alice@example.com about incident 12345
+              user_id: live-<run>-ai
       responses:
         '202':
-          description: Successful Response
+          description: Accepted
+          x-pyfsr-response-model: InvestigationHandle | AgentRunResult
           content:
             application/json:
-              schema: {}
               example:
                 status: pending
                 task_id: <uuid>
-          x-pyfsr-response-model: InvestigationHandle | AgentRunResult
         '422':
           description: Validation Error
           content:
@@ -23583,8 +24264,8 @@ paths:
       tags:
       - AI Agents
       summary: Get agent run status
-      description: 'Return current pipeline status for a triage task. While running: `pending` then `inprogress`; terminal:
-        `completed` or `failed`.'
+      description: 'Return current pipeline status for an agent task. **202 Accepted** while the task exists (not 200). Body:
+        `{"task_id", "status"}` -- `pending`, `inprogress`, `completed` or `failed`.'
       operationId: get_triage_status_ai_agents__task_id__status_get
       parameters:
       - name: task_id
@@ -23595,10 +24276,12 @@ paths:
           title: Task Id
       responses:
         '202':
-          description: Successful Response
+          description: Accepted
           content:
             application/json:
-              schema: {}
+              example:
+                status: completed
+                task_id: <uuid>
         '422':
           description: Validation Error
           content:
@@ -23617,6 +24300,7 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_status(\"abc123-def456\")"
+      x-live-captured: true
       x-auth: &id226
         apikey: 'yes'
         jwt: 'yes'
@@ -23682,8 +24366,10 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
-      description: Submit analyst acceptance/rejection feedback on the agent's result. Accepts a JSON object with `accepted`
-        (boolean) and optional `reason` (string).
+      description: 'Submit analyst acceptance/rejection feedback on the agent''s result. **Broken on 8.0.0**: every body shape
+        (`{}`, `{"accepted": true}`, `{"feedback": ..}`, `{"status": ..}`) crashes with `400 {"type": "TypeError", "message":
+        "Internal Server Error..."}` -- the fsr-ai handler itself raises. Recorded live; no working request shape exists on
+        this build.'
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -23715,9 +24401,11 @@ paths:
     get:
       tags:
       - AI Agents
-      summary: Get agent run result (answer, evidence, confidence)
-      description: Return the investigation result after the agent run completes. Contains `answer` (natural language), `evidence`
-        (supporting data), and `confidence` score (0.0-1.0).
+      summary: Get agent run result
+      description: 'Return the agent run''s result. **202 Accepted** (not 200). The shape is AGENT-SPECIFIC -- it mirrors
+        the agent''s contract, not a generic envelope: ioc-masking returns `{"masked": {"input_data": {...masked inputs...}},
+        "detransform_map": {<mask key>: <original>}, "logs": [], "phases": []}`. Investigation agents return their answer/evidence
+        structure here.'
       operationId: get_triage_result_ai_agents__task_id__result_get
       parameters:
       - name: task_id
@@ -23728,10 +24416,21 @@ paths:
           title: Task Id
       responses:
         '202':
-          description: Successful Response
+          description: Accepted
           content:
             application/json:
-              schema: {}
+              example:
+                detransform_map:
+                  SM_EMAIL_7c742935_EM: alice@example.com
+                logs: []
+                masked:
+                  context: {}
+                  input_data:
+                    action: mask
+                    data: Contact SM_EMAIL_7c742935_EM about incident 12345
+                  task_id: <uuid>
+                  user_id: live-<run>-ai
+                phases: []
         '422':
           description: Validation Error
           content:
@@ -23750,6 +24449,7 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.get_result(\"abc123-def456\")"
+      x-live-captured: true
       x-auth: &id228
         apikey: 'yes'
         jwt: 'yes'
@@ -24968,8 +25668,9 @@ paths:
       tags:
       - AI Chat
       summary: Start or continue a conversational investigation
-      description: Start or continue a conversational investigation session. Requires `user_id` and `message` in the request
-        body. Returns a ChatResponse with response text and optional tool calls.
+      description: 'Start or continue a conversational investigation session. Body: `{"user_id": "<caller tag>", "messages":
+        ["<plain string>", ...]}` -- messages items are plain STRINGS (role-tagged objects 422). Returns `{"thread_id", "intent",
+        "message", "insight_id", "message_history", "insight"}` where `message_history` carries the full system+user transcript.'
       operationId: chat_with_copilot_ai_chat__post
       requestBody:
         content:
@@ -24977,13 +25678,9 @@ paths:
             schema:
               $ref: '#/components/schemas/ConversationRequest'
             example:
-              user_id: example
-              session_id: null
-              thread_id: null
-              insight_id: null
-              messages: []
-              message_history: null
-              initialize_context: false
+              messages:
+              - 'Reply with exactly: pong'
+              user_id: live-<run>-ai
         required: true
       responses:
         '200':
@@ -24993,12 +25690,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConversationResponse'
               example:
-                thread_id: null
-                intent: example
-                message: example
-                insight_id: null
-                message_history: []
                 insight: null
+                insight_id: null
+                intent: Simple Query
+                message: pong
+                message_history:
+                - content: '## Role
+
+                    You are the **Cyber Security Expert Conversational Agent**.
+
+
+                    ## Objective
+
+                    Your job is to identify the user"s intent and generate the correct structured response as a cybersecurity
+                    expert or in... <5246 more characters>'
+                  role: system
+                - content: 'Reply with exactly: pong'
+                  role: user
+                - '... <1 more items truncated>'
+                thread_id: thread_b8eaa847-b4be-421f-a078-20d94f3dd8f4
         '422':
           description: Validation Error
           content:
@@ -25012,6 +25722,7 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-live-captured: true
       x-auth: &id242
         apikey: 'yes'
         jwt: 'yes'
@@ -25038,8 +25749,9 @@ paths:
       tags:
       - AI LLM
       summary: List LLM reasoning profiles
-      description: 'Return all LLM reasoning profiles. Each profile defines the provider, model, temperature, and system prompt
-        used by agents. Response: list of `LLMConfig` objects with `uuid`, `name`, `config`.'
+      description: 'Return all LLM reasoning profiles. Each profile: `{uuid, name, isdefault, active, model, modelname, provider,
+        apikey, baseurl, config}` -- the shipped profiles use `provider: "fortisoar"` with `config.connector_name: "fortinet-fortiai-proxy"`
+        (FortiAI cloud via the proxy connector).'
       operationId: get_config_ai_llm_config_get
       responses:
         '200':
@@ -25108,9 +25820,11 @@ paths:
     post:
       tags:
       - AI LLM
-      summary: Create an LLM reasoning profile
-      description: 'Create one or more LLM reasoning profiles. Body: list of config objects, each with `name`, `provider`,
-        `model`, and other provider-specific fields.'
+      summary: Create LLM reasoning profiles
+      description: 'Create one or more LLM reasoning profiles. Body is a LIST of profile objects: `[{"name": ...}]` at minimum
+        (a bare object 422s `Input should be a valid list`; an empty list is a no-op 201). Each item: `{name, isdefault, active,
+        modelname, provider, apikey, baseurl, config}`. Returns the echoed list (server assigns uuids; the echo shows `uuid:
+        null`).'
       operationId: create_config_ai_llm_config_post
       requestBody:
         content:
@@ -25269,8 +25983,9 @@ paths:
       tags:
       - AI LLM
       summary: Delete an LLM reasoning profile
-      description: Delete the specified LLM reasoning profile by uuid. Agents using this profile will fall back to the default
-        configuration.
+      description: 'Delete the specified LLM reasoning profile by uuid. **Broken on 8.0.0**: every DELETE answers `400 {"type":
+        "TypeError", "message": "Internal Server Error..."}` regardless of profile state (full-field profile included, live-verified)
+        -- the fsr-ai delete handler raises. Profiles therefore cannot be removed via the API on this build.'
       operationId: get_config_by_id_ai_llm_config__uuid__delete
       parameters:
       - name: uuid
@@ -25327,8 +26042,10 @@ paths:
       tags:
       - AI LLM
       summary: Verify an LLM reasoning profile is callable
-      description: Test whether the specified LLM configuration can actually invoke a model (validates the provider endpoint,
-        auth, and connectivity).
+      description: Test whether the specified LLM configuration can actually invoke a model. Requires `?model_id=<the config
+        uuid>` as a QUERY param (the fsr-ai handler binds it from the query string; a model *name* 500s on the uuid cast).
+        Only OpenAI-style profiles implement verify -- a `fortisoar` (FortiAI proxy) profile raises `NotImplementedError`
+        -> bare 500, by design.
       operationId: verify_config_ai_llm_config__uuid__verify_get
       parameters:
       - name: model_id
@@ -25404,7 +26121,8 @@ paths:
       - AI Enrichment
       summary: Retrieve knowledge-base enrichment for context
       description: Retrieve vector-search enrichment from the knowledge base for a given context. Returns relevant indexed
-        documents with similarity scores.
+        documents with similarity scores. On 8.0.0 with no organizational-context KB configured this 500s (bare `Internal
+        Server Error`) -- environment-limited, not a route problem.
       operationId: get_context_ai_enrich_context_post
       requestBody:
         content:
@@ -25472,8 +26190,9 @@ paths:
       tags:
       - AI Enrichment
       summary: Index a document into the knowledge base
-      description: Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Accepts a
-        JSON body with `content` (string) and `metadata` (object).
+      description: 'Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Body is an
+        `OrganizationalContextDTO`: `{"uuid", "title", "category", "subCategory", "description", "content", "llmSummarize",
+        "type_": "organizational_context"}`. On 8.0.0 with no KB configured: 500 `{"detail": "Failed to index context record"}`.'
       operationId: index_context_ai_enrich_context_index_post
       requestBody:
         content:
@@ -25670,8 +26389,10 @@ paths:
       tags:
       - AI MCP Registry
       summary: Validate an MCP server configuration (handshake + auth)
-      description: Validate an MCP server by attempting handshake and auth. Accepts `MCPServerConfig` body with `uuid`, `name`,
-        `url`, and auth credentials. Returns `MCPValidateResult`.
+      description: 'Attempt a real handshake + `tools/list` against an MCP server config. Body (MCPServerConfig): `{"uuid",
+        "name", "transport": "http"|"sse", "url" (required for http/sse), "authentication": {"type": "FSR"}}` -- a JSON-string
+        `authentication` 422s (pydantic wants the object). Returns `{"valid": true, "tools": [{"name"}, ...], "message": null}`;
+        `valid: false` carries the failure in `message`.'
       operationId: validate_mcp_config_ai_mcp_validate_post
       requestBody:
         content:
@@ -25680,7 +26401,13 @@ paths:
               additionalProperties: true
               type: object
               title: Config
-            example: {}
+            example:
+              authentication:
+                type: FSR
+              name: FortiSOAR Module Management
+              transport: http
+              url: https://localhost/mcp/modules/
+              uuid: <uuid>
         required: true
       responses:
         '200':
@@ -25688,6 +26415,13 @@ paths:
           content:
             application/json:
               schema: {}
+              example:
+                message: null
+                tools:
+                - name: query_records
+                - name: get_modules
+                - '... <1 more items truncated>'
+                valid: true
         '422':
           description: Validation Error
           content:
@@ -25706,6 +26440,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.validate_mcp_server({\"name\": \"...\", \"\
           url\": \"...\"})"
+      x-live-captured: true
       x-auth: &id253
         apikey: 'yes'
         jwt: 'yes'
@@ -25801,7 +26536,25 @@ paths:
           application/json:
             schema:
               type: object
-            example: {}
+            example:
+              config: {}
+              mcp_configuration:
+                name: live-mcp-host-1792615262
+                uuid: <uuid>
+              metadata:
+                connectorName: aws
+                label: live-mcp-host-1792615262
+                name: live-mcp-host-1792615262
+                version: 1.0.0
+              tools:
+              - addTool: true
+                category: null
+                description: live-test tool entry
+                enabled: true
+                operation: live-noop-1792615262
+                parameters: []
+                title: live test live-noop-1792615262
+                visible: true
       responses:
         '200':
           description: Tools registered.
@@ -25809,12 +26562,21 @@ paths:
             application/json: {}
         '400':
           description: Connector not found or no tools.
+        '201':
+          description: Live-captured response.
+          content:
+            application/json:
+              example:
+                name: live-mcp-host-1792615262
+                url: https://localhost/mcp/connector/live-mcp-host-1792615262
+                uuid: <uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.post(\"/mcp/add/tools\", data={\"mcp_configuration\"\
           : {\"name\": \"my-server\", \"uuid\": \"abc123\"}, \"tools\": []})"
+      x-live-captured: true
       x-auth: &id255
         apikey: 'yes'
         jwt: 'yes'
@@ -25848,13 +26610,45 @@ paths:
         '200':
           description: Exported tool catalog.
           content:
-            application/json: {}
+            application/json:
+              example:
+              - tools:
+                - annotations: {}
+                  description: live-test tool entry
+                  enabled: true
+                  mcp_config_uuid: <uuid>
+                  metadata_info:
+                    configuration: {}
+                    connector_name: live-mcp-host-1792615262
+                    operation_name: live-noop-1792615262
+                    params: []
+                    version: 1.0.0
+                  name: live-noop-1792615262
+                  parameters:
+                    params_schema:
+                      properties: {}
+                      title: live-noop-1792615262_Params
+                      type: object
+                  tags:
+                  - connector_operation_tool
+                  - live-mcp-host-1792615262
+                  - '... <1 more items truncated>'
+                  title: live test live-noop-1792615262
+                  type: connector
+                  uuid: <uuid>
+                uuid: <uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.export_mcp_server_tools([{\"name\": \"my-server\"\
           }])"
+      requestBody:
+        content:
+          application/json:
+            example:
+            - uuid: <uuid>
+      x-live-captured: true
       x-auth: &id256
         apikey: 'yes'
         jwt: 'yes'
@@ -25889,8 +26683,31 @@ paths:
               type: array
               title: Mcp Configs
             example:
-            - uuid: example
-              tools: []
+            - tools:
+              - annotations: {}
+                description: live-test tool entry
+                enabled: true
+                mcp_config_uuid: <uuid>
+                metadata_info:
+                  configuration: {}
+                  connector_name: live-mcp-host-1792615262
+                  operation_name: live-noop-1792615262
+                  params: []
+                  version: 1.0.0
+                name: live-noop-1792615262
+                parameters:
+                  params_schema:
+                    properties: {}
+                    title: live-noop-1792615262_Params
+                    type: object
+                tags:
+                - connector_operation_tool
+                - live-mcp-host-1792615262
+                - '... <1 more items truncated>'
+                title: live test live-noop-1792615262
+                type: connector
+                uuid: <uuid>
+              uuid: <uuid>
         required: true
       responses:
         '200':
@@ -25898,6 +26715,7 @@ paths:
           content:
             application/json:
               schema: {}
+              example: false
         '422':
           description: Validation Error
           content:
@@ -25912,8 +26730,10 @@ paths:
       tags:
       - MCP Admin
       x-fsr-version: 8.0+
-      description: 'Import a previously-exported MCP server configuration. Reverses `POST /mcp/config/export`. Body: JSON
-        payload from export.'
+      description: 'Import a previously-exported MCP tool catalog. Body: the LIST produced by `POST /mcp/config/export` --
+        `[{"uuid", "tools": [...], "name", "url", "transport", "type"}, ...]` (a bare object 422s; an empty list is a no-op).
+        Returns a bare JSON boolean (`false` = nothing applied / no change, live-verified on 8.0.0).'
+      x-live-captured: true
       x-auth: &id257
         apikey: 'yes'
         jwt: 'yes'
@@ -25953,10 +26773,15 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateToolRequest'
             example:
-              metadata: {}
               config: {}
-              tools: []
+              metadata:
+                connectorName: aws
+                label: live-mcp-host-1792615262
+                name: live-mcp-host-1792615262
+                version: 1.0.0
               remove_tools: []
+              tools: []
+              uuid: <uuid>
       responses:
         '200':
           description: Successful Response
@@ -25977,8 +26802,11 @@ paths:
       tags:
       - MCP Admin
       x-fsr-version: 8.0+
-      description: 'Update which tools a specific MCP server may expose. Body: tool names to enable or disable for the given
-        server configuration uuid.'
+      description: 'Replace the exposed tool set of a hosted MCP server. Body: `{"uuid", "metadata": {"name", "connectorName",
+        "label", "version"}, "config": {}, "tools": [<tool entries>], "remove_tools": [<operation names to unhost>]}`. Returns
+        200 with a `null` body. The `metadata.connectorName` is required -- without it the handler 500s `Connector name is
+        missing.`'
+      x-live-captured: true
       x-auth: &id258
         apikey: 'yes'
         jwt: 'yes'
@@ -26013,7 +26841,8 @@ paths:
           application/json:
             schema:
               type: object
-            example: {}
+            example:
+            - <uuid>
       responses:
         '200':
           description: Tools deleted.
@@ -26024,15 +26853,19 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.delete_mcp_tools([{\"name\": \"my-tool\"}])"
+      x-live-captured: true
       x-auth: &id259
         apikey: untested
         jwt: untested
       x-auth-by-version:
         8.0.0:
           apikey: untested
-          jwt: untested
+          jwt: 'yes'
         8.0.1: *id259
       x-badges:
+      - name: JWT
+        position: before
+        color: '#1f8a4c'
       - name: Not tested
         position: before
         color: '#b7791f'
@@ -26078,8 +26911,9 @@ paths:
       tags:
       - MCP Admin
       x-fsr-version: 8.0+
-      description: Return the list of available tools for a given MCP server type (e.g. `modules`, `playbooks`, `utility`).
-        Each tool entry includes name, description, and input schema.
+      description: 'Return the list of available tools for a given MCP server type (e.g. `modules`, `playbooks`, `utility`).
+        Each tool entry includes name, description, and input schema. Live 8.0.0: `internal` returns `{}` and `connector`
+        returns `{"available": [...], ...}`.'
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -26153,6 +26987,10 @@ paths:
                   jsonrpc: '2.0'
                   id: 2
                   method: tools/list
+            example:
+              id: 2
+              jsonrpc: '2.0'
+              method: tools/list
       responses:
         '200':
           description: 'JSON-RPC response, framed as an SSE `event: message` line.'
@@ -26160,6 +26998,229 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/McpJsonRpcResponse'
+            application/json:
+              example:
+                id: 2
+                jsonrpc: '2.0'
+                result:
+                  tools:
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - module_tool
+                        - query_records
+                    annotations: {}
+                    description: Queries and retrieves records from a selected module using filter conditions. Use this when
+                      specific records need to be fetched from the database based on fields such as ID, name, status, owner,
+                      times... <31 more characters>
+                    inputSchema:
+                      $defs:
+                        FetchRecordRequest:
+                          description: "Retrieve records from a main module, leveraging interlinked modules as needed.\nUse\
+                            \ get_modules or get_module_schema to latest module and fields.\n\nExample:\n{\n  \"module_id\"\
+                            : \"module_name\",\n  \"filters\": ... <615 more characters>"
+                          properties:
+                            filters:
+                              description: Field/group filters. FieldFilter supports main or linked targets.
+                              items:
+                                $ref: '#/$defs/FilterExpression'
+                              type: array
+                            limit:
+                              anyOf:
+                              - minimum: 1
+                                type: integer
+                              - type: 'null'
+                              default: 30
+                              description: Maximum number of records to return.
+                            logic:
+                              default: AND
+                              description: Top-level logic for combining filters at the root level.
+                              enum:
+                              - AND
+                              - OR
+                              type: string
+                            module_id:
+                              description: Main module ID to retrieve records from (e.g., 'module_id').
+                              type: string
+                            select:
+                              anyOf:
+                              - items:
+                                  type: string
+                                type: array
+                              - type: 'null'
+                              description: Main module field IDs to include in results (e.g., ['field_name','field_name']).
+                            sort:
+                              anyOf:
+                              - items:
+                                  $ref: '#/$defs/SortRule'
+                                type: array
+                              - type: 'null'
+                              description: Optional sort rules by main or linked fields.
+                          required:
+                          - module_id
+                          - filters
+                          type: object
+                        FieldFilter:
+                          description: 'Unified filter supporting either:
+
+                            - Main field filter: field=''field_name''
+
+                            - Linked field filter: linked_module_id=''linked_module_id'' and linked_field_id=''linked_field_name''
+
+
+                            Exactly one mode must be u... <194 more characters>'
+                          properties:
+                            field:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Main module field ID (e.g., 'field_name'). Use this for main-field filtering.
+                            linked_field_id:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Linked module field ID (e.g., 'linked_field_name') used with linked_module_id.
+                            linked_module_id:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Linked module ID for linked-field filtering (e.g., 'linked_module_id').
+                            operator:
+                              description: Comparison operator. 'like'/'notlike' use % and _. 'isnull' checks for nulls.
+                              enum:
+                              - eq
+                              - neq
+                              - '... <1 more items truncated>'
+                              type: string
+                            type:
+                              const: field
+                              default: field
+                              description: Discriminator for a field-based filter (main or linked).
+                              type: string
+                            value:
+                              anyOf:
+                              - type: string
+                              - type: integer
+                              - '... <1 more items truncated>'
+                              description: 'Value to compare against. For ''in''/''nin'', provide a list. For ''like'', use
+                                %/_. '
+                          required:
+                          - operator
+                          - value
+                          type: object
+                        FilterExpression:
+                          anyOf:
+                          - $ref: '#/$defs/FieldFilter'
+                          - $ref: '#/$defs/FilterGroup'
+                          description: 'A single filter expression: either a field filter (main/linked) or a logical group.'
+                        FilterGroup:
+                          description: Group multiple filters using a logical operator. Supports recursive nesting.
+                          properties:
+                            filters:
+                              description: Nested filter expressions or further groups.
+                              items:
+                                anyOf:
+                                - $ref: '#/$defs/FilterExpression'
+                                - $ref: '#/$defs/FilterGroup'
+                              type: array
+                            logic:
+                              description: How to combine the nested filters.
+                              enum:
+                              - AND
+                              - OR
+                              type: string
+                          required:
+                          - logic
+                          - filters
+                          type: object
+                        SortRule:
+                          description: 'Sorting rule for results.
+
+                            - For main-field sort: set field=''F#''
+
+                            - For linked-field sort: set linked_module_id=''linked_module_id'' and linked_field_id=''field_name''
+
+                            Exactly one mode must be used.'
+                          properties:
+                            direction:
+                              default: ASC
+                              description: 'Sort direction: ''ASC'' or ''DESC''. Default ''ASC''.'
+                              enum:
+                              - ASC
+                              - DESC
+                              type: string
+                            field:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Main module field ID to sort by (e.g., 'field_name'). Not valid with linked_* fields.
+                          type: object
+                      additionalProperties: false
+                      properties:
+                        params:
+                          $ref: '#/$defs/FetchRecordRequest'
+                      required:
+                      - params
+                      type: object
+                    name: query_records
+                    outputSchema:
+                      additionalProperties: true
+                      properties:
+                        error:
+                          anyOf:
+                          - type: string
+                          - type: 'null'
+                          default: null
+                        result:
+                          default: null
+                          title: Result
+                        status:
+                          default: failed
+                          enum:
+                          - success
+                          - failed
+                          - '... <1 more items truncated>'
+                          type: string
+                      type: object
+                    title: Query Records
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - get_modules
+                        - module_tool
+                    annotations: {}
+                    description: Retrieves the list of available modules that can be queried. Use this to know which modules
+                      or data objects are available before selecting where to search.
+                    inputSchema:
+                      additionalProperties: false
+                      properties: {}
+                      type: object
+                    name: get_modules
+                    outputSchema:
+                      additionalProperties: true
+                      properties:
+                        error:
+                          anyOf:
+                          - type: string
+                          - type: 'null'
+                          default: null
+                        result:
+                          default: null
+                          title: Result
+                        status:
+                          default: failed
+                          enum:
+                          - success
+                          - failed
+                          - '... <1 more items truncated>'
+                          type: string
+                      type: object
+                    title: Get Modules
+                  - '... <1 more items truncated>'
           headers:
             mcp-session-id:
               schema:
@@ -26167,6 +27228,7 @@ paths:
               description: Returned on `initialize`; required on every subsequent call.
         '406':
           description: 'Missing `Accept: text/event-stream`.'
+      x-live-captured: true
       x-auth: &id261
         apikey: 'yes'
         jwt: 'yes'
@@ -26230,6 +27292,10 @@ paths:
                   jsonrpc: '2.0'
                   id: 2
                   method: tools/list
+            example:
+              id: 2
+              jsonrpc: '2.0'
+              method: tools/list
       responses:
         '200':
           description: 'JSON-RPC response, framed as an SSE `event: message` line.'
@@ -26237,6 +27303,70 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/McpJsonRpcResponse'
+            application/json:
+              example:
+                id: 2
+                jsonrpc: '2.0'
+                result:
+                  tools:
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - get_available_playbooks
+                        - playbook_tool
+                    annotations: {}
+                    description: Retrieves available automation playbooks that can be executed. Use this to identify which
+                      response, enrichment, containment, or investigation playbooks are available before selecting one.
+                    inputSchema:
+                      additionalProperties: false
+                      properties: {}
+                      type: object
+                    name: get_available_playbooks
+                    outputSchema:
+                      additionalProperties: true
+                      properties:
+                        error:
+                          anyOf:
+                          - type: string
+                          - type: 'null'
+                          default: null
+                        result:
+                          default: null
+                          title: Result
+                        status:
+                          default: failed
+                          enum:
+                          - success
+                          - failed
+                          - '... <1 more items truncated>'
+                          type: string
+                      type: object
+                    title: Get Available Playbooks
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - execute_playbook
+                        - playbook_tool
+                    annotations: {}
+                    description: Starts a selected playbook with the required input parameters. Use this when an approved
+                      automation workflow needs to be triggered.
+                    inputSchema:
+                      additionalProperties: false
+                      properties:
+                        input_param:
+                          title: Input Param
+                        trigger_type:
+                          title: Trigger Type
+                        uuid:
+                          type: string
+                      required:
+                      - uuid
+                      - input_param
+                      - '... <1 more items truncated>'
+                      type: object
+                    name: execute_playbook
+                    title: Execute Playbook
+                  - '... <1 more items truncated>'
           headers:
             mcp-session-id:
               schema:
@@ -26244,6 +27374,7 @@ paths:
               description: Returned on `initialize`; required on every subsequent call.
         '406':
           description: 'Missing `Accept: text/event-stream`.'
+      x-live-captured: true
       x-auth: &id262
         apikey: 'yes'
         jwt: 'yes'
@@ -26301,6 +27432,10 @@ paths:
                   jsonrpc: '2.0'
                   id: 2
                   method: tools/list
+            example:
+              id: 2
+              jsonrpc: '2.0'
+              method: tools/list
       responses:
         '200':
           description: 'JSON-RPC response, framed as an SSE `event: message` line.'
@@ -26308,6 +27443,42 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/McpJsonRpcResponse'
+            application/json:
+              example:
+                id: 2
+                jsonrpc: '2.0'
+                result:
+                  tools:
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - get_current_datetime
+                        - utility
+                    annotations: {}
+                    description: Retrieves the current date and time in the configured local timezone. Use this when the LLM
+                      needs an accurate current timestamp
+                    inputSchema:
+                      additionalProperties: false
+                      properties: {}
+                      type: object
+                    name: get_current_datetime
+                    title: Get Current Datetime
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - elastic_search
+                    annotations: {}
+                    description: Global search as per query
+                    inputSchema:
+                      additionalProperties: false
+                      properties:
+                        params:
+                          title: Params
+                      required:
+                      - params
+                      type: object
+                    name: global_search
+                    title: Global Search Query
           headers:
             mcp-session-id:
               schema:
@@ -26315,6 +27486,7 @@ paths:
               description: Returned on `initialize`; required on every subsequent call.
         '406':
           description: 'Missing `Accept: text/event-stream`.'
+      x-live-captured: true
       x-auth: &id263
         apikey: 'yes'
         jwt: 'yes'
@@ -26371,6 +27543,10 @@ paths:
                   jsonrpc: '2.0'
                   id: 2
                   method: tools/list
+            example:
+              id: 2
+              jsonrpc: '2.0'
+              method: tools/list
       responses:
         '200':
           description: 'JSON-RPC response, framed as an SSE `event: message` line.'
@@ -26378,6 +27554,161 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/McpJsonRpcResponse'
+            application/json:
+              example:
+                id: 2
+                jsonrpc: '2.0'
+                result:
+                  tools:
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - aws
+                        - connector_operation_tool
+                        - '... <1 more items truncated>'
+                    annotations: {}
+                    description: Retrieves details for all AMIs (Amazon Machine Images) or specific AMIs, based on input parameters
+                      you have specified from AWS.
+                    inputSchema:
+                      additionalProperties: false
+                      properties:
+                        params:
+                          properties:
+                            assume_role:
+                              anyOf:
+                              - type: boolean
+                              - type: 'null'
+                              default: false
+                              description: 'Select this option to assume a role.Note: You must enable this option, i.e., this
+                                parameter is required, if you have specified IAM Role as the Configuration Type. If you have
+                                specified Access Credenti... <384 more characters>'
+                            executable_users:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: List of AWS Account IDs of executable users(s) associated with the AMI(s) whose
+                                details you want to retrieve from AWS EC2.
+                            filters:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: List of filters based on which you want to retrieve details of AMIs from AWS EC2.
+                            image_ids:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: List of IDs of the AMIs whose details you want to retrieve from AWS EC2.
+                            owners:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: List of AWS Account IDs of owners associated with the AMI(s) whose details you
+                                want to retrieve from AWS EC2..
+                          type: object
+                      required:
+                      - params
+                      type: object
+                    name: get_details_for_all_images
+                    title: Get AMIs Detail
+                  - _meta:
+                      fastmcp:
+                        tags:
+                        - aws
+                        - connector_operation_tool
+                        - '... <1 more items truncated>'
+                    annotations: {}
+                    description: Launches a new instance on AWS having basic configuration based on the image ID, instance
+                      type, and other input parameters you have specified.
+                    inputSchema:
+                      additionalProperties: false
+                      properties:
+                        params:
+                          properties:
+                            assume_role:
+                              anyOf:
+                              - type: boolean
+                              - type: 'null'
+                              default: false
+                              description: 'Select this option to assume a role.Note: You must enable this option, i.e., this
+                                parameter is required, if you have specified IAM Role as the Configuration Type. If you have
+                                specified Access Credenti... <384 more characters>'
+                            customer_name:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Name of the customer for whom you are requesting the launch of the new instance
+                                on AWS EC2.
+                            delete_on_termination:
+                              default: false
+                              description: Select this option if you want to delete the interface when the instance is terminated.
+                              type: boolean
+                            device_name:
+                              default: null
+                              description: Name of the device. For example, /dev/sdh or xvdh.
+                              type: string
+                            image_id:
+                              default: null
+                              description: ID of the AMI on which you want to launch a new instance. You can get the ID of
+                                an AMI using the Get AMIs Detail operation.
+                              type: string
+                            instance_type:
+                              default: t1.micro
+                              description: Type of the instance that you want to launch on AWS EC2. For example, t1.micro
+                              enum:
+                              - t1.micro
+                              - t2.nano
+                              - '... <1 more items truncated>'
+                              type: string
+                            maxcount:
+                              default: 1
+                              description: Maximum number of instances to launch on AWS EC2. If you specify a maximum that
+                                is greater than the maximum number of instances Amazon EC2 can launch in the target Availability
+                                Zone, Amazon EC2 launch... <59 more characters>
+                              type: integer
+                            mincount:
+                              default: 1
+                              description: Minimum number of instances to launch on AWS EC2. If you specify a minimum that
+                                is lesser than the minimum number of instances than Amazon EC2 can launch in the target Availability
+                                Zone, Amazon EC2 la... <20 more characters>
+                              type: integer
+                            purpose:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Purpose of launching the instance on AWS EC2.
+                            security_groups_list:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: SD(s) of the security group(s) to be assigned to the newly launched instance on
+                                AWS EC2.
+                            subnetid:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: ID of the subnet associated with the network string.ID of a subnet must be provided
+                                if you don't want to use default subnet to this instance
+                            terminate_by_date:
+                              anyOf:
+                              - type: string
+                              - type: 'null'
+                              default: null
+                              description: Date on which the instance will be terminated on AWS EC2.
+                          type: object
+                      required:
+                      - params
+                      type: object
+                    name: launch_instance
+                    title: Launch Instance
+                  - '... <1 more items truncated>'
           headers:
             mcp-session-id:
               schema:
@@ -26392,6 +27723,7 @@ paths:
         schema:
           type: string
         description: Connector slug as registered via `POST /mcp/add/tools`.
+      x-live-captured: true
       x-auth: &id264
         apikey: untested
         jwt: untested
@@ -26573,7 +27905,84 @@ paths:
         '201':
           description: Created.
           content:
-            application/json: {}
+            application/json:
+              example:
+                '@context': /api/3/contexts/MCPConfiguration
+                '@id': /api/3/mcp_configurations/<uuid>
+                '@type': MCPConfiguration
+                active: false
+                authentication: Array
+                command: null
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: live-test own mcp hosting
+                id: 27
+                metadata:
+                  connectorName: aws
+                  requireConfiguration: false
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-mcp-host-1792615262
+                recordTags: []
+                timeout: null
+                transport: http
+                type: connector
+                url: https://localhost/mcp/connector/aws/
+                uuid: <uuid>
         '400':
           description: Invalid configuration.
       x-codeSamples:
@@ -26634,38 +28043,68 @@ paths:
                 command: ''
                 createDate: 1700000000
                 createUser:
-                  '@id': /api/3/appliances/<uuid>
-                  '@type': Appliance
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
                   avatar: null
+                  companyId: null
                   createDate: 1700000000
-                  createUser: null
-                  id: 1
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
                   modifyDate: 1700000000
-                  modifyUser: null
-                  name: Playbook
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
                 description: MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and
                   query module data directly within FortiSOAR. It provides a centralized interface for managing and intera...
                   <41 more characters>
-                id: 1
+                id: 28
                 metadata: null
                 modifyDate: 1700000000
                 modifyUser:
-                  '@id': /api/3/appliances/<uuid>
-                  '@type': Appliance
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
                   avatar: null
+                  companyId: null
                   createDate: 1700000000
-                  createUser: null
-                  id: 1
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
                   modifyDate: 1700000000
-                  modifyUser: null
-                  name: Playbook
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: FortiSOAR Module Management
+                name: live-<run>-mcp
                 recordTags: []
                 timeout: null
                 transport: http
@@ -26751,8 +28190,8 @@ paths:
                 userId: <uuid>
                 userType: null
                 uuid: <uuid>
-              description: updated by run 849de15e
-              id: 17
+              description: updated by run 4a3c029b
+              id: 28
               metadata: null
               modifyDate: 1700000000
               modifyUser:
@@ -26954,7 +28393,8 @@ paths:
               example:
                 available:
                 - aws
-                - null
+                - live-test-mcp-host
+                - '... <1 more items truncated>'
                 restricted:
                 - fsr-agent-communication-bridge
                 - code-snippet
@@ -27006,7 +28446,16 @@ paths:
           application/json:
             schema:
               type: object
-            example: {}
+            example:
+              config: {}
+              metadata:
+                connectorName: aws
+                label: live-mcp-host-1792615262
+                name: live-mcp-host-1792615262
+                version: 1.0.0
+              remove_tools: []
+              tools: []
+              uuid: <uuid>
       responses:
         '200':
           description: Tools updated.
@@ -27018,6 +28467,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.put(\"/mcp/tools/abc123\", data={\"uuid\": \"\
           abc123\", \"tools\": []})"
+      x-live-captured: true
       x-auth: &id271
         apikey: 'yes'
         jwt: 'yes'

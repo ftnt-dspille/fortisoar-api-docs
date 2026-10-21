@@ -83,6 +83,19 @@ UNREACHABLE_OPS = {
 
 
 # ---------------------------------------------------------------------------
+# Live-verified response-code corrections (8.0.0). The async task routes
+# answer **202** for their whole task life (trigger, status, result alike) --
+# the service OpenAPI declares 200. Keyed by (method, path); maps the declared
+# 200 entry (keeping its content/examples) onto the live code.
+# ---------------------------------------------------------------------------
+RESPONSE_CODE_OVERRIDES: dict[tuple[str, str], str] = {
+    ("post", "/api/ai/agents/{agent_name}/trigger"): "202",
+    ("get", "/api/ai/agents/{task_id}/status"): "202",
+    ("get", "/api/ai/agents/{task_id}/result"): "202",
+}
+
+
+# ---------------------------------------------------------------------------
 # FastAPI summary overrides - the upstream OpenAPI ships auto-generated
 # summaries that are wrong or misleading.  Keyed by (method, path).
 # ---------------------------------------------------------------------------
@@ -111,70 +124,72 @@ SUMMARY_OVERRIDES = {
     ("get", "/api/ai/agent/{uuid}"): {"summary": "Get agent by uuid",
                                 "description": "Return agent information identified by its uuid. Returns the same agent record as returned by list_agents."},
     ("post", "/api/ai/agents/{agent_name}/trigger"): {"summary": "Trigger a single agent run",
-                                        "description": "Trigger a single agent run. Returns a dict with `task_id` and `status` (`pending`). Poll with `GET /api/ai/agents/{task_id}/status` (returns one of `pending`, `inprogress`, `completed`, `failed`) and fetch results with `GET /api/ai/agents/{task_id}/result`."},
+                                        "description": "Trigger a single agent run. **202 Accepted** for the whole task life (not 200). Body: `{\"input_data\": {<fields from the agent's inputformat contract>}, \"context\": {}, \"user_id\": \"<any caller tag>\"}` -- e.g. ioc-masking wants `input_data: {data, action, detransform_map?}` (see `GET /api/ai/agent/{name}/{version}`). Returns `{\"task_id\", \"status\": \"pending\"}`; poll `GET /api/ai/agents/{task_id}/status` (`pending` -> `inprogress` -> `completed`/`failed`) and fetch `GET /api/ai/agents/{task_id}/result`."},
     ("get", "/api/ai/agents/{task_id}/status"): {"summary": "Get agent run status",
-                                       "description": "Return current pipeline status for a triage task. While running: `pending` then `inprogress`; terminal: `completed` or `failed`."},
-    ("get", "/api/ai/agents/{task_id}/result"): {"summary": "Get agent run result (answer, evidence, confidence)",
-                                        "description": "Return the investigation result after the agent run completes. Contains `answer` (natural language), `evidence` (supporting data), and `confidence` score (0.0-1.0)."},
+                                       "description": "Return current pipeline status for an agent task. **202 Accepted** while the task exists (not 200). Body: `{\"task_id\", \"status\"}` -- `pending`, `inprogress`, `completed` or `failed`."},
+    ("get", "/api/ai/agents/{task_id}/result"): {"summary": "Get agent run result",
+                                        "description": "Return the agent run's result. **202 Accepted** (not 200). The shape is AGENT-SPECIFIC -- it mirrors the agent's contract, not a generic envelope: ioc-masking returns `{\"masked\": {\"input_data\": {...masked inputs...}}, \"detransform_map\": {<mask key>: <original>}, \"logs\": [], \"phases\": []}`. Investigation agents return their answer/evidence structure here."},
     ("post", "/api/ai/agents/{task_id}/acceptance"): {"summary": "Submit analyst feedback on agent result",
-                                             "description": "Submit analyst acceptance/rejection feedback on the agent's result. Accepts a JSON object with `accepted` (boolean) and optional `reason` (string)."},
+                                             "description": "Submit analyst acceptance/rejection feedback on the agent's result. **Broken on 8.0.0**: every body shape (`{}`, `{\"accepted\": true}`, `{\"feedback\": ..}`, `{\"status\": ..}`) crashes with `400 {\"type\": \"TypeError\", \"message\": \"Internal Server Error...\"}` -- the fsr-ai handler itself raises. Recorded live; no working request shape exists on this build."},
     ("get", "/api/ai/llm/config"): {"summary": "List LLM reasoning profiles",
-                             "description": "Return all LLM reasoning profiles. Each profile defines the provider, model, temperature, and system prompt used by agents. Response: list of `LLMConfig` objects with `uuid`, `name`, `config`."},
-    ("post", "/api/ai/llm/config"): {"summary": "Create an LLM reasoning profile",
-                              "description": "Create one or more LLM reasoning profiles. Body: list of config objects, each with `name`, `provider`, `model`, and other provider-specific fields."},
+                             "description": "Return all LLM reasoning profiles. Each profile: `{uuid, name, isdefault, active, model, modelname, provider, apikey, baseurl, config}` -- the shipped profiles use `provider: \"fortisoar\"` with `config.connector_name: \"fortinet-fortiai-proxy\"` (FortiAI cloud via the proxy connector)."},
+    ("post", "/api/ai/llm/config"): {"summary": "Create LLM reasoning profiles",
+                              "description": "Create one or more LLM reasoning profiles. Body is a LIST of profile objects: `[{\"name\": ...}]` at minimum (a bare object 422s `Input should be a valid list`; an empty list is a no-op 201). Each item: `{name, isdefault, active, modelname, provider, apikey, baseurl, config}`. Returns the echoed list (server assigns uuids; the echo shows `uuid: null`)."},
     ("delete", "/api/ai/llm/config/{uuid}"): {"summary": "Delete an LLM reasoning profile",
-                                        "description": "Delete the specified LLM reasoning profile by uuid. Agents using this profile will fall back to the default configuration."},
+                                        "description": "Delete the specified LLM reasoning profile by uuid. **Broken on 8.0.0**: every DELETE answers `400 {\"type\": \"TypeError\", \"message\": \"Internal Server Error...\"}` regardless of profile state (full-field profile included, live-verified) -- the fsr-ai delete handler raises. Profiles therefore cannot be removed via the API on this build."},
     ("get", "/api/ai/llm/config/{uuid}"): {"summary": "Get an LLM reasoning profile by uuid",
                                     "description": "Return the full LLM configuration record for the specified uuid, including provider, model name, temperature, system prompt, and active/default status."},
     ("get", "/api/ai/llm/config/{uuid}/verify"): {"summary": "Verify an LLM reasoning profile is callable",
-                                         "description": "Test whether the specified LLM configuration can actually invoke a model (validates the provider endpoint, auth, and connectivity)."},
+                                         "description": "Test whether the specified LLM configuration can actually invoke a model. Requires `?model_id=<the config uuid>` as a QUERY param (the fsr-ai handler binds it from the query string; a model *name* 500s on the uuid cast). Only OpenAI-style profiles implement verify -- a `fortisoar` (FortiAI proxy) profile raises `NotImplementedError` -> bare 500, by design."},
     ("get", "/api/ai/llm/allowed-providers"): {"summary": "List available LLM solution pack providers",
                                        "description": "Return the catalog of LLM providers bundled in the FortiSOAR solution pack (e.g., OpenAI, Azure OpenAI)."},
     ("get", "/api/ai/mcp"): {"summary": "List registered MCP servers",
                       "description": "Return all registered MCP servers that agents may call as tools during investigation. Response: list of `MCPServerRef` objects with `id`, `name`, `url`."},
     ("post", "/api/ai/mcp/validate"): {"summary": "Validate an MCP server configuration (handshake + auth)",
-                               "description": "Validate an MCP server by attempting handshake and auth. Accepts `MCPServerConfig` body with `uuid`, `name`, `url`, and auth credentials. Returns `MCPValidateResult`."},
+                               "description": "Attempt a real handshake + `tools/list` against an MCP server config. Body (MCPServerConfig): `{\"uuid\", \"name\", \"transport\": \"http\"|\"sse\", \"url\" (required for http/sse), \"authentication\": {\"type\": \"FSR\"}}` -- a JSON-string `authentication` 422s (pydantic wants the object). Returns `{\"valid\": true, \"tools\": [{\"name\"}, ...], \"message\": null}`; `valid: false` carries the failure in `message`."},
     ("post", "/api/ai/prompt/validate"): {"summary": "Validate a prompt template",
                                    "description": "Validate a prompt template string for Jinja2 interpolation errors. Returns a JSON object with `valid` (boolean) and `message` (string)."},
     ("post", "/api/ai/triage/alert"): {"summary": "Start an AI investigation for an alert",
                                "description": "Submit an alert for AI triage/investigation. Returns 202 Accepted with a JSON object containing `task_id` and `status` (`pending`). The task_id links to the investigation; use `get_status`/`get_result` to poll. If a record reference (e.g. `alerts:<uuid>`) is passed, the uuid is extracted and written back to the alert's `triagetaskid` field for later recovery."},
     ("post", "/api/ai/chat/"): {"summary": "Start or continue a conversational investigation",
-                         "description": "Start or continue a conversational investigation session. Requires `user_id` and `message` in the request body. Returns a ChatResponse with response text and optional tool calls."},
+                         "description": "Start or continue a conversational investigation session. Body: `{\"user_id\": \"<caller tag>\", \"messages\": [\"<plain string>\", ...]}` -- messages items are plain STRINGS (role-tagged objects 422). Returns `{\"thread_id\", \"intent\", \"message\", \"insight_id\", \"message_history\", \"insight\"}` where `message_history` carries the full system+user transcript."},
     # Insight paths
     ("get", "/api/ai/insight/"): {"summary": "List scheduled insights",
                            "description": "Return all scheduled insights. Each insight has an `insight_id`, schedule, associated playbook, and last-run status."},
     ("get", "/api/ai/insight/{insight_id}"): {"summary": "Get scheduled insight details",
-                                        "description": "Return details for a scheduled insight including its configuration, associated playbook, and last-run status."},
-    ("delete", "/api/ai/insight/{insight_id}"): {"summary": "Delete a scheduled insight",
-                                           "description": "Delete a previously-scheduled insight. The insight will stop running on its schedule."},
+                                        "description": "Return details for a saved insight: `{\"insight_id\", \"title\", \"query\", \"planid\", \"plan\": {\"steps\": [{\"agent\", \"title\", \"inputs\"}, ...]}}`."},
+    ("delete", "/api/ai/insight/{insight_id}"): {"summary": "Delete a saved insight",
+                                           "description": "Delete a saved insight. Returns `{\"message\": \"Insight '<uuid>' was deleted\"}`. The delete CASCADES: the underlying `/api/3/insights` record is removed too (a follow-up api3 DELETE 404s)."},
     ("post", "/api/ai/insight/chain_of_thoughts"): {"summary": "Generate a single-shot reasoning trace",
-                                            "description": "Generate a single-shot chain-of-thought reasoning trace for an investigation. Requires LLM configuration and investigation context in the body."},
+                                            "description": "Generate a single-shot chain-of-thought reasoning trace. Body: `{\"socrole\": \"SOC Analyst\", \"query\": \"...\"}`. Returns `{\"chain_of_thought\": [\"step\", ...]}` -- feed that LIST to `POST /api/ai/insight/plan`."},
     ("post", "/api/ai/insight/plan"): {"summary": "Generate a multi-step investigation plan",
-                               "description": "Generate a structured, multi-step investigation plan. Requires investigation context and optional constraints in the body. Returns a plan object with ordered steps."},
+                               "description": "Generate a structured, multi-step investigation plan. Body: `{\"socrole\", \"query\", \"chain_of_thought\": [<the list from chain_of_thoughts>]}` (the cot field must be a LIST; a boolean 422s). Returns `{\"objective\", \"intent_interpretation\", \"feasibility\", \"entities\", \"steps\"}` -- note the plan does NOT echo `chain_of_thought`; stitch it back in before `plan/execute`."},
     ("post", "/api/ai/insight/plan/execute"): {"summary": "Execute an investigation plan asynchronously",
-                                       "description": "Execute a previously-generated investigation plan. The plan runs asynchronously; poll with `GET /api/ai/insight/plan/{task_id}/status`."},
+                                       "description": "Execute an investigation plan. Body: `{\"socrole\", \"plan\": {**plan, \"chain_of_thought\": [<steps list>]}}` -- `plan.chain_of_thought` is REQUIRED (422 without it) even though `plan` itself doesn't return one. Returns `{\"status\": \"accepted\", \"planid\", \"task_id\"}`; poll `GET /api/ai/insight/plan/{task_id}/status` (`inprogress` for tens of seconds) then `GET .../result`."},
     ("get", "/api/ai/insight/plan/{task_id}/status"): {"summary": "Get plan execution status",
-                                                "description": "Return the current status of an asynchronously-executing investigation plan. Returns `pending`, `inprogress`, `completed`, or `failed`."},
+                                                "description": "Return the current status of an asynchronously-executing investigation plan: `{\"task_id\", \"status\"}` with `inprogress` until done."},
     ("get", "/api/ai/insight/plan/{task_id}/result"): {"summary": "Get plan execution result",
-                                                "description": "Return the result of a completed investigation plan execution. Contains the plan output, evidence gathered, and analyst recommendations."},
-    ("post", "/api/ai/insight/trigger/schedule"): {"summary": "Create or update a scheduled insight",
-                                           "description": "Create or update a scheduled insight that runs at specified intervals. Requires playbook reference and schedule configuration in the body."},
-    # Enrichment paths
+                                                "description": "Return the result envelope of an investigation plan execution: `{\"result\": {}, \"execution_log\": {}, \"last_executed\"}` -- empty while the plan is still running."},
+    ("post", "/api/ai/insight/trigger/schedule"): {"summary": "Run a saved insight now",
+                                           "description": "Run a saved, active insight immediately (the endpoint the insight's schedule calls). Body: `{\"referenceid\": \"<insight record uuid>\", \"createUser\": \"<owner /api/3/people IRI>\"}` over an insight SAVED via `POST /api/3/insights` (`{title, query, socrole, planid}`). Returns `{\"message\": \"Insight executed successfully. Please check the insight for the result.\"}`."},
+    # Enrichment paths -- the organizational-context KB is not configured on
+    # the reference appliance; context/index answers
+    # `{"detail": "Failed to index context record"}` and bare context 500s.
     ("post", "/api/ai/enrich/context"): {"summary": "Retrieve knowledge-base enrichment for context",
-                                  "description": "Retrieve vector-search enrichment from the knowledge base for a given context. Returns relevant indexed documents with similarity scores."},
+                                  "description": "Retrieve vector-search enrichment from the knowledge base for a given context. Returns relevant indexed documents with similarity scores. On 8.0.0 with no organizational-context KB configured this 500s (bare `Internal Server Error`) -- environment-limited, not a route problem."},
     ("post", "/api/ai/enrich/context/index"): {"summary": "Index a document into the knowledge base",
-                                       "description": "Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Accepts a JSON body with `content` (string) and `metadata` (object)."},
+                                       "description": "Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Body is an `OrganizationalContextDTO`: `{\"uuid\", \"title\", \"category\", \"subCategory\", \"description\", \"content\", \"llmSummarize\", \"type_\": \"organizational_context\"}`. On 8.0.0 with no KB configured: 500 `{\"detail\": \"Failed to index context record\"}`."},
     ("delete", "/api/ai/enrich/context/index/{uuid}"): {"summary": "Remove a document from the knowledge base index",
                                                  "description": "Delete a previously-indexed document from the knowledge-base vector store. The document will no longer be returned by RAG enrichment queries."},
     ("post", "/api/ai/enrich/index/build"): {"summary": "Build or rebuild the knowledge-base vector index",
                                       "description": "Rebuild (or create) the knowledge-base vector index from all indexed documents. Runs asynchronously; returns a task reference."},
     # MCP Admin paths (from mcp_server_openapi.json, summaries/descriptions may be empty)
     ("post", "/mcp/config/import"): {"summary": "Import exported MCP configuration",
-                                   "description": "Import a previously-exported MCP server configuration. Reverses `POST /mcp/config/export`. Body: JSON payload from export."},
+                                   "description": "Import a previously-exported MCP tool catalog. Body: the LIST produced by `POST /mcp/config/export` -- `[{\"uuid\", \"tools\": [...], \"name\", \"url\", \"transport\", \"type\"}, ...]` (a bare object 422s; an empty list is a no-op). Returns a bare JSON boolean (`false` = nothing applied / no change, live-verified on 8.0.0)."},
     ("put", "/mcp/tools/{mcp_config_uuid}"): {"summary": "Update tool allowlist for an MCP server",
-                                            "description": "Update which tools a specific MCP server may expose. Body: tool names to enable or disable for the given server configuration uuid."},
+                                            "description": "Replace the exposed tool set of a hosted MCP server. Body: `{\"uuid\", \"metadata\": {\"name\", \"connectorName\", \"label\", \"version\"}, \"config\": {}, \"tools\": [<tool entries>], \"remove_tools\": [<operation names to unhost>]}`. Returns 200 with a `null` body. The `metadata.connectorName` is required -- without it the handler 500s `Connector name is missing.`"},
     ("get", "/mcp/servers/{mcp_type}"): {"summary": "List available MCP tools for a server type",
-                                       "description": "Return the list of available tools for a given MCP server type (e.g. `modules`, `playbooks`, `utility`). Each tool entry includes name, description, and input schema."},
+                                       "description": "Return the list of available tools for a given MCP server type (e.g. `modules`, `playbooks`, `utility`). Each tool entry includes name, description, and input schema. Live 8.0.0: `internal` returns `{}` and `connector` returns `{\"available\": [...], ...}`."},
 }
 
 
@@ -912,6 +927,13 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
             override = SUMMARY_OVERRIDES.get((method, path))
             if override:
                 op.update(override)
+            # Live-verified response-code corrections (202 task routes).
+            code_override = RESPONSE_CODE_OVERRIDES.get((method, path))
+            if code_override:
+                responses = dict(op.get("responses") or {})
+                entry = responses.pop("200", None) or {"description": "Accepted"}
+                responses[code_override] = entry
+                op["responses"] = responses
             new_methods[method] = op
             ops.append((method, path))
         if new_methods:
