@@ -162,6 +162,8 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/3/routers"): ("doctest", "pyfsr.api.routers:RoutersAPI.list"),
     ("get", "/api/3/roles"): ("doctest", "pyfsr.api.roles:RolesAPI.list"),
     ("get", "/api/3/teams"): ("doctest", "pyfsr.api.teams:TeamsAPI.list"),
+    ("post", "/api/3/roles"): ("manual", 'role = client.roles.create("SOC Analyst L2", description="Tier-2 analysts")\nprint(role.name, role.uuid)'),
+    ("post", "/api/3/teams"): ("manual", 'team = client.teams.create("Tier 1", parents=["Tier 0"])\nprint(team.name, team.uuid)'),
     # Agents (lifecycle + installer + connector push)
     ("get", "/api/3/agents"): ("doctest", "pyfsr.api.agents:AgentsAPI.list"),
     ("get", "/api/3/agents/{uuid}"): ("doctest", "pyfsr.api.agents:AgentsAPI.get"),
@@ -478,7 +480,9 @@ _SKIP_ANN = {
 # Response models for ``manual`` samples. A manual entry names its pyfsr call
 # in source form, so there is no doctest whose return annotation
 # ``response_model_for`` could read -- the model is stated here instead. Every
-# entry must match the return annotation of the method the sample calls.
+# entry must match the return annotation of the method the sample calls (or,
+# for generic-fallback doctests like ``RecordSet.create``, of the record the
+# route actually returns).
 _MANUAL_RESPONSE_MODELS: dict[tuple[str, str], str] = {
     # AI agents
     ("get", "/api/ai/agent/"): "list[AgentRecord]",
@@ -497,6 +501,23 @@ _MANUAL_RESPONSE_MODELS: dict[tuple[str, str], str] = {
     # AI LLM
     ("get", "/api/ai/llm/config"): "list[LLMConfig]",
     ("get", "/api/ai/llm/config/{uuid}"): "LLMConfig",
+    # AI traces (client.ai.traces)
+    ("get", "/api/ai/traces/"): "list[TraceSummary]",
+    ("get", "/api/ai/traces/{trace_id}"): "TraceNode",
+    ("get", "/api/ai/traces/{trace_id}/execution-tree"): "ExecutionTree",
+    ("get", "/api/ai/traces/{trace_id}/spans"): "list[TraceSpan]",
+    ("get", "/api/ai/traces/spans/{span_id}"): "TraceSpan",
+    ("get", "/api/ai/traces/spans/{span_id}/tree"): "TraceNode",
+    # Access management -- the mapped sample is the generic RecordSet.create
+    # doctest (return ``Any``); the route returns a typed record.
+    ("post", "/api/3/roles"): "Role",
+    ("post", "/api/3/teams"): "Team",
+    # Workflow runs -- manual raw-get samples over typed pyfsr models.
+    ("get", "/api/wf/api/manual-wf-input/"): "list[ManualInput]",
+    ("get", "/api/wf/api/scheduled/"): "list[ScheduledTask]",
+    # Widgets (client.widgets -- publish/deploy/upload all return WidgetRecord)
+    ("put", "/api/3/widgets/{uuid}"): "WidgetRecord",
+    ("get", "/api/3/widgets/development/{uuid}"): "WidgetRecord",
 }
 
 
@@ -579,19 +600,19 @@ def response_model_for(http_method: str, path: str) -> str | None:
 
 
 def apply_pyfsr_response_models(paths: dict, schemas: dict | None = None) -> int:
-    """Attach ``x-pyfsr-response-model`` to each op's first 2xx response.
+    """Attach ``x-pyfsr-response-model`` to each op's 2xx responses.
 
     The extension names the pyfsr Pydantic class that ``x-codeSamples`` would
     parse the response into, so readers see what typed object they get back.
     Skips ops with no pyfsr entry, no doctest (manual samples), or an
     untyped return (``dict[str, Any]`` / ``bytes`` / ``None`` / ``Any``).
 
-    When ``schemas`` is given (the spec's ``components.schemas`` dict), also
-    wires the matching ``$ref`` onto the 2xx response's content schema so the
-    model renders as a linked, expandable response shape - not just a name.
-    ``list[Model]`` is wrapped as an array of the model; unions (``A | B``)
-    are skipped (too ambiguous to pick one). Never overwrites an existing
-    ``schema.$ref``. Returns the count of ``x-pyfsr-response-model`` tags set.
+    Every 2xx response with JSON content gets the tag and the ``$ref`` (when
+    the model exists as a schema): the platform answers both 200 and 201 for
+    record writes, and the shapes match, so leaving the twin example-only
+    documented half the operation. Unions (``A | B``) are skipped (too
+    ambiguous to pick one). Never overwrites an existing ``schema.$ref``.
+    Returns the count of ops tagged.
     """
     applied = 0
     for path, path_item in paths.items():
@@ -602,11 +623,12 @@ def apply_pyfsr_response_models(paths: dict, schemas: dict | None = None) -> int
             if not model:
                 continue
             responses = op.get("responses") or {}
-            # Attach to the first 2xx response we find (200, 201, 202, 204).
+            # Attach to every 2xx response with JSON content (200, 201, 202).
+            op_tagged = False
             for code, resp in responses.items():
-                if str(code) in {"200", "201", "202", "204"}:
+                if str(code) in {"200", "201", "202"}:
                     resp["x-pyfsr-response-model"] = model
-                    applied += 1
+                    op_tagged = True
                     # Wire the $ref so the model renders as a linked response
                     # schema (only when we have it and nothing is already set).
                     if schemas is not None and "|" not in model:
@@ -623,5 +645,6 @@ def apply_pyfsr_response_models(paths: dict, schemas: dict | None = None) -> int
                                                     "items": {"$ref": f"#/components/schemas/{inner}"}}
                                 else:
                                     ct["schema"] = {"$ref": f"#/components/schemas/{inner}"}
-                    break
+            if op_tagged:
+                applied += 1
     return applied
