@@ -262,7 +262,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/wf/api/historical-workflows/"): ("manual", 'client.get("/api/wf/api/historical-workflows/")'),
     ("get", "/api/wf/api/workflows/{pk}/"): ("manual", 'client.get("/api/wf/api/workflows/123/")'),
     ("post", "/api/wf/api/workflows/{pk}/start/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.start"),
-    ("post", "/api/wf/api/workflows/{pk}/retry/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.retry"),
+    ("get", "/api/wf/api/workflows/{pk}/retry/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.retry"),
     ("get", "/api/wf/api/workflows/count/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.count"),
     ("post", "/api/wf/api/workflows/log_list/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.log_list"),
     ("post", "/api/wf/api/query/workflow_logs/"): ("doctest", "pyfsr.api.playbooks:PlaybooksAPI.query_logs"),

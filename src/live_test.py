@@ -259,7 +259,11 @@ class Session:
         # colliding with the explicit `timeout=self.timeout` below (which would
         # otherwise raise "got multiple values for keyword argument 'timeout'").
         timeout = kw.pop("timeout", self.timeout)
-        r = requests.request(method, url, headers=self.headers, verify=self.verify,
+        # Per-call header overrides (e.g. the MCP JSON-RPC routes demand
+        # `Accept: application/json, text/event-stream`) merge over the
+        # session defaults instead of replacing them.
+        hdrs = {**self.headers, **kw.pop("headers", {})}
+        r = requests.request(method, url, headers=hdrs, verify=self.verify,
                              timeout=timeout, **kw)
         if 300 <= r.status_code < 400 and r.headers.get("Location"):
             self.redirects.append((method.upper(), url, r.status_code, r.headers["Location"]))
@@ -276,6 +280,7 @@ class Session:
         path_params: dict[str, str] | None = None,
         files: dict | None = None,
         capture_body: bool = True,
+        sse: bool = False,
         **kw,
     ) -> tuple[requests.Response, dict | list | None]:
         """Make a request against a path *template* and record the observation.
@@ -289,6 +294,12 @@ class Session:
         `Content-Type` is omitted from headers so requests picks the right
         boundary. The captured "request body" then summarizes the multipart
         parts rather than echoing the raw binary.
+
+        With `sse=True` the response is expected as server-sent events (the
+        MCP JSON-RPC routes): the recorded body becomes the JSON carried in
+        the `data:` frames instead of `null` (SSE text is not JSON). Extra
+        `headers` in `**kw` merge over the session defaults (e.g. the MCP
+        routes demand `Accept: application/json, text/event-stream`).
         """
         path = template.format(**(path_params or {}))
         if files is not None:
@@ -313,6 +324,17 @@ class Session:
             resp_body = r.json() if r.content else None
         except ValueError:
             resp_body = None
+        if sse and resp_body is None and r.text:
+            # MCP JSON-RPC routes answer as server-sent events
+            # (`event: message\ndata: {...}`). Record the JSON-RPC payload
+            # carried in the `data:` frames, not the SSE framing itself --
+            # that is what a client hands to its JSON-RPC layer.
+            chunks = [ln[5:].strip() for ln in r.text.splitlines() if ln.startswith("data:")]
+            if chunks:
+                try:
+                    resp_body = json.loads("".join(chunks))
+                except ValueError:
+                    resp_body = None
         # Record BEFORE assertion so failure cases (e.g. apikey 403 on an
         # admin endpoint) still surface in the per-auth coverage report.
         # capture_body=False records the status but no bodies -- for binary
@@ -422,6 +444,34 @@ def sweep(s: Session) -> int:
     removed += _sweep_scheduled(s)
     removed += _sweep_indicators(s)
     removed += _sweep_live_playbooks(s)
+    removed += _sweep_staging_metadata(s)
+    return removed
+
+
+def _sweep_staging_metadata(s: Session) -> int:
+    """DELETE staging_model_metadatas rows whose type carries the live marker.
+
+    A crash between the staging lifecycle's create and delete would otherwise
+    leave a staged schema row behind -- and the NEXT ``PUT /api/publish``
+    (misc_reads, captured only when the staging table is empty) would flush
+    it into the live schema.
+    """
+    removed = 0
+    r = s.request("GET", "/api/3/staging_model_metadatas?$limit=200")
+    if not r.ok:
+        return 0
+    try:
+        members = extract_members(r.json())
+    except ValueError:
+        return 0
+    for m in members:
+        mtype = str(m.get("type") or "")
+        if not (mtype.startswith(LIVE_PREFIX) or mtype.startswith("live")):
+            continue
+        uuid = m.get("uuid") or (m.get("@id") or "").rsplit("/", 1)[-1]
+        if uuid:
+            s.request("DELETE", f"/api/3/staging_model_metadatas/{uuid}")
+            removed += 1
     return removed
 
 
@@ -789,13 +839,55 @@ def scenario_smoke(s: Session) -> None:
 
 @scenario("ai")
 def scenario_ai(s: Session) -> None:
-    """Exercise 8.0+ AI / MCP surface (GETs + safe POSTs).
+    """Exercise the 8.0+ AI / FortiAI surface with REAL lifecycles (own records only).
 
-    Uses the spec-canonical ``/api/ai/`` prefix (not ``/api/ai/``) so observations
-    key against the curated OpenAPI paths.
+    FortiAI answers through the ``fortinet-fortiai-proxy`` connector (LLM
+    profiles with ``provider: "fortisoar"``). Every LLM-backed call below uses
+    a deliberately tiny query so the appliance's FortiAI token spend stays
+    minimal. Own-things contract: the scheduled insight created here is deleted
+    again (the AI DELETE also removes the underlying ``/api/3/insights`` record
+    -- a follow-up api3 DELETE 404s); agent runs are stateless (ioc-masking on
+    a literal string); nothing that ships with the appliance (agents, LLM
+    profiles, MCP configurations) is modified.
+
+    Live-verified shapes on 8.0.0:
+      - ``chat`` takes ``messages`` as plain STRINGS (role-tagged objects 422);
+        the answer carries ``thread_id`` / ``intent`` / ``message_history``.
+      - ``insight/chain_of_thoughts`` returns ``{"chain_of_thought": [..]}``;
+        ``insight/plan`` wants that LIST as ``chain_of_thought``; ``plan``
+        alone omits it, so ``plan/execute`` needs it stitched back in
+        (``plan: {**plan, "chain_of_thought": steps}``).
+      - ``insight/plan/execute`` -> ``{status: "accepted", planid, task_id}``;
+        status polls ``{"status": "inprogress"}`` and result returns
+        ``{result, execution_log, last_executed}`` (empty while running).
+      - ``insight/trigger/schedule`` wants ``{referenceid, createUser}`` over a
+        SAVED insight (``POST /api/3/insights``); ``createUser`` is the
+        owner's ``/api/3/people`` IRI.
+      - agent trigger/status/result answer **202** for the whole task life
+        (not 200); the trigger body is
+        ``{input_data: {<agent inputformat fields>}, context: {}, user_id}``.
+      - ``llm/config`` POST takes a LIST of profiles; the DELETE route 400s
+        with a TypeError for every profile on 8.0.0 (FortiAI bug), so no
+        profile is created here -- it could not be cleaned up.
+      - ``llm/config/{uuid}/verify`` wants ``?model_id=`` (the config uuid per
+        the fsr-ai handler); only OpenAI-style profiles implement verify --
+        ``fortisoar`` profiles raise NotImplementedError (500).
+      - the traces family (list/health/tokens/spans) 403s with
+        ``AccessDeniedException`` behind the tracer store on this appliance --
+        environment-limited, not a route problem.
+      - ``enrich/context`` + ``enrich/context/index`` 500 (the organizational
+        context KB is not configured here); the index body is the
+        OrganizationalContextDTO (``title``/``content``/``type_``/...).
+      - ``agent/config`` POST 404s (``'NoneType' object has no attribute
+        'id'``) and the per-agent GET 500s on 8.0.0.
+      - the ``/mcp/*`` gateway routes speak JSON-RPC 2.0 over streamable HTTP
+        and need ``Accept: application/json, text/event-stream`` -- anything
+        else 406s. Captures here run ``tools/list`` (after an unrecorded
+        ``initialize`` handshake, which must come first per protocol).
     """
     _ok = (200, 401, 403)
     _post = (200, 201, 202, 204, 400, 404, 422, 500, 401, 403)
+    _sse = {"Accept": "application/json, text/event-stream"}
 
     print("[ai] agent list + LLM config + MCP server list")
     _, agent_list = s.call("GET", "/api/ai/agent/", want=_ok)
@@ -811,15 +903,14 @@ def scenario_ai(s: Session) -> None:
     s.call("GET", "/api/ai/insight/", want=_ok)
     s.call("GET", "/api/ai/agent/config/default", want=_ok)
 
-    print("[ai] agent activate + prompt validate + triage")
-    s.call("POST", "/api/ai/agent/activate", want=(200, 401, 403), json={"uuids": [], "active": True})
-    s.call("POST", "/api/ai/prompt/validate", want=(200, 201, 401, 403), json={})
-    s.call("POST", "/api/ai/triage/alert", want=(202, 400, 401, 403), json={})
+    print("[ai] traces family (tracer store 403s on this box -- recorded as-is)")
+    s.call("GET", "/api/ai/traces/health", want=(200, 401, 403))
+    s.call("GET", "/api/ai/traces/", want=(200, 401, 403))
 
     print("[ai] agent detail (by name/version + by uuid)")
     agents = agent_list if isinstance(agent_list, list) else []
     if agents:
-        a = agents[0]
+        a = next((x for x in agents if x.get("name") == "ioc-masking"), agents[0])
         a_name, a_ver, a_uuid = a.get("name"), a.get("version"), a.get("uuid")
         if a_name and a_ver:
             s.call("GET", "/api/ai/agent/{name}/{version}", want=_ok,
@@ -832,49 +923,118 @@ def scenario_ai(s: Session) -> None:
             s.call("GET", "/api/ai/agent/{uuid}", want=_ok,
                    path_params={"uuid": a_uuid})
 
-    print("[ai] LLM config detail + verify")
+    print("[ai] LLM config detail + verify (fortisoar provider verify 500s by design)")
     llms = llm_list if isinstance(llm_list, list) else []
-    if llms:
-        llm_uuid = llms[0].get("uuid")
-        if llm_uuid:
-            s.call("GET", "/api/ai/llm/config/{uuid}", want=_ok,
-                   path_params={"uuid": llm_uuid})
-            s.call("GET", "/api/ai/llm/config/{uuid}/verify", want=(200, 422, 500, 401, 403),
-                   path_params={"uuid": llm_uuid},
-                   params={"model_id": llm_uuid})
+    default_llm = next((p for p in llms if isinstance(p, dict) and p.get("isdefault")), None)
+    if default_llm and default_llm.get("uuid"):
+        s.call("GET", "/api/ai/llm/config/{uuid}", want=_ok,
+               path_params={"uuid": default_llm["uuid"]})
+        s.call("GET", "/api/ai/llm/config/{uuid}/verify", want=(200, 422, 500, 401, 403),
+               path_params={"uuid": default_llm["uuid"]},
+               params={"model_id": default_llm["uuid"]})
 
-    print("[ai] agent trigger + task status/result (dummy task_id)")
+    print("[ai] chat (messages are plain strings)")
+    _, chat = s.call("POST", "/api/ai/chat/", want=(200, 401, 403, 422, 500),
+                     json={"user_id": s.live_name("ai"), "messages": ["Reply with exactly: pong"]})
+
+    print("[ai] chain_of_thoughts -> plan -> execute -> status/result")
+    socrole = "SOC Analyst"
+    tiny_query = "Reply with the single word: pong"
+    _, cot = s.call("POST", "/api/ai/insight/chain_of_thoughts", want=(200, 401, 403, 422, 500),
+                    json={"socrole": socrole, "query": tiny_query})
+    steps = (cot or {}).get("chain_of_thought") or [] if isinstance(cot, dict) else []
+    _, plan = s.call("POST", "/api/ai/insight/plan", want=(200, 401, 403, 422, 500),
+                     json={"socrole": socrole, "query": tiny_query, "chain_of_thought": steps})
+    plan_body = dict(plan) if isinstance(plan, dict) else {}
+    plan_body["chain_of_thought"] = steps
+    _, executed = s.call("POST", "/api/ai/insight/plan/execute", want=(200, 401, 403, 422, 500),
+                         json={"socrole": socrole, "plan": plan_body})
+    ex_task = (executed or {}).get("task_id") if isinstance(executed, dict) else None
+    if ex_task:
+        s.call("GET", "/api/ai/insight/plan/{task_id}/status", want=(200, 404, 422, 401, 403),
+               path_params={"task_id": ex_task})
+        s.call("GET", "/api/ai/insight/plan/{task_id}/result", want=(200, 404, 422, 401, 403),
+               path_params={"task_id": ex_task})
+
+    print("[ai] scheduled insight lifecycle (own record, deleted again)")
+    if ex_task and (executed or {}).get("planid"):
+        _, saved = s.call("POST", "/api/3/insights", want=(200, 201, 400, 422, 401, 403),
+                          json={"title": s.live_name("insight"), "query": tiny_query,
+                                "socrole": socrole, "planid": executed["planid"]})
+        ins_uuid = (saved or {}).get("uuid") if isinstance(saved, dict) else None
+        if ins_uuid:
+            owner = s.request("GET", f"/api/3/insights/{ins_uuid}").json()
+            owner_ref = (owner or {}).get("createUser")
+            owner_iri = owner_ref.get("@id") if isinstance(owner_ref, dict) else owner_ref
+            s.call("POST", "/api/ai/insight/trigger/schedule", want=(200, 401, 403, 422, 500),
+                   json={"referenceid": ins_uuid, "createUser": owner_iri})
+            s.call("GET", "/api/ai/insight/{insight_id}", want=(200, 404, 500, 401, 403),
+                   path_params={"insight_id": ins_uuid})
+            s.call("DELETE", "/api/ai/insight/{insight_id}", want=(200, 204, 404, 401, 403),
+                   path_params={"insight_id": ins_uuid})
+            # the AI delete cascades: the api3 record is gone too (404, not deleted twice)
+            s.request("DELETE", f"/api/3/insights/{ins_uuid}")
+
+    print("[ai] agent run lifecycle: trigger -> status -> result (all 202)")
     if agents:
-        a_name = agents[0].get("name")
+        a = next((x for x in agents if x.get("name") == "ioc-masking"), agents[0])
+        a_name, a_ver = a.get("name"), a.get("version")
         if a_name:
-            s.call("POST", "/api/ai/agents/{agent_name}/trigger", want=_post,
-                   path_params={"agent_name": a_name}, json={})
-    _dummy = "00000000-0000-0000-0000-000000000000"
-    s.call("GET", "/api/ai/agents/{task_id}/result", want=(200, 404, 422, 401, 403),
-           path_params={"task_id": _dummy})
-    s.call("GET", "/api/ai/agents/{task_id}/status", want=(200, 404, 422, 401, 403),
-           path_params={"task_id": _dummy})
-    s.call("POST", "/api/ai/agents/{task_id}/acceptance", want=(200, 404, 422, 401, 403),
-           path_params={"task_id": _dummy}, json={})
+            _, trig = s.call("POST", "/api/ai/agents/{agent_name}/trigger", want=(200, 202, 401, 403, 422, 500),
+                             path_params={"agent_name": a_name},
+                             json={"input_data": {"data": "Contact alice@example.com about incident 12345",
+                                                  "action": "mask"},
+                                   "context": {}, "user_id": s.live_name("ai")})
+            task_id = (trig or {}).get("task_id") if isinstance(trig, dict) else None
+            if task_id:
+                for _ in range(24):
+                    time.sleep(5)
+                    _, st = s.call("GET", "/api/ai/agents/{task_id}/status", want=(200, 202, 404, 401, 403),
+                                   path_params={"task_id": task_id})
+                    if isinstance(st, dict) and st.get("status") in ("completed", "failed", "error"):
+                        break
+                s.call("GET", "/api/ai/agents/{task_id}/result", want=(200, 202, 404, 401, 403),
+                       path_params={"task_id": task_id})
+                # analyst feedback: crashes 400 TypeError for EVERY body on
+                # 8.0.0 (FortiAI bug) -- recorded for the status, prose notes it
+                s.call("POST", "/api/ai/agents/{task_id}/acceptance", want=(200, 202, 400, 404, 401, 403),
+                       path_params={"task_id": task_id}, json={"accepted": True})
 
-    print("[ai] insight plan + chain_of_thoughts + execute + schedule")
-    s.call("POST", "/api/ai/insight/plan", want=_post, json={})
-    s.call("POST", "/api/ai/insight/chain_of_thoughts", want=_post, json={})
-    s.call("POST", "/api/ai/insight/plan/execute", want=_post, json={})
-    s.call("POST", "/api/ai/insight/trigger/schedule", want=_post, json={})
-    s.call("GET", "/api/ai/insight/plan/{task_id}/result", want=(200, 404, 422, 401, 403),
-           path_params={"task_id": _dummy})
-    s.call("GET", "/api/ai/insight/plan/{task_id}/status", want=(200, 404, 422, 401, 403),
-           path_params={"task_id": _dummy})
+    print("[ai] MCP validate against the appliance's own module server")
+    _, mcps = s.call("GET", "/api/3/mcp_configurations", want=_ok)
+    mcp_rows = extract_members(mcps) if isinstance(mcps, (dict, list)) else []
+    target = next((m for m in mcp_rows if isinstance(m, dict) and m.get("transport") == "http"
+                   and str(m.get("url", "")).startswith("https://localhost/")), None)
+    if target:
+        s.call("POST", "/api/ai/mcp/validate", want=(200, 401, 403, 422, 500),
+               json={"uuid": target.get("uuid"), "name": target.get("name"),
+                     "transport": target.get("transport"), "url": target.get("url"),
+                     "authentication": {"type": "FSR"}})
 
-    print("[ai] chat + enrich + mcp validate")
-    s.call("POST", "/api/ai/chat/", want=_post, json={})
-    s.call("POST", "/api/ai/enrich/context", want=_post, json={})
-    s.call("POST", "/api/ai/enrich/context/index", want=_post, json={})
-    s.call("POST", "/api/ai/enrich/index/build", want=_post, json={})
-    s.call("POST", "/api/ai/mcp/validate", want=_post, json={})
+    print("[ai] MCP gateway JSON-RPC (initialize handshake, then tools/list capture)")
+    init = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2024-11-05", "capabilities": {},
+                       "clientInfo": {"name": "live-test", "version": "0.0.1"}}}
+    for template, path_params in (
+            ("/mcp/modules/", {}),
+            ("/mcp/playbooks/", {}),
+            ("/mcp/utility/", {}),
+            ("/mcp/connector/{connector_name}/", {"connector_name": "aws"}),
+    ):
+        path = template.format(**path_params)
+        r = s.request("POST", path, json=init, headers=_sse, timeout=60)
+        sid = r.headers.get("Mcp-Session-Id") or r.headers.get("mcp-session-id")
+        if r.ok and sid:
+            # tools/list under the initialize-issued session; the SSE-framed
+            # answer is recorded as the JSON-RPC payload (sse=True)
+            s.call("POST", template, want=(200, 401, 403, 404, 406), sse=True,
+                   path_params=path_params or None,
+                   headers={**_sse, "Mcp-Session-Id": sid},
+                   json={"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+        else:
+            print(f"  [ai] {path}: initialize -> {r.status_code}; skipping tools/list capture")
 
-    print("[ai] agent config write + export/import")
+    print("[ai] agent config write + export/import (error shapes recorded)")
     s.call("POST", "/api/ai/agent/config", want=_post, json={})
     s.call("POST", "/api/ai/agent/config/default", want=_post, json={})
     if agents:
@@ -884,13 +1044,25 @@ def scenario_ai(s: Session) -> None:
                    path_params={"agent_id": str(a_id)}, json={})
     s.call("POST", "/ai/agent/import", want=_post, json={})
 
+    print("[ai] enrich (context KB not configured on this box -- 500s recorded)")
+    s.call("POST", "/api/ai/enrich/context", want=_post,
+           json={"query": tiny_query})
+    s.call("POST", "/api/ai/enrich/context/index", want=_post,
+           json={"uuid": None, "title": s.live_name("doc"), "category": "runbook",
+                 "subCategory": None, "description": "live-test document",
+                 "content": "live-test content", "llmSummarize": False,
+                 "type_": "organizational_context"})
+    s.call("POST", "/api/ai/enrich/index/build", want=_post, json={})
+
 
 @scenario("misc_reads")
 def scenario_misc_reads(s: Session) -> None:
     """Read-only sweeps of uncovered non-AI endpoints.
 
     Comments, scheduled tasks, staging/model metadata, MCP servers,
-    publish state, and workflow action stubs.
+    publish state, auth config write-back, export/import template stubs.
+    Run-control (start/resume/approval) lives in wf_triggers_lifecycle;
+    AI/MCP bodies live in the ai scenario and the MCP hosting probe.
     """
     _ok = (200, 401, 403)
     _post = (200, 201, 202, 204, 400, 402, 404, 405, 406, 422, 500, 502, 401, 403)
@@ -934,45 +1106,35 @@ def scenario_misc_reads(s: Session) -> None:
 
     print("[misc] publish state + MCP servers by type")
     s.call("GET", "/api/publish/error", want=_ok)
+    # Appliance-wide publish. Guarded: it flushes EVERY staged schema change,
+    # so it only runs when the staging table is empty (the staging lifecycle
+    # below creates and deletes its own row; the pre-sweep removes crash
+    # leftovers). Empty staging -> the publish is a no-op run that still
+    # yields the real shape: 200 {"status": "started"}.
+    r_pub = s.request("GET", "/api/3/staging_model_metadatas?$limit=100")
+    staged = extract_members(r_pub.json()) if r_pub.ok else []
+    if staged:
+        print(f"  [misc] staging table not empty ({len(staged)} row(s)); skipping PUT /api/publish")
+    else:
+        s.call("PUT", "/api/publish", want=(200, 400, 401, 403), json={})
     for mcp_type in ("connector", "utility", "playbook", "module"):
         s.call("GET", "/mcp/servers/{mcp_type}", want=_ok,
                path_params={"mcp_type": mcp_type},
                params={"restricted": "true"})
 
-    print("[misc] MCP admin + tools")
-    s.call("POST", "/mcp/config/import", want=_post, json={})
-    s.call("POST", "/mcp/add/tools", want=_post, json={})
-    s.call("POST", "/mcp/connector/{connector_name}/", want=_post,
-           path_params={"connector_name": "aws"}, json={})
-    s.call("POST", "/mcp/modules/", want=_post, json={})
-    s.call("POST", "/mcp/playbooks/", want=_post, json={})
-    s.call("POST", "/mcp/utility/", want=_post, json={})
-
-    print("[misc] MCP configurations read; create/update/delete lifecycle is api3_lifecycles' job")
+    print("[misc] MCP gateway routes are captured by the ai scenario (JSON-RPC + SSE)")
 
     print("[misc] auth license POST + logout probe")
     s.call("POST", "/api/auth/license", want=(200, 400, 401, 403), json={})
 
-    print("[misc] workflow action stubs")
-    r3 = s.request("GET", "/api/wf/api/workflows/?parent_wf__isnull=True&limit=1")
-    wf_pk = None
-    if r3.ok:
-        wf_members = (r3.json() or {}).get("hydra:member") or (r3.json() or {}).get("results") or []
-        if wf_members:
-            raw = wf_members[0].get("@id") or str(wf_members[0].get("id") or "")
-            wf_pk = raw.rstrip("/").rsplit("/", 1)[-1]
-    if wf_pk:
-        s.call("POST", "/api/wf/api/workflows/{pk}/start/", want=_post,
-               path_params={"pk": wf_pk}, json={})
-        s.call("POST", "/api/wf/api/workflows/{pk}/resume/", want=_post,
-               path_params={"pk": wf_pk}, json={})
-        s.call("POST", "/api/wf/api/workflows/{pk}/approval/", want=_post,
-               path_params={"pk": wf_pk}, json={})
-    # NOTE: wfinput_resume / retry / notrigger / triggers-1-{name} are owned by
-    # the wf_triggers_lifecycle scenario (real 2xx lifecycles); stub calls here
+    # NOTE: workflow run-control (start/resume/approval) is owned by
+    # wf_triggers_lifecycle against OUR clone's runs -- stub calls here would
+    # both overwrite those captures with empty-body shapes and fire arbitrary
+    # playbooks. wfinput_resume / retry / notrigger / triggers-1-{name} are
+    # owned by wf_triggers_lifecycle too (real 2xx lifecycles); stub calls here
     # would overwrite those captures with 4xx shapes.
     s.call("POST", "/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/", want=_post,
-           path_params={"pk": wf_pk or "1"}, json={})
+           path_params={"pk": "1"}, json={})
 
     print("[misc] triggers + notifications")
     s.call("POST", "/api/triggers/1/deferred/{name}", want=_post,
@@ -1011,14 +1173,9 @@ def scenario_misc_reads(s: Session) -> None:
                    path_params={"uuid": staged["@id"].rsplit("/", 1)[-1]})
     else:
         s.call("POST", "/api/3/staging_model_metadatas", want=_post, json={})
-    s.call("POST", "/mcp/config/export", want=_post, json={})
-
-    print("[misc] AI LLM config POST + insight detail")
-    s.call("POST", "/api/ai/llm/config", want=_post, json={})
-    _dummy = "00000000-0000-0000-0000-000000000000"
-    s.call("GET", "/api/ai/insight/{insight_id}", want=(200, 404, 500, 401, 403),
-           path_params={"insight_id": _dummy})
-
+    # NOTE: /mcp/config/export + /api/ai/llm/config POST + the AI insight
+    # detail are captured with REAL bodies by the ai scenario / the MCP
+    # hosting probe; empty-body stubs here would clobber those captures.
     print("[misc] MCP config detail + agent heartbeat + PUT stubs")
     r5 = s.request("GET", "/api/3/mcp_configurations?$limit=1")
     if r5.ok:
@@ -1560,7 +1717,11 @@ def scenario_wf_triggers_lifecycle(s: Session) -> None:
     deleted at the end, inputs swept on crash); the webhook route fired is the
     clone's own route; the action trigger runs against an alert this scenario
     created and deletes. `retry` re-runs a run that ALREADY failed on its own
-    (the platform's recovery action; it creates/deletes nothing). On 8.0.0:
+    (the platform's recovery action; it creates/deletes nothing). Run control
+    (start / approval / resume / pause) is captured against a third run of the
+    SAME clone -- start re-queues it, approval/ only lists approvals (legacy
+    route), resume answers the CS-WF-48 not-paused message, and there is no
+    pause/ route on 8.0.0. On 8.0.0:
       - workflow retry is a **GET** (the documented POST answers 405),
       - /api/triggers/1/deferred/{name} 404s for every route name,
       - wfinput_resume needs {input, step_iri, step_id, manual_input_id, user}
@@ -1629,6 +1790,29 @@ def scenario_wf_triggers_lifecycle(s: Session) -> None:
                 if row2:
                     s.call("DELETE", "/api/wf/api/manual-wf-input/{pk}/", want=(204, 401, 403, 404),
                            path_params={"pk": str(row2["id"])}, params={"format": "json"})
+
+                # third run: run-control captures against OUR run only.
+                # start/ re-queues a run (200 {task_id, url}); approval/ is the
+                # LEGACY route that only LISTS approvals (200 {"approvals":
+                # [...]}, it does not decide anything); resume/ on a run that
+                # is not paused answers 200 with the CS-WF-48 "already been
+                # resumed" message. There is no pause/ route on 8.0.0 (404),
+                # so a genuinely paused run cannot be produced via the API --
+                # the resume capture documents the non-paused shape.
+                st, trig3 = s.call("POST", "/api/triggers/1/notrigger/{workflowId}", want=_ok,
+                                   path_params={"workflowId": clone_uuid}, json={})
+                task3 = (trig3 or {}).get("task_id") if isinstance(trig3, dict) else None
+                run3 = _run_pk_for_task(s, task3) if task3 else None
+                if run3:
+                    s.call("POST", "/api/wf/api/workflows/{pk}/start/", want=_ok,
+                           path_params={"pk": str(run3)}, json={})
+                    s.call("POST", "/api/wf/api/workflows/{pk}/approval/", want=_ok,
+                           path_params={"pk": str(run3)},
+                           json={"decision": "approve", "comment": "live-test run control"})
+                    s.call("POST", "/api/wf/api/workflows/{pk}/resume/", want=_ok,
+                           path_params={"pk": str(run3)}, json={})
+                    s.call("POST", "/api/wf/api/workflows/{pk}/pause/", want=(200, 400, 404, 405, 401, 403),
+                           path_params={"pk": str(run3)}, json={})
     finally:
         if clone_uuid:
             s.request("DELETE", f"/api/3/workflows/{clone_uuid}")
@@ -2288,6 +2472,78 @@ def main() -> int:
         return _run(key)
 
 
+def save_observations(s: Session) -> tuple[int, int]:
+    """Merge ``s.observations`` into the on-disk store (shape-stable freeze).
+
+    Used by ``_run`` after a scenario pass AND by the one-off capture scripts
+    under ``scripts/`` so captures land in the same store with the same merge
+    semantics. Merges two levels deep: prior observations for ops we didn't
+    touch this run are preserved, and prior per-auth records for ops we
+    touched under one mode but not the other are also kept.
+
+    **Shape-stable freeze:** when the prior captured body has the same
+    structural shape as the fresh one (same key set at every dict, same
+    types, same list element shapes), we keep the prior body and only
+    update the metadata (``captured_at``, ``response_status``). This stops
+    ops that capture inherently-time-varying records (the latest
+    workflow run, the tail of the audit log, cpu metrics) from churning
+    the diff every run. If the shape *does* change -- new field appears,
+    field type flips, list element gains keys -- we replace the body so
+    docs reflect the new contract.
+    """
+    prior: dict = {}
+    if OBSERVATIONS_PATH.exists():
+        try:
+            prior = json.loads(OBSERVATIONS_PATH.read_text())
+        except json.JSONDecodeError:
+            prior = {}
+    frozen = 0
+    refreshed = 0
+    for op_key, op_rec in s.observations.items():
+        existing = prior.setdefault(op_key, {"by_auth": {}})
+        existing_by_auth = existing.setdefault("by_auth", {})
+        for mode, new_rec in op_rec.get("by_auth", {}).items():
+            prior_rec = existing_by_auth.get(mode)
+            if prior_rec is None:
+                existing_by_auth[mode] = new_rec
+                refreshed += 1
+                continue
+            prior_body = prior_rec.get("response_body")
+            new_body = new_rec.get("response_body")
+            if prior_body is None and new_body is not None:
+                # First real body for this op (the prior capture was an error
+                # status, which records no body): always replace. _same_shape
+                # would call null-vs-dict "shape-compatible" (the right rule
+                # for nullable FIELDS) and freeze the null forever.
+                existing_by_auth[mode] = new_rec
+                refreshed += 1
+            elif prior_body is not None and new_body is None:
+                # This run produced no body (error status) where we already
+                # hold a good example: keep the prior record verbatim --
+                # pairing the old body with the new error status would make
+                # the docs self-contradictory, and the scenario's want
+                # assertion treats the regression as a bug to fix anyway.
+                frozen += 1
+            elif _same_shape(prior_body, new_body):
+                # Freeze: keep the prior body verbatim, refresh metadata.
+                merged = dict(prior_rec)
+                merged["response_status"] = new_rec.get("response_status")
+                merged["captured_at"] = new_rec.get("captured_at",
+                                                    prior_rec.get("captured_at"))
+                if "request_body" in new_rec:
+                    merged["request_body"] = new_rec["request_body"]
+                existing_by_auth[mode] = merged
+                frozen += 1
+            else:
+                existing_by_auth[mode] = new_rec
+                refreshed += 1
+    OBSERVATIONS_PATH.write_text(json.dumps(prior, indent=2, sort_keys=True) + "\n")
+    print(f"--- observations: wrote {len(s.observations)} op(s) "
+          f"(total {len(prior)}) to {OBSERVATIONS_PATH.relative_to(ROOT)} "
+          f"[{frozen} shape-stable, {refreshed} refreshed] ---")
+    return frozen, refreshed
+
+
 def _run(api_key: str = "") -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--sweep-only", action="store_true", help="Clean up leftover live-* records and exit.")
@@ -2390,50 +2646,7 @@ def _run(api_key: str = "") -> int:
         # Merge two levels deep: prior observations for ops we didn't touch
         # this run are preserved, and prior per-auth records for ops we
         # touched under one mode but not the other are also kept.
-        #
-        # **Shape-stable freeze:** when the prior captured body has the same
-        # structural shape as the fresh one (same key set at every dict, same
-        # types, same list element shapes), we keep the prior body and only
-        # update the metadata (`captured_at`, `response_status`). This stops
-        # ops that capture inherently-time-varying records (the latest
-        # workflow run, the tail of the audit log, cpu metrics) from churning
-        # the diff every run. If the shape *does* change -- new field appears,
-        # field type flips, list element gains keys -- we replace the body so
-        # docs reflect the new contract.
-        prior: dict = {}
-        if OBSERVATIONS_PATH.exists():
-            try:
-                prior = json.loads(OBSERVATIONS_PATH.read_text())
-            except json.JSONDecodeError:
-                prior = {}
-        frozen = 0
-        refreshed = 0
-        for op_key, op_rec in s.observations.items():
-            existing = prior.setdefault(op_key, {"by_auth": {}})
-            existing_by_auth = existing.setdefault("by_auth", {})
-            for mode, new_rec in op_rec.get("by_auth", {}).items():
-                prior_rec = existing_by_auth.get(mode)
-                if (prior_rec is not None
-                        and "response_body" in prior_rec
-                        and "response_body" in new_rec
-                        and _same_shape(prior_rec["response_body"],
-                                        new_rec["response_body"])):
-                    # Freeze: keep the prior body verbatim, refresh metadata.
-                    merged = dict(prior_rec)
-                    merged["response_status"] = new_rec.get("response_status")
-                    merged["captured_at"] = new_rec.get("captured_at",
-                                                        prior_rec.get("captured_at"))
-                    if "request_body" in new_rec:
-                        merged["request_body"] = new_rec["request_body"]
-                    existing_by_auth[mode] = merged
-                    frozen += 1
-                else:
-                    existing_by_auth[mode] = new_rec
-                    refreshed += 1
-        OBSERVATIONS_PATH.write_text(json.dumps(prior, indent=2, sort_keys=True) + "\n")
-        print(f"--- observations: wrote {len(s.observations)} op(s) "
-              f"(total {len(prior)}) to {OBSERVATIONS_PATH.relative_to(ROOT)} "
-              f"[{frozen} shape-stable, {refreshed} refreshed] ---")
+        save_observations(s)
 
     if s.redirects:
         # Dedupe on (method, url-path-only, status, location) so a route hit
