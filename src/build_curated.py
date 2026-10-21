@@ -396,14 +396,43 @@ SCHEMAS.update({
     },
     "BulkUpsertResult": {
         "type": "object",
-        "description": "Outcome of `POST /api/3/bulkupsert/{moduleType}` - per-record succeeded/failed split.",
+        "description": "Multi-status envelope the bulk write paths return when a batch row is rejected "
+                       "(a clean batch answers `201` with a plain hydra collection instead). Keys are "
+                       "the wire's `success`/`failure`; pyfsr's `BulkUpsertResult` model renames them "
+                       "to `succeeded`/`failed` client-side.",
         "properties": {
-            "succeeded": {"type": "array", "items": {"type": "object"},
-                          "description": "Records that upserted cleanly."},
-            "failed": {"type": "array", "items": {"type": "object"},
-                       "description": "Records that failed, with error details."},
+            "success": {"type": "array", "items": {"type": "object"},
+                        "description": "The records that wrote cleanly."},
+            "failure": {"type": "array", "items": {"type": "string"},
+                        "description": "Raw error strings, one per rejected row."},
         },
-        "required": ["succeeded", "failed"],
+        "required": ["success", "failure"],
+    },
+    "RecordWriteCollection": {
+        "type": "object",
+        "description": "Hydra collection of written records - the response of a clean bulk insert/update "
+                       "(`POST /api/3/insert/{moduleType}`, `PUT /api/3/update/{moduleType}`). The "
+                       "`hydra:member` rows carry the full field set of the module named in the path "
+                       "(same shape as that module's list response).",
+        "allOf": [
+            {"$ref": "#/components/schemas/HydraCollection"},
+            {"type": "object", "properties": {"hydra:member": {
+                "type": "array",
+                "items": {"type": "object", "additionalProperties": True,
+                          "description": "One written `{moduleType}` record."},
+            }}},
+        ],
+    },
+    "ModuleRecord": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A single written record (`POST /api/3/upsert/{moduleType}`), with the module's "
+                       "full field set - same shape as one member of that module's list response.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "description": "The module type, e.g. `Alert`."},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+        },
     },
     "RunSummary": {
         "type": "object",
@@ -608,6 +637,100 @@ SCHEMAS.update({
             "description": {"type": ["string", "null"]},
             "actors": {"type": "array", "items": {"type": ["string", "object"]},
                        "description": "Member IRIs (users / appliances / API keys)."},
+        },
+    },
+    "WidgetRecord": {
+        "type": "object",
+        "description": "A widget record (`/api/3/widgets`): the pyfsr model `client.widgets` upload/publish/list/get return. Unmodeled layout keys (`tree`, ...) ride along as extra properties.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"], "description": "Alphanumeric widget slug."},
+            "version": {"type": ["string", "null"]},
+            "title": {"type": ["string", "null"]},
+            "subTitle": {"type": ["string", "null"]},
+            "draft": {"type": ["boolean", "null"], "description": "True while the widget is still in development (unpublished)."},
+            "installed": {"type": ["boolean", "null"]},
+            "enablePublish": {"type": ["boolean", "null"]},
+            "metadata": {"type": ["object", "null"]},
+        },
+    },
+    # AI traces (client.ai.traces) -- hand-shaped from pyfsr's live-verified
+    # TraceSummary/TraceSpan/TraceNode/ExecutionTree models.
+    "TraceSummary": {
+        "type": "object",
+        "description": "One row of `GET /api/ai/traces/` -- a top-level agent run.",
+        "required": ["trace_id"],
+        "properties": {
+            "trace_id": {"type": "string"},
+            "parent_trace_id": {"type": ["string", "null"],
+                                "description": "Set when this run was submitted by another run (investigations fan out into child traces)."},
+            "root_span_id": {"type": ["string", "null"]},
+            "name": {"type": ["string", "null"], "description": "Agent or pipeline that produced the run."},
+            "status": {"type": ["string", "null"], "description": "e.g. `RUNNING`, `COMPLETED`, `FAILED`."},
+            "session_id": {"type": ["string", "null"], "description": "Chat session the run belongs to (aiAssistant widget runs)."},
+            "user_id": {"type": ["string", "null"]},
+            "start_time": {"type": ["string", "null"], "description": "ISO-8601."},
+            "end_time": {"type": ["string", "null"], "description": "ISO-8601; null while the run is still going."},
+            "total_tokens": {"type": ["integer", "null"], "description": "LLM tokens consumed by the whole run."},
+            "total_cost": {"type": ["number", "null"], "description": "Estimated cost in USD."},
+            "span_counts": {"type": ["object", "null"],
+                            "description": "Span count per type, e.g. `{\"LLM\": 2, \"TOOL\": 1}`."},
+            "tags": {"type": "array", "items": {}},
+        },
+    },
+    "TraceSpan": {
+        "type": "object",
+        "description": "One span of a trace (`GET /api/ai/traces/spans/{span_id}` or a row of `.../{trace_id}/spans`). For an `LLM` span the prompt is under `input.payload.params.messages` and the reply under `output` (`content`, `tools`, `usage`, `provider`, `model`); for a `TOOL` span `output` is the tool result.",
+        "required": ["span_id"],
+        "properties": {
+            "span_id": {"type": "string"},
+            "trace_id": {"type": ["string", "null"]},
+            "parent_span_id": {"type": ["string", "null"]},
+            "name": {"type": ["string", "null"], "description": "Step name (tool name for `TOOL` spans, agent name for `AGENT` spans)."},
+            "span_type": {"type": ["string", "null"],
+                          "description": "`AGENT` / `LLM` / `LLM_WRAPPER` / `TOOL` / `SKILL_RETRIEVER` / `DOCUMENT_SEARCH` / `CUSTOM`."},
+            "status": {"type": ["string", "null"]},
+            "start_time": {"type": ["string", "null"]},
+            "end_time": {"type": ["string", "null"]},
+            "duration_ms": {"type": ["number", "null"]},
+            "input": {"description": "Raw span input. For `TOOL` spans carries the `tool_call` (`name`, `args`)."},
+            "output": {"description": "Raw span output. For `LLM` spans: `content`, `tools`, `usage`, `provider`, `model`. For `TOOL` spans: the tool result."},
+            "error": {"description": "Failure detail when `status` is failed."},
+            "attributes": {"type": ["object", "null"]},
+            "session_id": {"type": ["string", "null"]},
+            "user_id": {"type": ["string", "null"]},
+        },
+    },
+    "TraceNode": {
+        "type": "object",
+        "description": "A node of a trace tree (`GET /api/ai/traces/{trace_id}`, `.../execution-tree`, `.../spans/{span_id}/tree`). Carries a span summary (no full I/O -- fetch the span for that) plus its `children`.",
+        "required": ["span_id"],
+        "properties": {
+            "span_id": {"type": "string"},
+            "name": {"type": ["string", "null"]},
+            "span_type": {"type": ["string", "null"]},
+            "status": {"type": ["string", "null"]},
+            "start_time": {"type": ["string", "null"]},
+            "end_time": {"type": ["string", "null"]},
+            "start_offset_ms": {"type": ["number", "null"], "description": "Offset from the tree root."},
+            "duration_ms": {"type": ["number", "null"]},
+            "attributes": {"type": ["object", "null"]},
+            "child_count": {"type": ["integer", "null"]},
+            "children": {"type": "array", "items": {"$ref": "#/components/schemas/TraceNode"}},
+            "children_truncated": {"type": ["boolean", "null"],
+                                   "description": "True when the subtree was cut off (fetch the child's own tree for more)."},
+            "io_preview": {"description": "Trimmed input/output preview when requested."},
+        },
+    },
+    "ExecutionTree": {
+        "type": "object",
+        "description": "A run plus every run it submitted (`GET /api/ai/traces/{trace_id}/execution-tree`) -- what the Trace Flow panel renders. An investigation typically spans ~10 traces, stitched into one `root` tree.",
+        "properties": {
+            "root_trace_id": {"type": ["string", "null"]},
+            "traces": {"type": "array", "items": {"type": ["string", "object"]},
+                       "description": "The stitched trace ids (or summaries)."},
+            "root": {"$ref": "#/components/schemas/TraceNode"},
         },
     },
 })
@@ -1111,11 +1234,42 @@ for verb, op_method, op_summary, op_desc, body_shape in [
     ("bulkupsert", "post",   "Bulk upsert",
      "Array-input version of upsert. Body must be a JSON array.", "array_obj"),
 ]:
+    # Response codes + shapes live-verified on 8.0.0 (live_observations.json):
+    # insert and upsert answer **201** (upsert with the bare written record,
+    # insert with a hydra collection), update answers **200** with a hydra
+    # collection. The old generic "result envelope (per-record status)" 200
+    # was guesswork the wire contradicts; only bulkupsert actually returns it.
+    if verb == "insert":
+        responses = {
+            "201": _resp("Created records: a hydra collection whose `hydra:member` rows are the "
+                         "new `{moduleType}` records. (Live-verified: a clean batch answers "
+                         "`201` with this collection, not a result envelope.)",
+                         ref="RecordWriteCollection"),
+            "200": _resp("Multi-status envelope, seen when a row is rejected: `success` rows "
+                         "are the records that wrote, `failure` entries are raw error strings.",
+                         ref="BulkUpsertResult"),
+        }
+    elif verb == "update":
+        responses = {"200": _resp("Updated records: a hydra collection whose `hydra:member` "
+                                  "rows are the updated `{moduleType}` records.",
+                                  ref="RecordWriteCollection")}
+    elif verb == "upsert":
+        responses = {"201": _resp("The written record (created or updated), with the module's "
+                                  "full field set.", ref="ModuleRecord")}
+    else:  # bulkupsert
+        responses = {
+            "201": _resp("Created/updated records: a hydra collection whose `hydra:member` rows "
+                         "are the written `{moduleType}` records (clean batch).",
+                         ref="RecordWriteCollection"),
+            "200": _resp("Multi-status envelope when a row is rejected: `success` rows are the "
+                         "records that wrote, `failure` entries are raw error strings.",
+                         ref="BulkUpsertResult"),
+        }
     op_def = {
         "tags": ["Bulk operations"],
         "summary": op_summary,
         "description": op_desc,
-        "responses": {"200": _resp("Result envelope (per-record status).")},
+        "responses": responses,
     }
     if verb == "delete":
         op_def["deprecated"] = True  # routed but broken on every probed build; spec_health skips it
@@ -3561,9 +3715,9 @@ PATHS["/api/3/files"] = {
 
 # Roles and teams keep the generic list/create shape; API keys gets a richer
 # dedicated section below.
-for path, tag, summary in [
-    ("/api/3/roles", "Access management", "Roles"),
-    ("/api/3/teams", "Access management", "Teams"),
+for path, tag, summary, ref in [
+    ("/api/3/roles", "Access management", "Roles", "Role"),
+    ("/api/3/teams", "Access management", "Teams", "Team"),
 ]:
     PATHS[path] = {
         "get": {"tags": [tag], "summary": f"List {summary.lower()}", "parameters": COMMON_QPARAMS,
@@ -3579,7 +3733,7 @@ for path, tag, summary in [
                      f"full property list."
                  ),
                  "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
-                 "responses": {"201": _resp("Created.")}},
+                 "responses": {"201": _resp("Created.", ref=ref)}},
     }
 
 # API-key lifecycle is a multi-step workflow split across `/api/auth/users`
@@ -4944,35 +5098,51 @@ CURATED_EXAMPLES = {
             {"name": "alert-001", "source": "Splunk", "sourceId": "spl-1001"},
             {"name": "alert-002", "source": "Splunk", "sourceId": "spl-1002"},
         ]},
-        "response": {"200": {
-            "@context": "/api/3/contexts/BulkResult", "@type": "BulkResult",
-            "totalCount": 2, "successCount": 2, "failureCount": 0,
-            "results": [
-                {"status": "success", "uuid": _UUID, "@id": f"/api/3/alerts/{_UUID}"},
-                {"status": "success", "uuid": _UUID2, "@id": f"/api/3/alerts/{_UUID2}"},
+        "response": {"201": {
+            "@type": "hydra:Collection",
+            "hydra:member": [
+                {"@context": "/api/3/contexts/Alert", "@id": f"/api/3/alerts/{_UUID}", "@type": "Alert",
+                 "uuid": _UUID, "name": "alert-001", "source": "Splunk", "sourceId": "spl-1001"},
+                {"@context": "/api/3/contexts/Alert", "@id": f"/api/3/alerts/{_UUID2}", "@type": "Alert",
+                 "uuid": _UUID2, "name": "alert-002", "source": "Splunk", "sourceId": "spl-1002"},
             ],
+            "hydra:totalItems": 2,
         }},
     },
     ("PUT", "/api/3/update/{moduleType}"): {
         "request": {"data": [{"@id": f"/api/3/alerts/{_UUID}", "severity": "/api/3/picklists/high-uuid"}]},
-        "response": {"200": {"totalCount": 1, "successCount": 1, "failureCount": 0,
-                              "results": [{"status": "success", "uuid": _UUID}]}},
+        "response": {"200": {
+            "@type": "hydra:Collection",
+            "hydra:member": [
+                {"@context": "/api/3/contexts/Alert", "@id": f"/api/3/alerts/{_UUID}", "@type": "Alert",
+                 "uuid": _UUID, "name": "alert-001", "severity": "High"},
+            ],
+            "hydra:totalItems": 1,
+        }},
     },
     ("DELETE", "/api/3/delete/{moduleType}"): {
         "request": [f"/api/3/alerts/{_UUID}", f"/api/3/alerts/{_UUID2}"],
         "response": {"200": {"totalCount": 2, "successCount": 2, "failureCount": 0}},
     },
     ("POST", "/api/3/upsert/{moduleType}"): {
-        "request": [{"sourceId": "spl-1001", "name": "alert-001-updated", "source": "Splunk"}],
-        "response": {"200": {"totalCount": 1, "successCount": 1, "failureCount": 0,
-                              "results": [{"status": "updated", "uuid": _UUID}]}},
+        "request": {"sourceId": "spl-1001", "name": "alert-001-updated", "source": "Splunk"},
+        "response": {"201": {"@context": "/api/3/contexts/Alert", "@id": f"/api/3/alerts/{_UUID}",
+                              "@type": "Alert", "uuid": _UUID,
+                              "name": "alert-001-updated", "source": "Splunk"}},
     },
     ("POST", "/api/3/bulkupsert/{moduleType}"): {
         "request": [{"sourceId": "spl-1001", "name": "alert-001"},
                      {"sourceId": "spl-1002", "name": "alert-002"}],
-        "response": {"200": {"totalCount": 2, "successCount": 2, "failureCount": 0,
-                              "results": [{"status": "created", "uuid": _UUID},
-                                          {"status": "updated", "uuid": _UUID2}]}},
+        "response": {"201": {
+            "@type": "hydra:Collection",
+            "hydra:member": [
+                {"@context": "/api/3/contexts/Alert", "@id": f"/api/3/alerts/{_UUID}", "@type": "Alert",
+                 "uuid": _UUID, "name": "alert-001", "sourceId": "spl-1001"},
+                {"@context": "/api/3/contexts/Alert", "@id": f"/api/3/alerts/{_UUID2}", "@type": "Alert",
+                 "uuid": _UUID2, "name": "alert-002", "sourceId": "spl-1002"},
+            ],
+            "hydra:totalItems": 2,
+        }},
     },
     ("POST", "/api/ingest-feeds/indicators"): {
         "request": {"data": [{"value": "192.0.2.50"}, {"value": "evil.example.com"}]},

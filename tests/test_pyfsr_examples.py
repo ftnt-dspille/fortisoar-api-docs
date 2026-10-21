@@ -215,7 +215,20 @@ def _fake_request(self, method, url, **kwargs):
     if method == "GET" and url.endswith("/api/3/teams"):
         return _fake_response(200, json.dumps({"hydra:member": [
             {"name": "SOC Team", "uuid": "t1", "@id": "/api/3/teams/t1"},
+            {"name": "Tier 0", "uuid": "t0", "@id": "/api/3/teams/t0"},
         ]}).encode())
+    # roles.create / teams.create (POST) - typed create returns the record
+    if method == "POST" and url.rstrip("/").endswith("/api/3/roles"):
+        return _fake_response(201, json.dumps({
+            "@id": "/api/3/roles/r1", "@type": "Role", "uuid": "r1",
+            "name": "SOC Analyst L2", "description": "Tier-2 analysts",
+            "modulePermissions": [],
+        }).encode())
+    if method == "POST" and url.rstrip("/").endswith("/api/3/teams"):
+        return _fake_response(201, json.dumps({
+            "@id": "/api/3/teams/t1", "@type": "Team", "uuid": "t1",
+            "name": "Tier 1", "description": None, "actors": [],
+        }).encode())
     # comments.list (GET /api/3/comments)
     if method == "GET" and url.endswith("/api/3/comments"):
         return _fake_response(200, json.dumps({

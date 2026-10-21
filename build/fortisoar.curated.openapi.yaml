@@ -6936,30 +6936,13 @@ paths:
         wrapped in a `data` key (same envelope as `/api/ingest-feeds/*`); the bare array still 400s with `TypeError`. Unlike
         the feed paths, insert does NOT skip on-create playbook triggers.'
       responses:
-        '200':
-          description: Result envelope (per-record status).
-          x-pyfsr-response-model: BulkUpsertResult
+        '201':
+          description: 'Created records: a hydra collection whose `hydra:member` rows are the new `{moduleType}` records.
+            (Live-verified: a clean batch answers `201` with this collection, not a result envelope.)'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BulkUpsertResult'
-              example:
-                '@context': /api/3/contexts/BulkResult
-                '@type': BulkResult
-                totalCount: 2
-                successCount: 2
-                failureCount: 0
-                results:
-                - status: success
-                  uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                  '@id': /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                - status: success
-                  uuid: a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
-                  '@id': /api/3/alerts/a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
-        '201':
-          description: Live-captured response.
-          content:
-            application/json:
+                $ref: '#/components/schemas/RecordWriteCollection'
               example:
                 '@type': hydra:Collection
                 hydra:member:
@@ -7266,6 +7249,18 @@ paths:
                   vulnerabilitySeverity: null
                   warrooms: []
                 hydra:totalItems: 1
+          x-pyfsr-response-model: BulkUpsertResult
+        '200':
+          description: 'Multi-status envelope, seen when a row is rejected: `success` rows are the records that wrote, `failure`
+            entries are raw error strings.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUpsertResult'
+              example:
+                success: []
+                failure: []
+          x-pyfsr-response-model: BulkUpsertResult
       requestBody:
         required: true
         content:
@@ -7330,9 +7325,11 @@ paths:
         (each carrying `@id`) arrive wrapped in a `data` key; the bare array still 400s with `HttpException`.'
       responses:
         '200':
-          description: Result envelope (per-record status).
+          description: 'Updated records: a hydra collection whose `hydra:member` rows are the updated `{moduleType}` records.'
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RecordWriteCollection'
               example:
                 '@type': hydra:Collection
                 hydra:member:
@@ -7661,10 +7658,31 @@ paths:
         uuids, `data`-wrapped objects, query param) returns 400 `TypeError: Internal Server Error`. Delete records individually
         via `DELETE /api/3/{collection}/{uuid}`.'
       responses:
-        '200':
-          description: Result envelope (per-record status).
+        '201':
+          description: 'Created/updated records: a hydra collection whose `hydra:member` rows are the written `{moduleType}`
+            records (clean batch).'
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RecordWriteCollection'
+              example:
+                '@context': /api/3/contexts/Alert
+                '@id': /api/3/alerts
+                '@type': hydra:PagedCollection
+                hydra:totalItems: 1
+                hydra:itemsPerPage: 30
+                hydra:nextPage: /api/3/alerts?%24page=2
+                hydra:firstPage: example
+                hydra:lastPage: example
+                hydra:member: []
+                hydra:search: {}
+        '200':
+          description: 'Multi-status envelope when a row is rejected: `success` rows are the records that wrote, `failure`
+            entries are raw error strings.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUpsertResult'
               example:
                 totalCount: 2
                 successCount: 2
@@ -7716,21 +7734,12 @@ paths:
         Insert-or-update **a single record** keyed on the module''s identifier field. Body is a JSON object, not an array
         - use `/api/3/bulkupsert/{moduleType}` for the array variant.'
       responses:
-        '200':
-          description: Result envelope (per-record status).
-          content:
-            application/json:
-              example:
-                totalCount: 1
-                successCount: 1
-                failureCount: 0
-                results:
-                - status: updated
-                  uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
         '201':
-          description: Live-captured response.
+          description: The written record (created or updated), with the module's full field set.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleRecord'
               example:
                 '@context': /api/3/contexts/Alert
                 '@id': /api/3/alerts/<uuid>
@@ -8087,26 +8096,13 @@ paths:
 
         Array-input version of upsert. Body must be a JSON array.'
       responses:
-        '200':
-          description: Result envelope (per-record status).
-          x-pyfsr-response-model: BulkUpsertResult
+        '201':
+          description: 'Created/updated records: a hydra collection whose `hydra:member` rows are the written `{moduleType}`
+            records (clean batch).'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BulkUpsertResult'
-              example:
-                totalCount: 2
-                successCount: 2
-                failureCount: 0
-                results:
-                - status: created
-                  uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-                - status: updated
-                  uuid: a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
-        '201':
-          description: Live-captured response.
-          content:
-            application/json:
+                $ref: '#/components/schemas/RecordWriteCollection'
               example:
                 '@type': hydra:Collection
                 hydra:member:
@@ -8413,6 +8409,18 @@ paths:
                   vulnerabilitySeverity: null
                   warrooms: []
                 hydra:totalItems: 1
+          x-pyfsr-response-model: BulkUpsertResult
+        '200':
+          description: 'Multi-status envelope when a row is rejected: `success` rows are the records that wrote, `failure`
+            entries are raw error strings.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUpsertResult'
+              example:
+                success: []
+                failure: []
+          x-pyfsr-response-model: BulkUpsertResult
       requestBody:
         required: true
         content:
@@ -12581,8 +12589,13 @@ paths:
       responses:
         '200':
           description: Hydra envelope of periodic-task rows.
+          x-pyfsr-response-model: list[ScheduledTask]
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduledTask'
               example:
                 '@context': /wf/api/scheduled/context/
                 hydra:firstPage: /wf/api/scheduled/?limit=1
@@ -19094,8 +19107,11 @@ paths:
       responses:
         '200':
           description: Hydra envelope with the widget development manifest.
+          x-pyfsr-response-model: WidgetRecord
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WidgetRecord'
               example:
                 '@type': hydra:Collection
                 hydra:member:
@@ -19200,8 +19216,11 @@ paths:
       responses:
         '200':
           description: The published widget record.
+          x-pyfsr-response-model: WidgetRecord
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WidgetRecord'
               example:
                 '@context': /api/3/contexts/Widget
                 '@id': /api/3/widgets/<uuid>
@@ -19576,6 +19595,8 @@ paths:
           description: Created.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
               example:
                 '@context': /api/3/contexts/Role
                 '@id': /api/3/roles/<uuid>
@@ -19585,12 +19606,13 @@ paths:
                 modulePermissions: []
                 name: live-<run>-role
                 uuid: <uuid>
+          x-pyfsr-response-model: Role
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
-          \ \"Suspicious Activity\"})\nprint(alert.name)"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrole = client.roles.create(\"SOC Analyst L2\", description=\"\
+          Tier-2 analysts\")\nprint(role.name, role.uuid)"
       x-live-captured: true
       x-auth: &id185
         apikey: 'yes'
@@ -19693,6 +19715,8 @@ paths:
           description: Created.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
               example:
                 '@context': /api/3/contexts/Team
                 '@id': /api/3/teams/<uuid>
@@ -19705,12 +19729,13 @@ paths:
                 parents: []
                 siblings: []
                 uuid: <uuid>
+          x-pyfsr-response-model: Team
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
-          \ \"Suspicious Activity\"})\nprint(alert.name)"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nteam = client.teams.create(\"Tier 1\", parents=[\"Tier\
+          \ 0\"])\nprint(team.name, team.uuid)"
       x-live-captured: true
       x-auth: &id187
         apikey: 'yes'
@@ -22523,8 +22548,13 @@ paths:
       responses:
         '200':
           description: Array of pending manual-input records.
+          x-pyfsr-response-model: list[ManualInput]
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ManualInput'
               example:
                 '@context': /wf/api/manual-wf-input/context/
                 hydra:firstPage: /wf/api/manual-wf-input/?limit=3
@@ -28701,7 +28731,26 @@ paths:
         '200':
           description: Array of trace summaries with id, status, start_time, session_id.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TraceSummary'
+              example:
+              - trace_id: example
+                parent_trace_id: example
+                root_span_id: example
+                name: example
+                status: example
+                session_id: example
+                user_id: example
+                start_time: example
+                end_time: example
+                total_tokens: 0
+                total_cost: 0
+                span_counts: {}
+                tags: []
+          x-pyfsr-response-model: list[TraceSummary]
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -28799,7 +28848,24 @@ paths:
         '200':
           description: Trace span tree.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceNode'
+              example:
+                span_id: example
+                name: example
+                span_type: example
+                status: example
+                start_time: example
+                end_time: example
+                start_offset_ms: 0
+                duration_ms: 0
+                attributes: {}
+                child_count: 0
+                children: []
+                children_truncated: false
+                io_preview: null
+          x-pyfsr-response-model: TraceNode
         '404':
           description: Trace not found.
       x-codeSamples:
@@ -28864,7 +28930,27 @@ paths:
         '200':
           description: Full execution tree.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionTree'
+              example:
+                root_trace_id: example
+                traces: []
+                root:
+                  span_id: example
+                  name: example
+                  span_type: example
+                  status: example
+                  start_time: example
+                  end_time: example
+                  start_offset_ms: 0
+                  duration_ms: 0
+                  attributes: {}
+                  child_count: 0
+                  children: []
+                  children_truncated: false
+                  io_preview: null
+          x-pyfsr-response-model: ExecutionTree
         '404':
           description: Trace not found.
       x-codeSamples:
@@ -28912,7 +28998,28 @@ paths:
         '200':
           description: Flat array of spans.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TraceSpan'
+              example:
+              - span_id: example
+                trace_id: example
+                parent_span_id: example
+                name: example
+                span_type: example
+                status: example
+                start_time: example
+                end_time: example
+                duration_ms: 0
+                input: null
+                output: null
+                error: null
+                attributes: {}
+                session_id: example
+                user_id: example
+          x-pyfsr-response-model: list[TraceSpan]
         '404':
           description: Trace not found.
       x-codeSamples:
@@ -28959,7 +29066,26 @@ paths:
         '200':
           description: Span detail.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceSpan'
+              example:
+                span_id: example
+                trace_id: example
+                parent_span_id: example
+                name: example
+                span_type: example
+                status: example
+                start_time: example
+                end_time: example
+                duration_ms: 0
+                input: null
+                output: null
+                error: null
+                attributes: {}
+                session_id: example
+                user_id: example
+          x-pyfsr-response-model: TraceSpan
         '404':
           description: Span not found.
       x-codeSamples:
@@ -29124,7 +29250,24 @@ paths:
         '200':
           description: Span subtree.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceNode'
+              example:
+                span_id: example
+                name: example
+                span_type: example
+                status: example
+                start_time: example
+                end_time: example
+                start_offset_ms: 0
+                duration_ms: 0
+                attributes: {}
+                child_count: 0
+                children: []
+                children_truncated: false
+                io_preview: null
+          x-pyfsr-response-model: TraceNode
         '404':
           description: Span not found.
       x-codeSamples:
@@ -30786,21 +30929,51 @@ components:
       - status
     BulkUpsertResult:
       type: object
-      description: Outcome of `POST /api/3/bulkupsert/{moduleType}` - per-record succeeded/failed split.
+      description: Multi-status envelope the bulk write paths return when a batch row is rejected (a clean batch answers `201`
+        with a plain hydra collection instead). Keys are the wire's `success`/`failure`; pyfsr's `BulkUpsertResult` model
+        renames them to `succeeded`/`failed` client-side.
       properties:
-        succeeded:
+        success:
           type: array
           items:
             type: object
-          description: Records that upserted cleanly.
-        failed:
+          description: The records that wrote cleanly.
+        failure:
           type: array
           items:
-            type: object
-          description: Records that failed, with error details.
+            type: string
+          description: Raw error strings, one per rejected row.
       required:
-      - succeeded
-      - failed
+      - success
+      - failure
+    RecordWriteCollection:
+      type: object
+      description: Hydra collection of written records - the response of a clean bulk insert/update (`POST /api/3/insert/{moduleType}`,
+        `PUT /api/3/update/{moduleType}`). The `hydra:member` rows carry the full field set of the module named in the path
+        (same shape as that module's list response).
+      allOf:
+      - $ref: '#/components/schemas/HydraCollection'
+      - type: object
+        properties:
+          hydra:member:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+              description: One written `{moduleType}` record.
+    ModuleRecord:
+      type: object
+      additionalProperties: true
+      description: A single written record (`POST /api/3/upsert/{moduleType}`), with the module's full field set - same shape
+        as one member of that module's list response.
+      properties:
+        '@id':
+          $ref: '#/components/schemas/IRI'
+        '@type':
+          type: string
+          description: The module type, e.g. `Alert`.
+        uuid:
+          $ref: '#/components/schemas/UUID'
     RunSummary:
       type: object
       description: A playbook execution summary (from `/api/wf/api/workflows/` or `historical-workflows`).
@@ -31300,6 +31473,251 @@ components:
             - string
             - object
           description: Member IRIs (users / appliances / API keys).
+    WidgetRecord:
+      type: object
+      description: 'A widget record (`/api/3/widgets`): the pyfsr model `client.widgets` upload/publish/list/get return. Unmodeled
+        layout keys (`tree`, ...) ride along as extra properties.'
+      properties:
+        '@id':
+          $ref: '#/components/schemas/IRI'
+        uuid:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type:
+          - string
+          - 'null'
+          description: Alphanumeric widget slug.
+        version:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        subTitle:
+          type:
+          - string
+          - 'null'
+        draft:
+          type:
+          - boolean
+          - 'null'
+          description: True while the widget is still in development (unpublished).
+        installed:
+          type:
+          - boolean
+          - 'null'
+        enablePublish:
+          type:
+          - boolean
+          - 'null'
+        metadata:
+          type:
+          - object
+          - 'null'
+    TraceSummary:
+      type: object
+      description: One row of `GET /api/ai/traces/` -- a top-level agent run.
+      required:
+      - trace_id
+      properties:
+        trace_id:
+          type: string
+        parent_trace_id:
+          type:
+          - string
+          - 'null'
+          description: Set when this run was submitted by another run (investigations fan out into child traces).
+        root_span_id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+          description: Agent or pipeline that produced the run.
+        status:
+          type:
+          - string
+          - 'null'
+          description: e.g. `RUNNING`, `COMPLETED`, `FAILED`.
+        session_id:
+          type:
+          - string
+          - 'null'
+          description: Chat session the run belongs to (aiAssistant widget runs).
+        user_id:
+          type:
+          - string
+          - 'null'
+        start_time:
+          type:
+          - string
+          - 'null'
+          description: ISO-8601.
+        end_time:
+          type:
+          - string
+          - 'null'
+          description: ISO-8601; null while the run is still going.
+        total_tokens:
+          type:
+          - integer
+          - 'null'
+          description: LLM tokens consumed by the whole run.
+        total_cost:
+          type:
+          - number
+          - 'null'
+          description: Estimated cost in USD.
+        span_counts:
+          type:
+          - object
+          - 'null'
+          description: 'Span count per type, e.g. `{"LLM": 2, "TOOL": 1}`.'
+        tags:
+          type: array
+          items: {}
+    TraceSpan:
+      type: object
+      description: One span of a trace (`GET /api/ai/traces/spans/{span_id}` or a row of `.../{trace_id}/spans`). For an `LLM`
+        span the prompt is under `input.payload.params.messages` and the reply under `output` (`content`, `tools`, `usage`,
+        `provider`, `model`); for a `TOOL` span `output` is the tool result.
+      required:
+      - span_id
+      properties:
+        span_id:
+          type: string
+        trace_id:
+          type:
+          - string
+          - 'null'
+        parent_span_id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+          description: Step name (tool name for `TOOL` spans, agent name for `AGENT` spans).
+        span_type:
+          type:
+          - string
+          - 'null'
+          description: '`AGENT` / `LLM` / `LLM_WRAPPER` / `TOOL` / `SKILL_RETRIEVER` / `DOCUMENT_SEARCH` / `CUSTOM`.'
+        status:
+          type:
+          - string
+          - 'null'
+        start_time:
+          type:
+          - string
+          - 'null'
+        end_time:
+          type:
+          - string
+          - 'null'
+        duration_ms:
+          type:
+          - number
+          - 'null'
+        input:
+          description: Raw span input. For `TOOL` spans carries the `tool_call` (`name`, `args`).
+        output:
+          description: 'Raw span output. For `LLM` spans: `content`, `tools`, `usage`, `provider`, `model`. For `TOOL` spans:
+            the tool result.'
+        error:
+          description: Failure detail when `status` is failed.
+        attributes:
+          type:
+          - object
+          - 'null'
+        session_id:
+          type:
+          - string
+          - 'null'
+        user_id:
+          type:
+          - string
+          - 'null'
+    TraceNode:
+      type: object
+      description: A node of a trace tree (`GET /api/ai/traces/{trace_id}`, `.../execution-tree`, `.../spans/{span_id}/tree`).
+        Carries a span summary (no full I/O -- fetch the span for that) plus its `children`.
+      required:
+      - span_id
+      properties:
+        span_id:
+          type: string
+        name:
+          type:
+          - string
+          - 'null'
+        span_type:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        start_time:
+          type:
+          - string
+          - 'null'
+        end_time:
+          type:
+          - string
+          - 'null'
+        start_offset_ms:
+          type:
+          - number
+          - 'null'
+          description: Offset from the tree root.
+        duration_ms:
+          type:
+          - number
+          - 'null'
+        attributes:
+          type:
+          - object
+          - 'null'
+        child_count:
+          type:
+          - integer
+          - 'null'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraceNode'
+        children_truncated:
+          type:
+          - boolean
+          - 'null'
+          description: True when the subtree was cut off (fetch the child's own tree for more).
+        io_preview:
+          description: Trimmed input/output preview when requested.
+    ExecutionTree:
+      type: object
+      description: A run plus every run it submitted (`GET /api/ai/traces/{trace_id}/execution-tree`) -- what the Trace Flow
+        panel renders. An investigation typically spans ~10 traces, stitched into one `root` tree.
+      properties:
+        root_trace_id:
+          type:
+          - string
+          - 'null'
+        traces:
+          type: array
+          items:
+            type:
+            - string
+            - object
+          description: The stitched trace ids (or summaries).
+        root:
+          $ref: '#/components/schemas/TraceNode'
     McpJsonRpcRequest:
       type: object
       required:
