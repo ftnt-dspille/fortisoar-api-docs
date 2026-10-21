@@ -80,6 +80,7 @@ def test_spec_matches_generator():
 # Scalar renders a bodyless response as "No Body", which reads as a bug.
 NO_BODY_YET = {
     ("post", "/api/auth/license"): "deploys a license; not run against a lab box",
+    ("get", "/api/integration/agent-heartbeat/{agent}/"): "SME bus to the lab agent is down (500s); re-capture when it answers",
     ("post", "/api/integration/install-connector/"): "needs an rpm-installed connector and a remote agent",
     ("put", "/api/integration/install-connector/"): "needs an rpm-installed connector and a remote agent",
     ("delete", "/api/integration/install-connector/"): "needs an rpm-installed connector and a remote agent",

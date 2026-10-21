@@ -412,6 +412,10 @@ def sweep(s: Session) -> int:
     removed += _sweep_named(s, "/api/3/roles", "role")
     removed += _sweep_named(s, "/api/3/teams", "team")
     removed += _sweep_named(s, "/api/3/agents", "agent")
+    removed += _sweep_picklists(s)
+    removed += _sweep_mcp_configs(s)
+    removed += _sweep_scheduled(s)
+    removed += _sweep_indicators(s)
     return removed
 
 
@@ -993,7 +997,22 @@ def scenario_misc_reads(s: Session) -> None:
     s.call("POST", "/api/ingest-feeds/indicators", want=_post, json={})
     s.call("POST", "/api/insert-feeds/{recordType}", want=_post,
            path_params={"recordType": "indicator"}, json={})
-    s.call("POST", "/api/3/staging_model_metadatas", want=_post, json={})
+    print("[misc] staging metadata lifecycle (own record, deleted again)")
+    r4 = s.request("GET", "/api/3/staging_model_metadatas", params={"$limit": 1})
+    sample4 = next(iter(extract_members(r4.json()) if r4.ok else []), None)
+    if sample4:
+        body4 = {k: sample4[k] for k in ("parentType", "ownable", "userOwnable", "queueable",
+                                         "trackable", "taggable", "peerReplicable", "defaultSort",
+                                         "uniqueConstraint", "indexable")
+                 if k in sample4 and sample4[k] is not None}
+        body4.update(type=f"live{s.run_id}module", tableName=f"live{s.run_id}_module")
+        _, staged = s.call("POST", "/api/3/staging_model_metadatas", want=(201, 400, 401, 403),
+                           json=body4)
+        if isinstance(staged, dict) and staged.get("@id"):
+            s.call("DELETE", "/api/3/staging_model_metadatas/{uuid}", want=(204, 401, 403, 404),
+                   path_params={"uuid": staged["@id"].rsplit("/", 1)[-1]})
+    else:
+        s.call("POST", "/api/3/staging_model_metadatas", want=_post, json={})
     s.call("POST", "/mcp/config/export", want=_post, json={})
 
     print("[misc] AI LLM config POST + insight detail")
@@ -1011,9 +1030,28 @@ def scenario_misc_reads(s: Session) -> None:
             if mc_uuid:
                 s.call("GET", "/api/3/mcp_configurations/{uuid}", want=_ok,
                        path_params={"uuid": mc_uuid})
+    # Heartbeat against a REAL agent when one exists (a bogus name 500s on
+    # 8.0.0, which flips the capture non-2xx run-to-run); fallback keeps the
+    # 500 shape documented when the appliance has no agents.
+    r7 = s.request("GET", "/api/3/agents", params={"$limit": 1})
+    agent_id = next((a.get("uuid") or a.get("id")
+                     for a in extract_members(r7.json()) if r7.ok), None)
     s.call("GET", "/api/integration/agent-heartbeat/{agent}/", want=(200, 404, 500, 401, 403),
-           path_params={"agent": "nonexistent"})
-    s.call("PUT", "/api/auth/config", want=(200, 400, 405, 500, 401, 403), json={})
+           path_params={"agent": str(agent_id or "nonexistent")})
+    # auth/config write-back: flip the retrievable_mode boolean and put it
+    # back, so the 2xx capture is deterministic (writing the CURRENT value
+    # 500s with "already set to [..]" on 8.0.0). Final state == initial.
+    r6 = s.request("GET", "/api/auth/config", params={"section": "API-KEYS"})
+    opt = next((m for m in extract_members(r6.json()) if r6.ok
+                and m.get("key") == "retrievable_mode"), None)
+    if opt is not None:
+        orig = bool(opt.get("value"))
+        s.call("PUT", "/api/auth/config", want=(200, 400, 401, 403),
+               json={"option": "retrievable_mode", "value": not orig})
+        s.call("PUT", "/api/auth/config", want=(200, 400, 401, 403),
+               json={"option": "retrievable_mode", "value": orig})
+    else:
+        s.call("PUT", "/api/auth/config", want=(200, 400, 405, 500, 401, 403), json={})
     s.call("PUT", "/api/publish/revert", want=(200, 400, 405, 401, 403), json={})
 
     print("[misc] export/import templates + jobs (live-* names)")
@@ -1307,6 +1345,146 @@ def scenario_bulk_crud(s: Session) -> None:
            path_params={"moduleType": "alerts"},
            json=[{"name": s.live_name("bulkupsert"), "source": "live_test",
                   "severity": sev_iri, "status": status_iri}])
+
+
+@scenario("api3_lifecycles")
+def scenario_api3_lifecycles(s: Session) -> None:
+    """Write-side lifecycles: every create/update/delete touches ONLY records
+    this run created (live- names), and each lifecycle ends with its own
+    records deleted and verified gone.
+
+    Payloads live-verified on 8.0.0-6034:
+      - `POST/PUT /api/3/{insert,update}/{module}` want a `{"data": [...]}`
+        wrapper (the bare-array shape the vendor guide shows TypeErrors).
+      - `DELETE /api/3/delete/{module}` is broken on 8.0.0 (TypeError for
+        every body shape, same as 7.6.x), so cleanup uses the per-record
+        `DELETE /api/3/{module}/{uuid}` routes, which work.
+      - `PUT /api/wf/api/scheduled/{id}/` needs the FULL record back plus
+        `?format=json`; `{id}` is a per-request Fernet token from the
+        create/list response, never a stored uuid.
+    """
+    _ok = (200, 201, 401, 403)
+    _w = (200, 201, 202, 204, 400, 401, 403, 404, 405, 422, 500)
+
+    # --- alerts: insert -> update -> related-query -> delete (own records) --
+    sev = _picklist_iri(s, "Severity", "High")
+    status = _picklist_iri(s, "AlertStatus", "Open")
+    record_iri = None
+    if sev and status:
+        # Mirrored API keys hit "Invalid credentials" inside the bulk failure
+        # array on this build (same as bulkupsert); capture it and move on.
+        _, rows = s.call("POST", "/api/3/insert/{moduleType}", want=(201, 400, 401, 403, 500),
+                         path_params={"moduleType": "alerts"},
+                         json={"data": [{"name": s.live_name("insert"), "source": "live_test",
+                                         "severity": sev, "status": status}]})
+        created = (rows if isinstance(rows, list) else (rows or {}).get("hydra:member") or [])
+        record_iri = next((r.get("@id") for r in created if isinstance(r, dict) and r.get("@id")), None)
+        if not record_iri:
+            r = s.request("GET", "/api/3/alerts", params={"$search": s.live_name("insert"), "$limit": 5})
+            record_iri = next((m.get("@id") for m in extract_members(r.json()) if r.ok
+                               and (m.get("name") or "").startswith(s.live_name("insert"))), None)
+    else:
+        print("[api3] picklist IRIs unresolved; skipping module-CRUD steps")
+
+    if record_iri:
+        s.call("PUT", "/api/3/update/{moduleType}", want=(200, 400, 401, 403),
+               path_params={"moduleType": "alerts"},
+               json={"data": [{"@id": record_iri, "description": f"updated by run {s.run_id}"}]})
+        record_uuid = record_iri.rsplit("/", 1)[-1]
+        r = s.request("GET", f"/api/3/alerts/{record_uuid}")
+        if r.ok:
+            print(f"[api3] update verified, description={((r.json() or {}).get('description'))!r}")
+        # related-records query on our own alert before deleting it
+        s.call("POST", "/api/query/{collection}/{id}/{field}", want=_ok,
+               path_params={"collection": "alerts", "id": record_uuid, "field": "indicators"},
+               json={"logic": "AND", "filters": []})
+        # bulk delete is broken on 8.0.0; per-record delete of OUR record only
+        if not s.request("DELETE", f"/api/3/alerts/{record_uuid}").ok:
+            print(f"[api3] WARNING: cleanup delete failed for {record_iri}")
+        else:
+            print(f"[api3] record deleted ({r.status_code} after: "
+                  f"{s.request('GET', f'/api/3/alerts/{record_uuid}').status_code})")
+
+    # --- picklists: our own list + value, deleted before we leave ----------
+    list_name = f"live{s.run_id}List"  # picklist names are unique instance-wide
+    _, pln = s.call("POST", "/api/3/picklist_names", want=(201, 400, 401, 403, 409),
+                    json={"name": list_name, "system": False})
+    pln_iri = pln.get("@id") if isinstance(pln, dict) else None
+    if pln_iri:
+        _, val = s.call("POST", "/api/3/picklists", want=(201, 400, 401, 403),
+                        json={"itemValue": s.live_name("opt"), "listName": pln_iri,
+                              "color": "#4CAF50", "orderIndex": 1})
+        val_iri = val.get("@id") if isinstance(val, dict) else None
+        if val_iri:
+            s.call("DELETE", "/api/3/picklists/{uuid}", want=(204, 401, 403, 404),
+                   path_params={"uuid": val_iri.rsplit("/", 1)[-1]})
+        s.call("DELETE", "/api/3/picklist_names/{uuid}", want=(204, 401, 403, 404),
+               path_params={"uuid": pln_iri.rsplit("/", 1)[-1]})
+
+    # --- MCP configurations: mirror an existing record's shape, then CRUD --
+    r = s.request("GET", "/api/3/mcp_configurations", params={"$limit": 1})
+    sample = next(iter(extract_members(r.json()) if r.ok else []), None)
+    if sample:
+        body = {k: sample[k] for k in ("active", "authentication", "command",
+                                       "description", "metadata", "timeout",
+                                       "transport", "type", "url")
+                if k in sample and sample[k] is not None}
+        body["name"] = s.live_name("mcp")
+        _, cfg = s.call("POST", "/api/3/mcp_configurations", want=(201, 400, 401, 403),
+                        json=body)
+        cfg_iri = cfg.get("@id") if isinstance(cfg, dict) else None
+        if cfg_iri:
+            cfg_uuid = cfg_iri.rsplit("/", 1)[-1]
+            _, fresh = s.call("GET", "/api/3/mcp_configurations/{uuid}", want=_ok,
+                              path_params={"uuid": cfg_uuid})
+            if isinstance(fresh, dict):
+                s.call("PUT", "/api/3/mcp_configurations/{uuid}", want=(200, 400, 401, 403),
+                       path_params={"uuid": cfg_uuid},
+                       json={**fresh, "description": f"updated by run {s.run_id}"})
+            s.call("DELETE", "/api/3/mcp_configurations/{uuid}", want=(204, 401, 403, 404),
+                   path_params={"uuid": cfg_uuid})
+
+    # --- scheduled tasks: disabled one-shot schedule on an existing workflow
+    r = s.request("GET", "/api/3/workflows", params={"$limit": 1})
+    wf = next(iter(extract_members(r.json()) if r.ok else []), None)
+    if wf:
+        wf_iri = wf.get("@id") or f"/api/3/workflows/{wf.get('uuid')}"
+        _, task = s.call("POST", "/api/wf/api/scheduled/", want=(201, 400, 401, 403),
+                         params={"format": "json"},
+                         json={"name": s.live_name("schedule"),
+                               "crontab": {"minute": "7", "hour": "3", "day_of_week": "*",
+                                           "day_of_month": "1", "month_of_year": "1",
+                                           "timezone": "UTC"},
+                               "kwargs": {"exit_if_running": True, "wf_iri": wf_iri,
+                                          "timezone": "UTC"},
+                               "expires": None, "start_time": None,
+                               "enabled": False})  # never actually fires
+        if isinstance(task, dict) and task.get("id"):
+            s.call("PUT", "/api/wf/api/scheduled/{id}/", want=(200, 400, 401, 403, 404),
+                   path_params={"id": task["id"]}, params={"format": "json"},
+                   json={**task, "enabled": False})
+            s.call("DELETE", "/api/wf/api/scheduled/{id}/", want=(204, 401, 403, 404),
+                   path_params={"id": task["id"]})
+
+    # --- indicator feed ingest (trigger-bypassing), then delete our rows ---
+    _, res = s.call("POST", "/api/ingest-feeds/indicators", want=(200, 400, 401, 403),
+                    json={"data": [{"value": f"{s.live_name('ioc')}.example.invalid",
+                                    "type": "all"}]})
+    for uuid_ in (res or {}).get("uuids", []) if isinstance(res, dict) else []:
+        if not s.request("DELETE", f"/api/3/indicators/{uuid_}").ok:
+            print(f"[api3] WARNING: indicator cleanup failed for {uuid_}")
+
+    # --- logout, on a throwaway token so our own session survives ----------
+    user = os.environ.get("FSR_USERNAME", "")
+    pw = os.environ.get("FSR_PASSWORD", "")
+    if user and pw and s.current_auth == "jwt":
+        import urllib.parse as _up
+        r = s.request("POST", "/auth/authenticate",
+                      json={"credentials": {"loginid": user, "password": pw}})
+        if r.ok and r.json().get("token"):
+            saved, s.headers["Authorization"] = s.headers["Authorization"], f"Bearer {r.json()['token']}"
+            s.call("POST", "/api/3/logout", want=(200, 204, 401, 403))
+            s.headers["Authorization"] = saved
 
 
 @scenario("audit_query")
@@ -1634,6 +1812,92 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
     s.call("POST", "/api/ingest-feeds/reputation", want=(200, 400),
            json=[{"value": "198.51.100.30", "type": "IP Address",
                   "reputation": "Suspicious", "source": "live-test"}])
+
+
+def _picklist_iri(s: Session, taxonomy: str, value: str) -> str | None:
+    """Resolve the IRI of one specific picklist value (e.g. ("Severity", "High"))."""
+    r = s.request("GET", "/api/3/picklist_names", params={"name": taxonomy, "$limit": 1})
+    if not r.ok:
+        return None
+    members = (r.json() or {}).get("hydra:member") or []
+    if not members:
+        return None
+    pln_iri = members[0].get("@id")
+    rr = s.request("GET", "/api/3/picklists", params={"listName": pln_iri, "$limit": 100})
+    if not rr.ok:
+        return None
+    for pmem in (rr.json() or {}).get("hydra:member") or []:
+        if pmem.get("itemValue") == value:
+            return pmem.get("@id")
+    return None
+
+
+def _sweep_picklists(s: Session) -> int:
+    """Delete custom picklists (values first) whose list name starts with LIVE_PREFIX."""
+    removed = 0
+    r = s.request("GET", "/api/3/picklist_names", params={"$limit": 200})
+    if not r.ok:
+        return 0
+    for m in extract_members(r.json()):
+        name = m.get("name") or ""
+        if not name.startswith(LIVE_PREFIX):
+            continue
+        pln_iri = m.get("@id") or ""
+        uuid_ = m.get("uuid") or pln_iri.rsplit("/", 1)[-1]
+        if pln_iri:
+            rr = s.request("GET", "/api/3/picklists", params={"listName": pln_iri, "$limit": 200})
+            for v in extract_members(rr.json() if rr.ok else {}):
+                v_iri = v.get("@id")
+                if v_iri and s.request("DELETE", v_iri).ok:
+                    removed += 1
+        if uuid_ and s.request("DELETE", f"/api/3/picklist_names/{uuid_}").ok:
+            removed += 1
+            print(f"  swept picklist {name} ({uuid_})")
+    return removed
+
+
+def _sweep_mcp_configs(s: Session) -> int:
+    """DELETE /api/3/mcp_configurations/{uuid} for any config named live-*."""
+    return _sweep_named(s, "/api/3/mcp_configurations", "mcp configuration")
+
+
+def _sweep_scheduled(s: Session) -> int:
+    """DELETE /api/wf/api/scheduled/{id}/ for tasks named live-*.
+
+    The `{id}` is a per-request Fernet token, so it must be read from a fresh
+    list call immediately before each DELETE.
+    """
+    removed = 0
+    r = s.request("GET", "/api/wf/api/scheduled/", params={"limit": 200})
+    if not r.ok:
+        return 0
+    body = r.json()
+    members = body if isinstance(body, list) else extract_members(body)
+    for m in members:
+        name = m.get("name") or ""
+        if not name.startswith(LIVE_PREFIX):
+            continue
+        tid = m.get("id")
+        if tid and s.request("DELETE", f"/api/wf/api/scheduled/{tid}/").ok:
+            removed += 1
+            print(f"  swept scheduled task {name}")
+    return removed
+
+
+def _sweep_indicators(s: Session) -> int:
+    """DELETE indicators whose `value` carries the LIVE_PREFIX marker."""
+    removed = 0
+    r = s.request("GET", "/api/3/indicators", params={"$search": LIVE_PREFIX, "$limit": 200})
+    if not r.ok:
+        return 0
+    for m in extract_members(r.json()):
+        if LIVE_PREFIX not in (m.get("value") or ""):
+            continue
+        uuid_ = m.get("uuid") or (m.get("@id", "").rsplit("/", 1)[-1])
+        if uuid_ and s.request("DELETE", f"/api/3/indicators/{uuid_}").ok:
+            removed += 1
+            print(f"  swept indicator {m['value']}")
+    return removed
 
 
 @scenario("agents_lifecycle")

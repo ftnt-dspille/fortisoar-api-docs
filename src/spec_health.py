@@ -10,7 +10,9 @@ Run:
     python src/spec_health.py --category=auth  # restrict to one category
 
 Categories surfaced:
-  live         — ops with no live observation at all.
+  live         — ops with no live observation at all. Ops marked
+                 `deprecated: true` (routed-but-broken / not-routed on
+                 current builds) are skipped as deliberately untestable.
   auth         — ops that only succeeded under one auth mode.
   params       — query/path params used in a captured example but not declared
                  in the op's `parameters`.
@@ -44,7 +46,8 @@ SPEC_PATH = ROOT / "build" / "fortisoar.curated.openapi.yaml"
 OBS_PATH = ROOT / "build" / "live_observations.json"
 
 VERBS = ("get", "post", "put", "delete", "patch")
-SANITIZER_TOKENS = {"<uuid>", "<api-key>", "<self-agent>", "<jwt-token>", "<binary>"}
+SANITIZER_TOKENS = {"<uuid>", "<api-key>", "<self-agent>", "<jwt-token>", "<binary>",
+                    "<run>", "<lab-host>"}  # live-capture scrubbers: run id + appliance host
 PLACEHOLDER_RE = re.compile(r"<[A-Za-z][A-Za-z0-9_\- ]{1,40}>")
 PATH_PARAM_RE = re.compile(r"\{([^}]+)\}")
 
@@ -95,6 +98,8 @@ def _captured_params(request_body: Any) -> set[str]:
 def check_live(spec: dict, obs: dict) -> list[str]:
     issues = []
     for path, verb, op in _iter_ops(spec):
+        if op.get("deprecated"):
+            continue  # documented-but-broken / not-routed ops are deliberately untestable
         if not op.get("x-live-captured"):
             issues.append(f"{verb.upper()} {path}")
     return issues

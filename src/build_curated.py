@@ -1093,15 +1093,18 @@ PATHS["/api/3/{collection}/{uuid}"] = {
 
 for verb, op_method, op_summary, op_desc, body_shape in [
     ("insert",     "post",   "Bulk insert",
-     "Documented bulk-insert path. **Broken on FSR 7.6.x:** every body shape and every module type "
-     "probed returned 400 with `TypeError: Internal Server Error`. Use `/api/3/{collection}` (single "
-     "POST per record) or `/api/3/bulkupsert/{moduleType}` instead.", "array_obj"),
+     "Documented bulk-insert path. **Broken on FSR 7.6.x** with a bare array body. On 8.0.0 it works "
+     "when the rows arrive wrapped in a `data` key (same envelope as `/api/ingest-feeds/*`); the bare "
+     "array still 400s with `TypeError`. Unlike the feed paths, insert does NOT skip on-create "
+     "playbook triggers.", "data_obj"),
     ("update",     "put",    "Bulk update",
-     "Documented bulk-update path. **Broken on FSR 7.6.x:** returns 400 `HttpException`. "
-     "Update records individually via `PUT /api/3/{collection}/{uuid}`.", "array_obj"),
+     "Documented bulk-update path. **Broken on FSR 7.6.x** with a bare array body. On 8.0.0 it works "
+     "when the row objects (each carrying `@id`) arrive wrapped in a `data` key; the bare array still "
+     "400s with `HttpException`.", "data_obj"),
     ("delete",     "delete", "Bulk delete",
-     "Documented bulk-delete path. **Broken on FSR 7.6.x:** returns 400 `TypeError`. "
-     "Delete records individually via `DELETE /api/3/{collection}/{uuid}`.", "array_str"),
+     "Documented bulk-delete path. **Broken on 7.6.x and 8.0.0:** every body shape probed (bare array "
+     "of IRIs, array of uuids, `data`-wrapped objects, query param) returns 400 `TypeError: Internal "
+     "Server Error`. Delete records individually via `DELETE /api/3/{collection}/{uuid}`.", "array_str"),
     ("upsert",     "post",   "Upsert by natural key",
      "Insert-or-update **a single record** keyed on the module's identifier field. Body is a JSON object, "
      "not an array - use `/api/3/bulkupsert/{moduleType}` for the array variant.", "object"),
@@ -1114,10 +1117,17 @@ for verb, op_method, op_summary, op_desc, body_shape in [
         "description": op_desc,
         "responses": {"200": _resp("Result envelope (per-record status).")},
     }
+    if verb == "delete":
+        op_def["deprecated"] = True  # routed but broken on every probed build; spec_health skips it
     if body_shape == "array_obj":
         schema = {"type": "array", "items": {"type": "object"}}
     elif body_shape == "array_str":
         schema = {"type": "array", "items": {"type": "string"}}
+    elif body_shape == "data_obj":
+        schema = {"type": "object", "required": ["data"], "properties": {
+            "data": {"type": "array", "items": {"type": "object"},
+                     "description": "Rows keyed by the module's field names; update rows "
+                                    "must each carry an `@id`."}}}
     else:  # object
         schema = {"type": "object"}
     op_def["requestBody"] = {"required": True, "content": {"application/json": {"schema": schema}}}
@@ -1176,10 +1186,16 @@ PATHS["/api/insert-feeds/{recordType}"] = {
     "parameters": [{"name": "recordType", "in": "path", "required": True, "schema": {"type": "string"}}],
     "post": {
         "tags": ["Bulk operations"],
-        "summary": "Generic feed insert",
-        "description": "Generalization of `/api/ingest-feeds/indicators` for any record type. Same trigger-skipping behavior.",
+        "summary": "Generic feed insert (NOT ROUTED on 8.x)",
+        "description": (
+            "Listed in the 7.6.5 API guide, but **not routed on 8.0.0/8.0.1**: every `recordType` "
+            "404s at the router level (`No route found`). Do not confuse it with the similarly named "
+            "`/api/ingest-feeds/{module}` (with a \"g\"), which is the real, working generalization of "
+            "`/api/ingest-feeds/indicators`."
+        ),
+        "deprecated": True,
         "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "object"}}}}},
-        "responses": {"200": _resp("Ingest result.")},
+        "responses": {"404": _resp("Not routed on 8.x - use `/api/ingest-feeds/{module}`.")},
     },
 }
 
@@ -4898,12 +4914,13 @@ CURATED_EXAMPLES = {
     },
     ("DELETE", "/api/3/{collection}/{uuid}"): {"response": {"204": None}},
 
-    # Bulk ops - same envelope pattern across insert/update/delete/upsert.
+    # Bulk ops - insert/update want a `data`-wrapped envelope on 8.0.0
+    # (live-verified); delete is broken on every probed build.
     ("POST", "/api/3/insert/{moduleType}"): {
-        "request": [
+        "request": {"data": [
             {"name": "alert-001", "source": "Splunk", "sourceId": "spl-1001"},
             {"name": "alert-002", "source": "Splunk", "sourceId": "spl-1002"},
-        ],
+        ]},
         "response": {"200": {
             "@context": "/api/3/contexts/BulkResult", "@type": "BulkResult",
             "totalCount": 2, "successCount": 2, "failureCount": 0,
@@ -4914,7 +4931,7 @@ CURATED_EXAMPLES = {
         }},
     },
     ("PUT", "/api/3/update/{moduleType}"): {
-        "request": [{"@id": f"/api/3/alerts/{_UUID}", "severity": "/api/3/picklists/high-uuid"}],
+        "request": {"data": [{"@id": f"/api/3/alerts/{_UUID}", "severity": "/api/3/picklists/high-uuid"}]},
         "response": {"200": {"totalCount": 1, "successCount": 1, "failureCount": 0,
                               "results": [{"status": "success", "uuid": _UUID}]}},
     },
