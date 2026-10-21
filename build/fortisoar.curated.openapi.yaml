@@ -565,6 +565,7 @@ paths:
       responses:
         '204':
           description: Logged out.
+      x-live-captured: true
       x-auth: &id002
         apikey: 'no'
         jwt: 'yes'
@@ -6925,9 +6926,9 @@ paths:
       description: '**See:** [Concepts](#description/concepts) (trigger-bypass semantics)
 
 
-        Documented bulk-insert path. **Broken on FSR 7.6.x:** every body shape and every module type probed returned 400 with
-        `TypeError: Internal Server Error`. Use `/api/3/{collection}` (single POST per record) or `/api/3/bulkupsert/{moduleType}`
-        instead.'
+        Documented bulk-insert path. **Broken on FSR 7.6.x** with a bare array body. On 8.0.0 it works when the rows arrive
+        wrapped in a `data` key (same envelope as `/api/ingest-feeds/*`); the bare array still 400s with `TypeError`. Unlike
+        the feed paths, insert does NOT skip on-create playbook triggers.'
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -6954,16 +6955,23 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: object
+              type: object
+              required:
+              - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                  description: Rows keyed by the module's field names; update rows must each carry an `@id`.
             example:
-            - name: alert-001
-              source: Splunk
-              sourceId: spl-1001
-            - name: alert-002
-              source: Splunk
-              sourceId: spl-1002
+              data:
+              - name: alert-001
+                source: Splunk
+                sourceId: spl-1001
+              - name: alert-002
+                source: Splunk
+                sourceId: spl-1002
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -7003,31 +7011,305 @@ paths:
       description: '**See:** [Concepts](#description/concepts)
 
 
-        Documented bulk-update path. **Broken on FSR 7.6.x:** returns 400 `HttpException`. Update records individually via
-        `PUT /api/3/{collection}/{uuid}`.'
+        Documented bulk-update path. **Broken on FSR 7.6.x** with a bare array body. On 8.0.0 it works when the row objects
+        (each carrying `@id`) arrive wrapped in a `data` key; the bare array still 400s with `HttpException`.'
       responses:
         '200':
           description: Result envelope (per-record status).
           content:
             application/json:
               example:
-                totalCount: 1
-                successCount: 1
-                failureCount: 0
-                results:
-                - status: success
-                  uuid: f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
+                '@type': hydra:Collection
+                hydra:member:
+                - '@context': /api/3/contexts/Alert
+                  '@id': /api/3/alerts/<uuid>
+                  '@type': Alert
+                  aISummary: null
+                  aIVerdict:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#8E98AC'
+                    icon: null
+                    id: 467
+                    importedBy: []
+                    itemValue: Not Investigated
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  ackDate: null
+                  ackSLApausedon: null
+                  ackSlaStatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#25A5AE'
+                    icon: null
+                    id: 441
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  alertDetectionDate: null
+                  alertRemainingAckSLA: null
+                  alertRemainingRespSLA: null
+                  assignedTo: null
+                  assigneddate: null
+                  assignee: ''
+                  attachmentNames: null
+                  bucketName: null
+                  bytesTransferred: null
+                  closureNotes: null
+                  closureReason: null
+                  commandLine: null
+                  computerName: null
+                  conflict: false
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  decodedCommandLine: null
+                  description: updated by run 4d9bfe79
+                  destinationID: null
+                  destinationIp: null
+                  destinationPort: null
+                  deviceOwner: null
+                  deviceSerialNo: null
+                  deviceType: null
+                  deviceUID: null
+                  domain: null
+                  dueBy: null
+                  emailBody: null
+                  emailClassification: null
+                  emailFrom: null
+                  emailHeaders: null
+                  emailSubject: null
+                  emailTo: null
+                  epochTime: null
+                  escalatedtoincident:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#A4ACBC'
+                    icon: null
+                    id: 355
+                    importedBy: []
+                    itemValue: 'No'
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  escalationReason: null
+                  eventTime: null
+                  fileEmail: null
+                  fileHash: null
+                  fileHashes: null
+                  fileName: null
+                  fileNames: null
+                  filePath: null
+                  fsrQueue: null
+                  hostCountry: null
+                  hostIPAddress: null
+                  hostMACAddress: null
+                  hostName: null
+                  iPAddresses: null
+                  id: 12263
+                  jiraTicketID: null
+                  killChainPhase: null
+                  latestLogin: null
+                  metrics: null
+                  mitreTechnique: null
+                  mitreattackid: null
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  name: live-<run>-insert
+                  parentProcessCmdLine: null
+                  parentProcessName: null
+                  parentProcessPid: null
+                  priorityWeight: 1
+                  processGuid: null
+                  processId: null
+                  processName: null
+                  processTree: null
+                  recipientEmailAddress: null
+                  recordTags: []
+                  registryKey: null
+                  registryKeyValue: null
+                  reporter: null
+                  reporterEmailBody: null
+                  resolvedAutomatedly: null
+                  resolveddate: null
+                  respDate: null
+                  respDueDate: null
+                  respSLApausedon: null
+                  respSlaStatus:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#25A5AE'
+                    icon: null
+                    id: 441
+                    importedBy: []
+                    itemValue: Awaiting Action
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 2
+                    uuid: <uuid>
+                  responseSLAResumeDate: null
+                  returnPath: null
+                  rule: null
+                  scheduledTask: null
+                  senderDomain: null
+                  senderEmailAddress: null
+                  services: null
+                  severity:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#DE7A13'
+                    icon: null
+                    id: 444
+                    importedBy: []
+                    itemValue: High
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 3
+                    uuid: <uuid>
+                  source: live_test
+                  sourceId: null
+                  sourceIp: null
+                  sourcePort: null
+                  sourceProcess: null
+                  sourceTool: null
+                  sourceType: null
+                  sourcedata: null
+                  state:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 198
+                    importedBy: []
+                    itemValue: New
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 0
+                    uuid: <uuid>
+                  status:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: '#264EA1'
+                    icon: null
+                    id: 201
+                    importedBy: []
+                    itemValue: Open
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 1
+                    uuid: <uuid>
+                  subSource: null
+                  targetAsset: null
+                  targetProcess: null
+                  tenant:
+                    '@id': /api/3/tenants/<uuid>
+                    '@type': Tenant
+                    allowRemoteMMDModification: true
+                    createDate: null
+                    createUser: null
+                    description: sample
+                    id: 1
+                    industry: null
+                    isDedicated: true
+                    license: null
+                    modifyDate: null
+                    modifyUser: null
+                    name: Self
+                    region: null
+                    role: self
+                    tenantId: <self-agent>
+                    uuid: <uuid>
+                  tenantRecordId: 12263
+                  ticketID: null
+                  triagetaskid: null
+                  type:
+                    '@id': /api/3/picklists/<uuid>
+                    '@type': Picklist
+                    color: null
+                    icon: null
+                    id: 227
+                    importedBy: []
+                    itemValue: Other / Unknown
+                    listName: /api/3/picklist_names/<uuid>
+                    orderIndex: 19
+                    uuid: <uuid>
+                  url: null
+                  userDetails: null
+                  userName: null
+                  uuid: <uuid>
+                  vulnerabilitySeverity: null
+                hydra:totalItems: 1
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: object
+              type: object
+              required:
+              - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                  description: Rows keyed by the module's field names; update rows must each carry an `@id`.
             example:
-            - '@id': /api/3/alerts/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
-              severity: /api/3/picklists/high-uuid
+              data:
+              - '@id': /api/3/alerts/<uuid>
+                description: updated by run 9998de03
+      x-live-captured: true
       x-auth: &id057
         apikey: 'no'
         jwt: 'yes'
@@ -7060,8 +7342,9 @@ paths:
       description: '**See:** [Concepts](#description/concepts)
 
 
-        Documented bulk-delete path. **Broken on FSR 7.6.x:** returns 400 `TypeError`. Delete records individually via `DELETE
-        /api/3/{collection}/{uuid}`.'
+        Documented bulk-delete path. **Broken on 7.6.x and 8.0.0:** every body shape probed (bare array of IRIs, array of
+        uuids, `data`-wrapped objects, query param) returns 400 `TypeError: Internal Server Error`. Delete records individually
+        via `DELETE /api/3/{collection}/{uuid}`.'
       responses:
         '200':
           description: Result envelope (per-record status).
@@ -7071,6 +7354,7 @@ paths:
                 totalCount: 2
                 successCount: 2
                 failureCount: 0
+      deprecated: true
       requestBody:
         required: true
         content:
@@ -7982,11 +8266,14 @@ paths:
     post:
       tags:
       - Bulk operations
-      summary: Generic feed insert
+      summary: Generic feed insert (NOT ROUTED on 8.x)
       description: '**See:** [Concepts](#description/concepts) (trigger-bypass)
 
 
-        Generalization of `/api/ingest-feeds/indicators` for any record type. Same trigger-skipping behavior.'
+        Listed in the 7.6.5 API guide, but **not routed on 8.0.0/8.0.1**: every `recordType` 404s at the router level (`No
+        route found`). Do not confuse it with the similarly named `/api/ingest-feeds/{module}` (with a "g"), which is the
+        real, working generalization of `/api/ingest-feeds/indicators`.'
+      deprecated: true
       requestBody:
         required: true
         content:
@@ -7999,18 +8286,8 @@ paths:
             - name: feed-record-1
               source: MISP
       responses:
-        '200':
-          description: Ingest result.
-          x-pyfsr-response-model: FeedIngestResult
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeedIngestResult'
-              example:
-                totalCount: 1
-                successCount: 1
-                failureCount: 0
-                skipTriggers: true
+        '404':
+          description: Not routed on 8.x - use `/api/ingest-feeds/{module}`.
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -9088,8 +9365,8 @@ paths:
                   items:
                     type: object
             example:
-              logic: AND
               filters: []
+              logic: AND
       responses:
         '200':
           description: Hydra collection of the linked records.
@@ -9098,22 +9375,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/HydraCollection'
               example:
-                '@context': /api/3/contexts/Alert
-                '@id': /api/3/alerts
-                '@type': hydra:PagedCollection
-                hydra:totalItems: 1
-                hydra:itemsPerPage: 30
-                hydra:nextPage: /api/3/alerts?%24page=2
-                hydra:firstPage: example
-                hydra:lastPage: example
+                '@context': /api/3/contexts/Indicator
+                '@id': /api/3/indicators
+                '@type': hydra:Collection
                 hydra:member: []
-                hydra:search: {}
+                hydra:totalItems: 0
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\naid = \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\nprint(client.search.query_related(\"\
           alerts\", aid, \"indicators\")[\"hydra:totalItems\"])"
+      x-live-captured: true
       x-auth: &id073
         apikey: 'yes'
         jwt: 'yes'
@@ -9475,55 +9748,77 @@ paths:
                 content:
                 - component: crudhub
                   data:
-                    '@id': /api/3/api_keys/<uuid>
-                    Created By: CS Admin
-                    Created On: 10-20-2026 01:11 AM UTC
-                    Id: 185
-                    Name: authprobe-mirror-<run>
-                    recordTags: []
-                    userId: <uuid>
-                    uuid: <uuid>
-                  displayName: authprobe-mirror-<run>
-                  entitySingularName: API Key
-                  entityType: api_keys
+                    firesCount:
+                      newData: 3002
+                      oldData: 3001
+                    lastVerdict:
+                      newData: 'ALARMING
+
+
+                        There is a persistent and ongoing pattern of high-severity C2 traffic between <lab-host> and new malware
+                        IPs (e.g., previous: 18.135.209.57, 124.71.172.61, 52.54.42.29, 45.79.207.53; now: 12... <236 more
+                        characters>'
+                      oldData: quiet -- no fresh Critical/High alerts since watermark
+                    ledger:
+                      newData: '> {"fresh": 0, "saw": 0, "ts": "2026-10-19T14:00:02.066367+00:00", "verdict": "QUIET (no fresh
+                        alerts)"}
+
+                        > {"alerts": ["Traffic from <lab-host> to C2 Tracker Malware IP 107.148.149.107", "Traffic from...
+                        <14630 more characters>'
+                      oldData: '> {"alerts": ["Traffic from <lab-host> to ThreatFox Malware URL https://pikchestop.com/test/",
+                        "Traffic from <lab-host> to C2 Tracker Malware IP 217.15.22.199"], "fresh": 2, "saw": 2, "ts": "2026-10-1...
+                        <14711 more characters>'
+                    seenIds:
+                      newData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
+                        <1199 more characters>
+                      oldData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
+                        <1199 more characters>
+                    watermark:
+                      newData: '2026-10-21T15:30:01.749778+00:00'
+                      oldData: '2026-10-21T15:00:02.717307+00:00'
+                  displayName: alarming-alert-sentinel
+                  entitySingularName: Sentinel State
+                  entityType: sentinel_states
                   entityUuid: <uuid>
-                  id: 439213
-                  operation: Create
-                  source: <lab-host>
+                  id: 446436
+                  operation: Update
+                  playbookIri: /api/3/workflows/<uuid>
+                  playbookName: Stateful Alarming Alert Sentinel
+                  source: 127.0.0.1
                   subComponent: EntityRecord
                   teamIris:
                   - /api/3/teams/<uuid>
                   - /api/3/teams/<uuid>
                   - '... <1 more items truncated>'
-                  title: API Key [authprobe-mirror-<run>] Created
-                  transactionDate: 1792458719550
-                  user: CS Admin
+                  title: Attribute(s) [ledger, firesCount, watermark, seenIds, lastVerdict] Updated in Sentinel State [alarming-alert-sentinel]
+                  transactionDate: 1792596611629
+                  user: Playbook
                   userId: <uuid>
                   userOwnerIris: []
                 - component: crudhub
                   data:
-                    '@id': /api/3/roles/<uuid>
-                    displayName: Full App Permissions
-                  displayName: authprobe-mirror-<run>
-                  entitySingularName: API Key
-                  entityType: api_keys
+                    '@id': /api/3/indicators/<uuid>
+                    Created By: authprobe-mirror-<run>
+                    Created On: 10-21-2026 15:29 PM UTC
+                    Id: 2229
+                    UUID: <uuid>
+                    Value: live-<run>-ioc.example.invalid
+                    recordTags: []
+                    tenant: Self
+                    tenantRecordId: 2229
+                  displayName: live-<run>-ioc.example.invalid
+                  entitySingularName: Indicator
+                  entityType: indicators
                   entityUuid: <uuid>
-                  id: 439214
-                  linkEntityDetails:
-                    displayName: Full App Permissions
-                    iri: /api/3/roles/<uuid>
-                    singularName: Role
-                    type: roles
-                  operation: Link
+                  id: 446435
+                  operation: Delete
                   source: <lab-host>
                   subComponent: EntityRecord
                   teamIris:
-                  - /api/3/teams/<uuid>
-                  - /api/3/teams/<uuid>
-                  - '... <1 more items truncated>'
-                  title: Role [Full App Permissions] Linked to API Key [authprobe-mirror-<run>]
-                  transactionDate: 1792458719550
-                  user: CS Admin
+                  - cs-non-ownable
+                  title: Indicator [live-<run>-ioc.example.invalid] Deleted
+                  transactionDate: 1792596598157
+                  user: authprobe-mirror-<run>
                   userId: <uuid>
                   userOwnerIris: []
                 first: true
@@ -9650,29 +9945,50 @@ paths:
               example:
                 component: crudhub
                 data:
-                  '@id': /api/3/api_keys/<uuid>
-                  Created By: CS Admin
-                  Created On: 10-20-2026 01:11 AM UTC
-                  Id: 185
-                  Name: authprobe-mirror-<run>
-                  recordTags: []
-                  userId: <uuid>
-                  uuid: <uuid>
-                displayName: authprobe-mirror-<run>
-                entitySingularName: API Key
-                entityType: api_keys
+                  firesCount:
+                    newData: 3002
+                    oldData: 3001
+                  lastVerdict:
+                    newData: 'ALARMING
+
+
+                      There is a persistent and ongoing pattern of high-severity C2 traffic between <lab-host> and new malware
+                      IPs (e.g., previous: 18.135.209.57, 124.71.172.61, 52.54.42.29, 45.79.207.53; now: 12... <236 more characters>'
+                    oldData: quiet -- no fresh Critical/High alerts since watermark
+                  ledger:
+                    newData: '> {"fresh": 0, "saw": 0, "ts": "2026-10-19T14:00:02.066367+00:00", "verdict": "QUIET (no fresh
+                      alerts)"}
+
+                      > {"alerts": ["Traffic from <lab-host> to C2 Tracker Malware IP 107.148.149.107", "Traffic from... <14630
+                      more characters>'
+                    oldData: '> {"alerts": ["Traffic from <lab-host> to ThreatFox Malware URL https://pikchestop.com/test/",
+                      "Traffic from <lab-host> to C2 Tracker Malware IP 217.15.22.199"], "fresh": 2, "saw": 2, "ts": "2026-10-1...
+                      <14711 more characters>'
+                  seenIds:
+                    newData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
+                      <1199 more characters>
+                    oldData: <uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uuid>,<uui...
+                      <1199 more characters>
+                  watermark:
+                    newData: '2026-10-21T15:30:01.749778+00:00'
+                    oldData: '2026-10-21T15:00:02.717307+00:00'
+                displayName: alarming-alert-sentinel
+                entitySingularName: Sentinel State
+                entityType: sentinel_states
                 entityUuid: <uuid>
-                id: 439213
-                operation: Create
-                source: <lab-host>
+                id: 446436
+                operation: Update
+                playbookIri: /api/3/workflows/<uuid>
+                playbookName: Stateful Alarming Alert Sentinel
+                source: 127.0.0.1
                 subComponent: EntityRecord
                 teamIris:
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
                 - '... <1 more items truncated>'
-                title: API Key [authprobe-mirror-<run>] Created
-                transactionDate: 1792458719550
-                user: CS Admin
+                title: Attribute(s) [ledger, firesCount, watermark, seenIds, lastVerdict] Updated in Sentinel State [alarming-alert-sentinel]
+                transactionDate: 1792596611629
+                user: Playbook
                 userId: <uuid>
                 userOwnerIris: []
       x-codeSamples:
@@ -11418,22 +11734,21 @@ paths:
                 hydra:member:
                 - agent_id: null
                   assignment_type: none
-                  created: '2026-05-16T11:33:41.542857Z'
+                  created: '2026-10-20T22:57:54.110636Z'
                   external_channel_list: []
-                  id: 403
+                  id: 609
                   inline_channel_list: []
                   is_approval: false
-                  owner_details:
-                    isAssigned: false
+                  owner_details: {}
                   owners: []
                   record: ''
-                  step_id: 5691794
+                  step_id: 1277447
                   timeout: null
                   timeout_details: null
                   title: E2E test gate
-                  type: InputBased
+                  type: ''
                   unauthenticated_input: false
-                  workflow: gAAAAABqDfzPlOnHTLBHholmGSd8D_Dc5ts9coTE_LpD5QLA7s7Ev8FZ7_wbyAFN2-AoNaLgwS7NN0Uke_3dD_O6jgIH9FqyIg==
+                  workflow: gAAAAABq2NiTRVeKlcxav88tTy5a-GBC9rUTIonmAtKkB_pfvqoRbu0ZYkvxTRzw3yifTcyaMlspYuFSZH9X-8f-_c4VTjldWw==
                 hydra:nextPage: null
                 hydra:previousPage: null
                 hydra:totalItems: 1
@@ -12060,44 +12375,98 @@ paths:
                   type: string
                   nullable: true
             example:
-              id: gAAAAABkXyQ_placeholder_fernet_token
-              name: nightly-recon
-              task: workflow.tasks.periodic_task
-              enabled: false
+              args: '[]'
+              clocked: null
               crontab:
-                id: 42
-                minute: '7'
-                hour: '2'
+                day_of_month: '1'
                 day_of_week: '*'
-                day_of_month: '*'
-                month_of_year: '*'
+                hour: '3'
+                id: 32
+                minute: '7'
+                month_of_year: '1'
                 timezone: UTC
-              kwargs:
-                wf_iri: /api/3/workflows/c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
-                exit_if_running: true
-                timezone: UTC
-                utcOffset: UTC+00:00
-                name: nightly-recon
-                description: nightly-recon
-                auth: null
-                schedule_entry_name: nightly-recon
-              schedule_id: 7
+              date_changed: '2026-10-21T15:29:24.869755Z'
+              description: live-<run>-schedule
+              enabled: false
+              exchange: null
+              expire_seconds: null
               expires: null
+              headers: '{}'
+              id: gAAAAABq2NpUbPy9huXVDvZeJlWRYISdr_XAaQ_9M0Cipoike5BbyslPPIlAxfqLDZad8lab1kPcodLVMtAR5Y-rBUfDGtGWwg==
+              interval: null
+              kwargs:
+                auth:
+                  auth_method: CS HMAC
+                description: live-<run>-schedule
+                exit_if_running: true
+                name: live-<run>-schedule
+                referenceid: null
+                schedule_entry_name: live-<run>-schedule
+                schedule_id: <uuid>
+                timezone: UTC
+                wf_iri: /api/3/workflows/<uuid>
+              last_run_at: null
+              name: live-<run>-schedule
+              one_off: false
+              priority: 3
+              queue: null
+              routing_key: null
+              solar: null
               start_time: null
+              task: workflow.tasks.periodic_task
+              total_run_count: 0
       responses:
         '200':
           description: The updated periodic-task record.
           content:
             application/json:
               example:
-                id: gAAAAABkXyQ_placeholder_fernet_token
-                name: nightly-recon
+                args: '[]'
+                clocked: null
+                crontab:
+                  day_of_month: '1'
+                  day_of_week: '*'
+                  hour: '3'
+                  id: 32
+                  minute: '7'
+                  month_of_year: '1'
+                  timezone: UTC
+                date_changed: '2026-10-21T15:02:45.651116Z'
+                description: live-<run>-schedule
                 enabled: false
+                exchange: null
+                expire_seconds: null
+                expires: null
+                headers: '{}'
+                id: gAAAAABq2NQVQ99mFkgQHtwKBNicXKrtEWoZNKgVmZO_Mm4nDTmvDBERbIcPtrh2FNQXpM5L9l5_MVnjtNKr5TNoZytXC_y_xQ==
+                interval: null
+                kwargs:
+                  auth:
+                    auth_method: CS HMAC
+                  description: live-<run>-schedule
+                  exit_if_running: true
+                  name: live-<run>-schedule
+                  referenceid: null
+                  schedule_entry_name: live-<run>-schedule
+                  schedule_id: <uuid>
+                  timezone: UTC
+                  wf_iri: /api/3/workflows/<uuid>
+                last_run_at: null
+                name: live-<run>-schedule
+                one_off: false
+                priority: 3
+                queue: null
+                routing_key: null
+                solar: null
+                start_time: null
+                task: workflow.tasks.periodic_task
+                total_run_count: 0
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.set_enabled(\"nightly-recon\", False)"
+      x-live-captured: true
       x-auth: &id119
         apikey: 'yes'
         jwt: 'yes'
@@ -12136,6 +12505,7 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.schedules.delete(\"nightly-recon\")"
+      x-live-captured: true
       x-auth: &id120
         apikey: 'yes'
         jwt: 'yes'
@@ -12183,7 +12553,7 @@ paths:
                   type: string
                   description: Fernet token from a fresh GET /api/wf/api/scheduled/ or from the POST that created the task.
             example:
-              id: gAAAAABq1r7WuwJC4mWgVYy7X2AuMEnuV0TSjwoCQZsFjfTMX6_D1DJ0pfDC4NMJiBhDLVC4vwXHd436QzQhR0sb5hd5G1tGfA==
+              id: gAAAAABq2N3k-kVa7WSyaij5s8M8j0-O9x-SzC8P1IARRZsqZuhHrkn5rQP9RwVyXBlAyY6X4OGAazeXsrzEG_L9tsNGy-DJJQ==
       responses:
         '200':
           description: Trigger accepted.
@@ -12809,7 +13179,7 @@ paths:
               config:
                 default_greeting: Hello
                 salutation: Mr.
-              connector: 881
+              connector: 889
               default: false
               name: live-<run>-hwcfg
               status: 1
@@ -14384,28 +14754,12 @@ paths:
       responses:
         '200':
           description: Heartbeat reply.
-          content:
-            application/json:
-              example:
-                action: health-check
-                agent: <self-agent>
-                configuration: null
-                connector: null
-                created: '2024-01-01T00:00:00Z'
-                id: 86
-                log_records: null
-                modified: '2024-01-01T00:00:00Z'
-                remote_status:
-                  status: in-progress
-                request_payload: {}
-                result: {}
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.heartbeat(\"edge-1\")[\"status\"\
           ])"
-      x-live-captured: true
       x-auth: &id146
         apikey: 'yes'
         jwt: 'yes'
@@ -16747,27 +17101,17 @@ paths:
                             - boolean
                             - object
             example:
-              attributes:
-              - descriptions:
-                  singular: Name
-                formType: text
-                name: name
-                type: string
-                validation:
-                  required: false
-                visibility: true
-                writeable: true
-              descriptions:
-                plural: live-capture-d757b411
-                singular: live-capture-d757b411
-              displayName: live-capture-d757b411
-              module: live_capture_d757b411
-              ownable: false
+              defaultSort: []
+              indexable: true
+              ownable: true
+              peerReplicable: false
               queueable: false
-              softDeleteable: false
-              tableName: live_capture_d757b411
+              tableName: live532ca54c_module
               taggable: false
-              type: live_capture_d757b411
+              trackable: true
+              type: live532ca54cmodule
+              uniqueConstraint: []
+              userOwnable: true
       responses:
         '201':
           description: The staged module metadata record.
@@ -17119,6 +17463,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.modules_admin.discard_staging_draft(\"alerts\"\
           )"
+      x-live-captured: true
       x-auth: &id167
         apikey: 'yes'
         jwt: 'yes'
@@ -17331,10 +17676,10 @@ paths:
                   type: integer
                   description: Optional position; defaults to appending after the list's current highest index.
             example:
-              itemValue: Contained
-              listName: /api/3/picklist_names/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
               color: '#4CAF50'
-              orderIndex: 2
+              itemValue: live-<run>-opt
+              listName: /api/3/picklist_names/<uuid>
+              orderIndex: 1
       responses:
         '201':
           description: The created picklist item record.
@@ -17342,19 +17687,23 @@ paths:
             application/json:
               example:
                 '@context': /api/3/contexts/Picklist
-                '@id': /api/3/picklists/a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
+                '@id': /api/3/picklists/<uuid>
                 '@type': Picklist
-                uuid: a7e54b80-1234-4cab-8b2f-9d11f3b6a2c4
-                itemValue: Contained
-                listName: /api/3/picklist_names/f3a2c1de-9b40-4ed3-9f7c-2e1d8a5b3c91
                 color: '#4CAF50'
-                orderIndex: 2
+                icon: null
+                id: 3592
+                importedBy: []
+                itemValue: live-<run>-opt
+                listName: /api/3/picklist_names/<uuid>
+                orderIndex: 1
+                uuid: <uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
+      x-live-captured: true
       x-auth: &id171
         apikey: 'yes'
         jwt: 'yes'
@@ -17443,6 +17792,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )"
+      x-live-captured: true
       x-auth: &id173
         apikey: 'yes'
         jwt: 'yes'
@@ -17571,8 +17921,8 @@ paths:
                   default: false
                   description: Platform-managed flag. Custom lists are `false`.
             example:
-              name: IncidentPhase
-              system: false
+              description: live test
+              name: live-picklist-name
       responses:
         '201':
           description: The created picklist taxonomy record.
@@ -17591,6 +17941,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").create({\"name\":\
           \ \"Suspicious Activity\"})\nprint(alert.name)"
+      x-live-captured: true
       x-auth: &id175
         apikey: 'yes'
         jwt: 'yes'
@@ -17705,6 +18056,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.records(\"alerts\").delete(\"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
           )"
+      x-live-captured: true
       x-auth: &id177
         apikey: 'yes'
         jwt: 'yes'
@@ -19728,8 +20080,7 @@ paths:
           content:
             application/json:
               example:
-                message: Option [retrievable_mode] already set to [False]
-                status: WARN
+                response: Success
       x-live-captured: true
       x-auth: &id198
         apikey: 'no'
@@ -26350,12 +26701,161 @@ paths:
           application/json:
             schema:
               type: object
-            example: {}
+            example:
+              '@context': /api/3/contexts/MCPConfiguration
+              '@id': /api/3/mcp_configurations/<uuid>
+              '@type': MCPConfiguration
+              active: true
+              authentication: '{"type":"FSR"}'
+              command: ''
+              createDate: 1700000000
+              createUser:
+                '@id': /api/3/people/<uuid>
+                '@settings': /api/3/user_settings/<uuid>
+                '@type': Person
+                accessType: Named
+                avatar: null
+                companyId: null
+                createDate: 1700000000
+                createUser: /api/3/people/<uuid>
+                csActive: true
+                department: null
+                description: null
+                email: admin@example.com
+                firstname: CS
+                id: 3
+                lastname: Admin
+                modifyDate: 1700000000
+                modifyUser: /api/3/people/<uuid>
+                phoneFax: null
+                phoneHome: null
+                phoneMobile: null
+                phoneWork: '+16462759691'
+                sourceControlUsername: null
+                title: Admin
+                type: null
+                userId: <uuid>
+                userType: null
+                uuid: <uuid>
+              description: updated by run 9998de03
+              id: 15
+              metadata: null
+              modifyDate: 1700000000
+              modifyUser:
+                '@id': /api/3/people/<uuid>
+                '@settings': /api/3/user_settings/<uuid>
+                '@type': Person
+                accessType: Named
+                avatar: null
+                companyId: null
+                createDate: 1700000000
+                createUser: /api/3/people/<uuid>
+                csActive: true
+                department: null
+                description: null
+                email: admin@example.com
+                firstname: CS
+                id: 3
+                lastname: Admin
+                modifyDate: 1700000000
+                modifyUser: /api/3/people/<uuid>
+                phoneFax: null
+                phoneHome: null
+                phoneMobile: null
+                phoneWork: '+16462759691'
+                sourceControlUsername: null
+                title: Admin
+                type: null
+                userId: <uuid>
+                userType: null
+                uuid: <uuid>
+              name: live-<run>-mcp
+              recordTags: []
+              timeout: null
+              transport: http
+              type: internal
+              url: https://localhost/mcp/modules/
+              uuid: <uuid>
       responses:
         '200':
           description: Updated.
           content:
-            application/json: {}
+            application/json:
+              example:
+                '@context': /api/3/contexts/MCPConfiguration
+                '@id': /api/3/mcp_configurations/<uuid>
+                '@type': MCPConfiguration
+                active: true
+                authentication: '{"type":"FSR"}'
+                command: ''
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                description: updated by run 4d9bfe79
+                id: 12
+                metadata: null
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                name: live-<run>-mcp
+                recordTags: []
+                timeout: null
+                transport: http
+                type: internal
+                url: https://localhost/mcp/modules/
+                uuid: <uuid>
         '404':
           description: Not found.
       x-codeSamples:
@@ -26364,6 +26864,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.update_mcp_server(\"123e4567-e89b-12d3-a456-426614174000\"\
           , {\"name\": \"my-server\"})"
+      x-live-captured: true
       x-auth: &id269
         apikey: 'yes'
         jwt: 'yes'
@@ -26402,6 +26903,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.delete_mcp_server(\"123e4567-e89b-12d3-a456-426614174000\"\
           )"
+      x-live-captured: true
       x-auth: &id270
         apikey: 'yes'
         jwt: 'yes'
