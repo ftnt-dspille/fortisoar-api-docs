@@ -19289,8 +19289,7 @@ paths:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nalert = client.records(\"alerts\").update(\n    \"9f0eb603-ac1e-41c3-b47b-444589beed39\"\
-          , {\"description\": \"Escalated\"}\n)\nprint(alert.name)"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.widgets.publish(\"widget-uuid\")"
       x-live-captured: true
       x-auth: &id180
         apikey: 'yes'
@@ -22740,7 +22739,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ChainOfThoughtResponse'
               example:
                 chain_of_thought:
                 - Validate if the received instruction matches the expected keyword intervention.
@@ -22759,6 +22759,12 @@ paths:
       x-fsr-status: requires-llm-config
       description: 'Generate a single-shot chain-of-thought reasoning trace. Body: `{"socrole": "SOC Analyst", "query": "..."}`.
         Returns `{"chain_of_thought": ["step", ...]}` -- feed that LIST to `POST /api/ai/insight/plan`.'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.chain_of_thought(\"Which alerts fired\
+          \ this week?\")"
       x-live-captured: true
       x-auth: &id216
         apikey: 'yes'
@@ -22819,6 +22825,7 @@ paths:
                   any data retrieval, analysis, or SOAR action.
                 objective: Validate if the received instruction matches the expected keyword intervention.
                 steps: []
+          x-pyfsr-response-model: InsightPlan
         '422':
           description: Validation Error
           content:
@@ -22835,6 +22842,12 @@ paths:
       description: 'Generate a structured, multi-step investigation plan. Body: `{"socrole", "query", "chain_of_thought":
         [<the list from chain_of_thoughts>]}` (the cot field must be a LIST; a boolean 422s). Returns `{"objective", "intent_interpretation",
         "feasibility", "entities", "steps"}` -- note the plan does NOT echo `chain_of_thought`; stitch it back in before `plan/execute`.'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.plan(\"Which alerts fired this week?\"\
+          ,\n                        chain_of_thought=[\"Collect the alerts\", \"Summarize severity\"])"
       x-live-captured: true
       x-auth: &id217
         apikey: 'yes'
@@ -22889,11 +22902,13 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/PlanExecutionAccepted'
               example:
                 planid: <uuid>
                 status: accepted
                 task_id: <uuid>
+          x-pyfsr-response-model: InsightExecution
         '422':
           description: Validation Error
           content:
@@ -22911,6 +22926,13 @@ paths:
         -- `plan.chain_of_thought` is REQUIRED (422 without it) even though `plan` itself doesn''t return one. Returns `{"status":
         "accepted", "planid", "task_id"}`; poll `GET /api/ai/insight/plan/{task_id}/status` (`inprogress` for tens of seconds)
         then `GET .../result`.'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nplan = client.ai.insights.plan(\"Which alerts fired this\
+          \ week?\",\n                               chain_of_thought=[\"Collect the alerts\", \"Summarize severity\"])\n\
+          run = client.ai.insights.execute(plan, wait=False)\nprint(run.task_id, run.planid)"
       x-live-captured: true
       x-auth: &id218
         apikey: 'yes'
@@ -22951,7 +22973,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/TaskStatusRef'
               example:
                 status: pending
                 task_id: <uuid>
@@ -22970,6 +22993,11 @@ paths:
       x-fsr-status: requires-llm-config
       description: 'Return the current status of an asynchronously-executing investigation plan: `{"task_id", "status"}` with
         `inprogress` until done.'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.status(\"abc123-def456\")"
       x-live-captured: true
       x-auth: &id219
         apikey: 'yes'
@@ -23016,6 +23044,7 @@ paths:
                 execution_log: {}
                 last_executed: null
                 result: {}
+          x-pyfsr-response-model: InsightExecution
         '422':
           description: Validation Error
           content:
@@ -23031,6 +23060,12 @@ paths:
       x-fsr-status: requires-llm-config
       description: 'Return the result envelope of an investigation plan execution: `{"result": {}, "execution_log": {}, "last_executed"}`
         -- empty while the plan is still running.'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrun = client.ai.insights.result(\"abc123-def456\")\n\
+          print(run.status, run.result)"
       x-live-captured: true
       x-auth: &id220
         apikey: 'yes'
@@ -23104,6 +23139,7 @@ paths:
                 scheduleid: null
                 socrole: SOC Analyst
                 title: live-<run>-insight
+          x-pyfsr-response-model: InsightRecord
         '422':
           description: Validation Error
           content:
@@ -23117,6 +23153,12 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\ninsight = client.ai.insights.get(\"abc123-def456\")\n\
+          print(insight.title)"
       x-live-captured: true
       x-auth: &id221
         apikey: 'yes'
@@ -23159,7 +23201,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
               example:
                 message: Insight '<uuid>' was deleted
         '422':
@@ -23175,6 +23218,11 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.delete(\"abc123-def456\")"
       x-live-captured: true
       x-auth: &id222
         apikey: 'yes'
@@ -24120,9 +24168,7 @@ paths:
         content:
           application/json:
             schema:
-              additionalProperties: true
-              type: object
-              title: Schedule
+              $ref: '#/components/schemas/InsightScheduleRequest'
             example:
               createUser: /api/3/people/<uuid>
               referenceid: <uuid>
@@ -24132,7 +24178,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
               example:
                 message: Insight executed successfully. Please check the insight for the result.
         '422':
@@ -24152,6 +24199,12 @@ paths:
         "<insight record uuid>", "createUser": "<owner /api/3/people IRI>"}` over an insight SAVED via `POST /api/3/insights`
         (`{title, query, socrole, planid}`). Returns `{"message": "Insight executed successfully. Please check the insight
         for the result."}`.'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.trigger(\"abc123-def456\", user_id=\"\
+          abc123-def456\")"
       x-live-captured: true
       x-auth: &id224
         apikey: 'yes'
@@ -24199,9 +24252,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
-              title: Data
+              $ref: '#/components/schemas/AgentTriggerRequest'
             example:
               context: {}
               input_data:
@@ -24211,12 +24262,14 @@ paths:
       responses:
         '202':
           description: Accepted
-          x-pyfsr-response-model: InvestigationHandle | AgentRunResult
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusRef'
               example:
                 status: pending
                 task_id: <uuid>
+          x-pyfsr-response-model: InvestigationHandle | AgentRunResult
         '422':
           description: Validation Error
           content:
@@ -24279,6 +24332,8 @@ paths:
           description: Accepted
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusRef'
               example:
                 status: completed
                 task_id: <uuid>
@@ -24419,6 +24474,9 @@ paths:
           description: Accepted
           content:
             application/json:
+              schema:
+                type: object
+                additionalProperties: true
               example:
                 detransform_map:
                   SM_EMAIL_7c742935_EM: alice@example.com
@@ -24431,6 +24489,7 @@ paths:
                   task_id: <uuid>
                   user_id: live-<run>-ai
                 phases: []
+          x-pyfsr-response-model: InvestigationResult
         '422':
           description: Validation Error
           content:
@@ -24754,6 +24813,7 @@ paths:
                 - Masking
                 uuid: <uuid>
                 version: 1.0.0
+          x-pyfsr-response-model: AgentRecord
         '422':
           description: Validation Error
           content:
@@ -24823,6 +24883,7 @@ paths:
                 config_id: null
                 default: false
                 name: null
+          x-pyfsr-response-model: AgentConfigDTO
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
       x-codeSamples:
@@ -25224,6 +25285,7 @@ paths:
                 uuid: <uuid>
                 version: 1.0.0
               - '... <1 more items truncated>'
+          x-pyfsr-response-model: list[AgentRecord]
         '422':
           description: Validation Error
           content:
@@ -25298,6 +25360,7 @@ paths:
                 default: false
                 config: {}
                 config_id: null
+          x-pyfsr-response-model: AgentConfigDTO
         '422':
           description: Validation Error
           content:
@@ -25722,6 +25785,12 @@ paths:
                 hydra:description: Validation failed.
       x-fsr-version: 8.0+
       x-fsr-status: requires-llm-config
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.post(\"/api/ai/chat/\", data={\"user_id\": \"\
+          soc-analyst\",\n                                   \"messages\": [\"Reply with exactly: pong\"]})"
       x-live-captured: true
       x-auth: &id242
         apikey: 'yes'
@@ -25789,6 +25858,7 @@ paths:
                 provider: fortisoar
                 uuid: <uuid>
               - '... <1 more items truncated>'
+          x-pyfsr-response-model: list[LLMConfig]
       x-fsr-version: 8.0+
       x-codeSamples:
       - lang: python
@@ -25940,6 +26010,7 @@ paths:
                 name: Low Reasoning
                 provider: fortisoar
                 uuid: <uuid>
+          x-pyfsr-response-model: LLMConfig
         '422':
           description: Validation Error
           content:
@@ -26356,6 +26427,7 @@ paths:
               - id: <uuid>
                 name: 'Bridge: Slack'
               - '... <1 more items truncated>'
+          x-pyfsr-response-model: list[MCPServerRef]
       x-fsr-version: 8.0+
       x-codeSamples:
       - lang: python
@@ -26414,7 +26486,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/MCPValidateResult'
               example:
                 message: null
                 tools:
@@ -26422,6 +26495,7 @@ paths:
                 - name: get_modules
                 - '... <1 more items truncated>'
                 valid: true
+          x-pyfsr-response-model: MCPValidateResult
         '422':
           description: Validation Error
           content:
@@ -31268,6 +31342,114 @@ components:
             message:
               type: string
             data: {}
+    AgentTriggerRequest:
+      type: object
+      required:
+      - input_data
+      properties:
+        input_data:
+          type: object
+          additionalProperties: true
+          description: 'Payload the agent acts on; its shape is the agent''s own `inputformat` schema (GET /api/ai/agent/{name}/{version}).
+            For the shipped ioc-masking agent: `{"data": <text>, "action": "mask"}`.'
+          properties:
+            data:
+              type: string
+              description: Text the agent operates on.
+            action:
+              type: string
+              description: Operation to run, e.g. `mask`.
+        context:
+          type: object
+          additionalProperties: true
+          description: Free-form execution context (the UI sends the page context).
+        user_id:
+          type: string
+          description: Login id the run is attributed to.
+    TaskStatusRef:
+      type: object
+      required:
+      - task_id
+      - status
+      properties:
+        task_id:
+          type: string
+          description: 'Async task id: poll the status route, then fetch the result route.'
+        status:
+          type: string
+          description: '`pending` while queued, `inprogress` while running, then `completed` or `failed`.'
+    ChainOfThoughtResponse:
+      type: object
+      required:
+      - chain_of_thought
+      properties:
+        chain_of_thought:
+          type: array
+          items:
+            type: string
+          description: Reasoning steps, in order. Pass them back verbatim as `chain_of_thought` on POST /api/ai/insight/plan.
+    PlanExecutionAccepted:
+      type: object
+      required:
+      - status
+      - planid
+      - task_id
+      properties:
+        status:
+          type: string
+          enum:
+          - accepted
+          description: The plan was accepted for execution.
+        planid:
+          type: string
+          description: Id of the executed plan.
+        task_id:
+          type: string
+          description: 'Async execution task id: poll GET /api/ai/insight/plan/{task_id}/status, then GET .../result.'
+    InsightScheduleRequest:
+      type: object
+      required:
+      - referenceid
+      - createUser
+      properties:
+        referenceid:
+          type: string
+          description: uuid of the saved insight record (the `insights` record POST /api/3/insights created).
+        createUser:
+          type: string
+          description: IRI of the person the run is attributed to, e.g. `/api/3/people/{uuid}`.
+    MessageResponse:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          type: string
+    MCPValidateResult:
+      type: object
+      required:
+      - valid
+      - tools
+      properties:
+        valid:
+          type: boolean
+          description: Whether the handshake + tools/list against the server succeeded.
+        tools:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            properties:
+              name:
+                type: string
+            additionalProperties: true
+          description: Tool names the server advertises (empty when `valid` is false).
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Failure detail when `valid` is false (e.g. `MCP Configuration Failed! 401 Unauthorized`); null on success.
     AddToolRequest:
       properties:
         metadata:

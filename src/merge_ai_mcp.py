@@ -868,7 +868,201 @@ EXTRA_SCHEMAS = {
             },
         },
     },
+    # Hand-authored schemas for routes whose handlers return plain dicts (the
+    # fsr-ai OpenAPI declares no schema for them). Shapes are live-verified
+    # against 8.0.0 captures; see SCHEMA_OVERRIDES for where each applies.
+    "AgentTriggerRequest": {
+        "type": "object",
+        "required": ["input_data"],
+        "properties": {
+            "input_data": {
+                "type": "object",
+                "additionalProperties": True,
+                "description": (
+                    "Payload the agent acts on; its shape is the agent's own "
+                    "`inputformat` schema (GET /api/ai/agent/{name}/{version}). "
+                    "For the shipped ioc-masking agent: `{\"data\": <text>, "
+                    "\"action\": \"mask\"}`."
+                ),
+                "properties": {
+                    "data": {"type": "string", "description": "Text the agent operates on."},
+                    "action": {"type": "string", "description": "Operation to run, e.g. `mask`."},
+                },
+            },
+            "context": {
+                "type": "object",
+                "additionalProperties": True,
+                "description": "Free-form execution context (the UI sends the page context).",
+            },
+            "user_id": {
+                "type": "string",
+                "description": "Login id the run is attributed to.",
+            },
+        },
+    },
+    "TaskStatusRef": {
+        "type": "object",
+        "required": ["task_id", "status"],
+        "properties": {
+            "task_id": {
+                "type": "string",
+                "description": "Async task id: poll the status route, then fetch the result route.",
+            },
+            "status": {
+                "type": "string",
+                "description": (
+                    "`pending` while queued, `inprogress` while running, then "
+                    "`completed` or `failed`."
+                ),
+            },
+        },
+    },
+    "ChainOfThoughtResponse": {
+        "type": "object",
+        "required": ["chain_of_thought"],
+        "properties": {
+            "chain_of_thought": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": (
+                    "Reasoning steps, in order. Pass them back verbatim as "
+                    "`chain_of_thought` on POST /api/ai/insight/plan."
+                ),
+            },
+        },
+    },
+    "PlanExecutionAccepted": {
+        "type": "object",
+        "required": ["status", "planid", "task_id"],
+        "properties": {
+            "status": {
+                "type": "string",
+                "enum": ["accepted"],
+                "description": "The plan was accepted for execution.",
+            },
+            "planid": {"type": "string", "description": "Id of the executed plan."},
+            "task_id": {
+                "type": "string",
+                "description": (
+                    "Async execution task id: poll "
+                    "GET /api/ai/insight/plan/{task_id}/status, then GET .../result."
+                ),
+            },
+        },
+    },
+    "InsightScheduleRequest": {
+        "type": "object",
+        "required": ["referenceid", "createUser"],
+        "properties": {
+            "referenceid": {
+                "type": "string",
+                "description": "uuid of the saved insight record (the `insights` record POST /api/3/insights created).",
+            },
+            "createUser": {
+                "type": "string",
+                "description": "IRI of the person the run is attributed to, e.g. `/api/3/people/{uuid}`.",
+            },
+        },
+    },
+    "MessageResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+            "message": {"type": "string"},
+        },
+    },
+    "MCPValidateResult": {
+        "type": "object",
+        "required": ["valid", "tools"],
+        "properties": {
+            "valid": {
+                "type": "boolean",
+                "description": "Whether the handshake + tools/list against the server succeeded.",
+            },
+            "tools": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["name"],
+                    "properties": {"name": {"type": "string"}},
+                    "additionalProperties": True,
+                },
+                "description": "Tool names the server advertises (empty when `valid` is false).",
+            },
+            "message": {
+                "anyOf": [{"type": "string"}, {"type": "null"}],
+                "description": (
+                    "Failure detail when `valid` is false (e.g. "
+                    "`MCP Configuration Failed! 401 Unauthorized`); null on success."
+                ),
+            },
+        },
+    },
 }
+
+
+# ---------------------------------------------------------------------------
+# Live-verified schema overrides. The fsr-ai service OpenAPI leaves these
+# routes untyped (handlers return plain dicts), so the response/request
+# schemas are authored from 8.0.0 captures. Keyed by (method, path); the
+# `response` code must be the POST-override code (RESPONSE_CODE_OVERRIDES
+# moves the agent task routes to 202 first).
+# ---------------------------------------------------------------------------
+SCHEMA_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
+    ("post", "/api/ai/agents/{agent_name}/trigger"): {
+        "request": {"$ref": "#/components/schemas/AgentTriggerRequest"},
+        "response": {"code": "202", "schema": {"$ref": "#/components/schemas/TaskStatusRef"}},
+    },
+    ("get", "/api/ai/agents/{task_id}/status"): {
+        "response": {"code": "202", "schema": {"$ref": "#/components/schemas/TaskStatusRef"}},
+    },
+    # The result body is agent-specific (each agent returns its own shape --
+    # e.g. ioc-masking: {masked, detransform_map, logs, phases}); declare it
+    # an open object and let the live example show one instance.
+    ("get", "/api/ai/agents/{task_id}/result"): {
+        "response": {"code": "202", "schema": {"type": "object", "additionalProperties": True}},
+    },
+    ("post", "/api/ai/insight/chain_of_thoughts"): {
+        "response": {"code": "200", "schema": {"$ref": "#/components/schemas/ChainOfThoughtResponse"}},
+    },
+    ("post", "/api/ai/insight/plan/execute"): {
+        "response": {"code": "200", "schema": {"$ref": "#/components/schemas/PlanExecutionAccepted"}},
+    },
+    ("get", "/api/ai/insight/plan/{task_id}/status"): {
+        "response": {"code": "200", "schema": {"$ref": "#/components/schemas/TaskStatusRef"}},
+    },
+    ("post", "/api/ai/insight/trigger/schedule"): {
+        "request": {"$ref": "#/components/schemas/InsightScheduleRequest"},
+        "response": {"code": "200", "schema": {"$ref": "#/components/schemas/MessageResponse"}},
+    },
+    ("delete", "/api/ai/insight/{insight_id}"): {
+        "response": {"code": "200", "schema": {"$ref": "#/components/schemas/MessageResponse"}},
+    },
+    ("post", "/api/ai/mcp/validate"): {
+        "response": {"code": "200", "schema": {"$ref": "#/components/schemas/MCPValidateResult"}},
+    },
+}
+
+
+def _apply_schema_override(op: dict[str, Any], override: dict[str, Any]) -> None:
+    """Set a request and/or response schema on ``op`` from a SCHEMA_OVERRIDES entry.
+
+    Only touches the named response code if that code exists on the op (the
+    service already declares it); never invents responses.
+    """
+    if "request" in override:
+        content = (
+            op.setdefault("requestBody", {})
+            .setdefault("content", {})
+            .setdefault("application/json", {})
+        )
+        content["schema"] = override["request"]
+    resp = override.get("response")
+    if resp:
+        entry = (op.get("responses") or {}).get(resp["code"])
+        if entry is not None:
+            content = entry.setdefault("content", {}).setdefault("application/json", {})
+            content["schema"] = resp["schema"]
 
 
 # ---------------------------------------------------------------------------
@@ -934,6 +1128,11 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
                 entry = responses.pop("200", None) or {"description": "Accepted"}
                 responses[code_override] = entry
                 op["responses"] = responses
+            # Live-verified request/response schemas for routes the service
+            # leaves untyped (after the code overrides so 202 keys match).
+            schema_override = SCHEMA_OVERRIDES.get((method, path))
+            if schema_override:
+                _apply_schema_override(op, schema_override)
             new_methods[method] = op
             ops.append((method, path))
         if new_methods:

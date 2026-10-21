@@ -219,6 +219,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     # Widgets - export, publish (GET dev manifest then PUT), delete
     ("post", "/api/3/widgets/export/{uuid}"): ("manual", 'client.widgets.export("widget-uuid", "/tmp/widget.zip")'),
     ("get", "/api/3/widgets/development/{uuid}"): ("manual", 'client.widgets.publish("widget-uuid")'),
+    ("put", "/api/3/widgets/{uuid}"): ("manual", 'client.widgets.publish("widget-uuid")'),
     ("delete", "/api/3/delete/widgets"): ("manual", 'client.widgets.remove("widget-uuid")'),
     # System (version / permissions / feature-access)
     ("get", "/api/version"): ("doctest", "pyfsr.api.system:SystemAPI.version"),
@@ -293,6 +294,37 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/ai/agents/{task_id}/status"): ("manual", 'client.ai.get_status("abc123-def456")'),
     ("get", "/api/ai/agents/{task_id}/result"): ("manual", 'client.ai.get_result("abc123-def456")'),
     ("post", "/api/ai/agents/{task_id}/acceptance"): ("manual", 'client.ai.submit_feedback("abc123-def456", {"accepted": True})'),
+    # AI chat -- pyfsr's chat() targets the widget route
+    # (POST /api/ai/agents/conversation/trigger), NOT this endpoint, whose
+    # request shape differs (plain-string messages). Raw call, live-verified.
+    ("post", "/api/ai/chat/"): ("manual",
+        'client.post("/api/ai/chat/", data={"user_id": "soc-analyst",\n'
+        '                                   "messages": ["Reply with exactly: pong"]})'),
+    # AI Insights - the widget's plan/execute/save flow (client.ai.insights)
+    ("post", "/api/ai/insight/chain_of_thoughts"): ("manual", 'client.ai.insights.chain_of_thought("Which alerts fired this week?")'),
+    ("post", "/api/ai/insight/plan"): ("manual",
+        'client.ai.insights.plan("Which alerts fired this week?",\n'
+        '                        chain_of_thought=["Collect the alerts", "Summarize severity"])'),
+    ("post", "/api/ai/insight/plan/execute"): ("manual",
+        'plan = client.ai.insights.plan("Which alerts fired this week?",\n'
+        '                               chain_of_thought=["Collect the alerts", "Summarize severity"])\n'
+        'run = client.ai.insights.execute(plan, wait=False)\n'
+        'print(run.task_id, run.planid)'),
+    ("get", "/api/ai/insight/plan/{task_id}/status"): ("manual", 'client.ai.insights.status("abc123-def456")'),
+    ("get", "/api/ai/insight/plan/{task_id}/result"): ("manual", 'run = client.ai.insights.result("abc123-def456")\nprint(run.status, run.result)'),
+    ("post", "/api/ai/insight/trigger/schedule"): ("manual", 'client.ai.insights.trigger("abc123-def456", user_id="abc123-def456")'),
+    ("get", "/api/ai/insight/{insight_id}"): ("manual", 'insight = client.ai.insights.get("abc123-def456")\nprint(insight.title)'),
+    ("delete", "/api/ai/insight/{insight_id}"): ("manual", 'client.ai.insights.delete("abc123-def456")'),
+    ("post", "/api/3/insights"): ("manual",
+        'client.ai.insights.save("Weekly critical alerts",\n'
+        '                        query="Which critical alerts fired this week?",\n'
+        '                        planid="abc123-def456")'),
+    # AI MCP validate (handshake + tools/list against a candidate server)
+    ("post", "/api/ai/mcp/validate"): ("manual",
+        'client.ai.validate_mcp_server({"name": "FortiSOAR Modules",\n'
+        '                               "transport": "http",\n'
+        '                               "url": "https://fortisoar.example.com/mcp/modules/",\n'
+        '                               "authentication": {"type": "FSR"}})'),
     # AI LLM
     ("get", "/api/ai/llm/config"): ("manual", "client.ai.list_llm_configs()"),
     ("get", "/api/ai/llm/config/{uuid}"): ("manual", 'client.ai.get_llm_config("abc123-def456")'),
@@ -443,6 +475,30 @@ _SKIP_ANN = {
     "NoneType", "None", "Any", "_empty", "HydraPage",
 }
 
+# Response models for ``manual`` samples. A manual entry names its pyfsr call
+# in source form, so there is no doctest whose return annotation
+# ``response_model_for`` could read -- the model is stated here instead. Every
+# entry must match the return annotation of the method the sample calls.
+_MANUAL_RESPONSE_MODELS: dict[tuple[str, str], str] = {
+    # AI agents
+    ("get", "/api/ai/agent/"): "list[AgentRecord]",
+    ("get", "/api/ai/agent/{name}/{version}"): "AgentRecord",
+    ("get", "/api/ai/agent/config/default"): "AgentConfigDTO",
+    ("get", "/api/ai/agent/config/{agent_name}/{version}"): "AgentConfigDTO",
+    ("get", "/api/ai/agents/{task_id}/result"): "InvestigationResult",
+    # AI insights (client.ai.insights)
+    ("post", "/api/ai/insight/plan"): "InsightPlan",
+    ("post", "/api/ai/insight/plan/execute"): "InsightExecution",
+    ("get", "/api/ai/insight/plan/{task_id}/result"): "InsightExecution",
+    ("get", "/api/ai/insight/{insight_id}"): "InsightRecord",
+    # AI MCP
+    ("post", "/api/ai/mcp/validate"): "MCPValidateResult",
+    ("get", "/api/ai/mcp"): "list[MCPServerRef]",
+    # AI LLM
+    ("get", "/api/ai/llm/config"): "list[LLMConfig]",
+    ("get", "/api/ai/llm/config/{uuid}"): "LLMConfig",
+}
+
 
 def _ann_to_model(ann: object) -> str | None:
     """Reduce a return annotation to a short pyfsr model name, or ``None``.
@@ -494,6 +550,11 @@ def response_model_for(http_method: str, path: str) -> str | None:
     (no typed model worth surfacing).
     """
     key = (http_method, path)
+    if key in _MANUAL_RESPONSE_MODELS:
+        # Manual samples carry no doctest whose return annotation could be
+        # read, so the model is stated explicitly (verified against the
+        # pyfsr method the sample calls).
+        return _MANUAL_RESPONSE_MODELS[key]
     if key not in PYFSR_EXAMPLES:
         fallback = _generic_fallback(http_method, path)
         if fallback is None or fallback not in PYFSR_EXAMPLES:
