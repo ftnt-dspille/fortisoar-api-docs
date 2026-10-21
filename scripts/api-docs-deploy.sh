@@ -20,11 +20,14 @@ REPO="$(cd "$(dirname "$0")/.." && pwd)"
 HOST="${FSR_SSH_HOST:-fsr}"
 ENV_FILE="${HOME}/PycharmProjects/Miscellaneous/fortisoar/.env"
 
-SPEC_LOCAL="$REPO/build/fortisoar.curated.openapi.yaml"
+SPEC_LOCAL="$REPO/build/fortisoar.curated.openapi.json"
 INDEX_SRC="$REPO/web/index.html"
 INDEX_BUILT="$REPO/build/appliance/index.html"
-SCALAR_LOCAL="$REPO/build/appliance/scalar.js"
-SCALAR_URL="https://cdn.jsdelivr.net/npm/@scalar/api-reference"
+# Vendor the exact Scalar build web/index.html pins; the file name carries the
+# version so a new pin downloads a new bundle.
+SCALAR_URL="$(grep -o 'https://cdn.jsdelivr.net/npm/@scalar/api-reference@[^"]*' "$INDEX_SRC")"
+SCALAR_VERSION="$(echo "$SCALAR_URL" | sed -E 's|.*@([0-9.]+)/.*|\1|')"
+SCALAR_LOCAL="$REPO/build/appliance/scalar-$SCALAR_VERSION.js"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   echo "missing $ENV_FILE (need SSH_PASSWORD=...)" >&2; exit 1
@@ -49,27 +52,27 @@ echo "[1/5] Generating appliance index.html"
 mkdir -p "$REPO/build/appliance"
 # Forced redirect (>|) bypasses zsh noclobber.
 sed \
-  -e 's|data-url="../build/fortisoar.curated.openapi.yaml"|data-url="/api-docs/spec/fortisoar.openapi.yaml"|' \
+  -e 's|data-url="../build/fortisoar.curated.openapi.json"|data-url="/api-docs/spec/fortisoar.openapi.json"|' \
   -e "s|'https://fortisoar.example.com'|location.origin|" \
-  -e 's|<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>|<script src="scalar.js"></script>|' \
+  -e "s|<script src=\"$SCALAR_URL\"></script>|<script src=\"scalar.js\"></script>|" \
   -e '/<script src="auth\.local\.js"/d' \
   "$INDEX_SRC" >| "$INDEX_BUILT"
-grep -q 'data-url="/api-docs/spec/fortisoar.openapi.yaml"' "$INDEX_BUILT" \
+grep -q 'data-url="/api-docs/spec/fortisoar.openapi.json"' "$INDEX_BUILT" \
   || { echo "sed did not rewrite data-url - aborting" >&2; exit 1; }
 
 echo "[2/5] Copying files to appliance"
 scp -q "$INDEX_BUILT"  "$HOST:/tmp/api-docs-index.html"
-scp -q "$SPEC_LOCAL"   "$HOST:/tmp/api-docs-spec.yaml"
+scp -q "$SPEC_LOCAL"   "$HOST:/tmp/api-docs-spec.json"
 scp -q "$SCALAR_LOCAL" "$HOST:/tmp/api-docs-scalar.js"
 
 echo "[3/5] Installing into /opt/cyops-ui/api-docs/"
 remote "
   mkdir -p /opt/cyops-ui/api-docs/spec
   install -o nginx -g nginx -m 644 /tmp/api-docs-index.html /opt/cyops-ui/api-docs/index.html
-  install -o nginx -g nginx -m 644 /tmp/api-docs-spec.yaml  /opt/cyops-ui/api-docs/spec/fortisoar.openapi.yaml
+  install -o nginx -g nginx -m 644 /tmp/api-docs-spec.json  /opt/cyops-ui/api-docs/spec/fortisoar.openapi.json
   install -o nginx -g nginx -m 644 /tmp/api-docs-scalar.js  /opt/cyops-ui/api-docs/scalar.js
   chown -R nginx:nginx /opt/cyops-ui/api-docs
-  rm -f /tmp/api-docs-index.html /tmp/api-docs-spec.yaml /tmp/api-docs-scalar.js
+  rm -f /tmp/api-docs-index.html /tmp/api-docs-spec.json /tmp/api-docs-scalar.js
 "
 
 echo "[4/5] Ensuring nginx block + backup"

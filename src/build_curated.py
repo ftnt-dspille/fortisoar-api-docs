@@ -5498,17 +5498,54 @@ def _scan_for_leaks(spec) -> list[tuple[str, str, str]]:
     return hits
 
 
-# Cap lists in live-captured examples so a paged collection doesn't ship inline.
+# Examples show the shape, not the data: every list keeps LIST_CAP items, and a
+# response string (alert sourcedata, LLM prompts, MITRE descriptions) keeps
+# STRING_CAP characters. The spec is parsed in the browser on every page load,
+# so its size is load time.
 LIST_CAP = 2
+STRING_CAP = 200
 
 
-def _truncate_lists(obj):
+def _truncate_lists(obj, string_cap=None):
     if isinstance(obj, list):
-        head = [_truncate_lists(x) for x in obj[:LIST_CAP]]
+        head = [_truncate_lists(x, string_cap) for x in obj[:LIST_CAP]]
         return head + ([f"... <{len(obj) - LIST_CAP} more items truncated>"] if len(obj) > LIST_CAP else [])
     if isinstance(obj, dict):
-        return {k: _truncate_lists(v) for k, v in obj.items()}
+        if string_cap and _is_uniform_map(obj):  # a list in disguise, e.g. per-module permissions
+            keep = list(obj.items())[:LIST_CAP]
+            out = {k: _truncate_lists(v, string_cap) for k, v in keep}
+            out["..."] = f"<{len(obj) - LIST_CAP} more entries truncated>"
+            return out
+        return {k: _truncate_lists(v, string_cap) for k, v in obj.items()}
+    if string_cap and isinstance(obj, str) and len(obj) > string_cap:
+        return obj[:string_cap] + f"... <{len(obj) - string_cap} more characters>"
     return obj
+
+
+def _is_uniform_map(obj: dict) -> bool:
+    """More than 8 keys, every value a dict with the same keys."""
+    if len(obj) <= 8:
+        return False
+    shapes = {tuple(sorted(v)) if isinstance(v, dict) else None for v in obj.values()}
+    return len(shapes) == 1 and None not in shapes
+
+
+def _trim_examples(spec: dict) -> None:
+    """Apply the example caps to every operation's examples. Request examples
+    keep their strings whole so they stay copy-pasteable."""
+    for item in spec["paths"].values():
+        for method, op in item.items():
+            if method not in ("get", "put", "post", "patch", "delete"):
+                continue
+            bodies = [((op.get("requestBody") or {}).get("content") or {}, None)]
+            bodies += [(r.get("content") or {}, STRING_CAP) for r in op.get("responses", {}).values()]
+            for content, cap in bodies:
+                for media in content.values():
+                    if "example" in media:
+                        media["example"] = _truncate_lists(media["example"], cap)
+                    for ex in (media.get("examples") or {}).values():
+                        if isinstance(ex, dict) and "value" in ex:
+                            ex["value"] = _truncate_lists(ex["value"], cap)
 
 
 def _apply_live_observations(spec: dict) -> int:
@@ -5705,6 +5742,7 @@ def main():
     _apply_cross_links(SPEC)
     live_applied = _apply_live_observations(SPEC)
     auth_applied = _apply_auth_support(SPEC)
+    _trim_examples(SPEC)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     leaks = _scan_for_leaks(SPEC)
     if leaks:
@@ -5717,6 +5755,8 @@ def main():
                     "If a match is a false positive, add the substring to LEAK_WHITELIST_LINES.")
         sys.exit("\n".join(msg))
     OUT.write_text(yaml.safe_dump(SPEC, sort_keys=False, default_flow_style=False, width=120))
+    # The docs page loads the JSON copy: the browser parses it far faster than YAML.
+    OUT.with_suffix(".json").write_text(json.dumps(SPEC, separators=(",", ":")) + "\n")
     op_count = sum(1 for path in PATHS.values() for k in path if k in {"get", "post", "put", "delete", "patch"})
     print(f"Wrote {OUT} ({op_count} operations across {len(PATHS)} paths, "
           f"{live_applied} live-captured, {auth_applied} with measured auth, {pyfsr_applied} with a pyfsr sample, "

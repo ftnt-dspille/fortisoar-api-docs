@@ -63,7 +63,7 @@ def test_spec_matches_generator():
     )
     assert proc.returncode == 0, f"build_curated.py failed:\n{proc.stderr[-2000:]}"
     diff = subprocess.run(
-        ["git", "diff", "--exit-code", "--", str(SPEC_PATH)],
+        ["git", "diff", "--exit-code", "--", str(SPEC_PATH), str(SPEC_PATH.with_suffix(".json"))],
         cwd=ROOT,
         capture_output=True,
         text=True,
