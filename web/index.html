@@ -185,7 +185,7 @@
   </style>
 </head>
 <body>
-  <script id="api-reference" data-url="../build/fortisoar.curated.openapi.yaml"></script>
+  <script id="api-reference" data-url="../build/fortisoar.curated.openapi.json"></script>
   <script>
     // Build-time flavor toggle. Build scripts rewrite this line:
     //   appliance build: stays false (Test Request panel + modal enabled)
@@ -361,6 +361,8 @@
         layout: 'modern',
         theme: 'elysiajs',
         hideClientButton: true,
+        // Show every tag's operations instead of a "Show More" button per tag.
+        defaultOpenAllTags: true,
         hideTestRequestButton: !!window.__FSR_DOCS_PUBLIC__,
         mcp: { name: 'disabled', url: 'about:blank', disabled: true },
         agent: { disabled: true },
@@ -376,7 +378,8 @@
       })
     );
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  <!-- Pinned: an unpinned URL follows a "latest" redirect that jsdelivr caches for a week. -->
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.75.1/dist/browser/standalone.js"></script>
   <script>
     /* Decorate Scalar's sidebar after it renders. Two jobs:
        - hide the built-in Ask AI button (no DOM-stable config flag)
