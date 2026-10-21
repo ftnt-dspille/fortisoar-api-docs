@@ -6966,12 +6966,10 @@ paths:
                   description: Rows keyed by the module's field names; update rows must each carry an `@id`.
             example:
               data:
-              - name: alert-001
-                source: Splunk
-                sourceId: spl-1001
-              - name: alert-002
-                source: Splunk
-                sourceId: spl-1002
+              - name: live-<run>-insert
+                severity: /api/3/picklists/<uuid>
+                source: live_test
+                status: /api/3/picklists/<uuid>
       x-codeSamples:
       - lang: python
         label: pyfsr
@@ -6979,6 +6977,7 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\n# bulk routes need JWT (API keys are rejected)\nresult\
           \ = client.records(\"alerts\").bulk_insert(\n    [{\"name\": \"Response Capture Test Alert\"}], parse=True\n)\n\
           print((result.ok, len(result.succeeded)))"
+      x-live-captured: true
       x-auth: &id056
         apikey: 'no'
         jwt: 'yes'
@@ -7308,7 +7307,7 @@ paths:
             example:
               data:
               - '@id': /api/3/alerts/<uuid>
-                description: updated by run 9998de03
+                description: updated by run 849de15e
       x-live-captured: true
       x-auth: &id057
         apikey: 'no'
@@ -8184,6 +8183,7 @@ paths:
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresult = client.feeds.indicators([\n    {\"value\": \"\
           8.8.8.8\", \"typeofindicator\": \"IP Address\"},\n    {\"value\": \"1.1.1.1\", \"typeofindicator\": \"IP Address\"\
           },\n])\nprint(result.ok)\nprint(result.status)"
+      x-live-captured: true
       x-auth: &id061
         apikey: 'yes'
         jwt: 'yes'
@@ -12227,22 +12227,21 @@ paths:
                   type: boolean
                   default: true
             example:
-              name: nightly-recon
               crontab:
-                minute: '7'
-                hour: '2'
+                day_of_month: '1'
                 day_of_week: '*'
-                day_of_month: '*'
-                month_of_year: '*'
+                hour: '3'
+                minute: '7'
+                month_of_year: '1'
                 timezone: UTC
+              enabled: false
+              expires: null
               kwargs:
                 exit_if_running: true
-                wf_iri: /api/3/workflows/c0d3e8a1-7b2f-4a91-b85e-7d2e1f3a4b56
                 timezone: UTC
-                utcOffset: UTC+00:00
-              expires: null
+                wf_iri: /api/3/workflows/<uuid>
+              name: live-<run>-schedule
               start_time: null
-              enabled: true
       responses:
         '201':
           description: The created periodic-task record.
@@ -12282,6 +12281,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\niri = client.playbooks.resolve_iri(\"Nightly Recon\"\
           )\ntask = client.schedules.create(\"nightly-recon\", iri, \"7 2 * * *\")"
+      x-live-captured: true
       x-auth: &id118
         apikey: 'yes'
         jwt: 'yes'
@@ -12385,14 +12385,14 @@ paths:
                 minute: '7'
                 month_of_year: '1'
                 timezone: UTC
-              date_changed: '2026-10-21T15:29:24.869755Z'
+              date_changed: '2026-10-21T15:53:09.636050Z'
               description: live-<run>-schedule
               enabled: false
               exchange: null
               expire_seconds: null
               expires: null
               headers: '{}'
-              id: gAAAAABq2NpUbPy9huXVDvZeJlWRYISdr_XAaQ_9M0Cipoike5BbyslPPIlAxfqLDZad8lab1kPcodLVMtAR5Y-rBUfDGtGWwg==
+              id: gAAAAABq2N_lG2SSlKnUC5k41OMQePW56yd7thxsyEQ3YW9e_f8NibAZjv96oObToNgDLCVmRnoCODjQZjGtj0XyVnNwtZFjXQ==
               interval: null
               kwargs:
                 auth:
@@ -12553,7 +12553,7 @@ paths:
                   type: string
                   description: Fernet token from a fresh GET /api/wf/api/scheduled/ or from the POST that created the task.
             example:
-              id: gAAAAABq2N3k-kVa7WSyaij5s8M8j0-O9x-SzC8P1IARRZsqZuhHrkn5rQP9RwVyXBlAyY6X4OGAazeXsrzEG_L9tsNGy-DJJQ==
+              id: gAAAAABq2N-NXNctRaxpvqSUWuE020cd-3A3XQ9q-C93RiQkti08Pc9WJy_TtdXR1-Fatm5heOHfAg8yrHW0WulILhcKkPGKfA==
       responses:
         '200':
           description: Trigger accepted.
@@ -17106,10 +17106,10 @@ paths:
               ownable: true
               peerReplicable: false
               queueable: false
-              tableName: live532ca54c_module
+              tableName: live849de15e_module
               taggable: false
               trackable: true
-              type: live532ca54cmodule
+              type: live849de15emodule
               uniqueConstraint: []
               userOwnable: true
       responses:
@@ -17921,8 +17921,8 @@ paths:
                   default: false
                   description: Platform-managed flag. Custom lists are `false`.
             example:
-              description: live test
-              name: live-picklist-name
+              name: live849de15eList
+              system: false
       responses:
         '201':
           description: The created picklist taxonomy record.
@@ -26555,7 +26555,17 @@ paths:
           application/json:
             schema:
               type: object
-            example: {}
+            example:
+              active: true
+              authentication: '{"type":"FSR"}'
+              command: ''
+              description: MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and
+                query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting
+                with all module-related operations.
+              name: live-<run>-mcp
+              transport: http
+              type: internal
+              url: https://localhost/mcp/modules/
       responses:
         '201':
           description: Created.
@@ -26569,6 +26579,7 @@ paths:
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.register_mcp_server({\"name\": \"my-server\"\
           , \"url\": \"http://example.com/mcp\"})"
+      x-live-captured: true
       x-auth: &id267
         apikey: 'yes'
         jwt: 'yes'
@@ -26620,38 +26631,68 @@ paths:
                 command: ''
                 createDate: 1700000000
                 createUser:
-                  '@id': /api/3/appliances/<uuid>
-                  '@type': Appliance
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
                   avatar: null
+                  companyId: null
                   createDate: 1700000000
-                  createUser: null
-                  id: 1
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
                   modifyDate: 1700000000
-                  modifyUser: null
-                  name: Playbook
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
                 description: MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and
                   query module data directly within FortiSOAR. It provides a centralized interface for managing and intera...
                   <41 more characters>
-                id: 1
+                id: 17
                 metadata: null
                 modifyDate: 1700000000
                 modifyUser:
-                  '@id': /api/3/appliances/<uuid>
-                  '@type': Appliance
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
                   avatar: null
+                  companyId: null
                   createDate: 1700000000
-                  createUser: null
-                  id: 1
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
                   modifyDate: 1700000000
-                  modifyUser: null
-                  name: Playbook
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
                   userId: <uuid>
                   userType: null
                   uuid: <uuid>
-                name: FortiSOAR Module Management
+                name: live-<run>-mcp
                 recordTags: []
                 timeout: null
                 transport: http
@@ -26737,8 +26778,8 @@ paths:
                 userId: <uuid>
                 userType: null
                 uuid: <uuid>
-              description: updated by run 9998de03
-              id: 15
+              description: updated by run 849de15e
+              id: 17
               metadata: null
               modifyDate: 1700000000
               modifyUser:

@@ -105656,38 +105656,42 @@
           "command": "",
           "createDate": 1700000000,
           "createUser": {
-            "@id": "/api/3/appliances/<uuid>",
-            "@type": "Appliance",
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
             "avatar": null,
             "createDate": 1700000000,
-            "createUser": null,
-            "id": 1,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 251,
             "modifyDate": 1700000000,
-            "modifyUser": null,
-            "name": "Playbook",
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "authprobe-mirror-<run>",
+            "recordTags": [],
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
           "description": "MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting with all module-related operations.",
-          "id": 1,
+          "id": 18,
           "metadata": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/appliances/<uuid>",
-            "@type": "Appliance",
+            "@id": "/api/3/api_keys/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "ApiKey",
             "avatar": null,
             "createDate": 1700000000,
-            "createUser": null,
-            "id": 1,
+            "createUser": "/api/3/people/<uuid>",
+            "id": 251,
             "modifyDate": 1700000000,
-            "modifyUser": null,
-            "name": "Playbook",
+            "modifyUser": "/api/3/people/<uuid>",
+            "name": "authprobe-mirror-<run>",
+            "recordTags": [],
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
-          "name": "FortiSOAR Module Management",
+          "name": "live-<run>-mcp",
           "recordTags": [],
           "timeout": null,
           "transport": "http",
@@ -105709,38 +105713,68 @@
           "command": "",
           "createDate": 1700000000,
           "createUser": {
-            "@id": "/api/3/appliances/<uuid>",
-            "@type": "Appliance",
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
             "avatar": null,
+            "companyId": null,
             "createDate": 1700000000,
-            "createUser": null,
-            "id": 1,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
             "modifyDate": 1700000000,
-            "modifyUser": null,
-            "name": "Playbook",
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
           "description": "MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting with all module-related operations.",
-          "id": 1,
+          "id": 17,
           "metadata": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/appliances/<uuid>",
-            "@type": "Appliance",
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
             "avatar": null,
+            "companyId": null,
             "createDate": 1700000000,
-            "createUser": null,
-            "id": 1,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
             "modifyDate": 1700000000,
-            "modifyUser": null,
-            "name": "Playbook",
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
-          "name": "FortiSOAR Module Management",
+          "name": "live-<run>-mcp",
           "recordTags": [],
           "timeout": null,
           "transport": "http",
@@ -148113,15 +148147,33 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "data": [
+            {
+              "name": "live-<run>-insert",
+              "severity": "/api/3/picklists/<uuid>",
+              "source": "live_test",
+              "status": "/api/3/picklists/<uuid>"
+            }
+          ]
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 500
       },
       "jwt": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "data": [
+            {
+              "name": "live-<run>-insert",
+              "severity": "/api/3/picklists/<uuid>",
+              "source": "live_test",
+              "status": "/api/3/picklists/<uuid>"
+            }
+          ]
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 201
       }
     }
   },
@@ -148139,15 +148191,33 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "active": true,
+          "authentication": "{\"type\":\"FSR\"}",
+          "command": "",
+          "description": "MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting with all module-related operations.",
+          "name": "live-<run>-mcp",
+          "transport": "http",
+          "type": "internal",
+          "url": "https://localhost/mcp/modules/"
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 201
       },
       "jwt": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "active": true,
+          "authentication": "{\"type\":\"FSR\"}",
+          "command": "",
+          "description": "MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting with all module-related operations.",
+          "name": "live-<run>-mcp",
+          "transport": "http",
+          "type": "internal",
+          "url": "https://localhost/mcp/modules/"
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 201
       }
     }
   },
@@ -148156,8 +148226,8 @@
       "apikey": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "description": "live test",
-          "name": "live-picklist-name"
+          "name": "live849de15eList",
+          "system": false
         },
         "response_body": null,
         "response_status": 201
@@ -148165,8 +148235,8 @@
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "description": "live test",
-          "name": "live-picklist-name"
+          "name": "live849de15eList",
+          "system": false
         },
         "response_body": null,
         "response_status": 201
@@ -148409,10 +148479,10 @@
           "ownable": true,
           "peerReplicable": false,
           "queueable": false,
-          "tableName": "live532ca54c_module",
+          "tableName": "live849de15e_module",
           "taggable": false,
           "trackable": true,
-          "type": "live532ca54cmodule",
+          "type": "live849de15emodule",
           "uniqueConstraint": [],
           "userOwnable": true
         },
@@ -148427,10 +148497,10 @@
           "ownable": true,
           "peerReplicable": false,
           "queueable": false,
-          "tableName": "live532ca54c_module",
+          "tableName": "live849de15e_module",
           "taggable": false,
           "trackable": true,
-          "type": "live532ca54cmodule",
+          "type": "live849de15emodule",
           "uniqueConstraint": [],
           "userOwnable": true
         },
@@ -150301,15 +150371,29 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "data": [
+            {
+              "type": "all",
+              "value": "live-<run>-ioc.example.invalid"
+            }
+          ]
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 200
       },
       "jwt": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "data": [
+            {
+              "type": "all",
+              "value": "live-<run>-ioc.example.invalid"
+            }
+          ]
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 200
       }
     }
   },
@@ -154188,15 +154272,51 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "crontab": {
+            "day_of_month": "1",
+            "day_of_week": "*",
+            "hour": "3",
+            "minute": "7",
+            "month_of_year": "1",
+            "timezone": "UTC"
+          },
+          "enabled": false,
+          "expires": null,
+          "kwargs": {
+            "exit_if_running": true,
+            "timezone": "UTC",
+            "wf_iri": "/api/3/workflows/<uuid>"
+          },
+          "name": "live-<run>-schedule",
+          "start_time": null
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 201
       },
       "jwt": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "crontab": {
+            "day_of_month": "1",
+            "day_of_week": "*",
+            "hour": "3",
+            "minute": "7",
+            "month_of_year": "1",
+            "timezone": "UTC"
+          },
+          "enabled": false,
+          "expires": null,
+          "kwargs": {
+            "exit_if_running": true,
+            "timezone": "UTC",
+            "wf_iri": "/api/3/workflows/<uuid>"
+          },
+          "name": "live-<run>-schedule",
+          "start_time": null
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 201
       }
     }
   },
@@ -154205,7 +154325,7 @@
       "apikey": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "id": "gAAAAABq2N4RYOIXbNXrOEyF73aOVz_G2B5JF-F6iZoAnzeDgbJEyhKoi033Y7NYhiWxpEMCVSO-voTr6c2KwVrTAy9XWiYBmg=="
+          "id": "gAAAAABq2N-2Arou5vMePtqjcEXXAK77UJLSAOUBj65rdLg2k2bfZuOKaOeVpwVPyeVwUUXgxjBrWRy5pwHps5YTmx3zhsUF1A=="
         },
         "response_body": null,
         "response_status": 200
@@ -154213,7 +154333,7 @@
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "id": "gAAAAABq2N3k-kVa7WSyaij5s8M8j0-O9x-SzC8P1IARRZsqZuhHrkn5rQP9RwVyXBlAyY6X4OGAazeXsrzEG_L9tsNGy-DJJQ=="
+          "id": "gAAAAABq2N-NXNctRaxpvqSUWuE020cd-3A3XQ9q-C93RiQkti08Pc9WJy_TtdXR1-Fatm5heOHfAg8yrHW0WulILhcKkPGKfA=="
         },
         "response_body": {
           "message": "The associated workflow is successfully triggered"
@@ -156011,7 +156131,7 @@
             "avatar": null,
             "createDate": 1700000000,
             "createUser": "/api/3/people/<uuid>",
-            "id": 243,
+            "id": 251,
             "modifyDate": 1700000000,
             "modifyUser": "/api/3/people/<uuid>",
             "name": "authprobe-mirror-<run>",
@@ -156020,8 +156140,8 @@
             "userType": null,
             "uuid": "<uuid>"
           },
-          "description": "updated by run 9998de03",
-          "id": 16,
+          "description": "updated by run 849de15e",
+          "id": 18,
           "metadata": null,
           "modifyDate": 1700000000,
           "modifyUser": {
@@ -156031,7 +156151,7 @@
             "avatar": null,
             "createDate": 1700000000,
             "createUser": "/api/3/people/<uuid>",
-            "id": 243,
+            "id": 251,
             "modifyDate": 1700000000,
             "modifyUser": "/api/3/people/<uuid>",
             "name": "authprobe-mirror-<run>",
@@ -156141,8 +156261,8 @@
             "userType": null,
             "uuid": "<uuid>"
           },
-          "description": "updated by run 9998de03",
-          "id": 15,
+          "description": "updated by run 849de15e",
+          "id": 17,
           "metadata": null,
           "modifyDate": 1700000000,
           "modifyUser": {
@@ -156593,7 +156713,7 @@
           "data": [
             {
               "@id": "/api/3/alerts/<uuid>",
-              "description": "updated by run 9998de03"
+              "description": "updated by run 849de15e"
             }
           ]
         },
@@ -157582,14 +157702,14 @@
             "month_of_year": "1",
             "timezone": "UTC"
           },
-          "date_changed": "2026-10-21T15:29:56.580679Z",
+          "date_changed": "2026-10-21T15:53:41.900411Z",
           "description": "live-<run>-schedule",
           "enabled": false,
           "exchange": null,
           "expire_seconds": null,
           "expires": null,
           "headers": "{}",
-          "id": "gAAAAABq2Np0az2bHi_6Rfmkn93VP764M9_3-xa4t0rW93ffxP27Pnzwtm_lbgTKOK79edZgbN2AufwQqWu5oyBIjR8PXBxPSg==",
+          "id": "gAAAAABq2OAFLNK6mXM-QrmLELR16spvbkDAb_LhxYPp3TuoXLAtPyqkOz0TjABoLLudcJfISEEayFSo0uuyeet08zKTadd2wA==",
           "interval": null,
           "kwargs": {
             "auth": {
@@ -157676,14 +157796,14 @@
             "month_of_year": "1",
             "timezone": "UTC"
           },
-          "date_changed": "2026-10-21T15:29:24.869755Z",
+          "date_changed": "2026-10-21T15:53:09.636050Z",
           "description": "live-<run>-schedule",
           "enabled": false,
           "exchange": null,
           "expire_seconds": null,
           "expires": null,
           "headers": "{}",
-          "id": "gAAAAABq2NpUbPy9huXVDvZeJlWRYISdr_XAaQ_9M0Cipoike5BbyslPPIlAxfqLDZad8lab1kPcodLVMtAR5Y-rBUfDGtGWwg==",
+          "id": "gAAAAABq2N_lG2SSlKnUC5k41OMQePW56yd7thxsyEQ3YW9e_f8NibAZjv96oObToNgDLCVmRnoCODjQZjGtj0XyVnNwtZFjXQ==",
           "interval": null,
           "kwargs": {
             "auth": {

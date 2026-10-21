@@ -904,7 +904,8 @@ def scenario_misc_reads(s: Session) -> None:
                    json={"id": sched_id})
     else:
         s.call("POST", "/api/wf/api/scheduled/trigger-now/", want=_post, json={})
-    s.call("POST", "/api/wf/api/scheduled/", want=_post, json={})
+    # POST /api/wf/api/scheduled/ is exercised with a real (disabled) task by
+    # api3_lifecycles; an empty-body probe here would overwrite that capture.
 
     print("[misc] staging + model metadata detail")
     r = s.request("GET", "/api/3/staging_model_metadatas?$limit=1")
@@ -941,8 +942,7 @@ def scenario_misc_reads(s: Session) -> None:
     s.call("POST", "/mcp/playbooks/", want=_post, json={})
     s.call("POST", "/mcp/utility/", want=_post, json={})
 
-    print("[misc] MCP configurations CRUD (create + read, no delete)")
-    s.call("POST", "/api/3/mcp_configurations", want=_post, json={})
+    print("[misc] MCP configurations read; create/update/delete lifecycle is api3_lifecycles' job")
 
     print("[misc] auth license POST + logout probe")
     s.call("POST", "/api/auth/license", want=(200, 400, 401, 403), json={})
@@ -991,10 +991,7 @@ def scenario_misc_reads(s: Session) -> None:
                 s.call("POST", "/api/3/widgets/export/{uuid}", want=_post,
                        path_params={"uuid": w_uuid}, json={})
 
-    print("[misc] bulk ops + staging metadata + feeds")
-    s.call("POST", "/api/3/insert/{moduleType}", want=_post,
-           path_params={"moduleType": "alerts"}, json={})
-    s.call("POST", "/api/ingest-feeds/indicators", want=_post, json={})
+    print("[misc] feeds + bulk reads; write-side lifecycles live in api3_lifecycles")
     s.call("POST", "/api/insert-feeds/{recordType}", want=_post,
            path_params={"recordType": "indicator"}, json={})
     print("[misc] staging metadata lifecycle (own record, deleted again)")
