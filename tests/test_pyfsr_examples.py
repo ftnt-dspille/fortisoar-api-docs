@@ -588,7 +588,49 @@ def _fake_request(self, method, url, **kwargs):
     if method == "GET" and "/api/ai/mcp" in url:
         return _fake_response(200, json.dumps([]).encode())
     if method == "POST" and "/api/ai/mcp/validate" in url:
-        return _fake_response(200, json.dumps({"valid": True}).encode())
+        return _fake_response(200, json.dumps({"valid": True, "tools": [{"name": "query_records"}], "message": None}).encode())
+    # AI chat (the raw /api/ai/chat/ route -- live shape, string messages)
+    if method == "POST" and "/api/ai/chat/" in url:
+        return _fake_response(200, json.dumps({
+            "thread_id": "thread_abc123", "intent": "Simple Query", "message": "pong",
+            "insight_id": None,
+            "message_history": [{"role": "user", "content": "Reply with exactly: pong"},
+                                 {"role": "assistant", "content": "pong"}],
+            "insight": None,
+        }).encode())
+    # AI insights (client.ai.insights -- chain_of_thought/plan/execute/status/result)
+    if method == "POST" and "/api/ai/insight/chain_of_thoughts" in url:
+        return _fake_response(200, json.dumps({"chain_of_thought": [
+            "Collect the alerts", "Summarize severity"]}).encode())
+    if method == "POST" and "/api/ai/insight/plan/execute" in url:
+        return _fake_response(200, json.dumps({
+            "status": "accepted", "planid": "abc123-def456", "task_id": "abc123-def456"}).encode())
+    if method == "POST" and "/api/ai/insight/plan" in url:
+        return _fake_response(200, json.dumps({
+            "objective": "Which alerts fired this week?",
+            "intent_interpretation": "Summarize the week's alerts.",
+            "feasibility": {"feasible": True, "reason": "data available"},
+            "entities": [], "steps": [],
+            "chain_of_thought": ["Collect the alerts", "Summarize severity"]}).encode())
+    if method == "GET" and "/api/ai/insight/plan/" in url and "/status" in url:
+        return _fake_response(200, json.dumps({"task_id": "abc123-def456", "status": "completed"}).encode())
+    if method == "GET" and "/api/ai/insight/plan/" in url and "/result" in url:
+        return _fake_response(200, json.dumps({
+            "result": {}, "execution_log": {}, "last_executed": "2026-01-01T00:00:00Z"}).encode())
+    if method == "POST" and "/api/ai/insight/trigger/schedule" in url:
+        return _fake_response(200, json.dumps({
+            "message": "Insight executed successfully. Please check the insight for the result."}).encode())
+    if method == "GET" and "/api/ai/insight/" in url:
+        return _fake_response(200, json.dumps({
+            "insight_id": "abc123-def456", "title": "Weekly critical alerts",
+            "query": "Which critical alerts fired this week?", "planid": "abc123-def456",
+            "plan": {"steps": []}}).encode())
+    if method == "DELETE" and "/api/ai/insight/" in url:
+        return _fake_response(200, json.dumps({"message": "Insight 'abc123-def456' was deleted"}).encode())
+    if method == "POST" and url.rstrip("/").endswith("/api/3/insights"):
+        return _fake_response(201, json.dumps({
+            "uuid": "abc123-def456", "title": "Weekly critical alerts",
+            "query": "Which critical alerts fired this week?", "planid": "abc123-def456"}).encode())
     # MCP configurations
     if method == "GET" and "/api/3/mcp_configurations/" in url:
         return _fake_response(200, json.dumps({"name": "my-server", "url": "http://example.com/mcp", "uuid": "123e4567-e89b-12d3-a456-426614174000"}).encode())
