@@ -1933,7 +1933,6 @@ PATHS["/api/wf/api/workflows/count/"] = {
 _WF_ACTION_BODIES = {
     "start": ({"type": "object"}, {}),
     "resume": ({"type": "object"}, {}),
-    "retry": ({"type": "object"}, {}),
     "approval": (
         {"type": "object", "properties": {
             "decision": {"type": "string", "enum": ["approved", "rejected"]},
@@ -1945,7 +1944,6 @@ _WF_ACTION_BODIES = {
 for action, desc in [
     ("start", "Manually queue a workflow."),
     ("resume", "Resume a paused workflow (status=`paused`; for `awaiting` manual-input runs use `POST {pk}/wfinput_resume/` instead)."),
-    ("retry", "Retry a failed workflow from the failed step."),
     ("approval", "Approval-step shortcut. Body shape unverified; expected `{decision, comment}`."),
 ]:
     _schema, _example = _WF_ACTION_BODIES[action]
@@ -1957,6 +1955,22 @@ for action, desc in [
                  }}},
                  "responses": {"200": _resp("Action result.")}},
     }
+
+# Retry is a **GET** on 8.0.0 (the guide's POST answers 405 "Method POST not
+# allowed"); it re-queues the run from its failed step and answers
+# `{task_id, result: "workflow retry queued..."}`.
+PATHS["/api/wf/api/workflows/{pk}/retry/"] = {
+    "parameters": [{"name": "pk", "in": "path", "required": True, "schema": {"type": "string"}}],
+    "get": {"tags": ["Playbook runs"], "summary": "Retry a failed workflow from the failed step",
+            "description": (
+                "Re-queues a failed run from the step it failed on. **GET, not POST** on 8.0.0: "
+                "the API guide's POST answers 405 `Method \"POST\" not allowed.` The response "
+                "carries a fresh `task_id` for the retried run."
+            ),
+            "responses": {"200": _resp("Retry queued.", example={
+                "task_id": "3c5e5b9d-1fde-41e7-9f53-ba8c4ac979ce",
+                "result": "workflow retry queue"})}},
+}
 
 PATHS["/api/wf/api/jinja-editor/"] = {
     "post": {
@@ -2237,13 +2251,14 @@ PATHS["/api/triggers/1/deferred/{name}"] = {
     "post": {"tags": ["Run a playbook"], "summary": "Run a playbook by its API endpoint name, asynchronously",
              "description": (
                  "Documented in the API guide as the same trigger run on a worker (202). On 8.0.0 it 404s before "
-                 "authentication even for a real endpoint name, while `POST /api/triggers/1/{name}` answers the "
-                 "same name - use that route."
+                 "authentication even for a real endpoint name (`No active workflow matching the given route.`), "
+                 "while `POST /api/triggers/1/{name}` answers the same name - use that route."
              ),
+             "deprecated": True,
              "requestBody": {"required": False, "content": {"application/json": {
                  "schema": {"type": "object"}, "example": {},
              }}},
-             "responses": {"202": _resp("Accepted.")}},
+             "responses": {"404": _resp("Not routed on 8.0.0 - use `POST /api/triggers/1/{name}`.")}},
 }
 
 PATHS["/api/triggers/1/notrigger/{workflowId}"] = {
@@ -4465,7 +4480,7 @@ Run control lives under `/api/wf/*`. The endpoints below cover the most common c
 
 - `POST /api/wf/api/workflows/{pk}/start/` - manually queue.
 - `POST /api/wf/api/workflows/{pk}/resume/` - resume a `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).
-- `POST /api/wf/api/workflows/{pk}/retry/` - retry a failed run from the failed step.
+- `GET /api/wf/api/workflows/{pk}/retry/` - retry a failed run from the failed step. **GET, not the guide's POST** (POST answers 405 on 8.0.0).
 - `POST /api/wf/api/workflows/{pk}/approval/` - approval-step shortcut.
 
 **Resuming an `awaiting` manual-input run** (verified live end-to-end; the run advances to `finished`):
@@ -4477,19 +4492,22 @@ Run control lives under `/api/wf/*`. The endpoints below cover the most common c
 
 **Correction (was wrong here before):** `wfinput_resume` is the **real** path - it is NOT a decoy. `PUT /api/wf/api/manual-wf-input/{id}/` returns 200 but does **not** advance the run; don't use it to resume.
 
+**Simpler linkage (live-verified on 8.0.0-6034):** the plain `GET /api/wf/api/manual-wf-input/` collection rows carry `workflow` as the **numeric run pk** (e.g. `144042`) - the same pk `wfinput_resume` wants - so a script that triggered the run itself can match its pending input by run pk alone, no `step_detail` correlation needed. `user` on the resume body is a `/api/3/people` IRI (resolve an admin from `GET /api/3/people`); omitting it 500s.
+
 ### Triggers
 
 Three ways to fire a playbook from outside:
 
 - **`POST /api/triggers/1/{name}`** - hits a Custom API Endpoint trigger (named via the trigger config). Allows alternate auth (Basic / no-auth) for external webhooks, by design - keeps the core API token-locked while letting webhook senders use simpler auth.
-- **`POST /api/triggers/1/deferred/{name}`** - same as above but async (returns 202).
+- ~~`POST /api/triggers/1/deferred/{name}`~~ - documented as the async variant (202) but **not routed on 8.0.0**: every name 404s before authentication. Use the sync route above.
 - **`POST /api/triggers/1/notrigger/{workflowId}`** - direct execution of a workflow by UUID, bypassing trigger conditions. Useful for testing.
+- **`POST /api/triggers/1/action/{routeUuid}`** - record-context execution via an action trigger's `route` uuid (from the playbook definition's trigger step). Answers `{"task_ids": [...]}` (plural), unlike `notrigger`'s scalar `task_id`.
 
 The notifier service has additional fan-out via STOMP-over-WebSocket at `/websocket/` (server pushes workflow updates on `/topic/workflows/`). No REST surface; out of scope here.
 
 ### Triggering a playbook with an API key and tracking the task
 
-Worked end-to-end flow against a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it reaches a terminal state, then fetch full execution details. Same pattern works for `deferred/` (async) and `notrigger/<workflowId>` - only the trigger URL changes.
+Worked end-to-end flow against a Custom API Endpoint trigger: fire the playbook, capture the `task_id`, poll the workflow log until it reaches a terminal state, then fetch full execution details. The `deferred/` variant is not routed on 8.0.0; `notrigger/<workflowId>` and `action/<routeUuid>` fire with the same pattern (only the trigger URL changes).
 
 **1. Fire the trigger.** `POST /api/triggers/1/<endpoint-name>` with the body the playbook expects. Auth header is `Authorization: API-KEY <key>` (literal space, not a colon). The response always contains a `task_id` - that is the handle you track, not the workflow IRI.
 

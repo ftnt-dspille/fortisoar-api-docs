@@ -467,6 +467,22 @@
       }
     }
   },
+  "DELETE /api/wf/api/manual-wf-input/{pk}/": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
+      },
+      "jwt": {
+        "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
+      }
+    }
+  },
   "DELETE /api/wf/api/scheduled/{id}/": {
     "by_auth": {
       "apikey": {
@@ -105656,42 +105672,38 @@
           "command": "",
           "createDate": 1700000000,
           "createUser": {
-            "@id": "/api/3/api_keys/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "ApiKey",
+            "@id": "/api/3/appliances/<uuid>",
+            "@type": "Appliance",
             "avatar": null,
             "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "id": 251,
+            "createUser": null,
+            "id": 1,
             "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "name": "authprobe-mirror-<run>",
-            "recordTags": [],
+            "modifyUser": null,
+            "name": "Playbook",
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
           "description": "MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting with all module-related operations.",
-          "id": 18,
+          "id": 1,
           "metadata": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/api_keys/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "ApiKey",
+            "@id": "/api/3/appliances/<uuid>",
+            "@type": "Appliance",
             "avatar": null,
             "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "id": 251,
+            "createUser": null,
+            "id": 1,
             "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "name": "authprobe-mirror-<run>",
-            "recordTags": [],
+            "modifyUser": null,
+            "name": "Playbook",
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
-          "name": "live-<run>-mcp",
+          "name": "FortiSOAR Module Management",
           "recordTags": [],
           "timeout": null,
           "transport": "http",
@@ -105713,68 +105725,38 @@
           "command": "",
           "createDate": 1700000000,
           "createUser": {
-            "@id": "/api/3/people/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "Person",
-            "accessType": "Named",
+            "@id": "/api/3/appliances/<uuid>",
+            "@type": "Appliance",
             "avatar": null,
-            "companyId": null,
             "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "csActive": true,
-            "department": null,
-            "description": null,
-            "email": "admin@example.com",
-            "firstname": "CS",
-            "id": 3,
-            "lastname": "Admin",
+            "createUser": null,
+            "id": 1,
             "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "phoneFax": null,
-            "phoneHome": null,
-            "phoneMobile": null,
-            "phoneWork": "+16462759691",
-            "sourceControlUsername": null,
-            "title": "Admin",
-            "type": null,
+            "modifyUser": null,
+            "name": "Playbook",
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
           "description": "MCP Server enables AI agents to access available FortiSOAR modules, retrieve their schemas, and query module data directly within FortiSOAR. It provides a centralized interface for managing and interacting with all module-related operations.",
-          "id": 17,
+          "id": 1,
           "metadata": null,
           "modifyDate": 1700000000,
           "modifyUser": {
-            "@id": "/api/3/people/<uuid>",
-            "@settings": "/api/3/user_settings/<uuid>",
-            "@type": "Person",
-            "accessType": "Named",
+            "@id": "/api/3/appliances/<uuid>",
+            "@type": "Appliance",
             "avatar": null,
-            "companyId": null,
             "createDate": 1700000000,
-            "createUser": "/api/3/people/<uuid>",
-            "csActive": true,
-            "department": null,
-            "description": null,
-            "email": "admin@example.com",
-            "firstname": "CS",
-            "id": 3,
-            "lastname": "Admin",
+            "createUser": null,
+            "id": 1,
             "modifyDate": 1700000000,
-            "modifyUser": "/api/3/people/<uuid>",
-            "phoneFax": null,
-            "phoneHome": null,
-            "phoneMobile": null,
-            "phoneWork": "+16462759691",
-            "sourceControlUsername": null,
-            "title": "Admin",
-            "type": null,
+            "modifyUser": null,
+            "name": "Playbook",
             "userId": "<uuid>",
             "userType": null,
             "uuid": "<uuid>"
           },
-          "name": "live-<run>-mcp",
+          "name": "FortiSOAR Module Management",
           "recordTags": [],
           "timeout": null,
           "transport": "http",
@@ -136964,7 +136946,7 @@
         "captured_at": "2026-10-21",
         "request_body": null,
         "response_body": null,
-        "response_status": 500
+        "response_status": 200
       },
       "jwt": {
         "captured_at": "2026-10-21",
@@ -136984,7 +136966,7 @@
           "request_payload": {},
           "result": {}
         },
-        "response_status": 500
+        "response_status": 200
       }
     }
   },
@@ -145306,6 +145288,28 @@
       }
     }
   },
+  "GET /api/wf/api/workflows/{pk}/retry/": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": {
+          "result": "workflow retry queued",
+          "task_id": "<uuid>"
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": {
+          "result": "workflow retry queued",
+          "task_id": "<uuid>"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/wf/workflow/config/": {
     "by_auth": {
       "jwt": {
@@ -145753,10 +145757,8 @@
       "apikey": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "name": "live-<run>-alert",
-          "severity": "/api/3/picklists/<uuid>",
-          "source": "live-test",
-          "status": "/api/3/picklists/<uuid>"
+          "name": "live-<run>-action",
+          "source": "live_test"
         },
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -146053,10 +146055,8 @@
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "name": "live-<run>-alert",
-          "severity": "/api/3/picklists/<uuid>",
-          "source": "live-test",
-          "status": "/api/3/picklists/<uuid>"
+          "name": "live-<run>-action",
+          "source": "live_test"
         },
         "response_body": {
           "@context": "/api/3/contexts/Alert",
@@ -148226,8 +148226,8 @@
       "apikey": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "name": "live849de15eList",
-          "system": false
+          "description": "live test",
+          "name": "live-picklist-name"
         },
         "response_body": null,
         "response_status": 201
@@ -148235,8 +148235,8 @@
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "name": "live849de15eList",
-          "system": false
+          "description": "live test",
+          "name": "live-picklist-name"
         },
         "response_body": null,
         "response_status": 201
@@ -148479,10 +148479,10 @@
           "ownable": true,
           "peerReplicable": false,
           "queueable": false,
-          "tableName": "live849de15e_module",
+          "tableName": "live4bedaf08_module",
           "taggable": false,
           "trackable": true,
-          "type": "live849de15emodule",
+          "type": "live4bedaf08module",
           "uniqueConstraint": [],
           "userOwnable": true
         },
@@ -148497,10 +148497,10 @@
           "ownable": true,
           "peerReplicable": false,
           "queueable": false,
-          "tableName": "live849de15e_module",
+          "tableName": "live4bedaf08_module",
           "taggable": false,
           "trackable": true,
-          "type": "live849de15emodule",
+          "type": "live4bedaf08module",
           "uniqueConstraint": [],
           "userOwnable": true
         },
@@ -150563,6 +150563,22 @@
       }
     }
   },
+  "POST /api/integration/agent-installer/": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 200
+      }
+    }
+  },
   "POST /api/integration/configuration/": {
     "by_auth": {
       "apikey": {
@@ -152073,6 +152089,58 @@
       }
     }
   },
+  "POST /api/integration/install-connector/": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-21",
+        "request_body": {
+          "agent": [
+            "<self-agent>"
+          ],
+          "category": [
+            "Utilities"
+          ],
+          "description": "",
+          "label": "cyops_utilities",
+          "name": "cyops_utilities",
+          "publisher": "Fortinet",
+          "rpm_full_name": "",
+          "version": "3.7.2"
+        },
+        "response_body": {
+          "message": "Installing connector cyops_utilities version 3.7.2",
+          "remote_status": {
+            "status": "awaiting"
+          }
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-10-21",
+        "request_body": {
+          "agent": [
+            "<self-agent>"
+          ],
+          "category": [
+            "Utilities"
+          ],
+          "description": "",
+          "label": "cyops_utilities",
+          "name": "cyops_utilities",
+          "publisher": "Fortinet",
+          "rpm_full_name": "",
+          "version": "3.7.2"
+        },
+        "response_body": {
+          "message": "Installing connector cyops_utilities version 3.7.2",
+          "remote_status": {
+            "status": "awaiting"
+          }
+        },
+        "response_status": 200
+      }
+    }
+  },
   "POST /api/public/license": {
     "by_auth": {
       "apikey": {
@@ -153157,6 +153225,44 @@
       }
     }
   },
+  "POST /api/triggers/1/action/{routeUuid}": {
+    "by_auth": {
+      "apikey": {
+        "captured_at": "2026-10-21",
+        "request_body": {
+          "__resource": "alerts",
+          "__uuid": "<uuid>",
+          "records": [
+            "/api/3/alerts/<uuid>"
+          ],
+          "singleRecordExecution": true
+        },
+        "response_body": {
+          "task_ids": [
+            "<uuid>"
+          ]
+        },
+        "response_status": 200
+      },
+      "jwt": {
+        "captured_at": "2026-10-21",
+        "request_body": {
+          "__resource": "alerts",
+          "__uuid": "<uuid>",
+          "records": [
+            "/api/3/alerts/<uuid>"
+          ],
+          "singleRecordExecution": true
+        },
+        "response_body": {
+          "task_ids": [
+            "<uuid>"
+          ]
+        },
+        "response_status": 200
+      }
+    }
+  },
   "POST /api/triggers/1/deferred/{name}": {
     "by_auth": {
       "apikey": {
@@ -153179,13 +153285,13 @@
         "captured_at": "2026-10-21",
         "request_body": {},
         "response_body": null,
-        "response_status": 404
+        "response_status": 200
       },
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {},
         "response_body": null,
-        "response_status": 404
+        "response_status": 200
       }
     }
   },
@@ -153195,13 +153301,13 @@
         "captured_at": "2026-10-21",
         "request_body": {},
         "response_body": null,
-        "response_status": 404
+        "response_status": 200
       },
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {},
         "response_body": null,
-        "response_status": 404
+        "response_status": 200
       }
     }
   },
@@ -154325,7 +154431,7 @@
       "apikey": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "id": "gAAAAABq2N-2Arou5vMePtqjcEXXAK77UJLSAOUBj65rdLg2k2bfZuOKaOeVpwVPyeVwUUXgxjBrWRy5pwHps5YTmx3zhsUF1A=="
+          "id": "gAAAAABq2O3Hl0zVvNZWLfaqANeGKl9yak7ZbfRQ-L8B0IE2pVoiBmdWR6qZUXr-_Y4USKxqVxJVLGT9CT8LZrAishC4owKXmw=="
         },
         "response_body": null,
         "response_status": 200
@@ -154333,7 +154439,7 @@
       "jwt": {
         "captured_at": "2026-10-21",
         "request_body": {
-          "id": "gAAAAABq2N-NXNctRaxpvqSUWuE020cd-3A3XQ9q-C93RiQkti08Pc9WJy_TtdXR1-Fatm5heOHfAg8yrHW0WulILhcKkPGKfA=="
+          "id": "gAAAAABq2O2eRXDLvtKQZkJsVNXt39I1Yc8TUJJ_F3Y3HXKQMXnwqpu91PDqYlIe-nKb_1JB5WQaYr5GsOL6KTVXO5n8ae0ewg=="
         },
         "response_body": {
           "message": "The associated workflow is successfully triggered"
@@ -154466,22 +154572,6 @@
       }
     }
   },
-  "POST /api/wf/api/workflows/{pk}/retry/": {
-    "by_auth": {
-      "apikey": {
-        "captured_at": "2026-10-21",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 405
-      },
-      "jwt": {
-        "captured_at": "2026-10-21",
-        "request_body": {},
-        "response_body": null,
-        "response_status": 405
-      }
-    }
-  },
   "POST /api/wf/api/workflows/{pk}/start/": {
     "by_auth": {
       "apikey": {
@@ -154508,15 +154598,27 @@
     "by_auth": {
       "apikey": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "input": {},
+          "manual_input_id": 639,
+          "step_id": 1289532,
+          "step_iri": "/api/3/workflow_steps/<uuid>",
+          "user": "/api/3/people/<uuid>"
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 200
       },
       "jwt": {
         "captured_at": "2026-10-21",
-        "request_body": {},
+        "request_body": {
+          "input": {},
+          "manual_input_id": 637,
+          "step_id": 1289474,
+          "step_iri": "/api/3/workflow_steps/<uuid>",
+          "user": "/api/3/people/<uuid>"
+        },
         "response_body": null,
-        "response_status": 400
+        "response_status": 200
       }
     }
   },
