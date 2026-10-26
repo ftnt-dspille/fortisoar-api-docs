@@ -2066,6 +2066,8 @@ PATHS["/api/3/actors/current"] = {
             "`userId` its das user uuid -- type-9 key users have **no** People "
             "record, so `GET /api/3/people?userId=<userId>` comes back empty, and "
             "`GET /api/auth/users?uuid=` is admin-only: 403 under an API key). "
+            "Answers for any authenticated key -- even one with no roles "
+            "(live-verified) -- since it is the principal's own record. "
             "Use this when code needs to work uniformly across both auth modes."
         ),
         "responses": {"200": _resp("Actor record.")},
