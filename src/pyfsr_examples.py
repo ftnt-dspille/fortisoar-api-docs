@@ -169,7 +169,8 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/3/people"): ("doctest", "pyfsr.api.users:UsersAPI.list"),
     ("post", "/api/3/people"): ("manual",
         'user = client.users.create("jdoe", "<initial password>", "Jane", "Doe",\n'
-        '                   "jdoe@example.com", roles=["SOC Analyst"])\n'
+        '                   "jdoe@example.com", roles=["SOC Analyst"],\n'
+        '                   teams=["SOC Team"])  # warns if omitted: teamless users get teams: []\n'
         'print(user.firstname, user.lastname, user.uuid)'),
     ("get", "/api/3/people/{uuid}"): ("manual", 'user = client.users.get("123e4567-e89b-12d3-a456-426614174000")\nprint(user.firstname, user.lastname)'),
     ("put", "/api/3/people/{uuid}"): ("manual", 'user = client.users.update("123e4567-e89b-12d3-a456-426614174000", department="SOC")\nprint(user.department)'),

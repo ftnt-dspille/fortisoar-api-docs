@@ -1554,7 +1554,7 @@ SCHEMAS.update({
     "PersonCreate": {
         "type": "object",
         "required": ["firstname", "lastname", "email", "roles", "user"],
-        "description": "Create a People record. The nested `user` block provisions the das login -- omit `status` (or pass 2) and the account is created INACTIVE and cannot log in (das defaults it to status 2). The People POST alone leaves the login passwordless; set the password via `POST /api/3/resetpassword` afterwards (pyfsr's `UsersAPI.create` chains both calls).",
+        "description": "Create a People record. The nested `user` block provisions the das login -- omit `status` (or pass 2) and the account is created INACTIVE and cannot log in (das defaults it to status 2). The People POST alone leaves the login passwordless; set the password via `POST /api/3/resetpassword` afterwards (pyfsr's `UsersAPI.create` chains both calls). `teams` is optional on the wire (a teamless user is saved with `teams: []`), but the UI's Add User wizard requires one and team-scoped RBAC may leave a teamless user unable to see or own records -- pyfsr's `UsersAPI.create` warns and lists the tenant's team names when `teams` is omitted.",
         "properties": {
             "firstname": {"type": "string"},
             "lastname": {"type": "string"},
@@ -1562,7 +1562,7 @@ SCHEMAS.update({
             "csActive": {"type": "boolean", "description": "pyfsr defaults true."},
             "accessType": {"type": "string", "enum": ["Named", "Concurrent"], "description": "pyfsr defaults `Named`."},
             "roles": {"type": "array", "items": {"type": "string"}, "description": "Role names, UUIDs or IRIs (pyfsr resolves names to UUIDs). At least one required."},
-            "teams": {"type": "array", "items": {"type": "string"}, "description": "Team names, UUIDs or IRIs."},
+            "teams": {"type": "array", "items": {"type": "string"}, "description": "Team names, UUIDs or IRIs (all three forms live-verified; the assignment sticks either way). Optional on the wire but required by the UI's Add User wizard."},
             "user": {
                 "type": "object",
                 "required": ["loginid"],
@@ -2370,7 +2370,7 @@ PATHS["/api/insert-feeds/{recordType}"] = {
     "parameters": [{"name": "recordType", "in": "path", "required": True, "schema": {"type": "string"}}],
     "post": {
         "tags": ["Bulk operations"],
-        "summary": "Generic feed insert (NOT ROUTED on 8.x)",
+        "summary": "Generic feed insert",
         "description": (
             "Listed in the 7.6.5 API guide, but **not routed on 8.0.0/8.0.1**: every `recordType` "
             "404s at the router level (`No route found`). Do not confuse it with the similarly named "

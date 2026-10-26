@@ -8660,7 +8660,7 @@ paths:
     post:
       tags:
       - Bulk operations
-      summary: Generic feed insert (NOT ROUTED on 8.x)
+      summary: Generic feed insert
       description: '**See:** [Concepts](#description/concepts) (trigger-bypass)
 
 
@@ -20472,8 +20472,8 @@ paths:
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nuser = client.users.create(\"jdoe\", \"<initial password>\"\
-          , \"Jane\", \"Doe\",\n                   \"jdoe@example.com\", roles=[\"SOC Analyst\"])\nprint(user.firstname, user.lastname,\
-          \ user.uuid)"
+          , \"Jane\", \"Doe\",\n                   \"jdoe@example.com\", roles=[\"SOC Analyst\"],\n                   teams=[\"\
+          SOC Team\"])  # warns if omitted: teamless users get teams: []\nprint(user.firstname, user.lastname, user.uuid)"
       x-live-captured: true
       x-auth: &id190
         apikey: 'yes'
@@ -35728,10 +35728,12 @@ components:
       - email
       - roles
       - user
-      description: Create a People record. The nested `user` block provisions the das login -- omit `status` (or pass 2) and
-        the account is created INACTIVE and cannot log in (das defaults it to status 2). The People POST alone leaves the
-        login passwordless; set the password via `POST /api/3/resetpassword` afterwards (pyfsr's `UsersAPI.create` chains
-        both calls).
+      description: 'Create a People record. The nested `user` block provisions the das login -- omit `status` (or pass 2)
+        and the account is created INACTIVE and cannot log in (das defaults it to status 2). The People POST alone leaves
+        the login passwordless; set the password via `POST /api/3/resetpassword` afterwards (pyfsr''s `UsersAPI.create` chains
+        both calls). `teams` is optional on the wire (a teamless user is saved with `teams: []`), but the UI''s Add User wizard
+        requires one and team-scoped RBAC may leave a teamless user unable to see or own records -- pyfsr''s `UsersAPI.create`
+        warns and lists the tenant''s team names when `teams` is omitted.'
       properties:
         firstname:
           type: string
@@ -35757,7 +35759,8 @@ components:
           type: array
           items:
             type: string
-          description: Team names, UUIDs or IRIs.
+          description: Team names, UUIDs or IRIs (all three forms live-verified; the assignment sticks either way). Optional
+            on the wire but required by the UI's Add User wizard.
         user:
           type: object
           required:
