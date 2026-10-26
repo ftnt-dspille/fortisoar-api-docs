@@ -1475,6 +1475,164 @@ SCHEMAS.update({
             "configMessage": {"type": ["string", "null"]},
         },
     },
+    # --- Request bodies (live-verified) ---------------------------------------
+    # Authenticated as JSON-string on the record; as an object on validate.
+    "MCPServerConfigInput": {
+        "type": "object",
+        "required": ["name", "url", "transport", "type"],
+        "description": "Create/update an MCP server registration. `authentication` is a JSON *string* (the appliance stores the block verbatim and never echoes secrets).",
+        "properties": {
+            "name": {"type": "string"},
+            "url": {"type": "string", "description": "MCP endpoint, e.g. `https://<host>/mcp/modules/`."},
+            "transport": {"type": "string", "enum": ["http", "sse"]},
+            "type": {"type": "string", "description": "`FSR` for built-in gateways; `Custom` for external servers."},
+            "authentication": {"type": "string", "description": "Auth block as a JSON string, e.g. `{\"type\": \"FSR\"}` or `{\"type\": \"Bearer\", \"token\": ...}`."},
+            "active": {"type": "boolean"},
+            "timeout": {"type": "integer"},
+            "command": {"type": "string", "description": "Stdio transport command (local servers)."},
+            "description": {"type": "string"},
+        },
+    },
+    "RoleCreate": {
+        "type": "object",
+        "required": ["name"],
+        "description": "Create a role. Only `name` is required; attach module grants afterwards via `PUT /api/3/roles/{uuid}` (pyfsr's `grant_module_permissions`).",
+        "properties": {
+            "name": {"type": "string", "description": "Role name, unique."},
+            "description": {"type": "string"},
+        },
+    },
+    "TeamCreate": {
+        "type": "object",
+        "required": ["name"],
+        "description": "Create a team. `parents`/`children`/`siblings` place it in the ownership hierarchy (names, uuids or IRIs): parents see and edit child-owned records, children do not see each other, siblings share records both ways.",
+        "properties": {
+            "name": {"type": "string", "description": "Team name, unique."},
+            "description": {"type": "string"},
+            "parents": {"type": "array", "items": {"type": "string"}},
+            "children": {"type": "array", "items": {"type": "string"}},
+            "siblings": {"type": "array", "items": {"type": "string"}},
+        },
+    },
+    "AgentAcceptanceRequest": {
+        "type": "object",
+        "required": ["accepted"],
+        "description": "Accept or reject an agent run's result (the human-in-the-loop gate).",
+        "properties": {
+            "accepted": {"type": "boolean", "description": "`true` approves the run's result; `false` rejects it."},
+        },
+    },
+    "EnrichContextRequest": {
+        "type": "object",
+        "required": ["query"],
+        "description": "Store organizational context for enrichment (the `query` text is indexed for later IOC enrichment lookups).",
+        "properties": {
+            "query": {"type": "string"},
+        },
+    },
+    "MCPValidateRequest": {
+        "type": "object",
+        "required": ["url", "transport", "authentication"],
+        "description": "Probe an MCP-server config *before* persisting it: FortiSOAR opens the connection and runs `tools/list`. `authentication` is a JSON **object** here (unlike the stored record, where it is a string).",
+        "properties": {
+            "name": {"type": "string"},
+            "url": {"type": "string"},
+            "transport": {"type": "string", "enum": ["http", "sse"]},
+            "authentication": {"type": "object", "description": "e.g. `{\"type\": \"FSR\"}` (uses the caller's credentials) or `{\"type\": \"Bearer\", \"token\": ...}`."},
+            "uuid": {"type": "string", "description": "Set when re-validating an already-registered server."},
+        },
+    },
+    "IngestionMetadataInput": {
+        "type": "object",
+        "required": ["configuration", "connector"],
+        "description": "Create a data-ingestion configuration: binds a connector configuration to ingestion playbooks and a schedule.",
+        "properties": {
+            "name": {"type": "string"},
+            "description": {"type": "string"},
+            "configuration": {"type": "string", "description": "uuid of the connector configuration to bind."},
+            "connector": {"type": "object", "required": ["name"],
+                          "properties": {"name": {"type": "string"}, "version": {"type": "string"}},
+                          "description": "Connector reference (name + version; empty version = latest)."},
+            "metadata": {"type": "object",
+                         "properties": {
+                             "scheduleId": {"oneOf": [{"type": "string"}, {"type": "null"}]},
+                             "scheduleName": {"type": "string"},
+                             "scheduleStatus": {"type": "boolean"},
+                         },
+                         "description": "Ingestion schedule binding."},
+            "owners": {"type": "array", "items": {"type": "string"}},
+            "created_by": {"type": "string"},
+            "modified_by": {"type": "string"},
+        },
+    },
+    "ViewConfigInput": {
+        "type": "object",
+        "required": ["name", "module", "config"],
+        "description": "Create/update a module view: grid/list layout for the module's UI.",
+        "properties": {
+            "name": {"type": "string"},
+            "module": {"type": "string"},
+            "type": {"type": "string"},
+            "isDefault": {"type": "boolean"},
+            "config": {"type": "object", "description": "Layout: `rows` of columns, `metadata` (template titles), paging."},
+            "viewOptions": {"type": "object"},
+        },
+    },
+    "MCPHostRequest": {
+        "type": "object",
+        "required": ["mcp_configuration", "metadata", "tools"],
+        "description": "Host a connector's operations as MCP tools (`POST /mcp/add/tools`). Tool rows are keyed globally by name -- duplicates across servers silently drop. Requires the connector definition and a configuration first.",
+        "properties": {
+            "mcp_configuration": {"type": "object", "required": ["name", "uuid"],
+                                  "properties": {"name": {"type": "string"}, "uuid": {"$ref": "#/components/schemas/UUID"}}},
+            "config": {"type": "object", "description": "Connector configuration values for the hosted tools."},
+            "metadata": {"type": "object", "required": ["name", "label", "version", "connectorName"],
+                         "properties": {
+                             "name": {"type": "string"},
+                             "label": {"type": "string"},
+                             "version": {"type": "string"},
+                             "connectorName": {"type": "string"},
+                         }},
+            "tools": {"type": "array",
+                      "items": {"type": "object", "required": ["operation"],
+                                "properties": {
+                                    "operation": {"type": "string", "description": "Connector operation to expose."},
+                                    "title": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "category": {"type": "string"},
+                                    "visible": {"type": "boolean"},
+                                    "enabled": {"type": "boolean"},
+                                    "parameters": {"type": "object"},
+                                    "addTool": {"type": "boolean"},
+                                }},
+                      "description": "One row per operation to host."},
+        },
+    },
+    "MCPToolsUpdateRequest": {
+        "type": "object",
+        "required": ["uuid", "metadata"],
+        "description": "Update a hosted MCP server's tool set (`PUT /mcp/tools/{mcp_config_uuid}`): `tools` re-declares hosted rows, `remove_tools` unhosts by operation name.",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "metadata": {"type": "object", "required": ["name", "connectorName", "label", "version"],
+                         "properties": {
+                             "name": {"type": "string"},
+                             "connectorName": {"type": "string"},
+                             "label": {"type": "string"},
+                             "version": {"type": "string"},
+                         }},
+            "config": {"type": "object"},
+            "tools": {"type": "array", "items": {"type": "object"}},
+            "remove_tools": {"type": "array", "items": {"type": "string"},
+                             "description": "Operation names to unhost."},
+        },
+    },
+    "MCPExportRequest": {
+        "type": "array",
+        "description": "Servers to export (`POST /mcp/config/export`): one `{uuid}` object per registered server.",
+        "items": {"type": "object", "required": ["uuid"],
+                  "properties": {"uuid": {"$ref": "#/components/schemas/UUID"}}},
+    },
 })
 
 # Standard query parameters reused across /api/3/*
@@ -6527,8 +6685,15 @@ def _apply_live_observations(spec: dict) -> int:
             continue
         src = successful["jwt"] if "jwt" in successful else next(iter(successful.values()))
         if src.get("request_body") is not None:
-            content = op.setdefault("requestBody", {}).setdefault("content", {}).setdefault("application/json", {})
-            content["example"] = src["request_body"]
+            rb_content = op.setdefault("requestBody", {}).setdefault("content", {})
+            # Only overlay onto application/json when the op actually declares
+            # it: creating the key on multipart-only routes (file uploads) leaves
+            # an empty content entry that renders as `application/json: null`.
+            # JSON routes with no declared body still get the captured example.
+            if "application/json" in rb_content:
+                rb_content["application/json"]["example"] = src["request_body"]
+            elif "multipart/form-data" not in rb_content:
+                rb_content.setdefault("application/json", {})["example"] = src["request_body"]
         if src.get("response_body") is not None:
             resp = op.setdefault("responses", {}).setdefault(str(src["response_status"]), {"description": "Live-captured response."})
             resp.setdefault("content", {}).setdefault("application/json", {})["example"] = _truncate_lists(src["response_body"])
@@ -6708,6 +6873,30 @@ def _apply_typed_response_wiring(spec: dict) -> int:
         content["schema"] = schema
         applied += 1
 
+    def wire_request(path: str, method: str, ref: str) -> None:
+        """Point a request body's application/json schema at a component."""
+        nonlocal applied
+        op = spec["paths"].get(path, {}).get(method)
+        if not op:
+            return
+        rb = (op.get("requestBody") or {}).get("content", {}).get("application/json")
+        if rb is None:
+            return
+        rb["schema"] = {"$ref": f"#/components/schemas/{ref}"}
+        applied += 1
+
+    def wire_request_schema(path: str, method: str, schema: dict) -> None:
+        """Set an inline request-body schema (open-by-design descriptions)."""
+        nonlocal applied
+        op = spec["paths"].get(path, {}).get(method)
+        if not op:
+            return
+        rb = (op.get("requestBody") or {}).get("content", {}).get("application/json")
+        if rb is None:
+            return
+        rb["schema"] = schema
+        applied += 1
+
     for _path, _ref in [
         ("/api/3/picklist_names", "PicklistName"),
         ("/api/3/model_metadatas", "ModelMetadata"),
@@ -6830,6 +7019,100 @@ def _apply_typed_response_wiring(spec: dict) -> int:
         if isinstance(ref_, tuple):
             ref_, collection = ref_
         wire(path_, method_, code_, ref_, collection=collection)
+
+    # --- Request bodies (live-verified) -----------------------------------
+    for _path, _method, _ref in [
+        ("/api/3/mcp_configurations", "post", "MCPServerConfigInput"),
+        ("/api/3/mcp_configurations/{uuid}", "put", "MCPServerConfigInput"),
+        ("/api/3/roles", "post", "RoleCreate"),
+        ("/api/3/teams", "post", "TeamCreate"),
+        ("/api/ai/agents/{task_id}/acceptance", "post", "AgentAcceptanceRequest"),
+        ("/api/ai/enrich/context", "post", "EnrichContextRequest"),
+        ("/api/ai/mcp/validate", "post", "MCPValidateRequest"),
+        ("/api/integration/data-import/", "post", "IngestionMetadataInput"),
+        ("/api/views/1/{name}", "post", "ViewConfigInput"),
+        ("/api/views/1/{name}", "put", "ViewConfigInput"),
+        ("/mcp/add/tools", "post", "MCPHostRequest"),
+        ("/mcp/tools/{mcp_config_uuid}", "put", "MCPToolsUpdateRequest"),
+        ("/mcp/tools/{uuid}", "put", "MCPToolsUpdateRequest"),
+        ("/mcp/config/export", "post", "MCPExportRequest"),
+    ]:
+        wire_request(_path, _method, _ref)
+
+    # --- Request bodies that are open by design (honest descriptions) -----
+    # These routes take arbitrary JSON or no body at all; no schema can be
+    # more specific without inventing structure the wire doesn't enforce.
+    for _path, _method, _schema in [
+        ("/api/3/upsert/{moduleType}", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "The record's fields, keyed by the module's field names "
+                         "(picklist fields take option IRIs). See "
+                         "`GET /api/3/contexts/{moduleType}` for the field list."}),
+        ("/api/3/{collection}", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Fields for the new `{collection}` record, keyed by the "
+                         "module's field names (picklist fields take option IRIs). "
+                         "See `GET /api/3/contexts/{collection}` for the field list."}),
+        ("/api/3/{collection}/{uuid}", "put",
+         {"type": "object", "additionalProperties": True,
+          "description": "Fields to update (a partial record is accepted)."}),
+        ("/api/wf/api/workflows/{pk}/start/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required (live-verified with `{}`). An optional "
+                         "JSON payload is accepted and exposed to the run's steps."}),
+        ("/api/wf/api/workflows/{pk}/resume/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required on this legacy route (live-verified with "
+                          "`{}`); pyfsr resumes paused runs via the manual-input "
+                          "routes (`POST /api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/`)."}),
+        ("/api/wf/api/workflows/log_list/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Query filters as JSON; `{}` returns every run (live-verified)."}),
+        ("/api/wf/api/manual-wf-input/list_wfinput/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Query filters as JSON; `{}` returns every pending manual input (live-verified)."}),
+        ("/api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required (live-verified with `{}`); the response "
+                         "carries the manual input's current answer state."}),
+        ("/api/triggers/1/deferred/{name}", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Arbitrary input payload exposed to the workflow (deprecated route)."}),
+        ("/api/triggers/1/{name}", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Arbitrary input payload exposed to the workflow as `$(input)`; "
+                         "`{}` is accepted for playbooks that take no input."}),
+        ("/api/ai/agent/export/{agent_id}", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required (live-verified with `{}`): the agent id in the "
+                         "path selects what to export."}),
+        ("/api/integration/connectors/{connector}/{version}/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required: the connector slug + version in the path "
+                         "select the definition (live-verified with `{}`)."}),
+        ("/api/integration/connectors/{id}/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required: the connector id in the path selects the "
+                         "definition (live-verified with `{}`)."}),
+        ("/api/integration/connectors/agents/{name}/{version}/", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required: query params (`format`, `active`) select; "
+                         "the response lists per-agent install rows (live-verified with `{}`)."}),
+        ("/api/3/logout", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required."}),
+        ("/api/publish/revert", "put",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required (live-verified with `{}`)."}),
+        ("/api/publish", "put",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required."}),
+        ("/api/ai/enrich/index/build", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "No body required (live-verified with `{}`): rebuilds the "
+                         "enrichment context index wholesale."}),
+    ]:
+        wire_request_schema(_path, _method, _schema)
     return applied
 
 

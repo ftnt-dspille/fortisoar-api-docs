@@ -998,6 +998,21 @@ EXTRA_SCHEMAS = {
             },
         },
     },
+    "TriageAlertRequest": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": (
+            "The alert to investigate: send the alert record's fields (as "
+            "`GET /api/3/alerts/{uuid}` returns them) or at minimum a `name` "
+            "reference (uuid, `alerts:<uuid>` or the record IRI)."
+        ),
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Alert reference: uuid, `alerts:<uuid>` or `/api/3/alerts/<uuid>`.",
+            },
+        },
+    },
 }
 
 
@@ -1040,6 +1055,11 @@ SCHEMA_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("post", "/api/ai/mcp/validate"): {
         "response": {"code": "200", "schema": {"$ref": "#/components/schemas/MCPValidateResult"}},
+    },
+    # The trigger body is the alert to investigate: the full record's fields
+    # or a reference (pyfsr's start_alert_investigation sends either).
+    ("post", "/api/ai/triage/alert"): {
+        "request": {"$ref": "#/components/schemas/TriageAlertRequest"},
     },
 }
 
