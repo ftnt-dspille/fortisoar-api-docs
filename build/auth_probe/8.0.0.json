@@ -141,14 +141,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: 403 'AccessDeniedException Access Denied.'"
       },
       "jwt": {
         "bogus_status": 401,
         "status": 404,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "real body: 204"
       },
       "probed": "/api/3/people/00000000-0000-0000-0000-000000000000"
     },
@@ -764,13 +764,13 @@
         "bogus_status": 401,
         "status": 200,
         "verdict": "YES",
-        "why": "200 on a real id"
+        "why": "real body: 200"
       },
       "jwt": {
         "bogus_status": 401,
         "status": 200,
         "verdict": "YES",
-        "why": "200 on a real id"
+        "why": "real body: 200"
       },
       "probed": "/api/3/people/00000000-0000-0000-0000-000000000000",
       "probed_real": "/api/3/people/55b11b5c-c9b4-4e82-83cb-b14c00176c0e"
@@ -2241,14 +2241,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: 403 'AccessDeniedException Access Denied.'"
       },
       "jwt": {
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: 201"
       },
       "probed": "/api/3/people"
     },
@@ -2287,13 +2287,13 @@
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: 200"
       },
       "jwt": {
         "bogus_status": 401,
         "status": 400,
         "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
+        "why": "real body: 200"
       },
       "probed": "/api/3/resetpassword"
     },
@@ -3606,14 +3606,14 @@
       "apikey": {
         "bogus_status": 401,
         "status": 404,
-        "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "verdict": "NO",
+        "why": "real body: 403 'AccessDeniedException Access Denied.'"
       },
       "jwt": {
         "bogus_status": 401,
         "status": 404,
         "verdict": "YES",
-        "why": "404 from the handler (bogus gets 401)"
+        "why": "real body: 200"
       },
       "probed": "/api/3/people/00000000-0000-0000-0000-000000000000"
     },

@@ -419,6 +419,70 @@ def _api_key_binding_chain(client: FortiSOAR) -> dict[str, tuple[str, str]]:
     return out
 
 
+def _people_chain(client: FortiSOAR) -> dict[str, tuple[str, str]]:
+    """People-record writes with a real body, real record.
+
+    A bare-string probe body is misleading here: das rejects it with a 400
+    *before* the RBAC check, so a key that would be refused with a real body
+    reads as YES. This chain sends a real create (unique throwaway login),
+    and measures GET/PUT/DELETE + the resetpassword step against a REAL
+    record -- created by the credential under test when RBAC allows, else by
+    JWT so the other steps still get measured. Everything is deleted after.
+    """
+    out: dict[str, tuple[str, str]] = {}
+    jwt = _jwt_from_env(client)
+    roles = jwt.users.list_roles()
+    role_uuid = next((r["uuid"] for r in roles if r.get("name") == "SOC Analyst"),
+                     None) or (roles[0]["uuid"] if roles else None)
+    if not role_uuid:
+        return {op: ("ERROR", "no role resolvable to create a person with")
+                for op in ("POST /api/3/people", "GET /api/3/people/{uuid}",
+                           "PUT /api/3/people/{uuid}", "DELETE /api/3/people/{uuid}",
+                           "POST /api/3/resetpassword")}
+    loginid = f"authprobe{secrets.token_hex(4)}"
+    payload = {
+        "firstname": "Authprobe", "lastname": "People", "email": f"{loginid}@example.com",
+        "csActive": True, "accessType": "Named", "roles": [role_uuid],
+        "user": {"loginid": loginid, "password": "Authpr0be!Xy9z",
+                 "email": f"{loginid}@example.com", "status": 1},
+    }
+    person = None
+    v, why, r = _step(client, "POST", "/api/3/people", data=payload)
+    out["POST /api/3/people"] = (v, why)
+    if v == "YES":
+        person = r.json()["uuid"]
+    else:  # still measure read/update/delete/reset with this credential,
+        # against a record the JWT admin creates
+        _v, _w, r2 = _step(jwt, "POST", "/api/3/people", data=payload)
+        if _v == "YES":
+            person = r2.json()["uuid"]
+    if not person:
+        out["GET /api/3/people/{uuid}"] = ("ERROR", "no person record to probe against")
+        out["PUT /api/3/people/{uuid}"] = ("ERROR", "no person record to probe against")
+        out["DELETE /api/3/people/{uuid}"] = ("ERROR", "no person record to probe against")
+        out["POST /api/3/resetpassword"] = ("ERROR", "no person record to probe against")
+        return out
+    try:
+        out["GET /api/3/people/{uuid}"] = _step(client, "GET", f"/api/3/people/{person}")[:2]
+        out["PUT /api/3/people/{uuid}"] = _step(client, "PUT", f"/api/3/people/{person}",
+                                                data={"department": "authprobe"})[:2]
+        out["POST /api/3/resetpassword"] = _step(
+            client, "POST", "/api/3/resetpassword",
+            data={"loginId": loginid, "password": "Authpr0be!Xy9z2",
+                  "confirmPassword": "Authpr0be!Xy9z2"})[:2]
+        v, why, d = _step(client, "DELETE", f"/api/3/people/{person}")
+        out["DELETE /api/3/people/{uuid}"] = (v, why)
+        if v != "YES":  # this credential could not delete; JWT cleans up
+            jwt.request("DELETE", f"/api/3/people/{person}", raise_on_status=False)
+            person = None
+        else:
+            person = None
+    finally:
+        if person:  # belt and suspenders: never leave the probe user behind
+            jwt.request("DELETE", f"/api/3/people/{person}", raise_on_status=False)
+    return out
+
+
 def _ingest_indicator(client: FortiSOAR) -> tuple[str, str]:
     """Ingest one documentation-range IP indicator, then delete it."""
     value = f"192.0.2.{secrets.randbelow(250) + 1}"
@@ -450,6 +514,8 @@ DEEP_CHECKS = {
     **_chain(["POST /api/3/picklist_names", "DELETE /api/3/picklist_names/{uuid}"], _picklist_name_chain),
     **_chain(["POST /api/3/api_keys", "GET /api/3/api_keys/{uuid}", "PUT /api/3/api_keys/{uuid}"],
              _api_key_binding_chain),
+    **_chain(["POST /api/3/people", "GET /api/3/people/{uuid}", "PUT /api/3/people/{uuid}",
+              "DELETE /api/3/people/{uuid}", "POST /api/3/resetpassword"], _people_chain),
     **_chain(["GET /api/import/{job_uuid}", "PUT /api/import/{job_uuid}"], _import_chain),
 }
 

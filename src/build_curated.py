@@ -4809,8 +4809,10 @@ PATHS["/api/3/people"] = {
             "Creates a People record and provisions the linked das login from "
             "the nested `user` block. The login stays passwordless until "
             "`POST /api/3/resetpassword` sets one, and an omitted "
-            "`user.status` defaults the account to inactive. pyfsr: "
-            "`client.users.create()`."
+            "`user.status` defaults the account to inactive. **JWT only for "
+            "writes**: an API-key principal is refused with 403 Access Denied "
+            "whatever its grants (live-verified with admin-equivalent grants). "
+            "pyfsr: `client.users.create()`."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"$ref": "#/components/schemas/PersonCreate"}}}},
@@ -4833,7 +4835,9 @@ PATHS["/api/3/people/{uuid}"] = {
         "description": (
             "Partial update of a People record (e.g. `department`, phones, "
             "`csActive` to deactivate and free the license seat -- pyfsr's "
-            "`UsersAPI.deactivate`). pyfsr: `client.users.update()`."
+            "`UsersAPI.deactivate`). JWT only: an API-key principal is refused "
+            "with 403 Access Denied whatever its grants. pyfsr: "
+            "`client.users.update()`."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object",
@@ -4857,7 +4861,7 @@ PATHS["/api/3/people/{uuid}"] = {
     "delete": {
         "tags": ["Access management"],
         "summary": "Delete a user (People record)",
-        "description": "Deletes the People record outright (live-verified 204). Most deployments deactivate instead via `PUT` with `csActive: false`.",
+        "description": "Deletes the People record outright (live-verified 204). JWT only: an API-key principal is refused with 403 Access Denied whatever its grants. Most deployments deactivate instead via `PUT` with `csActive: false`.",
         "responses": {"204": {"description": "Deleted."}, "404": _err(404, "Not found.")},
     },
 }
@@ -4869,7 +4873,10 @@ PATHS["/api/3/resetpassword"] = {
         "description": (
             "Admin reset of another user's application password. das refuses "
             "resetting your own login this way -- use the change-password "
-            "flow. `sendEmail` defaults to false. pyfsr: "
+            "flow. `sendEmail` defaults to false. Notably, API-key principals "
+            "ARE allowed here (200) even though they cannot create, update or "
+            "delete People records -- an automation key can rotate a user's "
+            "password but not manage the directory. pyfsr: "
             "`client.users.reset_password()`."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
