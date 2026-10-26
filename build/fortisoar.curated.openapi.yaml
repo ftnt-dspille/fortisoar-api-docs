@@ -569,6 +569,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: No body required.
             example: {}
       responses:
         '204':
@@ -6481,6 +6483,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: Fields for the new `{collection}` record, keyed by the module's field names (picklist fields take
+                option IRIs). See `GET /api/3/contexts/{collection}` for the field list.
             example:
               description: live_test team
               name: live-<run>-team
@@ -6861,6 +6866,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: Fields to update (a partial record is accepted).
             example:
               description: renamed by live_test
       responses:
@@ -8071,6 +8078,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: The record's fields, keyed by the module's field names (picklist fields take option IRIs). See
+                `GET /api/3/contexts/{moduleType}` for the field list.
             example:
               name: live-<run>-upsert
               severity: /api/3/picklists/<uuid>
@@ -11210,6 +11220,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: Query filters as JSON; `{}` returns every run (live-verified).
             example: {}
       responses:
         '200':
@@ -12045,6 +12057,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: No body required (live-verified with `{}`). An optional JSON payload is accepted and exposed to
+                the run's steps.
             example: {}
       responses:
         '200':
@@ -12102,6 +12117,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: No body required on this legacy route (live-verified with `{}`); pyfsr resumes paused runs via
+                the manual-input routes (`POST /api/wf/api/manual-wf-input/{pk}/retrieve_wfinput/`).
             example: {}
       responses:
         '200':
@@ -12308,6 +12326,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: Query filters as JSON; `{}` returns every pending manual input (live-verified).
             example: {}
       responses:
         '200':
@@ -12390,6 +12410,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: No body required (live-verified with `{}`); the response carries the manual input's current answer
+                state.
             example: {}
       responses:
         '200':
@@ -13231,6 +13254,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: Arbitrary input payload exposed to the workflow as `$(input)`; `{}` is accepted for playbooks that
+                take no input.
             example: {}
       responses:
         '200':
@@ -13291,6 +13317,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: Arbitrary input payload exposed to the workflow (deprecated route).
             example:
               alert:
                 name: ext-webhook-002
@@ -13489,9 +13517,6 @@ paths:
                   type: string
                   format: binary
                   description: The connector `.tgz` archive.
-          application/json:
-            example:
-              file: <binary>
       responses:
         '200':
           description: Installed connector record (with integer `id`).
@@ -13890,6 +13915,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: 'No body required: the connector id in the path selects the definition (live-verified with `{}`).'
             example: {}
       responses:
         '200':
@@ -15349,6 +15376,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: 'No body required: query params (`format`, `active`) select; the response lists per-agent install
+                rows (live-verified with `{}`).'
             example: {}
       description: '**POST**, with an empty body: a `GET` answers 405 `Method "GET" not allowed`. Returns the set of agents
         on which the named `{name}/{version}` connector is installed, alongside per-agent install status. Use this to discover
@@ -15486,6 +15516,9 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: 'No body required: the connector slug + version in the path select the definition (live-verified
+                with `{}`).'
             example: {}
       responses:
         '200':
@@ -16156,7 +16189,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/IngestionMetadataInput'
             example:
               configuration: <uuid>
               connector:
@@ -18243,6 +18276,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: No body required.
             example: {}
       responses:
         '200':
@@ -18296,6 +18331,8 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
+              description: No body required (live-verified with `{}`).
             example: {}
       responses:
         '200':
@@ -19686,9 +19723,6 @@ paths:
                   format: binary
               required:
               - file
-          application/json:
-            example:
-              file: <binary>
       responses:
         '201':
           description: File record (carries `@id` for use as IRI ref).
@@ -19814,7 +19848,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/RoleCreate'
             example:
               description: live_test role
               name: live-<run>-role
@@ -19934,7 +19968,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/TeamCreate'
             example:
               description: live_test team (typed)
               name: live-<run>-team2
@@ -21934,7 +21968,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/ViewConfigInput'
             example:
               config:
                 metadata:
@@ -22229,7 +22263,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/ViewConfigInput'
             example:
               config:
                 metadata:
@@ -24718,10 +24752,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
-              description: Feedback data in JSON format
-              title: Feedback
+              $ref: '#/components/schemas/AgentAcceptanceRequest'
             example: {}
       responses:
         '202':
@@ -24865,9 +24896,7 @@ paths:
         content:
           application/json:
             schema:
-              additionalProperties: true
-              type: object
-              title: Raw Alert
+              $ref: '#/components/schemas/TriageAlertRequest'
             example: {}
         required: true
       responses:
@@ -25839,6 +25868,10 @@ paths:
         content:
           application/json:
             example: {}
+            schema:
+              type: object
+              additionalProperties: true
+              description: 'No body required (live-verified with `{}`): the agent id in the path selects what to export.'
       x-live-captured: true
       x-auth: &id239
         apikey: 'yes'
@@ -26520,9 +26553,7 @@ paths:
         content:
           application/json:
             schema:
-              additionalProperties: true
-              type: object
-              title: Body
+              $ref: '#/components/schemas/EnrichContextRequest'
             example: {}
         required: true
       responses:
@@ -26706,6 +26737,10 @@ paths:
         content:
           application/json:
             example: {}
+            schema:
+              type: object
+              additionalProperties: true
+              description: 'No body required (live-verified with `{}`): rebuilds the enrichment context index wholesale.'
       x-live-captured: true
       x-auth: &id251
         apikey: 'yes'
@@ -26794,9 +26829,7 @@ paths:
         content:
           application/json:
             schema:
-              additionalProperties: true
-              type: object
-              title: Config
+              $ref: '#/components/schemas/MCPValidateRequest'
             example:
               authentication:
                 type: FSR
@@ -26933,7 +26966,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MCPHostRequest'
             example:
               config: {}
               mcp_configuration:
@@ -27054,6 +27087,8 @@ paths:
           application/json:
             example:
             - uuid: <uuid>
+            schema:
+              $ref: '#/components/schemas/MCPExportRequest'
       x-live-captured: true
       x-auth: &id256
         apikey: 'yes'
@@ -27177,7 +27212,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateToolRequest'
+              $ref: '#/components/schemas/MCPToolsUpdateRequest'
             example:
               config: {}
               metadata:
@@ -28314,7 +28349,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MCPServerConfigInput'
             example:
               active: true
               authentication: '{"type":"FSR"}'
@@ -28584,7 +28619,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MCPServerConfigInput'
             example:
               '@context': /api/3/contexts/MCPConfiguration
               '@id': /api/3/mcp_configurations/<uuid>
@@ -28881,7 +28916,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MCPToolsUpdateRequest'
             example:
               config: {}
               metadata:
@@ -33774,6 +33809,293 @@ components:
           type:
           - string
           - 'null'
+    MCPServerConfigInput:
+      type: object
+      required:
+      - name
+      - url
+      - transport
+      - type
+      description: Create/update an MCP server registration. `authentication` is a JSON *string* (the appliance stores the
+        block verbatim and never echoes secrets).
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          description: MCP endpoint, e.g. `https://<host>/mcp/modules/`.
+        transport:
+          type: string
+          enum:
+          - http
+          - sse
+        type:
+          type: string
+          description: '`FSR` for built-in gateways; `Custom` for external servers.'
+        authentication:
+          type: string
+          description: 'Auth block as a JSON string, e.g. `{"type": "FSR"}` or `{"type": "Bearer", "token": ...}`.'
+        active:
+          type: boolean
+        timeout:
+          type: integer
+        command:
+          type: string
+          description: Stdio transport command (local servers).
+        description:
+          type: string
+    RoleCreate:
+      type: object
+      required:
+      - name
+      description: Create a role. Only `name` is required; attach module grants afterwards via `PUT /api/3/roles/{uuid}` (pyfsr's
+        `grant_module_permissions`).
+      properties:
+        name:
+          type: string
+          description: Role name, unique.
+        description:
+          type: string
+    TeamCreate:
+      type: object
+      required:
+      - name
+      description: 'Create a team. `parents`/`children`/`siblings` place it in the ownership hierarchy (names, uuids or IRIs):
+        parents see and edit child-owned records, children do not see each other, siblings share records both ways.'
+      properties:
+        name:
+          type: string
+          description: Team name, unique.
+        description:
+          type: string
+        parents:
+          type: array
+          items:
+            type: string
+        children:
+          type: array
+          items:
+            type: string
+        siblings:
+          type: array
+          items:
+            type: string
+    AgentAcceptanceRequest:
+      type: object
+      required:
+      - accepted
+      description: Accept or reject an agent run's result (the human-in-the-loop gate).
+      properties:
+        accepted:
+          type: boolean
+          description: '`true` approves the run''s result; `false` rejects it.'
+    EnrichContextRequest:
+      type: object
+      required:
+      - query
+      description: Store organizational context for enrichment (the `query` text is indexed for later IOC enrichment lookups).
+      properties:
+        query:
+          type: string
+    MCPValidateRequest:
+      type: object
+      required:
+      - url
+      - transport
+      - authentication
+      description: 'Probe an MCP-server config *before* persisting it: FortiSOAR opens the connection and runs `tools/list`.
+        `authentication` is a JSON **object** here (unlike the stored record, where it is a string).'
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        transport:
+          type: string
+          enum:
+          - http
+          - sse
+        authentication:
+          type: object
+          description: 'e.g. `{"type": "FSR"}` (uses the caller''s credentials) or `{"type": "Bearer", "token": ...}`.'
+        uuid:
+          type: string
+          description: Set when re-validating an already-registered server.
+    IngestionMetadataInput:
+      type: object
+      required:
+      - configuration
+      - connector
+      description: 'Create a data-ingestion configuration: binds a connector configuration to ingestion playbooks and a schedule.'
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        configuration:
+          type: string
+          description: uuid of the connector configuration to bind.
+        connector:
+          type: object
+          required:
+          - name
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+          description: Connector reference (name + version; empty version = latest).
+        metadata:
+          type: object
+          properties:
+            scheduleId:
+              oneOf:
+              - type: string
+              - type: 'null'
+            scheduleName:
+              type: string
+            scheduleStatus:
+              type: boolean
+          description: Ingestion schedule binding.
+        owners:
+          type: array
+          items:
+            type: string
+        created_by:
+          type: string
+        modified_by:
+          type: string
+    ViewConfigInput:
+      type: object
+      required:
+      - name
+      - module
+      - config
+      description: 'Create/update a module view: grid/list layout for the module''s UI.'
+      properties:
+        name:
+          type: string
+        module:
+          type: string
+        type:
+          type: string
+        isDefault:
+          type: boolean
+        config:
+          type: object
+          description: 'Layout: `rows` of columns, `metadata` (template titles), paging.'
+        viewOptions:
+          type: object
+    MCPHostRequest:
+      type: object
+      required:
+      - mcp_configuration
+      - metadata
+      - tools
+      description: Host a connector's operations as MCP tools (`POST /mcp/add/tools`). Tool rows are keyed globally by name
+        -- duplicates across servers silently drop. Requires the connector definition and a configuration first.
+      properties:
+        mcp_configuration:
+          type: object
+          required:
+          - name
+          - uuid
+          properties:
+            name:
+              type: string
+            uuid:
+              $ref: '#/components/schemas/UUID'
+        config:
+          type: object
+          description: Connector configuration values for the hosted tools.
+        metadata:
+          type: object
+          required:
+          - name
+          - label
+          - version
+          - connectorName
+          properties:
+            name:
+              type: string
+            label:
+              type: string
+            version:
+              type: string
+            connectorName:
+              type: string
+        tools:
+          type: array
+          items:
+            type: object
+            required:
+            - operation
+            properties:
+              operation:
+                type: string
+                description: Connector operation to expose.
+              title:
+                type: string
+              description:
+                type: string
+              category:
+                type: string
+              visible:
+                type: boolean
+              enabled:
+                type: boolean
+              parameters:
+                type: object
+              addTool:
+                type: boolean
+          description: One row per operation to host.
+    MCPToolsUpdateRequest:
+      type: object
+      required:
+      - uuid
+      - metadata
+      description: 'Update a hosted MCP server''s tool set (`PUT /mcp/tools/{mcp_config_uuid}`): `tools` re-declares hosted
+        rows, `remove_tools` unhosts by operation name.'
+      properties:
+        uuid:
+          $ref: '#/components/schemas/UUID'
+        metadata:
+          type: object
+          required:
+          - name
+          - connectorName
+          - label
+          - version
+          properties:
+            name:
+              type: string
+            connectorName:
+              type: string
+            label:
+              type: string
+            version:
+              type: string
+        config:
+          type: object
+        tools:
+          type: array
+          items:
+            type: object
+        remove_tools:
+          type: array
+          items:
+            type: string
+          description: Operation names to unhost.
+    MCPExportRequest:
+      type: array
+      description: 'Servers to export (`POST /mcp/config/export`): one `{uuid}` object per registered server.'
+      items:
+        type: object
+        required:
+        - uuid
+        properties:
+          uuid:
+            $ref: '#/components/schemas/UUID'
     McpJsonRpcRequest:
       type: object
       required:
@@ -33924,6 +34246,15 @@ components:
           - type: string
           - type: 'null'
           description: Failure detail when `valid` is false (e.g. `MCP Configuration Failed! 401 Unauthorized`); null on success.
+    TriageAlertRequest:
+      type: object
+      additionalProperties: true
+      description: 'The alert to investigate: send the alert record''s fields (as `GET /api/3/alerts/{uuid}` returns them)
+        or at minimum a `name` reference (uuid, `alerts:<uuid>` or the record IRI).'
+      properties:
+        name:
+          type: string
+          description: 'Alert reference: uuid, `alerts:<uuid>` or `/api/3/alerts/<uuid>`.'
     AddToolRequest:
       properties:
         metadata:
