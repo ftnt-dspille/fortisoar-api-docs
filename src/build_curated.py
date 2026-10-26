@@ -4774,6 +4774,18 @@ for path, tag, summary, ref in [
                  "responses": {"201": _resp("Created.", ref=ref)}},
     }
 
+# Roles are key-writable (live-verified on 8.0.0): an API key with the
+# roles-module grant created a role (201), rewrote a role's modulePermissions
+# via PUT (200) and deleted a role (204). That includes potentially its own
+# role -- a self-escalation vector -- so say it where a reader decides how to
+# store automation keys.
+PATHS["/api/3/roles"]["post"]["description"] += (
+    " Works under API-key auth too, as do `PUT`/`DELETE /api/3/roles/{uuid}`: a "
+    "key carrying the roles module grant added an `alerts` permission to a role "
+    "and the change stuck (live-verified). Treat API-key custody accordingly -- "
+    "a key with this grant can rewrite role permissions, potentially on its own role."
+)
+
 # People records, password reset, per-user settings and saved insights are all
 # captured from live lifecycles (throwaway user created -> password reset ->
 # read -> updated -> deleted; throwaway insight and user setting created ->
