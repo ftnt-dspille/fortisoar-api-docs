@@ -518,6 +518,23 @@ _MANUAL_RESPONSE_MODELS: dict[tuple[str, str], str] = {
     # Widgets (client.widgets -- publish/deploy/upload all return WidgetRecord)
     ("put", "/api/3/widgets/{uuid}"): "WidgetRecord",
     ("get", "/api/3/widgets/development/{uuid}"): "WidgetRecord",
+    # Connectors (client.connectors)
+    ("post", "/api/integration/configuration/"): "ConnectorConfig",
+    ("get", "/api/integration/configuration/{config_id}/"): "ConnectorConfig",
+    ("put", "/api/integration/configuration/{config_id}/"): "ConnectorConfig",
+    ("post", "/api/integration/connectors/{connector}/{version}/"): "ConnectorDefinition",
+    ("get", "/api/integration/connectors/dependencies_check/{connector}/{version}/"): "DependencyStatus",
+    ("post", "/api/integration/connector_details/"): "list[InstalledConnector]",
+    ("get", "/api/integration/data-import/"): "IngestionPage",
+    ("post", "/api/integration/data-import/"): "IngestionMetadata",
+    # MCP server configurations (client.ai)
+    ("get", "/api/3/mcp_configurations"): "list[MCPServerConfig]",
+    ("post", "/api/3/mcp_configurations"): "MCPServerConfig",
+    ("get", "/api/3/mcp_configurations/{uuid}"): "MCPServerConfig",
+    ("put", "/api/3/mcp_configurations/{uuid}"): "MCPServerConfig",
+    # Module metadata (client.modules_admin)
+    ("get", "/api/3/staging_model_metadatas/{uuid}"): "ModelMetadata",
+    ("post", "/api/3/staging_model_metadatas"): "ModelMetadata",
 }
 
 

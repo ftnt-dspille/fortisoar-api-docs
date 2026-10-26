@@ -733,6 +733,748 @@ SCHEMAS.update({
             "root": {"$ref": "#/components/schemas/TraceNode"},
         },
     },
+    # TAXII (client.taxii) -- hand-shaped from pyfsr's live-verified models.
+    "TaxiiDiscovery": {
+        "type": "object",
+        "description": "TAXII server descriptor (`GET /api/taxii/1/`) -- the endpoint clients call first to confirm protocol compatibility.",
+        "properties": {
+            "title": {"type": ["string", "null"], "description": "Server title (e.g. `FortiSOAR TAXII Server`)."},
+            "description": {"type": ["string", "null"]},
+            "default": {"type": ["string", "null"], "description": "Default collections URL (`/api/taxii/1/collections/`)."},
+            "versions": {"type": "array", "items": {"type": "string"},
+                         "description": "Supported TAXII media types, e.g. `application/taxii+json;version=2.1`."},
+            "max_content_length": {"type": ["integer", "null"], "description": "Max request body size the server accepts (bytes)."},
+        },
+    },
+    "TaxiiCollection": {
+        "type": "object",
+        "description": "One TAXII collection. On FortiSOAR a collection *is* a system query: `id` maps to a system-query uuid, so a dataset is addressable as a TAXII collection.",
+        "properties": {
+            "id": {"type": ["string", "null"], "description": "Collection id (a system-query uuid)."},
+            "title": {"type": ["string", "null"]},
+            "description": {"type": ["string", "null"]},
+            "can_read": {"type": ["boolean", "null"], "description": "Caller may read objects from this collection."},
+            "can_write": {"type": ["boolean", "null"], "description": "Caller may add objects (typically false -- publishing goes through system queries)."},
+            "media_types": {"type": "array", "items": {"type": "string"},
+                            "description": "e.g. `application/stix+json;version=2.1`."},
+        },
+    },
+    "TaxiiManifestEntry": {
+        "type": "object",
+        "description": "One row of a TAXII manifest: object metadata without the object body.",
+        "properties": {
+            "id": {"type": ["string", "null"], "description": "STIX object id."},
+            "date_added": {"type": ["string", "null"], "description": "When the object entered the collection."},
+            "version": {"type": ["string", "null"], "description": "STIX object version."},
+            "media_type": {"type": ["string", "null"]},
+        },
+    },
+    "TaxiiManifest": {
+        "type": "object",
+        "description": "Manifest envelope (`GET /api/taxii/1/collections/{uuid}/manifest`).",
+        "properties": {
+            "more": {"type": ["boolean", "null"], "description": "True when another page follows."},
+            "next": {"type": ["string", "null"], "description": "Cursor for the next page."},
+            "objects": {"type": "array", "items": {"$ref": "#/components/schemas/TaxiiManifestEntry"}},
+            "totalItems": {"type": ["integer", "null"]},
+        },
+    },
+    "TaxiiObjectsEnvelope": {
+        "type": "object",
+        "description": "STIX objects envelope (`GET /api/taxii/1/collections/{uuid}/objects[/{stixId}]`). FortiSOAR's non-standard wrapper (no TAXII 2.1 `more`/`next` semantics beyond the listed keys); paginate with `limit` + `added_after`.",
+        "properties": {
+            "more": {"type": ["boolean", "null"]},
+            "next": {"type": ["string", "null"]},
+            "objects": {"type": "array",
+                        "items": {"type": "object", "additionalProperties": True,
+                                  "description": "One STIX object (`type`, `id`, `spec_version`, `created`, `modified`, ...)."}},
+            "totalItems": {"type": ["integer", "null"]},
+        },
+    },
+    # Connector internals (client.connectors) -- hand-shaped from pyfsr's
+    # live-verified models plus 8.0.0 captures.
+    "ConnectorDefinition": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A connector's definition (`POST /api/integration/connectors/{connector}/{version}/`): metadata, operations, config schema and default configuration. `client.connectors.definition()` parses this.",
+        "properties": {
+            "name": {"type": ["string", "null"]},
+            "version": {"type": ["string", "null"]},
+            "label": {"type": ["string", "null"], "description": "Display name."},
+            "description": {"type": ["string", "null"]},
+            "publisher": {"type": ["string", "null"]},
+            "category": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}]},
+            "active": {"type": ["boolean", "null"]},
+            "operations": {"type": "array", "items": {"type": "object", "additionalProperties": True},
+                           "description": "The connector's operations (name, editable, sample, parameters, ...)."},
+            "config_schema": {"type": ["object", "null"],
+                              "description": "Configuration fields the connector requires (`client.connectors.config_schema()` reads this)."},
+            "configuration": {"description": "Default configuration values."},
+        },
+    },
+    "DependencyStatus": {
+        "type": "object",
+        "description": "Connector dependency check (`GET`/`POST /api/integration/connectors/dependencies_check/{connector}/{version}/`).",
+        "properties": {
+            "dependencies_installed": {"type": ["boolean", "null"]},
+            "message": {"type": ["string", "null"], "description": "What is missing or in progress (POST returns e.g. a `retrying` status)."},
+        },
+    },
+    "IngestionMetadata": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One data-ingestion configuration (`POST /api/integration/data-import/`, rows of `GET .../data-import/`): binds a connector configuration to playbooks + a data mapping.",
+        "properties": {
+            "id": {"type": ["integer", "null"]},
+            "name": {"type": ["string", "null"]},
+            "description": {"type": ["string", "null"]},
+            "configuration": {"type": ["string", "null"], "description": "Connector configuration id this ingestion binds to."},
+            "connector": {"type": ["object", "null"], "description": "Connector reference (id, name, version)."},
+            "data_mapping": {"type": ["object", "null"]},
+            "playbooks": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
+            "metadata": {"type": ["object", "null"]},
+            "sample_data": {"description": "Sample record captured for the mapping."},
+            "owners": {"type": "array", "items": {}},
+            "status": {"type": ["string", "null"]},
+            "created_by": {"type": ["string", "null"]},
+            "modified_by": {"type": ["string", "null"]},
+        },
+    },
+    "IngestionPage": {
+        "type": "object",
+        "description": "Page envelope of `GET /api/integration/data-import/` (FortiSOAR's own paging shape, not hydra).",
+        "properties": {
+            "data": {"type": "array", "items": {"$ref": "#/components/schemas/IngestionMetadata"}},
+            "status": {"type": ["string", "null"]},
+            "totalItems": {"type": ["integer", "null"]},
+            "itemsPerPage": {"type": ["integer", "null"]},
+            "nextPage": {"type": ["integer", "boolean", "null"]},
+            "previousPage": {"type": ["integer", "boolean", "null"]},
+        },
+    },
+    "AgentConnectorStatus": {
+        "type": "object",
+        "description": "Per-agent connector push result (`POST /api/integration/connectors/agents/{name}/{version}/`) -- one row per agent the connector was pushed to.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": ["string", "null"]},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "agent": {"type": ["string", "null"], "description": "Agent IRI the connector was pushed to."},
+            "agentId": {"type": ["string", "null"]},
+            "name": {"type": ["string", "null"], "description": "Connector name."},
+            "version": {"type": ["string", "null"]},
+            "status": {"type": ["string", "null"]},
+            "label": {"type": ["string", "null"]},
+            "errorMessage": {"type": ["string", "null"]},
+            "progressPercent": {"type": ["integer", "null"]},
+        },
+    },
+    # Picklists (client.picklists) -- the taxonomy records.
+    "PicklistItem": {
+        "type": "object",
+        "description": "One option of a picklist (`GET`/`POST /api/3/picklists`). Its `@id` is the IRI records store on picklist fields; `listName` points back at the owning picklist.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "Picklist"},
+            "id": {"type": ["integer", "null"]},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "itemValue": {"type": ["string", "null"], "description": "The friendly option value."},
+            "listName": {"oneOf": [{"type": "string"}, {"type": "object"}],
+                         "description": "IRI (or expanded record) of the owning picklist name."},
+            "orderIndex": {"type": ["integer", "null"], "description": "Sort key within the picklist."},
+            "color": {"type": ["string", "null"]},
+            "icon": {"type": ["string", "null"]},
+            "importedBy": {"type": "array", "items": {}},
+        },
+    },
+    "PicklistName": {
+        "type": "object",
+        "description": "A picklist list -- the taxonomy an option belongs to (`GET`/`POST /api/3/picklist_names`). `name` is unique instance-wide (a duplicate POST 409s).",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "PicklistName"},
+            "id": {"type": ["integer", "null"]},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"], "description": "Picklist name, unique instance-wide."},
+            "system": {"type": ["boolean", "null"], "description": "True for the shipped system picklists."},
+            "picklists": {"type": ["array", "null"], "items": {"$ref": "#/components/schemas/PicklistItem"},
+                          "description": "Embedded options (present only when the request asks for `$relationships=true`)."},
+            "importedBy": {"type": "array", "items": {}},
+        },
+    },
+    # MCP server configuration records (`/api/3/mcp_configurations`).
+    "MCPServerConfig": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A registered MCP server (`/api/3/mcp_configurations`). `authentication` is stored as a JSON *string* (write-only semantics: the appliance never echoes secrets).",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "mcp_configurations"},
+            "id": {"type": ["integer", "null"]},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "url": {"type": ["string", "null"], "description": "MCP endpoint URL (http/sse transport) -- e.g. `https://<host>/mcp/modules/`."},
+            "transport": {"type": ["string", "null"], "description": "`http` or `sse`."},
+            "type": {"type": ["string", "null"], "description": "`FSR` for built-in gateways; `Custom` for external servers."},
+            "active": {"type": ["boolean", "null"]},
+            "timeout": {"type": ["integer", "null"]},
+            "command": {"type": ["string", "null"], "description": "Stdio transport command (local servers)."},
+            "authentication": {"type": ["string", "null"],
+                               "description": "Stored auth block as a JSON string (e.g. `{\"type\": \"FSR\"}`); never echoes secrets."},
+            "description": {"type": ["string", "null"]},
+            "metadata": {"type": ["object", "null"]},
+            "recordTags": {"type": "array", "items": {}},
+        },
+    },
+    # Module metadata (staging drafts and published records share the shape).
+    "ModelMetadata": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A module's metadata record (`/api/3/model_metadatas`, `/api/3/staging_model_metadatas`): table flags, display name, descriptions, and the `attributes` list that drives `src/module_to_schema.py`.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "ModelMetadata"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "type": {"type": ["string", "null"], "description": "Module type name (e.g. `alerts`)."},
+            "module": {"type": ["string", "null"], "description": "Display module name."},
+            "tableName": {"type": ["string", "null"]},
+            "parentType": {"type": ["string", "null"], "description": "Parent module for child tables."},
+            "displayName": {"type": ["string", "null"]},
+            "descriptions": {"type": ["object", "null"], "description": "Per-locale descriptions."},
+            "ownable": {"type": ["boolean", "null"]},
+            "userOwnable": {"type": ["boolean", "null"]},
+            "queueable": {"type": ["boolean", "null"]},
+            "trackable": {"type": ["boolean", "null"]},
+            "taggable": {"type": ["boolean", "null"]},
+            "peerReplicable": {"type": ["boolean", "null"]},
+            "indexable": {"type": ["boolean", "null"]},
+            "writable": {"type": ["boolean", "null"]},
+            "system": {"type": ["boolean", "null"]},
+            "softDeleteable": {"type": ["boolean", "null"]},
+            "archivable": {"type": ["boolean", "null"]},
+            "paused": {"type": ["boolean", "null"]},
+            "enableReplication": {"type": ["boolean", "null"]},
+            "partitionBy": {"type": ["string", "null"]},
+            "archivalCriteria": {"type": ["object", "null"]},
+            "archivalFilters": {"type": "array", "items": {}},
+            "replicationFilters": {"type": "array", "items": {}},
+            "defaultSort": {"type": "array", "items": {"type": "object"}},
+            "uniqueConstraint": {"type": "array", "items": {"type": "object"}},
+            "attributes": {"type": "array", "items": {"type": "object", "additionalProperties": True},
+                           "description": "Field definitions (name, type, required, picklist ref, ...)."},
+            "importedBy": {"type": "array", "items": {}},
+        },
+    },
+    # Import / export jobs (Hydra module records).
+    "ExportJob": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "An export job (`POST /api/3/export_jobs`): polls via the job record's `status`/`progressPercent`; the finished artifact lands on `file`.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "ExportJob"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "type": {"type": ["string", "null"]},
+            "status": {"type": ["string", "null"], "description": "e.g. `Queued`, `In Progress`, `Exported`."},
+            "progressPercent": {"type": ["integer", "null"]},
+            "currentlyExporting": {"type": ["object", "null"], "description": "What the job is exporting right now."},
+            "errorMessage": {"type": ["string", "null"]},
+            "file": {"oneOf": [{"type": "string"}, {"type": "object", "nullable": True}],
+                     "description": "File record IRI (or expanded record) of the exported archive."},
+            "fileName": {"type": ["string", "null"]},
+            "template": {"oneOf": [{"type": "string"}, {"type": "object", "nullable": True}],
+                         "description": "Export template the job was created from."},
+            "solutionPack": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+        },
+    },
+    "ImportJob": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "An import job (`POST /api/3/import_jobs`): `options` carries the wizard's include/merge choices once populated; `logMessages` accumulates per-item import notes.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "ImportJob"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "type": {"type": ["string", "null"], "description": "e.g. `Import Wizard`."},
+            "status": {"oneOf": [{"type": "string"}, {"type": "object"}],
+                       "description": "Job status; a `result` key carries progress notes (`Import job options populated`)."},
+            "progressPercent": {"type": ["integer", "null"]},
+            "currentlyImporting": {"type": ["object", "null"]},
+            "errorMessage": {"type": ["string", "null"]},
+            "file": {"oneOf": [{"type": "string"}, {"type": "object", "nullable": True}],
+                     "description": "The uploaded package's file record."},
+            "options": {"type": ["object", "null"],
+                        "description": "Wizard options: per-item `include` + `mergeType` for playbooks, modules, etc."},
+            "logMessages": {"type": "array", "items": {}},
+            "solutionPack": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+        },
+    },
+    "ImportJobStatus": {
+        "type": "object",
+        "description": "Lightweight import-job status (`GET /api/import/{job_uuid}`): the job's `@type` plus a `status.result` note (e.g. `Import job options populated`). The full job record lives on `/api/3/import_jobs`.",
+        "properties": {
+            "@type": {"type": "string", "example": "ImportJob"},
+            "status": {"type": "object",
+                       "properties": {"result": {"type": "string"}},
+                       "description": "Progress note."},
+        },
+    },
+    # System / licensing (8.0.0 captures).
+    "LicenseInfo": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "License state (`GET /api/auth/license`). Multi-node fields (`*_nodes`) matter on HA setups; `POST /api/auth/license` (installing a license) is a privileged operation this spec documents but never exercises.",
+        "properties": {
+            "details": {"type": ["string", "null"], "description": "License details blob (serial, node id, product, version)."},
+            "edition": {"type": ["string", "null"], "description": "e.g. `Enterprise`."},
+            "type": {"type": ["string", "null"]},
+            "sub_type": {"type": ["string", "null"]},
+            "setup_type": {"type": ["string", "null"]},
+            "product_name": {"type": ["string", "null"]},
+            "expired": {"type": ["boolean", "null"]},
+            "expiring_on": {"type": ["integer", "null"], "description": "Epoch seconds the license expires."},
+            "remaining_days": {"type": ["integer", "null"]},
+            "duplicate": {"type": ["boolean", "null"], "description": "True when another appliance runs the same license (FortiFlex conflict)."},
+            "device_uuid_changed": {"type": ["boolean", "null"]},
+            "is_cloud_instance": {"type": ["boolean", "null"]},
+            "nodes": {"type": "array", "items": {"type": "object"}},
+            "users": {"type": ["integer", "null"], "description": "Licensed user count."},
+            "user_stats": {"type": ["object", "null"]},
+        },
+    },
+    "ClusterNodeHealth": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One node's health row (`GET /api/auth/cluster/health` answers one per cluster node).",
+        "properties": {
+            "node_id": {"type": ["string", "null"]},
+            "node_name": {"type": ["string", "null"]},
+            "mode": {"type": ["string", "null"]},
+            "status": {"type": ["string", "null"], "description": "Overall node status."},
+            "connectivity": {"type": ["object", "null"]},
+            "cpu": {"type": ["object", "null"]},
+            "disk": {"type": ["object", "null"]},
+            "memory": {"type": ["object", "null"]},
+            "services": {"type": ["object", "null"], "description": "Per-service states."},
+            "workflow": {"type": ["object", "null"]},
+            "replication_stat": {"type": ["object", "null"]},
+            "misc_stat": {"type": ["object", "null"]},
+            "timestamp": {"type": ["integer", "null"]},
+            "health_details_collect_time": {"type": ["integer", "null"]},
+        },
+    },
+    "PublicLicenseResponse": {
+        "type": "object",
+        "description": "License deployment result (`POST /api/public/license`).",
+        "properties": {
+            "depl_status": {"type": ["string", "null"], "description": "Deployment status indicator."},
+            "depl_message": {"type": ["string", "null"], "description": "Human-readable outcome."},
+        },
+    },
+    "VersionInfo": {
+        "type": "object",
+        "description": "Appliance version (`GET /api/version`).",
+        "properties": {
+            "version": {"type": "string", "description": "e.g. `8.0.0-6034`."},
+        },
+    },
+    "FeatureAccess": {
+        "type": "object",
+        "description": "Entitlement gates (`GET /api/product/feature-access`).",
+        "properties": {
+            "productType": {"type": ["string", "null"]},
+            "restricted_feature": {"type": "array", "items": {"type": "string"},
+                                   "description": "Features the license tier does not unlock."},
+            "restricted_url_states": {"type": "array", "items": {"type": "string"}},
+        },
+    },
+    "DailyActionCount": {
+        "type": "object",
+        "description": "Workflow action budget (`GET /api/wf/workflow/config/`) -- the playbooks/day quota and what's left of it.",
+        "properties": {
+            "daily_action_limit": {"type": ["integer", "null"]},
+            "remaining_actions": {"type": ["integer", "null"]},
+            "reset_time": {"type": ["integer", "null"], "description": "Epoch seconds the quota resets."},
+            "last_update_time": {"type": ["number", "null"]},
+        },
+    },
+    "PermissionMap": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "The caller's effective permissions (`GET /api/permissions/current`): one entry per module/resource (e.g. `alerts`, `agents`, `ai_agents`) with its allowed operations.",
+        "properties": {
+            "alerts": {"type": ["object", "null"], "description": "Example entry; every module key follows the same shape."},
+        },
+    },
+    "CurrentUser": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "The authenticated principal (`GET /api/3/actors/current`): a Person-shaped record carrying the caller's `@permissions` block and `@settings` IRI.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "Person"},
+            "@permissions": {"type": "object",
+                             "description": "Effective permission flags for the caller."},
+            "@settings": {"$ref": "#/components/schemas/IRI"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "userId": {"type": ["string", "null"], "description": "Login id."},
+            "type": {"type": ["string", "null"], "description": "Account type (Person / ApiKey ...)."},
+            "userType": {"type": ["integer", "null"]},
+            "accessType": {"type": ["string", "null"]},
+            "firstname": {"type": ["string", "null"]},
+            "lastname": {"type": ["string", "null"]},
+            "email": {"type": ["string", "null"]},
+            "companyId": {"oneOf": [{"type": "string"}, {"type": "object"}]},
+            "avatar": {"type": ["string", "null"]},
+            "title": {"type": ["string", "null"]},
+            "department": {"type": ["string", "null"]},
+        },
+    },
+    # Audit (the gateway's own paging envelope, not hydra).
+    "AuditActivity": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One audited activity row (`POST /api/gateway/audit/activities`): what changed, on which entity, by whom.",
+        "properties": {
+            "id": {"description": "Audit row id."},
+            "component": {"type": ["string", "null"], "description": "Owning service, e.g. `crudhub`."},
+            "subComponent": {"type": ["string", "null"]},
+            "operation": {"type": ["string", "null"], "description": "e.g. `Create`, `Update`, `Delete`."},
+            "entityType": {"type": ["string", "null"]},
+            "entitySingularName": {"type": ["string", "null"]},
+            "entityUuid": {"type": ["string", "null"]},
+            "title": {"type": ["string", "null"]},
+            "displayName": {"type": ["string", "null"]},
+            "user": {"type": ["string", "null"], "description": "Who performed the action."},
+            "userId": {"type": ["integer", "null"]},
+            "transactionDate": {"type": ["integer", "null"], "description": "Epoch millis."},
+            "source": {"type": ["string", "null"]},
+            "data": {"description": "Change payload (before/after, or created entity)."},
+            "teamIris": {"type": "array", "items": {"type": "string"}},
+            "userOwnerIris": {"type": "array", "items": {"type": "string"}},
+        },
+    },
+    "AuditActivityPage": {
+        "type": "object",
+        "description": "Spring-style page of audit rows (`POST /api/gateway/audit/activities`) -- not hydra.",
+        "properties": {
+            "content": {"type": "array", "items": {"$ref": "#/components/schemas/AuditActivity"}},
+            "first": {"type": ["boolean", "null"]},
+            "number": {"type": ["integer", "null"], "description": "Zero-based page number."},
+        },
+    },
+    "AuditCount": {
+        "type": "object",
+        "description": "Row count for an audit filter (`POST /api/gateway/audit/activities/count`).",
+        "properties": {
+            "total": {"type": "integer"},
+        },
+    },
+    # Metadata / misc records.
+    "LlmActivityLog": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One LLM call record (`/api/3/llm_activity_logs`): token counts, latency and cost per AI interaction.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "llm_activity_logs"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "correlationID": {"type": ["string", "null"], "description": "Ties the call to its trace/session."},
+            "title": {"type": ["string", "null"]},
+            "modelName": {"type": ["string", "null"]},
+            "provider": {"type": ["string", "null"]},
+            "status": {"type": ["string", "null"]},
+            "error": {"description": "Failure detail when status is failed."},
+            "prompt": {"description": "Prompt sent to the model."},
+            "response": {"description": "Model reply."},
+            "inputTokens": {"type": ["integer", "null"]},
+            "outputTokens": {"type": ["integer", "null"]},
+            "totalTokens": {"type": ["integer", "null"]},
+            "latencyMs": {"type": ["integer", "null"]},
+            "costUSD": {"type": ["number", "null"]},
+        },
+    },
+    "AuthConfigRow": {
+        "type": "object",
+        "description": "One authentication setting row (`GET /api/auth/config`).",
+        "properties": {
+            "id": {"type": ["integer", "null"]},
+            "section": {"type": ["string", "null"]},
+            "key": {"type": ["string", "null"]},
+            "dataType": {"type": ["string", "null"]},
+            "value": {"description": "Setting value (type per `dataType`)."},
+        },
+    },
+    "AuthConfigWriteResult": {
+        "type": "object",
+        "description": "Result of `PUT /api/auth/config`.",
+        "properties": {
+            "response": {"type": "string", "example": "Success"},
+        },
+    },
+    "DynamicVariable": {
+        "type": "object",
+        "description": "A playbook dynamic variable (`/api/wf/api/dynamic-variable/`) -- global `$(variables)` available inside playbooks.",
+        "properties": {
+            "id": {"description": "Variable id."},
+            "name": {"type": ["string", "null"]},
+            "value": {"description": "Current value."},
+            "default_value": {"description": "Fallback when unset."},
+        },
+    },
+    "ViewConfig": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A module view definition (`/api/views/1/{name}`): grid/list configuration for one module's UI.",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"], "description": "View name (e.g. `Default`)."},
+            "module": {"type": ["string", "null"]},
+            "type": {"type": ["string", "null"]},
+            "isDefault": {"type": ["boolean", "null"]},
+            "system": {"type": ["boolean", "null"]},
+            "config": {"type": ["object", "null"], "description": "Columns, filters layout, page size."},
+            "filters": {"type": ["object", "null"]},
+            "viewOptions": {"type": ["object", "null"]},
+            "owner": {"oneOf": [{"type": "string"}, {"type": "object"}]},
+            "importedBy": {"type": "array", "items": {}},
+        },
+    },
+    "ExportTemplate": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "An export template (`/api/3/export_templates`): the named, reusable selection of content an export job packages.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "ExportTemplate"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "type": {"type": ["string", "null"]},
+            "options": {"type": ["object", "null"], "description": "What the template includes (playbooks, modules, ...)."},
+            "lastExportDate": {"type": ["integer", "null"]},
+            "exportJobs": {"type": "array", "items": {"type": ["string", "object"]}},
+            "solutionPack": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+        },
+    },
+    "ExportTriggerResult": {
+        "type": "object",
+        "description": "Result of `PUT /api/export` (query-param body): the created export job's reference.",
+        "properties": {
+            "@type": {"type": "string", "example": "ExportJob"},
+            "jobUuid": {"$ref": "#/components/schemas/UUID"},
+        },
+    },
+    "PublishStatus": {
+        "type": "object",
+        "description": "Schema-publish workflow state (`PUT /api/publish/revert`, `GET /api/publish/error`).",
+        "properties": {
+            "@type": {"type": "string"},
+            "status": {"description": "Publish/revert outcome."},
+            "last_publish_time": {"type": ["integer", "null"], "description": "Epoch of the last successful publish."},
+        },
+    },
+    # Playbook runs (8.0.0 captures; the run record and its step rows).
+    "WorkflowRun": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One playbook run (`GET /api/wf/api/workflows/{pk}/`, rows of `historical-workflows` and the workflow-logs queries). `steps` carries the per-step rows (same shape as `GET /api/wf/api/historical-steps/`).",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "workflow"},
+            "name": {"type": ["string", "null"], "description": "Playbook name that ran."},
+            "status": {"type": ["string", "null"], "description": "e.g. `running`, `completed`, `failed`."},
+            "result": {"description": "The run's final result payload."},
+            "created": {"type": ["string", "null"]},
+            "modified": {"type": ["string", "null"]},
+            "node_name": {"type": ["string", "null"], "description": "Node that executed the run."},
+            "debug": {"type": ["boolean", "null"], "description": "True for debug runs (steps keep full I/O)."},
+            "env": {"type": ["object", "null"], "description": "Environment variables the run saw."},
+            "metadata": {"type": ["object", "null"]},
+            "parent_wf": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}],
+                          "description": "Parent run when this was spawned by another playbook."},
+            "peer_details": {"type": ["object", "null"]},
+            "steps": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
+            "tags": {"type": "array", "items": {}},
+            "template_iri": {"type": ["string", "null"], "description": "The playbook template that was executed."},
+            "user": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+        },
+    },
+    "HistoricalStep": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One executed step (`GET /api/wf/api/historical-steps/`): the step's inputs, result and timing inside its parent run.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string"},
+            "name": {"type": ["string", "null"], "description": "Step name."},
+            "status": {"type": ["string", "null"]},
+            "task_id": {"type": ["string", "null"], "description": "Run task id this step belongs to."},
+            "workflow_id": {"oneOf": [{"type": "string"}, {"type": "integer"}, {"type": "null"}]},
+            "parent_id": {"oneOf": [{"type": "string"}, {"type": "integer"}, {"type": "null"}]},
+            "input": {"description": "Step input data."},
+            "result": {"description": "Step output data."},
+            "args": {"type": ["object", "null"]},
+            "data": {"type": ["object", "null"]},
+            "initial": {"type": ["boolean", "null"]},
+            "created": {"type": ["string", "null"]},
+            "started": {"type": ["string", "null"]},
+            "completed": {"type": ["string", "null"]},
+            "modified": {"type": ["string", "null"]},
+        },
+    },
+    "JinjaRenderResult": {
+        "type": "object",
+        "description": "Rendered template (`POST /api/wf/api/jinja-editor/`) -- the Jinja editor's preview call.",
+        "properties": {
+            "result": {"description": "Rendered output."},
+        },
+    },
+    "RunCount": {
+        "type": "object",
+        "description": "Playbook run count (`GET /api/wf/api/workflows/count/`).",
+        "properties": {
+            "count": {"type": "integer"},
+        },
+    },
+    "ApprovalResult": {
+        "type": "object",
+        "description": "Result of `POST /api/wf/api/workflows/{pk}/approval/` (the legacy list route).",
+        "properties": {
+            "approvals": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
+        },
+    },
+    "RetryResult": {
+        "type": "object",
+        "description": "Result of `GET /api/wf/api/workflows/{pk}/retry/`.",
+        "properties": {
+            "task_id": {"type": ["string", "null"], "description": "Task id of the retried run."},
+            "result": {"description": "Retry outcome payload."},
+        },
+    },
+    # Connector internals (development IDE + gateway).
+    "AgentHeartbeat": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "One agent's heartbeat row (`GET /api/integration/agent-heartbeat/{agent}/`): connector + configuration the agent last reported, with its remote status.",
+        "properties": {
+            "id": {"description": "Heartbeat row id."},
+            "agent": {"oneOf": [{"type": "string"}, {"type": "object"}], "description": "Agent IRI or expanded record."},
+            "connector": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+            "configuration": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+            "action": {"type": ["string", "null"], "description": "Pending action for the agent, if any."},
+            "remote_status": {"type": ["string", "null"]},
+            "log_records": {"type": ["integer", "null"], "description": "Log rows the agent has pending/processed."},
+            "created": {"type": ["string", "null"]},
+            "modified": {"type": ["string", "null"]},
+        },
+    },
+    "ConnectorFileContent": {
+        "type": "object",
+        "description": "Connector development file fetch (`POST .../development/entity/{id}/files/`).",
+        "properties": {
+            "fileContent": {"type": "string", "description": "The file's text content."},
+        },
+    },
+    "ConnectorFileTree": {
+        "type": "object",
+        "description": "Connector development file write (`PUT .../development/entity/{id}/files/`).",
+        "properties": {
+            "status": {"description": "Write outcome."},
+            "tree": {"description": "The connector's file tree after the write."},
+        },
+    },
+    "ConnectorOutputSchema": {
+        "type": "object",
+        "description": "Output schema probe (`POST /api/integration/connector_output_schema/{connector}/{version}/`).",
+        "properties": {
+            "status": {"type": ["string", "null"]},
+            "data": {"description": "The operation's output schema."},
+        },
+    },
+    "InstallConnectorResult": {
+        "type": "object",
+        "description": "Result of `POST /api/integration/install-connector/` (connector push to agents).",
+        "properties": {
+            "message": {"type": ["string", "null"]},
+            "remote_status": {"type": ["string", "null"]},
+        },
+    },
+    "MCPServerRef": {
+        "type": "object",
+        "description": "One entry of `GET /api/ai/mcp` -- the id + name the agent-config UI lists. Resolve to the full record on `/api/3/mcp_configurations`.",
+        "properties": {
+            "id": {"type": ["string", "null"]},
+            "name": {"type": ["string", "null"]},
+        },
+    },
+    "MCPHostedServer": {
+        "type": "object",
+        "description": "Acknowledgment of `POST /mcp/add/tools` -- the hosted server's coordinates.",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "url": {"type": ["string", "null"], "description": "Gateway URL the server is served under."},
+        },
+    },
+    "MCPServerToolsExport": {
+        "type": "object",
+        "description": "One server's exported tool catalog (`POST /mcp/config/export` answers a list of these).",
+        "properties": {
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "tools": {"type": "array", "items": {"type": "object", "additionalProperties": True},
+                      "description": "Exported tool rows (operation, title, parameters, ...)."},
+        },
+    },
+    "MCPCandidates": {
+        "type": "object",
+        "description": "Connectors eligible for MCP hosting (`GET /mcp/servers/connector`).",
+        "properties": {
+            "available": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
+            "restricted": {"type": "array", "items": {"type": "object", "additionalProperties": True},
+                           "description": "Connectors that cannot be hosted (e.g. system connectors)."},
+        },
+    },
+    "UserQuery": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A saved query (`POST /api/3/user_queries`) -- the Search page's stored queries.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "UserQuery"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "query": {"type": ["string", "null"], "description": "The stored filter/query string."},
+            "advanced": {"type": ["boolean", "null"]},
+            "assignee": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+            "models": {"type": "array", "items": {"type": "string"},
+                       "description": "Module types the query spans."},
+            "resultCacheSeconds": {"type": ["integer", "null"]},
+        },
+    },
+    "Router": {
+        "type": "object",
+        "additionalProperties": True,
+        "description": "A communication router (`GET /api/3/routers`) -- the mTLS endpoint agents and peers connect through.",
+        "properties": {
+            "@id": {"$ref": "#/components/schemas/IRI"},
+            "@type": {"type": "string", "example": "Router"},
+            "uuid": {"$ref": "#/components/schemas/UUID"},
+            "name": {"type": ["string", "null"]},
+            "address": {"type": ["string", "null"]},
+            "type": {"type": ["string", "null"]},
+            "tcpPort": {"type": ["integer", "null"]},
+            "intraTCPPort": {"type": ["integer", "null"]},
+            "apiPort": {"type": ["integer", "null"]},
+            "mTLS": {"type": ["boolean", "null"]},
+            "sni": {"type": ["string", "null"]},
+            "certificate": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+            "clientCert": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+            "clientKey": {"oneOf": [{"type": "string"}, {"type": "object"}, {"type": "null"}]},
+            "health": {"type": ["string", "null"]},
+            "configstatus": {"type": ["string", "null"]},
+            "configMessage": {"type": ["string", "null"]},
+        },
+    },
 })
 
 # Standard query parameters reused across /api/3/*
@@ -5922,6 +6664,175 @@ def _apply_auth_support(spec: dict) -> int:
     return applied
 
 
+# --- Typed response schemas for platform surfaces (live-verified) ----------
+# Wired directly (not via pyfsr response-model tags) where the mapped sample
+# is a generic record doctest whose return annotation cannot name the model.
+# Shapes come from pyfsr's live-verified models + live_observations.json.
+# _apply_typed_response_wiring() runs late in main() because
+# `_apply_live_observations` *adds* response codes the hand-written PATH
+# entries don't declare (e.g. export_jobs' live 201): wiring before that
+# overlay would silently miss them.
+
+def _apply_typed_response_wiring(spec: dict) -> int:
+    """Wire direct response $refs for the typed platform surfaces.
+
+    Must run after `_apply_live_observations` (which adds response codes the
+    PATH entries don't declare) and may run before or after the pyfsr
+    response-model tagger (it never overwrites an existing ``$ref``).
+    """
+    applied = 0
+
+    def wire(path: str, method: str, code: str, ref, *, collection: bool = False) -> None:
+        nonlocal applied
+        op = spec["paths"].get(path, {}).get(method)
+        if not op:
+            return
+        resp = (op.get("responses") or {}).get(code)
+        if resp is None:
+            return
+        content = resp.setdefault("content", {}).setdefault("application/json", {})
+        if isinstance(ref, dict):
+            schema = ref  # inline schema (small shapes not worth a component)
+        elif collection:
+            schema = {
+                "allOf": [
+                    {"$ref": "#/components/schemas/HydraCollection"},
+                    {"type": "object", "properties": {"hydra:member": {
+                        "type": "array",
+                        "items": {"$ref": f"#/components/schemas/{ref}"},
+                    }}},
+                ],
+            }
+        else:
+            schema = {"$ref": f"#/components/schemas/{ref}"}
+        content["schema"] = schema
+        applied += 1
+
+    for _path, _ref in [
+        ("/api/3/picklist_names", "PicklistName"),
+        ("/api/3/model_metadatas", "ModelMetadata"),
+        ("/api/3/staging_model_metadatas", "ModelMetadata"),
+        ("/api/3/mcp_configurations", "MCPServerConfig"),
+        ("/api/3/llm_activity_logs", "LlmActivityLog"),
+        ("/api/auth/config", "AuthConfigRow"),
+        ("/api/wf/api/dynamic-variable/", "DynamicVariable"),
+    ]:
+        wire(_path, "get", "200", _ref, collection=True)
+    for _path, _method, _code, _ref in [
+        ("/api/3/picklist_names", "post", "201", "PicklistName"),
+        ("/api/3/picklist_names/{uuid}", "get", "200", "PicklistName"),
+        ("/api/3/picklists", "post", "201", "PicklistItem"),
+        ("/api/3/picklists/{uuid}", "get", "200", "PicklistItem"),
+        ("/api/3/staging_model_metadatas", "post", "201", "ModelMetadata"),
+        ("/api/3/staging_model_metadatas/{uuid}", "get", "200", "ModelMetadata"),
+        ("/api/3/staging_model_metadatas/{uuid}", "put", "200", "ModelMetadata"),
+        ("/api/3/model_metadatas/{uuid}", "get", "200", "ModelMetadata"),
+        ("/api/3/mcp_configurations", "post", "201", "MCPServerConfig"),
+        ("/api/3/mcp_configurations/{uuid}", "get", "200", "MCPServerConfig"),
+        ("/api/3/mcp_configurations/{uuid}", "put", "200", "MCPServerConfig"),
+        ("/api/3/export_jobs", "post", "200", "ExportJob"),
+        ("/api/3/export_jobs", "post", "201", "ExportJob"),
+        ("/api/3/import_jobs", "post", "200", "ImportJob"),
+        ("/api/3/import_jobs", "post", "201", "ImportJob"),
+        ("/api/import/{job_uuid}", "get", "200", "ImportJobStatus"),
+        ("/api/import/{job_uuid}", "put", "200", "ImportJobStatus"),
+        ("/api/integration/data-import/", "get", "200", "IngestionPage"),
+        ("/api/integration/data-import/", "post", "201", "IngestionMetadata"),
+        ("/api/3/export_templates", "post", "200", "ExportTemplate"),
+        ("/api/3/export_templates", "post", "201", "ExportTemplate"),
+        ("/api/export", "put", "200", "ExportTriggerResult"),
+        ("/api/wf/workflow/config/", "get", "200", "DailyActionCount"),
+        ("/api/auth/license", "get", "200", "LicenseInfo"),
+        ("/api/auth/cluster/health", "get", "200",
+         {"type": "array", "items": {"$ref": "#/components/schemas/ClusterNodeHealth"}}),
+        ("/api/public/license", "post", "200", "PublicLicenseResponse"),
+        ("/api/version", "get", "200", "VersionInfo"),
+        ("/api/product/feature-access", "get", "200", "FeatureAccess"),
+        ("/api/permissions/current", "get", "200", "PermissionMap"),
+        ("/api/3/actors/current", "get", "200", "CurrentUser"),
+        ("/api/gateway/audit/activities", "post", "200", "AuditActivityPage"),
+        ("/api/gateway/audit/activities/count", "post", "200", "AuditCount"),
+        ("/api/gateway/audit/operations", "get", "200",
+         {"type": "array", "items": {"type": "string"},
+          "description": "Auditable operation names (e.g. `Create`, `Update`, `Delete`)."}),
+        ("/api/auth/config", "put", "200", "AuthConfigWriteResult"),
+        ("/api/wf/api/dynamic-variable/", "post", "200", "DynamicVariable"),
+        ("/api/views/1/app", "get", "200", "ViewConfig"),
+        ("/api/views/1/{name}", "get", "200", "ViewConfig"),
+        ("/api/views/1/{name}", "post", "200", "ViewConfig"),
+        ("/api/views/1/{name}", "put", "200", "ViewConfig"),
+        ("/api/3/changepassword", "put", "200", "MessageResponse"),
+        ("/api/wf/api/scheduled/trigger-now/", "post", "200", "MessageResponse"),
+        ("/api/wf/api/scheduled/{id}/", "put", "200", "ScheduledTask"),
+        ("/api/3/comments/{uuid}", "delete", "200", "Comment"),
+        ("/api/publish/revert", "put", "200", "PublishStatus"),
+        ("/api/publish/error", "get", "200", "PublishStatus"),
+        # Playbook runs
+        ("/api/wf/api/historical-steps/", "get", "200", ("HistoricalStep", True)),
+        ("/api/wf/api/historical-workflows/", "get", "200", ("WorkflowRun", True)),
+        ("/api/wf/api/query/workflow_logs/", "post", "200", ("WorkflowRun", True)),
+        ("/api/wf/api/workflows/log_list/", "post", "200", ("WorkflowRun", True)),
+        ("/api/wf/api/jinja-editor/", "post", "200", "JinjaRenderResult"),
+        ("/api/wf/api/manual-wf-input/{pk}/", "put", "200", "ManualInput"),
+        ("/api/wf/api/workflows/count/", "get", "200", "RunCount"),
+        ("/api/wf/api/workflows/{pk}/", "get", "200", "WorkflowRun"),
+        ("/api/wf/api/workflows/{pk}/approval/", "post", "200", "ApprovalResult"),
+        ("/api/wf/api/workflows/{pk}/resume/", "post", "200", "MessageResponse"),
+        ("/api/wf/api/workflows/{pk}/retry/", "get", "200", "RetryResult"),
+        ("/api/wf/api/workflows/{pk}/start/", "post", "200", "TriggerResponse"),
+        # Connectors
+        ("/api/3/solutionpacks/install", "post", "200", "ConnectorDefinition"),
+        ("/api/integration/agent-heartbeat/{agent}/", "get", "200", "AgentHeartbeat"),
+        ("/api/integration/connector/development/entity/{id}/", "post", "200", "ConnectorDefinition"),
+        ("/api/integration/connector/development/entity/{id}/files/", "post", "200", "ConnectorFileContent"),
+        ("/api/integration/connector/development/entity/{id}/files/", "put", "200", "ConnectorFileTree"),
+        ("/api/integration/connector/development/entity/{id}/publish/", "post", "200", "ConnectorDefinition"),
+        ("/api/integration/connector_output_schema/{connector}/{version}/", "post", "200", "ConnectorOutputSchema"),
+        ("/api/integration/connectors/dependencies_check/{connector}/{version}/", "post", "200", "MessageResponse"),
+        ("/api/integration/connectors/{id}/", "post", "200", "ConnectorDefinition"),
+        ("/api/integration/install-connector/", "post", "200", "InstallConnectorResult"),
+        # MCP gateway / tools (JSON-RPC envelope for the protocol mounts)
+        ("/mcp/modules/", "post", "200", "McpJsonRpcResponse"),
+        ("/mcp/playbooks/", "post", "200", "McpJsonRpcResponse"),
+        ("/mcp/utility/", "post", "200", "McpJsonRpcResponse"),
+        ("/mcp/connector/{connector_name}/", "post", "200", "McpJsonRpcResponse"),
+        ("/mcp/add/tools", "post", "200", "MCPHostedServer"),
+        ("/mcp/add/tools", "post", "201", "MCPHostedServer"),
+        ("/mcp/config/export", "post", "200",
+         {"type": "array", "items": {"$ref": "#/components/schemas/MCPServerToolsExport"}}),
+        ("/mcp/servers/connector", "get", "200", "MCPCandidates"),
+        ("/mcp/servers/{mcp_type}", "get", "200", "MCPCandidates"),
+        # Records (generic) + misc
+        ("/api/3/{collection}", "post", "201", "ModuleRecord"),
+        ("/api/3/{collection}/{uuid}", "get", "200", "ModuleRecord"),
+        ("/api/3/{collection}/{uuid}", "put", "200", "ModuleRecord"),
+        ("/api/3/user_queries", "post", "201", "UserQuery"),
+        ("/api/3/routers", "get", "200", ("Router", True)),
+        ("/api/triggers/1/notrigger/{workflowId}", "post", "200", "TaskStatusRef"),
+        # JSON-LD machinery (structure is the @context document itself)
+        ("/api/3/contexts/{shortName}", "get", "200",
+         {"type": "object", "properties": {"@context": {
+             "type": "object",
+             "description": "JSON-LD context: the module's field-name to IRI/vocabulary mappings.",
+         }}, "required": ["@context"]}),
+        ("/api/3/docs.jsonld", "get", "200",
+         {"type": "object", "properties": {
+             "@context": {"description": "Vocabulary mappings."},
+             "@id": {"type": "string"},
+             "@type": {"type": "string"},
+             "hydra:entrypoint": {"type": "string"},
+             "hydra:supportedClass": {"type": "array", "items": {"type": "object"},
+                                      "description": "One entry per API module: its properties, operations and IRIs."},
+         }}),
+    ]:
+        path_, method_, code_, ref_ = _path, _method, _code, _ref
+        collection = False
+        if isinstance(ref_, tuple):
+            ref_, collection = ref_
+        wire(path_, method_, code_, ref_, collection=collection)
+    return applied
+
+
 def main():
     from merge_ai_mcp import merge_ai_mcp
     ai_paths, ai_op_keys = merge_ai_mcp(SPEC)
@@ -5951,6 +6862,7 @@ def main():
     _apply_curated_examples(SPEC)
     _apply_cross_links(SPEC)
     live_applied = _apply_live_observations(SPEC)
+    typed_wired = _apply_typed_response_wiring(SPEC)
     auth_applied = _apply_auth_support(SPEC)
     _trim_examples(SPEC)
     OUT.parent.mkdir(parents=True, exist_ok=True)
