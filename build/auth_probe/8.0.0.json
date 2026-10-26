@@ -107,6 +107,21 @@
       },
       "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000"
     },
+    "DELETE /api/3/insights/{insight_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/insights/00000000-0000-0000-0000-000000000000"
+    },
     "DELETE /api/3/mcp_configurations/{uuid}": {
       "apikey": {
         "bogus_status": 401,
@@ -121,6 +136,21 @@
         "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/people/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/people/00000000-0000-0000-0000-000000000000"
     },
     "DELETE /api/3/picklist_names/{uuid}": {
       "apikey": {
@@ -181,6 +211,21 @@
         "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/3/tasks/00000000-0000-0000-0000-000000000000"
+    },
+    "DELETE /api/3/user_settings/current/{key}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/user_settings/current/authprobe-nonexistent"
     },
     "DELETE /api/3/{collection}/{uuid}": {
       "apikey": {
@@ -467,7 +512,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000",
-      "probed_real": "/api/3/alerts/b78a2149-7f4f-4b45-8e96-c7031189fb7a"
+      "probed_real": "/api/3/alerts/9dff82db-c787-4127-9acb-faf5740b96af"
     },
     "GET /api/3/api_keys": {
       "apikey": {
@@ -592,6 +637,36 @@
       "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000",
       "probed_real": "/api/3/incidents/9d2f3e4a-5b6c-4d7e-8f90-1a2b3c4d5e61"
     },
+    "GET /api/3/insights": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/insights"
+    },
+    "GET /api/3/insights/{insight_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/insights/00000000-0000-0000-0000-000000000000"
+    },
     "GET /api/3/llm_activity_logs": {
       "apikey": {
         "bogus_status": 401,
@@ -668,6 +743,37 @@
       },
       "probed": "/api/3/model_metadatas/00000000-0000-0000-0000-000000000000",
       "probed_real": "/api/3/model_metadatas/02c06d04-1ccb-4757-83c7-498b463209d5"
+    },
+    "GET /api/3/people": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/people"
+    },
+    "GET /api/3/people/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200 on a real id"
+      },
+      "probed": "/api/3/people/00000000-0000-0000-0000-000000000000",
+      "probed_real": "/api/3/people/55b11b5c-c9b4-4e82-83cb-b14c00176c0e"
     },
     "GET /api/3/picklist_names": {
       "apikey": {
@@ -821,6 +927,21 @@
         "why": "200"
       },
       "probed": "/api/3/teams"
+    },
+    "GET /api/3/user_settings/current/{key}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/user_settings/current/authprobe-nonexistent"
     },
     "GET /api/3/widgets/development/{uuid}": {
       "apikey": {
@@ -1061,6 +1182,21 @@
         "why": "500 from the handler (bogus gets 401)"
       },
       "probed": "/api/ai/insight/00000000-0000-0000-0000-000000000000"
+    },
+    "GET /api/ai/llm/allowed-providers": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/ai/llm/allowed-providers"
     },
     "GET /api/ai/llm/config": {
       "apikey": {
@@ -1738,7 +1874,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/wf/api/historical-workflows/authprobe-nonexistent/",
-      "probed_real": "/api/wf/api/historical-workflows/142383/"
+      "probed_real": "/api/wf/api/historical-workflows/152663/"
     },
     "GET /api/wf/api/manual-wf-input/": {
       "apikey": {
@@ -1814,7 +1950,22 @@
         "why": "200 on a real id"
       },
       "probed": "/api/wf/api/workflows/authprobe-nonexistent/",
-      "probed_real": "/api/wf/api/workflows/142402/"
+      "probed_real": "/api/wf/api/workflows/152758/"
+    },
+    "GET /api/wf/api/workflows/{pk}/retry/": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/wf/api/workflows/authprobe-nonexistent/retry/"
     },
     "GET /api/wf/workflow/config/": {
       "apikey": {
@@ -2041,6 +2192,21 @@
       },
       "probed": "/api/3/insert/alerts"
     },
+    "POST /api/3/insights": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/insights"
+    },
     "POST /api/3/logout": {
       "apikey": {
         "bogus_status": 401,
@@ -2071,6 +2237,21 @@
       },
       "probed": "/api/3/mcp_configurations"
     },
+    "POST /api/3/people": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/people"
+    },
     "POST /api/3/picklist_names": {
       "apikey": {
         "bogus_status": 401,
@@ -2100,6 +2281,21 @@
         "why": "400 from the handler (bogus gets 401)"
       },
       "probed": "/api/3/picklists"
+    },
+    "POST /api/3/resetpassword": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/resetpassword"
     },
     "POST /api/3/roles": {
       "apikey": {
@@ -3151,21 +3347,6 @@
       },
       "probed": "/api/wf/api/workflows/authprobe-nonexistent/resume/"
     },
-    "POST /api/wf/api/workflows/{pk}/retry/": {
-      "apikey": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "jwt": {
-        "bogus_status": 401,
-        "status": 400,
-        "verdict": "YES",
-        "why": "400 from the handler (bogus gets 401)"
-      },
-      "probed": "/api/wf/api/workflows/authprobe-nonexistent/retry/"
-    },
     "POST /api/wf/api/workflows/{pk}/start/": {
       "apikey": {
         "bogus_status": 401,
@@ -3391,6 +3572,21 @@
       },
       "probed": "/api/3/incidents/00000000-0000-0000-0000-000000000000"
     },
+    "PUT /api/3/insights/{insight_id}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/insights/00000000-0000-0000-0000-000000000000"
+    },
     "PUT /api/3/mcp_configurations/{uuid}": {
       "apikey": {
         "bogus_status": 401,
@@ -3405,6 +3601,21 @@
         "why": "404 from the handler (bogus gets 401)"
       },
       "probed": "/api/3/mcp_configurations/00000000-0000-0000-0000-000000000000"
+    },
+    "PUT /api/3/people/{uuid}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 404,
+        "verdict": "YES",
+        "why": "404 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/3/people/00000000-0000-0000-0000-000000000000"
     },
     "PUT /api/3/staging_model_metadatas/{uuid}": {
       "apikey": {
@@ -3450,6 +3661,21 @@
         "why": "real body: 200"
       },
       "probed": "/api/3/update/alerts"
+    },
+    "PUT /api/3/user_settings/current/{key}": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/3/user_settings/current/authprobe-nonexistent"
     },
     "PUT /api/3/widgets/{uuid}": {
       "apikey": {
