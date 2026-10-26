@@ -824,7 +824,9 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps({"daily_action_limit": 10000, "remaining_actions": 9500}).encode())
     # --- Change password (calls whoami first) ---
     if method == "GET" and url.endswith("/api/3/actors/current"):
-        return _fake_response(200, json.dumps({"userId": "test-uuid", "uuid": "person-uuid-123", "firstname": "Test", "lastname": "User"}).encode())
+        return _fake_response(200, json.dumps({
+            "@type": "Person", "name": "csadmin", "userId": "test-uuid",
+            "uuid": "person-uuid-123", "firstname": "Test", "lastname": "User"}).encode())
     if method == "PUT" and url.endswith("/api/3/changepassword"):
         return _fake_response(200, json.dumps({"status": "success"}).encode())
     # --- Auth/license/config + views + audit purge (JWT-only admin routes) ---

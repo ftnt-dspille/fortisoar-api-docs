@@ -2056,11 +2056,17 @@ PATHS["/api/permissions/current"] = {
 PATHS["/api/3/actors/current"] = {
     "get": {
         "tags": ["Authentication"],
-        "summary": "Current actor (user or appliance)",
+        "summary": "Current actor (user, appliance, or API key)",
         "description": (
-            "Returns the calling principal as a unified Actor record - either a user or an appliance/agent. "
-            "Use this when code needs to work uniformly across both auth modes. For user-only fields, look up "
-            "the person record by its uuid via `GET /api/3/people/{uuid}` using the `uuid` from this response."
+            "Returns the calling principal as a unified Actor record. The `@type` "
+            "says which subtype answered: a JWT user gets `Person` (profile fields "
+            "-- for user-only detail look up `GET /api/3/people/{uuid}` with the "
+            "`uuid` from this response); an appliance/agent gets `Appliance`; an "
+            "API-key principal gets `ApiKey` (`name` is the key user's loginid, "
+            "`userId` its das user uuid -- type-9 key users have **no** People "
+            "record, so `GET /api/3/people?userId=<userId>` comes back empty, and "
+            "`GET /api/auth/users?uuid=` is admin-only: 403 under an API key). "
+            "Use this when code needs to work uniformly across both auth modes."
         ),
         "responses": {"200": _resp("Actor record.")},
     },

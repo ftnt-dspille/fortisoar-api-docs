@@ -1150,10 +1150,13 @@ paths:
     get:
       tags:
       - Authentication
-      summary: Current actor (user or appliance)
-      description: Returns the calling principal as a unified Actor record - either a user or an appliance/agent. Use this
-        when code needs to work uniformly across both auth modes. For user-only fields, look up the person record by its uuid
-        via `GET /api/3/people/{uuid}` using the `uuid` from this response.
+      summary: Current actor (user, appliance, or API key)
+      description: 'Returns the calling principal as a unified Actor record. The `@type` says which subtype answered: a JWT
+        user gets `Person` (profile fields -- for user-only detail look up `GET /api/3/people/{uuid}` with the `uuid` from
+        this response); an appliance/agent gets `Appliance`; an API-key principal gets `ApiKey` (`name` is the key user''s
+        loginid, `userId` its das user uuid -- type-9 key users have **no** People record, so `GET /api/3/people?userId=<userId>`
+        comes back empty, and `GET /api/auth/users?uuid=` is admin-only: 403 under an API key). Use this when code needs to
+        work uniformly across both auth modes.'
       responses:
         '200':
           description: Actor record.
@@ -1336,7 +1339,10 @@ paths:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.users.whoami()"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nactor = client.get(\"/api/3/actors/current\")\nprint(actor['@type'],\
+          \ actor['name'], actor['userId'])  # Person | Appliance | ApiKey\n# client.users.whoami() adds the das login record,\
+          \ but is JWT-only: the\n# das user-administration route is admin-only (403 under an API key), and\n# API-key principals\
+          \ have no People record to join anyway."
       x-live-captured: true
       x-auth: &id009
         apikey: 'yes'

@@ -420,7 +420,12 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("put", "/api/3/changepassword"): ("manual", 'client.users.change_password("old-pass", "new-pass")'),
     # ------------------------------------------------------------------
     # Auth/system/actors - the JWT-only admin routes (pyfsr-discovered)
-    ("get", "/api/3/actors/current"): ("manual", "client.users.whoami()"),
+    ("get", "/api/3/actors/current"): ("manual",
+        "actor = client.get(\"/api/3/actors/current\")\n"
+        "print(actor['@type'], actor['name'], actor['userId'])  # Person | Appliance | ApiKey\n"
+        "# client.users.whoami() adds the das login record, but is JWT-only: the\n"
+        "# das user-administration route is admin-only (403 under an API key), and\n"
+        "# API-key principals have no People record to join anyway."),
     ("get", "/api/auth/license"): ("doctest", "pyfsr.api.system:SystemAPI.license"),
     ("post", "/api/auth/license"): ("manual", 'client.system.deploy_license("<license key>")'),
     ("get", "/api/auth/cluster/health"): ("doctest", "pyfsr.api.system:SystemAPI.cluster_health"),
