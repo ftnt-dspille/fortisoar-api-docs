@@ -229,6 +229,69 @@ def _fake_request(self, method, url, **kwargs):
             "@id": "/api/3/teams/t1", "@type": "Team", "uuid": "t1",
             "name": "Tier 1", "description": None, "actors": [],
         }).encode())
+    # --- People (user directory) / resetpassword / user_settings / insights ---
+    # users.lookup: GET /api/3/people?userId=<das user uuid> -> single Person row.
+    # Must be checked before the generic people list below.
+    if method == "GET" and "/api/3/people" in url and "userId=" in url:
+        return _fake_response(200, json.dumps({"hydra:member": [{
+            "@id": "/api/3/people/p1", "@type": "Person", "uuid": "p1",
+            "firstname": "Jane", "lastname": "Doe",
+            "userId": "550e8400-e29b-41d4-a716-446655440007",
+        }]}).encode())
+    # users.list (GET /api/3/people) - doctest expects 2 rows, first CS Admin
+    if method == "GET" and url.rstrip("/").endswith("/api/3/people"):
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"@id": "/api/3/people/p1", "@type": "Person", "uuid": "p1",
+             "firstname": "CS", "lastname": "Admin", "email": "cs@example.com"},
+            {"@id": "/api/3/people/p2", "@type": "Person", "uuid": "p2",
+             "firstname": "Jane", "lastname": "Doe", "email": "jdoe@example.com"},
+        ]}).encode())
+    # users.create (POST /api/3/people)
+    if method == "POST" and url.rstrip("/").endswith("/api/3/people"):
+        return _fake_response(201, json.dumps({
+            "@id": "/api/3/people/p2", "@type": "Person", "uuid": "p2",
+            "firstname": "Jane", "lastname": "Doe", "email": "jdoe@example.com",
+            "csActive": True, "accessType": "Named",
+        }).encode())
+    # users.get / users.update (GET|PUT /api/3/people/<uuid>)
+    if method in ("GET", "PUT") and "/api/3/people/" in url:
+        return _fake_response(200, json.dumps({
+            "@id": "/api/3/people/p2", "@type": "Person", "uuid": "p2",
+            "firstname": "Jane", "lastname": "Doe", "department": "SOC",
+        }).encode())
+    # People DELETE (no pyfsr wrapper; raw client.request in the sample)
+    if method == "DELETE" and "/api/3/people/" in url:
+        return _fake_response(204, b"")
+    # users.reset_password / the create() password step (POST /api/3/resetpassword)
+    if method == "POST" and url.rstrip("/").endswith("/api/3/resetpassword"):
+        return _fake_response(200, json.dumps("Password Changed sucessfully").encode())
+    # user_settings direct ops (GET|PUT|DELETE /api/3/user_settings/current/<key>)
+    if method in ("GET", "PUT") and "/api/3/user_settings/current/" in url:
+        return _fake_response(200, json.dumps({"status": ["open"]}).encode())
+    if method == "DELETE" and "/api/3/user_settings/current/" in url:
+        return _fake_response(204, b"")
+    # Saved insights on the platform module (/api/3/insights)
+    if method == "GET" and url.rstrip("/").endswith("/api/3/insights"):
+        return _fake_response(200, json.dumps({"hydra:member": [], "hydra:totalItems": 0}).encode())
+    if method == "POST" and url.rstrip("/").endswith("/api/3/insights"):
+        return _fake_response(201, json.dumps({
+            "@id": "/api/3/insights/i1", "@type": "Insight", "uuid": "i1",
+            "title": "Weekly IOC review", "active": True, "conflict": False,
+        }).encode())
+    if method in ("GET", "PUT") and "/api/3/insights/" in url:
+        return _fake_response(200, json.dumps({
+            "@id": "/api/3/insights/i1", "@type": "Insight", "uuid": "i1",
+            "title": "Weekly IOC review", "active": True, "conflict": False,
+        }).encode())
+    if method == "DELETE" and "/api/3/insights/" in url:
+        return _fake_response(204, b"")
+    # Allowed LLM providers (solution-pack references)
+    if method == "GET" and url.rstrip("/").endswith("/api/ai/llm/allowed-providers"):
+        return _fake_response(200, json.dumps([
+            {"@id": "/api/3/solutionpacks/sp1", "@type": "SolutionPack",
+             "label": "Fortinet FortiAI", "name": "fortinet-fortiai-proxy",
+             "uuid": "sp1", "version": "2.0.0"},
+        ]).encode())
     # comments.list (GET /api/3/comments)
     if method == "GET" and url.endswith("/api/3/comments"):
         return _fake_response(200, json.dumps({

@@ -1514,6 +1514,132 @@ SCHEMAS.update({
             "siblings": {"type": "array", "items": {"type": "string"}},
         },
     },
+    "User": {
+        "type": "object",
+        "description": "A People record -- the tenant's user directory entry every das login (`/api/auth/users`) hangs off (pyfsr `User`). Captured from a live create -> read -> update -> delete lifecycle. Relationship fields (`roles`, `teams`, `user`, `type`) come back null unless expanded.",
+        "properties": {
+            "@id": {"type": "string", "description": "IRI, e.g. `/api/3/people/<uuid>`."},
+            "@type": {"type": "string"},
+            "@context": {"type": "string"},
+            "@settings": {"type": "string", "description": "IRI of this user's `/api/3/user_settings` collection."},
+            "uuid": {"type": "string"},
+            "id": {"type": "integer"},
+            "firstname": {"type": "string"},
+            "lastname": {"type": "string"},
+            "title": {"type": "string"},
+            "email": {"type": "string"},
+            "department": {"type": "string"},
+            "description": {"type": "string"},
+            "phoneWork": {"type": "string"},
+            "phoneMobile": {"type": "string"},
+            "phoneHome": {"type": "string"},
+            "phoneFax": {"type": "string"},
+            "csActive": {"type": "boolean", "description": "false deactivates the person and frees the license seat."},
+            "accessType": {"type": "string", "enum": ["Named", "Concurrent"]},
+            "userType": {"type": "string"},
+            "type": {"type": "string", "description": "Picklist type IRI; null unless expanded."},
+            "avatar": {"description": "Avatar reference; null when unset."},
+            "companyId": {"description": "Company reference; null when unset."},
+            "sourceControlUsername": {"type": "string", "description": "Username for the source-control (git) integration."},
+            "userId": {"type": "string", "description": "UUID of the linked das login in `/api/auth/users`."},
+            "createUser": {"description": "Creating user (Person IRI or embedded record)."},
+            "modifyUser": {"description": "Last modifying user (Person IRI or embedded record)."},
+            "createDate": {"type": "integer", "description": "Epoch seconds."},
+            "modifyDate": {"type": "integer", "description": "Epoch seconds."},
+            "user": {"type": "object", "description": "Linked das login record (`loginid`, `status`); null unless expanded."},
+            "roles": {"type": "array", "items": {"type": "string"}, "description": "Role IRIs; null unless expanded."},
+            "teams": {"type": "array", "items": {"type": "string"}, "description": "Team IRIs; null unless expanded."},
+        },
+    },
+    "PersonCreate": {
+        "type": "object",
+        "required": ["firstname", "lastname", "email", "roles", "user"],
+        "description": "Create a People record. The nested `user` block provisions the das login -- omit `status` (or pass 2) and the account is created INACTIVE and cannot log in (das defaults it to status 2). The People POST alone leaves the login passwordless; set the password via `POST /api/3/resetpassword` afterwards (pyfsr's `UsersAPI.create` chains both calls).",
+        "properties": {
+            "firstname": {"type": "string"},
+            "lastname": {"type": "string"},
+            "email": {"type": "string"},
+            "csActive": {"type": "boolean", "description": "pyfsr defaults true."},
+            "accessType": {"type": "string", "enum": ["Named", "Concurrent"], "description": "pyfsr defaults `Named`."},
+            "roles": {"type": "array", "items": {"type": "string"}, "description": "Role names, UUIDs or IRIs (pyfsr resolves names to UUIDs). At least one required."},
+            "teams": {"type": "array", "items": {"type": "string"}, "description": "Team names, UUIDs or IRIs."},
+            "user": {
+                "type": "object",
+                "required": ["loginid"],
+                "properties": {
+                    "loginid": {"type": "string"},
+                    "password": {"type": "string", "description": "Initial password; must pass the password policy."},
+                    "email": {"type": "string"},
+                    "status": {"type": "integer", "enum": [1, 2], "description": "1 = active, 2 = inactive. das defaults to 2 when omitted."},
+                },
+            },
+            "department": {"type": "string"},
+            "phoneWork": {"type": "string"},
+            "phoneMobile": {"type": "string"},
+            "description": {"type": "string"},
+        },
+    },
+    "ResetPasswordRequest": {
+        "description": "Two accepted shapes. Simple (captured live): `{loginId, password, confirmPassword}`. Full (the UI's Reset Password dialog, pyfsr `reset_password`): `{uuid, currentUUID, loginId, password, sendEmail}` where `uuid` is the People UUID and `currentUUID` the das user UUID. das refuses resetting your own login this way -- use the change-password flow. `sendEmail` defaults to false (pyfsr does not send email).",
+        "anyOf": [
+            {
+                "type": "object",
+                "required": ["loginId", "password", "confirmPassword"],
+                "properties": {
+                    "loginId": {"type": "string"},
+                    "password": {"type": "string", "description": "New password; must pass the password policy and history check."},
+                    "confirmPassword": {"type": "string"},
+                },
+            },
+            {
+                "type": "object",
+                "required": ["uuid", "currentUUID", "loginId", "password"],
+                "properties": {
+                    "uuid": {"type": "string", "description": "People record UUID."},
+                    "currentUUID": {"type": "string", "description": "das user UUID from `/api/auth/users`."},
+                    "loginId": {"type": "string"},
+                    "password": {"type": "string"},
+                    "sendEmail": {"type": "boolean", "default": False},
+                },
+            },
+        ],
+    },
+    "InsightRecord": {
+        "type": "object",
+        "description": "A saved AI insight on the platform module (`/api/3/insights`) -- a named query bound to a plan execution, rendered by the AI Insight widget (pyfsr `AIInsightsAPI.save`). Captured from a live create -> read -> update -> delete lifecycle.",
+        "properties": {
+            "@id": {"type": "string", "description": "IRI, e.g. `/api/3/insights/<uuid>`."},
+            "@type": {"type": "string"},
+            "@context": {"type": "string"},
+            "uuid": {"type": "string"},
+            "id": {"type": "integer"},
+            "title": {"type": "string"},
+            "query": {"type": "string", "description": "The investigation question."},
+            "socrole": {"type": "string", "description": "Role the insight runs as."},
+            "planid": {"type": "string", "description": "UUID of the plan execution backing the insight. Not FK-validated on write (any UUID is accepted)."},
+            "active": {"type": "boolean"},
+            "conflict": {"type": "boolean"},
+            "scheduleid": {"description": "UUID of the schedule the widget creates for the insight; absent/null when run on demand."},
+            "recordTags": {"description": "Record tags on the insight."},
+            "tenant": {"description": "Tenant reference."},
+            "tenantRecordId": {"description": "Tenant record identifier."},
+            "createDate": {"type": "integer", "description": "Epoch seconds."},
+            "modifyDate": {"type": "integer", "description": "Epoch seconds."},
+            "createUser": {"description": "Creating user (Person IRI or embedded record)."},
+            "modifyUser": {"description": "Last modifying user (Person IRI or embedded record)."},
+        },
+    },
+    "InsightSaveRequest": {
+        "type": "object",
+        "required": ["title", "query", "planid"],
+        "description": "Save (POST) or update (PUT) a saved insight -- mirrors the AI Insight widget (pyfsr `AIInsightsAPI.save`).",
+        "properties": {
+            "title": {"type": "string"},
+            "query": {"type": "string"},
+            "socrole": {"type": "string", "description": "Defaults to `SOC Analyst`."},
+            "planid": {"type": "string", "description": "UUID of the plan execution; not FK-validated on write."},
+        },
+    },
     "AgentAcceptanceRequest": {
         "type": "object",
         "required": ["accepted"],
@@ -4639,6 +4765,193 @@ for path, tag, summary, ref in [
                  "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
                  "responses": {"201": _resp("Created.", ref=ref)}},
     }
+
+# People records, password reset, per-user settings and saved insights are all
+# captured from live lifecycles (throwaway user created -> password reset ->
+# read -> updated -> deleted; throwaway insight and user setting created ->
+# read -> updated -> deleted). pyfsr drives this whole surface.
+PATHS["/api/3/people"] = {
+    "get": {
+        "tags": ["Access management"],
+        "summary": "List users (People records)",
+        "parameters": COMMON_QPARAMS,
+        "description": (
+            "Hydra-paged listing of the tenant's People records -- the user "
+            "directory every das login (`/api/auth/users`) hangs off. "
+            "`?userId=<das user uuid>` finds the record linked to a login "
+            "(pyfsr's `UsersAPI.lookup`). pyfsr: `client.users.list()`."
+        ),
+        "responses": {
+            "200": {
+                "description": "Hydra collection of Person records.",
+                "content": {"application/json": {"schema": {"allOf": [
+                    {"$ref": "#/components/schemas/HydraCollection"},
+                    {"type": "object", "properties": {"hydra:member": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/User"},
+                    }}},
+                ]}}},
+            },
+        },
+    },
+    "post": {
+        "tags": ["Access management"],
+        "summary": "Create a user (People record)",
+        "description": (
+            "Creates a People record and provisions the linked das login from "
+            "the nested `user` block. The login stays passwordless until "
+            "`POST /api/3/resetpassword` sets one, and an omitted "
+            "`user.status` defaults the account to inactive. pyfsr: "
+            "`client.users.create()`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"$ref": "#/components/schemas/PersonCreate"}}}},
+        "responses": {"201": _resp("Created Person record.", ref="User")},
+    },
+}
+
+PATHS["/api/3/people/{uuid}"] = {
+    "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+                    "description": "People record uuid (from `GET /api/3/people`)."}],
+    "get": {
+        "tags": ["Access management"],
+        "summary": "Get a user (People record)",
+        "description": "Returns a single People record. Relationship fields (`roles`, `teams`, `user`) are null unless expanded. pyfsr: `client.users.get()`.",
+        "responses": {"200": _resp("Person record.", ref="User"), "404": _err(404, "Not found.")},
+    },
+    "put": {
+        "tags": ["Access management"],
+        "summary": "Update a user (People record)",
+        "description": (
+            "Partial update of a People record (e.g. `department`, phones, "
+            "`csActive` to deactivate and free the license seat -- pyfsr's "
+            "`UsersAPI.deactivate`). pyfsr: `client.users.update()`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "description": "Fields to update; partial record accepted. Common keys: `department`, `phoneWork`, `phoneMobile`, `title`, `description`, `csActive` (false deactivates and frees the license seat), `roles`, `teams`, `user.status`.",
+                       "properties": {
+                           "firstname": {"type": "string"},
+                           "lastname": {"type": "string"},
+                           "title": {"type": "string"},
+                           "email": {"type": "string"},
+                           "department": {"type": "string"},
+                           "description": {"type": "string"},
+                           "phoneWork": {"type": "string"},
+                           "phoneMobile": {"type": "string"},
+                           "csActive": {"type": "boolean", "description": "false deactivates the person (pyfsr's `UsersAPI.deactivate`)."},
+                           "roles": {"type": "array", "items": {"type": "string"}, "description": "Role names, UUIDs or IRIs."},
+                           "teams": {"type": "array", "items": {"type": "string"}},
+                           "user": {"type": "object", "properties": {"status": {"type": "integer", "enum": [1, 2]}}},
+                       }}}}},
+        "responses": {"200": _resp("Updated Person record.", ref="User"), "404": _err(404, "Not found.")},
+    },
+    "delete": {
+        "tags": ["Access management"],
+        "summary": "Delete a user (People record)",
+        "description": "Deletes the People record outright (live-verified 204). Most deployments deactivate instead via `PUT` with `csActive: false`.",
+        "responses": {"204": {"description": "Deleted."}, "404": _err(404, "Not found.")},
+    },
+}
+
+PATHS["/api/3/resetpassword"] = {
+    "post": {
+        "tags": ["Access management"],
+        "summary": "Reset a user's application password",
+        "description": (
+            "Admin reset of another user's application password. das refuses "
+            "resetting your own login this way -- use the change-password "
+            "flow. `sendEmail` defaults to false. pyfsr: "
+            "`client.users.reset_password()`."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"$ref": "#/components/schemas/ResetPasswordRequest"}}}},
+        "responses": {"200": {"description": "The bare JSON string \"Password Changed sucessfully\" (sic).",
+                              "content": {"application/json": {"schema": {"type": "string"}}}}},
+    },
+}
+
+PATHS["/api/3/insights"] = {
+    "get": {
+        "tags": ["AI Insight"],
+        "summary": "List saved insights",
+        "parameters": COMMON_QPARAMS,
+        "description": "Hydra-paged listing of saved AI insights (may be empty when none are saved). pyfsr: `client.ai.insights`.",
+        "responses": {
+            "200": {
+                "description": "Hydra collection of Insight records.",
+                "content": {"application/json": {"schema": {"allOf": [
+                    {"$ref": "#/components/schemas/HydraCollection"},
+                    {"type": "object", "properties": {"hydra:member": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/InsightRecord"},
+                    }}},
+                ]}}},
+            },
+        },
+    },
+    "post": {
+        "tags": ["AI Insight"],
+        "summary": "Save a new insight",
+        "description": "Saves an insight as an `insights` record bound to a plan execution (pyfsr: `client.ai.insights.save()`). `planid` is not FK-validated. The widget also creates a schedule for the insight, which this call does not do.",
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"$ref": "#/components/schemas/InsightSaveRequest"}}}},
+        "responses": {"201": _resp("Created Insight record.", ref="InsightRecord")},
+    },
+}
+
+PATHS["/api/3/insights/{insight_id}"] = {
+    "parameters": [{"name": "insight_id", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"},
+                    "description": "Insight uuid (from `GET /api/3/insights`)."}],
+    "get": {
+        "tags": ["AI Insight"],
+        "summary": "Get a saved insight",
+        "description": "Returns a single saved insight record by uuid, including its title, query, socrole, planid and schedule reference.",
+        "responses": {"200": _resp("Insight record.", ref="InsightRecord"), "404": _err(404, "Not found.")},
+    },
+    "put": {
+        "tags": ["AI Insight"],
+        "summary": "Update a saved insight",
+        "description": "Updates title/query/socrole/planid on an existing insight (pyfsr: `client.ai.insights.save(..., insight_id=...)`).",
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"$ref": "#/components/schemas/InsightSaveRequest"}}}},
+        "responses": {"200": _resp("Updated Insight record.", ref="InsightRecord"), "404": _err(404, "Not found.")},
+    },
+    "delete": {
+        "tags": ["AI Insight"],
+        "summary": "Delete a saved insight",
+        "description": "Deletes the saved insight record outright (live-verified 204); the widget's schedule, if one was created, is not touched by this call.",
+        "responses": {"204": {"description": "Deleted."}, "404": _err(404, "Not found.")},
+    },
+}
+
+PATHS["/api/3/user_settings/current/{key}"] = {
+    "parameters": [{"name": "key", "in": "path", "required": True, "schema": {"type": "string"},
+                    "description": "Setting key; may contain slashes (e.g. `user/view/details/alerts/viewTemplate`)."}],
+    "get": {
+        "tags": ["Authentication"],
+        "summary": "Get a per-user setting value",
+        "description": "Returns the current user's stored value for `key` (arbitrary JSON). Unknown keys return 404. pyfsr: `client.user_settings.get()`.",
+        "responses": {"200": {"description": "The stored value (arbitrary JSON).",
+                              "content": {"application/json": {"schema": {}}}},
+                      "404": _err(404, "Key not set.")},
+    },
+    "put": {
+        "tags": ["Authentication"],
+        "summary": "Set a per-user setting value",
+        "description": "Stores the body as the current user's value for `key` (arbitrary JSON). pyfsr: `client.user_settings.set()`.",
+        "requestBody": {"required": True, "content": {"application/json": {"schema": {
+            "description": "The value to store (arbitrary JSON; FortiSOAR deep-merges it into the user's settings at `key`)."}}}},
+        "responses": {"200": {"description": "The stored value (arbitrary JSON).",
+                              "content": {"application/json": {"schema": {}}}}},
+    },
+    "delete": {
+        "tags": ["Authentication"],
+        "summary": "Delete a per-user setting",
+        "description": "Removes the current user's stored value for `key`. Use to undo a custom setting and fall back to the platform default.",
+        "responses": {"204": {"description": "Deleted."}, "404": _err(404, "Key not set.")},
+    },
+}
 
 # API-key lifecycle is a multi-step workflow split across `/api/auth/users`
 # (the user record carrying the key) and `/api/3/api_keys` (the named scope

@@ -373,6 +373,15 @@
       }
     }
   },
+  "DELETE /api/3/insights/{insight_id}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
+      }
+    }
+  },
   "DELETE /api/3/mcp_configurations/{uuid}": {
     "by_auth": {
       "apikey": {
@@ -383,6 +392,15 @@
       },
       "jwt": {
         "captured_at": "2026-10-21",
+        "request_body": null,
+        "response_body": null,
+        "response_status": 204
+      }
+    }
+  },
+  "DELETE /api/3/people/{uuid}": {
+    "by_auth": {
+      "jwt": {
         "request_body": null,
         "response_body": null,
         "response_status": 204
@@ -104829,6 +104847,128 @@
       }
     }
   },
+  "GET /api/3/insights": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Insight",
+          "@id": "/api/3/insights",
+          "@type": "hydra:Collection",
+          "hydra:member": [],
+          "hydra:totalItems": 0,
+          "hydra:view": {
+            "@id": "/api/3/insights?%24limit=2",
+            "@type": "hydra:PartialCollectionView"
+          }
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/3/insights/{insight_id}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Insight",
+          "@id": "/api/3/insights/<uuid>",
+          "@type": "Insight",
+          "active": true,
+          "conflict": false,
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "id": 9,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "planid": "<uuid>",
+          "query": "capture probe query",
+          "recordTags": [],
+          "scheduleid": null,
+          "socrole": "SOC Analyst",
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 9,
+          "title": "cap ee517004 insight",
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/3/llm_activity_logs": {
     "by_auth": {
       "apikey": {
@@ -108396,6 +108536,293 @@
       }
     }
   },
+  "GET /api/3/people": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Person",
+          "@id": "/api/3/people",
+          "@type": "hydra:Collection",
+          "hydra:member": [
+            {
+              "@id": "/api/3/people/<uuid>",
+              "@settings": "/api/3/user_settings/<uuid>",
+              "@type": "Person",
+              "accessType": "Named",
+              "avatar": null,
+              "companyId": null,
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "sourceControlUsername": null,
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "csActive": false,
+              "department": null,
+              "description": null,
+              "email": "agentlab_analyst@example.com",
+              "firstname": "Agent",
+              "id": 270,
+              "lastname": "Lab",
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "sourceControlUsername": null,
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "phoneFax": null,
+              "phoneHome": null,
+              "phoneMobile": null,
+              "phoneWork": null,
+              "sourceControlUsername": null,
+              "title": null,
+              "type": null,
+              "userId": "<uuid>",
+              "userType": null,
+              "uuid": "<uuid>"
+            },
+            {
+              "@id": "/api/3/people/<uuid>",
+              "@settings": "/api/3/user_settings/<uuid>",
+              "@type": "Person",
+              "accessType": "Named",
+              "avatar": null,
+              "companyId": null,
+              "createDate": 1700000000,
+              "createUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "sourceControlUsername": null,
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "csActive": true,
+              "department": null,
+              "description": null,
+              "email": "user@example.com",
+              "firstname": "Alex",
+              "id": 30,
+              "lastname": "Rivera",
+              "modifyDate": 1700000000,
+              "modifyUser": {
+                "@id": "/api/3/people/<uuid>",
+                "@settings": "/api/3/user_settings/<uuid>",
+                "@type": "Person",
+                "accessType": "Named",
+                "avatar": null,
+                "companyId": null,
+                "createDate": 1700000000,
+                "createUser": "/api/3/people/<uuid>",
+                "csActive": true,
+                "department": null,
+                "description": null,
+                "email": "admin@example.com",
+                "firstname": "CS",
+                "id": 3,
+                "lastname": "Admin",
+                "modifyDate": 1700000000,
+                "modifyUser": "/api/3/people/<uuid>",
+                "phoneFax": null,
+                "phoneHome": null,
+                "phoneMobile": null,
+                "phoneWork": "+16462759691",
+                "sourceControlUsername": null,
+                "title": "Admin",
+                "type": null,
+                "userId": "<uuid>",
+                "userType": null,
+                "uuid": "<uuid>"
+              },
+              "phoneFax": null,
+              "phoneHome": null,
+              "phoneMobile": null,
+              "phoneWork": null,
+              "sourceControlUsername": null,
+              "title": null,
+              "type": null,
+              "userId": "<uuid>",
+              "userType": null,
+              "uuid": "<uuid>"
+            }
+          ],
+          "hydra:totalItems": 12,
+          "hydra:view": {
+            "@id": "/api/3/people?%24limit=2&%24page=1",
+            "@type": "hydra:PartialCollectionView",
+            "hydra:first": "/api/3/people?%24limit=2&%24page=1",
+            "hydra:last": "/api/3/people?%24limit=2&%24page=6",
+            "hydra:next": "/api/3/people?%24limit=2&%24page=2"
+          }
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/3/people/{uuid}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "@context": "/api/3/contexts/Person",
+          "@id": "/api/3/people/<uuid>",
+          "@settings": "/api/3/user_settings/<uuid>",
+          "@type": "Person",
+          "accessType": "Named",
+          "avatar": null,
+          "companyId": null,
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "csActive": true,
+          "department": null,
+          "description": null,
+          "email": "capee517004@example.com",
+          "firstname": "Capture",
+          "id": 286,
+          "lastname": "Throwaway",
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "phoneFax": null,
+          "phoneHome": null,
+          "phoneMobile": null,
+          "phoneWork": null,
+          "sourceControlUsername": null,
+          "title": null,
+          "type": null,
+          "userId": "<uuid>",
+          "userType": null,
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/3/picklist_names": {
     "by_auth": {
       "apikey": {
@@ -111043,6 +111470,17 @@
             "hydra:last": "/api/3/teams?%24limit=2&%24page=3",
             "hydra:next": "/api/3/teams?%24limit=2&%24page=2"
           }
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "GET /api/3/user_settings/current/{key}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": {
+          "marker": "ee517004"
         },
         "response_status": 200
       }
@@ -140877,6 +141315,24 @@
       }
     }
   },
+  "GET /api/ai/llm/allowed-providers": {
+    "by_auth": {
+      "jwt": {
+        "request_body": null,
+        "response_body": [
+          {
+            "@id": "/api/3/solutionpacks/<uuid>",
+            "@type": "SolutionPack",
+            "label": "Fortinet FortiAI",
+            "name": "fortinet-fortiai-proxy",
+            "uuid": "<uuid>",
+            "version": "2.0.0"
+          }
+        ],
+        "response_status": 200
+      }
+    }
+  },
   "GET /api/ai/llm/config": {
     "by_auth": {
       "apikey": {
@@ -153864,12 +154320,11 @@
         "response_status": 201
       },
       "jwt": {
-        "captured_at": "2026-10-21",
         "request_body": {
           "planid": "<uuid>",
-          "query": "Reply with the single word: pong",
+          "query": "capture probe query",
           "socrole": "SOC Analyst",
-          "title": "live-<run>-insight"
+          "title": "cap ee517004 insight"
         },
         "response_body": {
           "@context": "/api/3/contexts/Insight",
@@ -153907,7 +154362,7 @@
             "userType": null,
             "uuid": "<uuid>"
           },
-          "id": 2,
+          "id": 9,
           "modifyDate": 1700000000,
           "modifyUser": {
             "@id": "/api/3/people/<uuid>",
@@ -153939,7 +154394,7 @@
             "uuid": "<uuid>"
           },
           "planid": "<uuid>",
-          "query": "Reply with the single word: pong",
+          "query": "capture probe query",
           "recordTags": [],
           "scheduleid": null,
           "socrole": "SOC Analyst",
@@ -153962,8 +154417,8 @@
             "tenantId": "<self-agent>",
             "uuid": "<uuid>"
           },
-          "tenantRecordId": 2,
-          "title": "live-<run>-insight",
+          "tenantRecordId": 9,
+          "title": "cap ee517004 insight",
           "uuid": "<uuid>"
         },
         "response_status": 201
@@ -154145,6 +154600,127 @@
       }
     }
   },
+  "POST /api/3/people": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "accessType": "Named",
+          "csActive": true,
+          "email": "capee517004@example.com",
+          "firstname": "Capture",
+          "lastname": "Throwaway",
+          "roles": [
+            "/api/3/roles/<uuid>"
+          ],
+          "user": {
+            "email": "capee517004@example.com",
+            "loginid": "capee517004u",
+            "password": "REDACTED",
+            "status": 1
+          }
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Person",
+          "@id": "/api/3/people/<uuid>",
+          "@settings": "/api/3/user_settings/<uuid>",
+          "@type": "Person",
+          "accessType": "Named",
+          "alerts": [],
+          "attachments": [],
+          "avatar": null,
+          "comments": [],
+          "companyId": null,
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "csActive": true,
+          "department": null,
+          "description": null,
+          "email": "capee517004@example.com",
+          "firstname": "Capture",
+          "fsrQueues": [],
+          "id": 286,
+          "incidents": [],
+          "indicators": [],
+          "lastname": "Throwaway",
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "phoneFax": null,
+          "phoneHome": null,
+          "phoneMobile": null,
+          "phoneWork": null,
+          "roles": [
+            "/api/3/roles/<uuid>"
+          ],
+          "shifts": [],
+          "sourceControlUsername": null,
+          "tasks": [],
+          "teams": [],
+          "title": null,
+          "type": null,
+          "userId": "<uuid>",
+          "userType": null,
+          "uuid": "<uuid>"
+        },
+        "response_status": 201
+      }
+    }
+  },
   "POST /api/3/picklist_names": {
     "by_auth": {
       "apikey": {
@@ -154234,6 +154810,19 @@
           "uuid": "<uuid>"
         },
         "response_status": 201
+      }
+    }
+  },
+  "POST /api/3/resetpassword": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "confirmPassword": "REDACTED",
+          "loginId": "capee517004u",
+          "password": "REDACTED"
+        },
+        "response_body": "Password Changed sucessfully",
+        "response_status": 200
       }
     }
   },
@@ -168222,6 +168811,114 @@
       }
     }
   },
+  "PUT /api/3/insights/{insight_id}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "planid": "<uuid>",
+          "query": "capture probe query",
+          "socrole": "SOC Analyst",
+          "title": "cap ee517004 insight updated"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Insight",
+          "@id": "/api/3/insights/<uuid>",
+          "@type": "Insight",
+          "active": true,
+          "conflict": false,
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "id": 9,
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "planid": "<uuid>",
+          "query": "capture probe query",
+          "recordTags": [],
+          "scheduleid": null,
+          "socrole": "SOC Analyst",
+          "tenant": {
+            "@id": "/api/3/tenants/<uuid>",
+            "@type": "Tenant",
+            "allowRemoteMMDModification": true,
+            "createDate": null,
+            "createUser": null,
+            "description": "sample",
+            "id": 1,
+            "industry": null,
+            "isDedicated": true,
+            "license": null,
+            "modifyDate": null,
+            "modifyUser": null,
+            "name": "Self",
+            "region": null,
+            "role": "self",
+            "tenantId": "<self-agent>",
+            "uuid": "<uuid>"
+          },
+          "tenantRecordId": 9,
+          "title": "cap ee517004 insight updated",
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
+      }
+    }
+  },
   "PUT /api/3/mcp_configurations/{uuid}": {
     "by_auth": {
       "apikey": {
@@ -168488,6 +169185,102 @@
           "transport": "http",
           "type": "internal",
           "url": "https://localhost/mcp/modules/",
+          "uuid": "<uuid>"
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "PUT /api/3/people/{uuid}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "department": "Live Capture"
+        },
+        "response_body": {
+          "@context": "/api/3/contexts/Person",
+          "@id": "/api/3/people/<uuid>",
+          "@settings": "/api/3/user_settings/<uuid>",
+          "@type": "Person",
+          "accessType": "Named",
+          "avatar": null,
+          "companyId": null,
+          "createDate": 1700000000,
+          "createUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "csActive": true,
+          "department": "Live Capture",
+          "description": null,
+          "email": "capee517004@example.com",
+          "firstname": "Capture",
+          "id": 286,
+          "lastname": "Throwaway",
+          "modifyDate": 1700000000,
+          "modifyUser": {
+            "@id": "/api/3/people/<uuid>",
+            "@settings": "/api/3/user_settings/<uuid>",
+            "@type": "Person",
+            "accessType": "Named",
+            "avatar": null,
+            "companyId": null,
+            "createDate": 1700000000,
+            "createUser": "/api/3/people/<uuid>",
+            "csActive": true,
+            "department": null,
+            "description": null,
+            "email": "admin@example.com",
+            "firstname": "CS",
+            "id": 3,
+            "lastname": "Admin",
+            "modifyDate": 1700000000,
+            "modifyUser": "/api/3/people/<uuid>",
+            "phoneFax": null,
+            "phoneHome": null,
+            "phoneMobile": null,
+            "phoneWork": "+16462759691",
+            "sourceControlUsername": null,
+            "title": "Admin",
+            "type": null,
+            "userId": "<uuid>",
+            "userType": null,
+            "uuid": "<uuid>"
+          },
+          "phoneFax": null,
+          "phoneHome": null,
+          "phoneMobile": null,
+          "phoneWork": null,
+          "sourceControlUsername": null,
+          "title": null,
+          "type": null,
+          "userId": "<uuid>",
+          "userType": null,
           "uuid": "<uuid>"
         },
         "response_status": 200
@@ -169114,6 +169907,208 @@
             }
           ],
           "hydra:totalItems": 1
+        },
+        "response_status": 200
+      }
+    }
+  },
+  "PUT /api/3/user_settings/current/{key}": {
+    "by_auth": {
+      "jwt": {
+        "request_body": {
+          "marker": "ee517004"
+        },
+        "response_body": {
+          "ai_feature": {
+            "enable": true,
+            "lastModifiedBy": "CS Admin",
+            "lastModifiedDate": "07/28/2026"
+          },
+          "auditlog_ttl_config": {
+            "enabled": false,
+            "ttl": 0
+          },
+          "authentication": {
+            "loginMessage": "All material beyond this point is to be viewed only by users authorized by FortiSOAR.",
+            "sitekey": "REDACTED"
+          },
+          "bin_ttl_config": {
+            "enabled": false,
+            "restrictHardDelete": false,
+            "ttl": 15
+          },
+          "cap3fe3416e": [],
+          "capee517004": {
+            "probe": {
+              "marker": "ee517004"
+            }
+          },
+          "commentModification": {
+            "enabled": true,
+            "softDelete": true,
+            "timeWindow": 300
+          },
+          "globalFilters": {
+            "people": {
+              "showActiveUsers": true
+            }
+          },
+          "historical_workflow_config": {
+            "completed_wf_transfer_interval": 15,
+            "failed_wf_transfer_interval": 60
+          },
+          "navigation": {
+            "collapsed": true
+          },
+          "onboarding_guide": {
+            "enabled": true
+          },
+          "playbook": {
+            "autosave": true,
+            "autosaveTime": 15,
+            "enableJinjaToTag": true,
+            "logs": {
+              "filterOpration": "exclude",
+              "tags": [
+                {
+                  "uuid": "system"
+                }
+              ]
+            }
+          },
+          "queries": {
+            "default": {
+              "c9fd1730-5e9d-4e12-b8fe-6c5eb60bc197": "/api/3/system_queries/<uuid>"
+            }
+          },
+          "recommendation": {
+            "strategy": "falconBased"
+          },
+          "user": {
+            "global": {
+              "timezone": {
+                "timezone_type": 3
+              }
+            },
+            "notifications": {
+              "commentMentionEmailNotifications": true,
+              "email": true,
+              "enableCommentMentionNotifications": true,
+              "sms": false,
+              "web": false
+            },
+            "phone": {
+              "countryId": "US"
+            },
+            "view": {
+              "details": {
+                "agents": {
+                  "selectedTab": "Audit Log",
+                  "subtabs": {
+                    "Tenants": "tenants"
+                  }
+                },
+                "alerts": {
+                  "expandCollab": false,
+                  "openCollab": false,
+                  "selectedTab": "Alert Details",
+                  "subtabs": {
+                    "Correlations": "mitre_tactics",
+                    "Indicators": "indicators"
+                  },
+                  "workspace": {
+                    "tab": "recommendation"
+                  }
+                },
+                "assets": {
+                  "subtabs": {
+                    "Correlations": "vulnerabilities"
+                  }
+                },
+                "assistant_skills": {
+                  "subtabs": {
+                    "Related Records": "security"
+                  }
+                },
+                "attachments": {
+                  "subtabs": {
+                    "Correlations": "alerts"
+                  }
+                },
+                "c_v_es": {
+                  "openCollab": true,
+                  "selectedTab": "CVSS v2.0",
+                  "subtabs": {
+                    "Correlations": "assets"
+                  }
+                },
+                "incidents": {
+                  "subtabs": {
+                    "Indicators": "indicators"
+                  }
+                },
+                "indicators": {
+                  "subtabs": {
+                    "Sightings": "incidents"
+                  }
+                },
+                "tasks": {
+                  "subtabs": {
+                    "Correlations": "alerts"
+                  }
+                },
+                "vulnerabilities": {
+                  "subtabs": {
+                    "Sightings": "alerts"
+                  }
+                },
+                "warrooms": {
+                  "selectedTab": "Task Management"
+                },
+                "ztpf_automation_actions": {
+                  "selectedTab": "Test Action",
+                  "subtabs": "ztpf_metadata_sources"
+                },
+                "ztpf_automation_profiles": {
+                  "subtabs": "ztpf_automation_profile_steps"
+                },
+                "ztpf_devices": {
+                  "selectedTab": "Metadata",
+                  "subtabs": "ztpf_run_groups"
+                },
+                "ztpf_managers": {
+                  "selectedTab": "Devices",
+                  "subtabs": "ztpf_devices"
+                }
+              },
+              "modules-c_v_es-list": {
+                "chart": {
+                  "33cde829-b5c2-4d30-ad4f-4d8e7702cd82": "expanded",
+                  "d6ac2f0b-14f2-450f-8d4b-d3a2a13dc17c": "expanded"
+                }
+              },
+              "modules-indicators-list": {
+                "chart": {
+                  "281f6558-343c-4623-9346-e93993735cdc": "expanded",
+                  "37099c78-7fc9-422b-b921-f7260c069408": "expanded"
+                }
+              },
+              "theme": "deepSea"
+            }
+          },
+          "workflow_log_config": {
+            "allow_pb_to_override": false,
+            "debug": true,
+            "failed_workflow": false
+          },
+          "workflow_ttl_config": {
+            "enabled": true,
+            "ttl": 15
+          },
+          "workflow_vacuum_config": {
+            "enabled": true,
+            "ttl": "0"
+          }
         },
         "response_status": 200
       }

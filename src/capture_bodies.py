@@ -432,6 +432,88 @@ def license(cap: Capture) -> None:
             print("  license re-deploy did not settle within 400s")
 
 
+@group
+def users(cap: Capture) -> None:
+    """People-module user lifecycle: create, set password, read, update, clean up.
+
+    Mirrors pyfsr's ``UsersAPI`` wire flow exactly (the nested ``user`` block
+    provisions the das login; the separate resetpassword call is what actually
+    sets a usable password -- the People POST alone leaves the login
+    passwordless). Everything targets one throwaway account; cleanup deletes
+    it when the platform allows, else deactivates it so no license seat leaks.
+    """
+    c = cap.client
+    loginid = f"cap{RUN}u"
+    roles = c.users.list_roles()
+    role_iri = next((r["@id"] for r in roles if r.get("name") == "SOC Analyst"), None) \
+        or (roles[0]["@id"] if roles else None)
+    if not role_iri:
+        print("  no roles resolvable; skipping")
+        return
+    payload = {
+        "firstname": "Capture", "lastname": "Throwaway",
+        "email": f"cap{RUN}@example.com",
+        "csActive": True, "accessType": "Named",
+        "roles": [role_iri],
+        "user": {"loginid": loginid, "password": f"Cap{RUN}!Xy9z",
+                 "email": f"cap{RUN}@example.com", "status": 1},
+    }
+    _, person = cap.call("POST", "/api/3/people", data=payload)
+    uuid = (person or {}).get("uuid")
+    if not uuid:
+        print("  People POST returned no uuid; skipping the rest")
+        return
+    cap.call("POST", "/api/3/resetpassword",
+             data={"loginId": loginid, "password": f"Cap{RUN}!Xy9z2",
+                   "confirmPassword": f"Cap{RUN}!Xy9z2"})
+    cap.call("GET", "/api/3/people", params={"$limit": 2})
+    cap.call("GET", "/api/3/people/{uuid}", f"/api/3/people/{uuid}")
+    cap.call("PUT", "/api/3/people/{uuid}", f"/api/3/people/{uuid}",
+             data={"department": "Live Capture"})
+    # The platform deletes People records outright (live-verified); capture the
+    # DELETE as part of the lifecycle so it doubles as the cleanup. If a build
+    # refuses, fall back to deactivating so no license seat leaks.
+    status, _ = cap.call("DELETE", "/api/3/people/{uuid}", f"/api/3/people/{uuid}")
+    if status >= 300:
+        cap.later("throwaway user", lambda: c.users.deactivate(uuid))
+
+
+@group
+def user_surfaces(cap: Capture) -> None:
+    """Reads for the pyfsr-only surfaces: saved insights, LLM provider catalog,
+    per-user settings (plus a throwaway setting lifecycle)."""
+    c = cap.client
+    cap.call("GET", "/api/3/insights", params={"$limit": 2})
+    rows = _members(c.get("/api/3/insights", params={"$limit": 1}))
+    if rows and rows[0].get("uuid"):
+        cap.call("GET", "/api/3/insights/{insight_id}",
+                 f"/api/3/insights/{rows[0]['uuid']}")
+    cap.call("GET", "/api/ai/llm/allowed-providers")
+    # Per-user settings: read a real key, then a throwaway lifecycle.
+    cap.call("GET", "/api/3/user_settings/current/{key}",
+             "/api/3/user_settings/current/user/view/details/alerts/viewTemplate",
+             record=False)
+    key = f"cap{RUN}/probe"
+    status, _ = cap.call("PUT", "/api/3/user_settings/current/{key}",
+                         f"/api/3/user_settings/current/{key}", data={"marker": RUN})
+    if status < 300:
+        cap.call("GET", "/api/3/user_settings/current/{key}",
+                 f"/api/3/user_settings/current/{key}")
+        cap.later("user setting", lambda: c.request(
+            "DELETE", f"/api/3/user_settings/current/{key}", raise_on_status=False))
+    # Saved-insight lifecycle on the platform module (POST binds no planid FK;
+    # DELETE answers 204 -- both live-verified). Own record end to end.
+    body = {"title": f"cap {RUN} insight", "query": "capture probe query",
+            "socrole": "SOC Analyst", "planid": "00000000-0000-0000-0000-000000000000"}
+    status, ins = cap.call("POST", "/api/3/insights", data=body)
+    ins_uuid = (ins or {}).get("uuid")
+    if status < 300 and ins_uuid:
+        cap.call("GET", "/api/3/insights/{insight_id}", f"/api/3/insights/{ins_uuid}")
+        cap.call("PUT", "/api/3/insights/{insight_id}", f"/api/3/insights/{ins_uuid}",
+                 data={**body, "title": f"cap {RUN} insight updated"})
+        cap.call("DELETE", "/api/3/insights/{insight_id}", f"/api/3/insights/{ins_uuid}")
+
+
 def _find_file(node: Any, name: str) -> str | None:
 
     if isinstance(node, dict):

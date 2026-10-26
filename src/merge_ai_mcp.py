@@ -208,6 +208,41 @@ def _ai_resp(desc, content_type="application/json"):
 def _build_pyfsr_only_paths():
     """Populate PYFSR_ONLY_PATHS dict.  Separated into a function to keep global scope clean."""
 
+    # --- /api/ai/llm/allowed-providers (pyfsr-only; reachable live but not
+    # declared in the service OpenAPI) -------------------------------------
+    PYFSR_ONLY_PATHS["/api/ai/llm/allowed-providers"] = {
+        "get": {
+            "tags": ["AI LLM"],
+            "summary": "List allowed LLM providers",
+            "description": (
+                "Returns the installed AI solution packs that are allowed as LLM "
+                "providers -- an array of solution-pack references "
+                "(`{@id, @type, label, name, uuid, version}`). pyfsr wraps this "
+                "as `client.ai.list_providers()`."
+            ),
+            "x-fsr-version": "8.0+",
+            "responses": {
+                "200": {
+                    "description": "Array of solution-pack references.",
+                    "content": {"application/json": {"schema": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "@id": {"type": "string", "description": "Solution pack IRI, e.g. `/api/3/solutionpacks/<uuid>`."},
+                                "@type": {"type": "string"},
+                                "label": {"type": "string", "description": "Display label, e.g. `Fortinet FortiAI`."},
+                                "name": {"type": "string", "description": "Pack name, e.g. `fortinet-fortiai-proxy`."},
+                                "uuid": {"type": "string"},
+                                "version": {"type": "string"},
+                            },
+                        },
+                    }}},
+                },
+            },
+        },
+    }
+
     # --- /api/3/mcp_configurations - CRUD module (pyfsr-only) ---------------
     PYFSR_ONLY_PATHS["/api/3/mcp_configurations"] = {
         "get": {

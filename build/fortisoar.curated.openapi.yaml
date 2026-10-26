@@ -20110,6 +20110,1354 @@ paths:
       - name: JWT
         position: before
         color: '#1f8a4c'
+  /api/3/people:
+    get:
+      tags:
+      - Access management
+      summary: List users (People records)
+      parameters: *id050
+      description: 'Hydra-paged listing of the tenant''s People records -- the user directory every das login (`/api/auth/users`)
+        hangs off. `?userId=<das user uuid>` finds the record linked to a login (pyfsr''s `UsersAPI.lookup`). pyfsr: `client.users.list()`.'
+      responses:
+        '200':
+          description: Hydra collection of Person records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              example:
+                '@context': /api/3/contexts/Person
+                '@id': /api/3/people
+                '@type': hydra:Collection
+                hydra:member:
+                - '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  csActive: false
+                  department: null
+                  description: null
+                  email: agentlab_analyst@example.com
+                  firstname: Agent
+                  id: 270
+                  lastname: Lab
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: null
+                  sourceControlUsername: null
+                  title: null
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                - '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: user@example.com
+                  firstname: Alex
+                  id: 30
+                  lastname: Rivera
+                  modifyDate: 1700000000
+                  modifyUser:
+                    '@id': /api/3/people/<uuid>
+                    '@settings': /api/3/user_settings/<uuid>
+                    '@type': Person
+                    accessType: Named
+                    avatar: null
+                    companyId: null
+                    createDate: 1700000000
+                    createUser: /api/3/people/<uuid>
+                    csActive: true
+                    department: null
+                    description: null
+                    email: admin@example.com
+                    firstname: CS
+                    id: 3
+                    lastname: Admin
+                    modifyDate: 1700000000
+                    modifyUser: /api/3/people/<uuid>
+                    phoneFax: null
+                    phoneHome: null
+                    phoneMobile: null
+                    phoneWork: '+16462759691'
+                    sourceControlUsername: null
+                    title: Admin
+                    type: null
+                    userId: <uuid>
+                    userType: null
+                    uuid: <uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: null
+                  sourceControlUsername: null
+                  title: null
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                hydra:totalItems: 12
+                hydra:view:
+                  '@id': /api/3/people?%24limit=2&%24page=1
+                  '@type': hydra:PartialCollectionView
+                  hydra:first: /api/3/people?%24limit=2&%24page=1
+                  hydra:last: /api/3/people?%24limit=2&%24page=6
+                  hydra:next: /api/3/people?%24limit=2&%24page=2
+          x-pyfsr-response-model: list[User]
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nusers = client.users.list()\nprint(len(users))\nprint(users[0].firstname)\n\
+          print(users[0].lastname)"
+      x-live-captured: true
+    post:
+      tags:
+      - Access management
+      summary: Create a user (People record)
+      description: 'Creates a People record and provisions the linked das login from the nested `user` block. The login stays
+        passwordless until `POST /api/3/resetpassword` sets one, and an omitted `user.status` defaults the account to inactive.
+        pyfsr: `client.users.create()`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonCreate'
+            example:
+              accessType: Named
+              csActive: true
+              email: capee517004@example.com
+              firstname: Capture
+              lastname: Throwaway
+              roles:
+              - /api/3/roles/<uuid>
+              user:
+                email: capee517004@example.com
+                loginid: capee517004u
+                password: REDACTED
+                status: 1
+      responses:
+        '201':
+          description: Created Person record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                '@context': /api/3/contexts/Person
+                '@id': /api/3/people/<uuid>
+                '@settings': /api/3/user_settings/<uuid>
+                '@type': Person
+                accessType: Named
+                alerts: []
+                attachments: []
+                avatar: null
+                comments: []
+                companyId: null
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                csActive: true
+                department: null
+                description: null
+                email: capee517004@example.com
+                firstname: Capture
+                fsrQueues: []
+                id: 286
+                incidents: []
+                indicators: []
+                lastname: Throwaway
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                phoneFax: null
+                phoneHome: null
+                phoneMobile: null
+                phoneWork: null
+                roles:
+                - /api/3/roles/<uuid>
+                shifts: []
+                sourceControlUsername: null
+                tasks: []
+                teams: []
+                title: null
+                type: null
+                userId: <uuid>
+                userType: null
+                uuid: <uuid>
+          x-pyfsr-response-model: User
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nuser = client.users.create(\"jdoe\", \"<initial password>\"\
+          , \"Jane\", \"Doe\",\n                   \"jdoe@example.com\", roles=[\"SOC Analyst\"])\nprint(user.firstname, user.lastname,\
+          \ user.uuid)"
+      x-live-captured: true
+  /api/3/people/{uuid}:
+    parameters:
+    - name: uuid
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: People record uuid (from `GET /api/3/people`).
+    get:
+      tags:
+      - Access management
+      summary: Get a user (People record)
+      description: 'Returns a single People record. Relationship fields (`roles`, `teams`, `user`) are null unless expanded.
+        pyfsr: `client.users.get()`.'
+      responses:
+        '200':
+          description: Person record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                '@context': /api/3/contexts/Person
+                '@id': /api/3/people/<uuid>
+                '@settings': /api/3/user_settings/<uuid>
+                '@type': Person
+                accessType: Named
+                avatar: null
+                companyId: null
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                csActive: true
+                department: null
+                description: null
+                email: capee517004@example.com
+                firstname: Capture
+                id: 286
+                lastname: Throwaway
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                phoneFax: null
+                phoneHome: null
+                phoneMobile: null
+                phoneWork: null
+                sourceControlUsername: null
+                title: null
+                type: null
+                userId: <uuid>
+                userType: null
+                uuid: <uuid>
+          x-pyfsr-response-model: User
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nuser = client.users.get(\"123e4567-e89b-12d3-a456-426614174000\"\
+          )\nprint(user.firstname, user.lastname)"
+      x-live-captured: true
+    put:
+      tags:
+      - Access management
+      summary: Update a user (People record)
+      description: 'Partial update of a People record (e.g. `department`, phones, `csActive` to deactivate and free the license
+        seat -- pyfsr''s `UsersAPI.deactivate`). pyfsr: `client.users.update()`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 'Fields to update; partial record accepted. Common keys: `department`, `phoneWork`, `phoneMobile`,
+                `title`, `description`, `csActive` (false deactivates and frees the license seat), `roles`, `teams`, `user.status`.'
+              properties:
+                firstname:
+                  type: string
+                lastname:
+                  type: string
+                title:
+                  type: string
+                email:
+                  type: string
+                department:
+                  type: string
+                description:
+                  type: string
+                phoneWork:
+                  type: string
+                phoneMobile:
+                  type: string
+                csActive:
+                  type: boolean
+                  description: false deactivates the person (pyfsr's `UsersAPI.deactivate`).
+                roles:
+                  type: array
+                  items:
+                    type: string
+                  description: Role names, UUIDs or IRIs.
+                teams:
+                  type: array
+                  items:
+                    type: string
+                user:
+                  type: object
+                  properties:
+                    status:
+                      type: integer
+                      enum:
+                      - 1
+                      - 2
+            example:
+              department: Live Capture
+      responses:
+        '200':
+          description: Updated Person record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                '@context': /api/3/contexts/Person
+                '@id': /api/3/people/<uuid>
+                '@settings': /api/3/user_settings/<uuid>
+                '@type': Person
+                accessType: Named
+                avatar: null
+                companyId: null
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                csActive: true
+                department: Live Capture
+                description: null
+                email: capee517004@example.com
+                firstname: Capture
+                id: 286
+                lastname: Throwaway
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                phoneFax: null
+                phoneHome: null
+                phoneMobile: null
+                phoneWork: null
+                sourceControlUsername: null
+                title: null
+                type: null
+                userId: <uuid>
+                userType: null
+                uuid: <uuid>
+          x-pyfsr-response-model: User
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nuser = client.users.update(\"123e4567-e89b-12d3-a456-426614174000\"\
+          , department=\"SOC\")\nprint(user.department)"
+      x-live-captured: true
+    delete:
+      tags:
+      - Access management
+      summary: Delete a user (People record)
+      description: 'Deletes the People record outright (live-verified 204). Most deployments deactivate instead via `PUT`
+        with `csActive: false`.'
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.request(\"DELETE\", \"/api/3/people/123e4567-e89b-12d3-a456-426614174000\"\
+          )"
+      x-live-captured: true
+  /api/3/resetpassword:
+    post:
+      tags:
+      - Access management
+      summary: Reset a user's application password
+      description: 'Admin reset of another user''s application password. das refuses resetting your own login this way --
+        use the change-password flow. `sendEmail` defaults to false. pyfsr: `client.users.reset_password()`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+            example:
+              confirmPassword: REDACTED
+              loginId: capee517004u
+              password: REDACTED
+      responses:
+        '200':
+          description: The bare JSON string "Password Changed sucessfully" (sic).
+          content:
+            application/json:
+              schema:
+                type: string
+              example: Password Changed sucessfully
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.users.reset_password(\"jdoe\", \"<new password>\"\
+          )"
+      x-live-captured: true
+  /api/3/insights:
+    get:
+      tags:
+      - AI Insight
+      summary: List saved insights
+      parameters: *id050
+      description: 'Hydra-paged listing of saved AI insights (may be empty when none are saved). pyfsr: `client.ai.insights`.'
+      responses:
+        '200':
+          description: Hydra collection of Insight records.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/HydraCollection'
+                - type: object
+                  properties:
+                    hydra:member:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/InsightRecord'
+              example:
+                '@context': /api/3/contexts/Insight
+                '@id': /api/3/insights
+                '@type': hydra:Collection
+                hydra:member: []
+                hydra:totalItems: 0
+                hydra:view:
+                  '@id': /api/3/insights?%24limit=2
+                  '@type': hydra:PartialCollectionView
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/3/insights\", params={\"$limit\": 2})"
+      x-live-captured: true
+    post:
+      tags:
+      - AI Insight
+      summary: Save a new insight
+      description: 'Saves an insight as an `insights` record bound to a plan execution (pyfsr: `client.ai.insights.save()`).
+        `planid` is not FK-validated. The widget also creates a schedule for the insight, which this call does not do.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsightSaveRequest'
+            example:
+              planid: <uuid>
+              query: capture probe query
+              socrole: SOC Analyst
+              title: cap ee517004 insight
+      responses:
+        '201':
+          description: Created Insight record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightRecord'
+              example:
+                '@context': /api/3/contexts/Insight
+                '@id': /api/3/insights/<uuid>
+                '@type': Insight
+                active: true
+                conflict: false
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                id: 9
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                planid: <uuid>
+                query: capture probe query
+                recordTags: []
+                scheduleid: null
+                socrole: SOC Analyst
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 9
+                title: cap ee517004 insight
+                uuid: <uuid>
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.save(\"Weekly critical alerts\",\n\
+          \                        query=\"Which critical alerts fired this week?\",\n                        planid=\"abc123-def456\"\
+          )"
+      x-live-captured: true
+  /api/3/insights/{insight_id}:
+    parameters:
+    - name: insight_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: Insight uuid (from `GET /api/3/insights`).
+    get:
+      tags:
+      - AI Insight
+      summary: Get a saved insight
+      description: Returns a single saved insight record by uuid, including its title, query, socrole, planid and schedule
+        reference.
+      responses:
+        '200':
+          description: Insight record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightRecord'
+              example:
+                '@context': /api/3/contexts/Insight
+                '@id': /api/3/insights/<uuid>
+                '@type': Insight
+                active: true
+                conflict: false
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                id: 9
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                planid: <uuid>
+                query: capture probe query
+                recordTags: []
+                scheduleid: null
+                socrole: SOC Analyst
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 9
+                title: cap ee517004 insight
+                uuid: <uuid>
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.get(\"/api/3/insights/abc123-def456\")"
+      x-live-captured: true
+    put:
+      tags:
+      - AI Insight
+      summary: Update a saved insight
+      description: 'Updates title/query/socrole/planid on an existing insight (pyfsr: `client.ai.insights.save(..., insight_id=...)`).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsightSaveRequest'
+            example:
+              planid: <uuid>
+              query: capture probe query
+              socrole: SOC Analyst
+              title: cap ee517004 insight updated
+      responses:
+        '200':
+          description: Updated Insight record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightRecord'
+              example:
+                '@context': /api/3/contexts/Insight
+                '@id': /api/3/insights/<uuid>
+                '@type': Insight
+                active: true
+                conflict: false
+                createDate: 1700000000
+                createUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                id: 9
+                modifyDate: 1700000000
+                modifyUser:
+                  '@id': /api/3/people/<uuid>
+                  '@settings': /api/3/user_settings/<uuid>
+                  '@type': Person
+                  accessType: Named
+                  avatar: null
+                  companyId: null
+                  createDate: 1700000000
+                  createUser: /api/3/people/<uuid>
+                  csActive: true
+                  department: null
+                  description: null
+                  email: admin@example.com
+                  firstname: CS
+                  id: 3
+                  lastname: Admin
+                  modifyDate: 1700000000
+                  modifyUser: /api/3/people/<uuid>
+                  phoneFax: null
+                  phoneHome: null
+                  phoneMobile: null
+                  phoneWork: '+16462759691'
+                  sourceControlUsername: null
+                  title: Admin
+                  type: null
+                  userId: <uuid>
+                  userType: null
+                  uuid: <uuid>
+                planid: <uuid>
+                query: capture probe query
+                recordTags: []
+                scheduleid: null
+                socrole: SOC Analyst
+                tenant:
+                  '@id': /api/3/tenants/<uuid>
+                  '@type': Tenant
+                  allowRemoteMMDModification: true
+                  createDate: null
+                  createUser: null
+                  description: sample
+                  id: 1
+                  industry: null
+                  isDedicated: true
+                  license: null
+                  modifyDate: null
+                  modifyUser: null
+                  name: Self
+                  region: null
+                  role: self
+                  tenantId: <self-agent>
+                  uuid: <uuid>
+                tenantRecordId: 9
+                title: cap ee517004 insight updated
+                uuid: <uuid>
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.ai.insights.save(\"Weekly IOC review (updated)\"\
+          ,\n                        query=\"Which IOCs hit last week?\",\n                        planid=\"abc123-def456\"\
+          ,\n                        insight_id=\"abc123-def456\")"
+      x-live-captured: true
+    delete:
+      tags:
+      - AI Insight
+      summary: Delete a saved insight
+      description: Deletes the saved insight record outright (live-verified 204); the widget's schedule, if one was created,
+        is not touched by this call.
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.request(\"DELETE\", \"/api/3/insights/abc123-def456\"\
+          )"
+      x-live-captured: true
+  /api/3/user_settings/current/{key}:
+    parameters:
+    - name: key
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Setting key; may contain slashes (e.g. `user/view/details/alerts/viewTemplate`).
+    get:
+      tags:
+      - Authentication
+      summary: Get a per-user setting value
+      description: 'Returns the current user''s stored value for `key` (arbitrary JSON). Unknown keys return 404. pyfsr: `client.user_settings.get()`.'
+      responses:
+        '200':
+          description: The stored value (arbitrary JSON).
+          content:
+            application/json:
+              schema: {}
+              example:
+                marker: ee517004
+        '404':
+          description: Key not set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nvalue = client.user_settings.get_direct(\"dashboards/filters\"\
+          )\nprint(value)"
+      x-live-captured: true
+    put:
+      tags:
+      - Authentication
+      summary: Set a per-user setting value
+      description: 'Stores the body as the current user''s value for `key` (arbitrary JSON). pyfsr: `client.user_settings.set()`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: The value to store (arbitrary JSON; FortiSOAR deep-merges it into the user's settings at `key`).
+            example:
+              marker: ee517004
+      responses:
+        '200':
+          description: The stored value (arbitrary JSON).
+          content:
+            application/json:
+              schema: {}
+              example:
+                ai_feature:
+                  enable: true
+                  lastModifiedBy: CS Admin
+                  lastModifiedDate: 07/28/2026
+                auditlog_ttl_config:
+                  enabled: false
+                  ttl: 0
+                authentication:
+                  loginMessage: All material beyond this point is to be viewed only by users authorized by FortiSOAR.
+                  sitekey: REDACTED
+                bin_ttl_config:
+                  enabled: false
+                  restrictHardDelete: false
+                  ttl: 15
+                cap3fe3416e: []
+                capee517004:
+                  probe:
+                    marker: ee517004
+                commentModification:
+                  enabled: true
+                  softDelete: true
+                  timeWindow: 300
+                globalFilters:
+                  people:
+                    showActiveUsers: true
+                historical_workflow_config:
+                  completed_wf_transfer_interval: 15
+                  failed_wf_transfer_interval: 60
+                navigation:
+                  collapsed: true
+                onboarding_guide:
+                  enabled: true
+                playbook:
+                  autosave: true
+                  autosaveTime: 15
+                  enableJinjaToTag: true
+                  logs:
+                    filterOpration: exclude
+                    tags:
+                    - uuid: system
+                queries:
+                  default:
+                    c9fd1730-5e9d-4e12-b8fe-6c5eb60bc197: /api/3/system_queries/<uuid>
+                recommendation:
+                  strategy: falconBased
+                user:
+                  global:
+                    timezone:
+                      timezone_type: 3
+                  notifications:
+                    commentMentionEmailNotifications: true
+                    email: true
+                    enableCommentMentionNotifications: true
+                    sms: false
+                    web: false
+                  phone:
+                    countryId: US
+                  view:
+                    details:
+                      agents:
+                        selectedTab: Audit Log
+                        subtabs:
+                          Tenants: tenants
+                      alerts:
+                        expandCollab: false
+                        openCollab: false
+                        selectedTab: Alert Details
+                        subtabs:
+                          Correlations: mitre_tactics
+                          Indicators: indicators
+                        workspace:
+                          tab: recommendation
+                      assets:
+                        subtabs:
+                          Correlations: vulnerabilities
+                      assistant_skills:
+                        subtabs:
+                          Related Records: security
+                      attachments:
+                        subtabs:
+                          Correlations: alerts
+                      c_v_es:
+                        openCollab: true
+                        selectedTab: CVSS v2.0
+                        subtabs:
+                          Correlations: assets
+                      incidents:
+                        subtabs:
+                          Indicators: indicators
+                      indicators:
+                        subtabs:
+                          Sightings: incidents
+                      tasks:
+                        subtabs:
+                          Correlations: alerts
+                      vulnerabilities:
+                        subtabs:
+                          Sightings: alerts
+                      warrooms:
+                        selectedTab: Task Management
+                      ztpf_automation_actions:
+                        selectedTab: Test Action
+                        subtabs: ztpf_metadata_sources
+                      ztpf_automation_profiles:
+                        subtabs: ztpf_automation_profile_steps
+                      ztpf_devices:
+                        selectedTab: Metadata
+                        subtabs: ztpf_run_groups
+                      ztpf_managers:
+                        selectedTab: Devices
+                        subtabs: ztpf_devices
+                    modules-c_v_es-list:
+                      chart:
+                        33cde829-b5c2-4d30-ad4f-4d8e7702cd82: expanded
+                        d6ac2f0b-14f2-450f-8d4b-d3a2a13dc17c: expanded
+                    modules-indicators-list:
+                      chart:
+                        281f6558-343c-4623-9346-e93993735cdc: expanded
+                        37099c78-7fc9-422b-b921-f7260c069408: expanded
+                    theme: deepSea
+                workflow_log_config:
+                  allow_pb_to_override: false
+                  debug: true
+                  failed_workflow: false
+                workflow_ttl_config:
+                  enabled: true
+                  ttl: 15
+                workflow_vacuum_config:
+                  enabled: true
+                  ttl: '0'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.user_settings.set(\"dashboards/filters\", {\"\
+          status\": [\"open\"]})"
+      x-live-captured: true
+    delete:
+      tags:
+      - Authentication
+      summary: Delete a per-user setting
+      description: Removes the current user's stored value for `key`. Use to undo a custom setting and fall back to the platform
+        default.
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Key not set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                '@context': /api/3/contexts/Error
+                '@type': Error
+                hydra:title: An error occurred
+                hydra:description: Validation failed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.user_settings.delete(\"dashboards/filters\")"
   /api/3/api_keys:
     get:
       tags:
@@ -28304,6 +29652,54 @@ paths:
       - name: JWT
         position: before
         color: '#1f8a4c'
+  /api/ai/llm/allowed-providers:
+    get:
+      tags:
+      - AI LLM
+      summary: List allowed LLM providers
+      description: Returns the installed AI solution packs that are allowed as LLM providers -- an array of solution-pack
+        references (`{@id, @type, label, name, uuid, version}`). pyfsr wraps this as `client.ai.list_providers()`.
+      x-fsr-version: 8.0+
+      responses:
+        '200':
+          description: Array of solution-pack references.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@id':
+                      type: string
+                      description: Solution pack IRI, e.g. `/api/3/solutionpacks/<uuid>`.
+                    '@type':
+                      type: string
+                    label:
+                      type: string
+                      description: Display label, e.g. `Fortinet FortiAI`.
+                    name:
+                      type: string
+                      description: Pack name, e.g. `fortinet-fortiai-proxy`.
+                    uuid:
+                      type: string
+                    version:
+                      type: string
+              example:
+              - '@id': /api/3/solutionpacks/<uuid>
+                '@type': SolutionPack
+                label: Fortinet FortiAI
+                name: fortinet-fortiai-proxy
+                uuid: <uuid>
+                version: 2.0.0
+          x-pyfsr-response-model: list[LLMProvider]
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nproviders = client.ai.list_providers()\nprint([p.label\
+          \ for p in providers])"
+      x-live-captured: true
   /api/3/mcp_configurations:
     get:
       tags:
@@ -33995,6 +35391,263 @@ components:
           type: array
           items:
             type: string
+    User:
+      type: object
+      description: A People record -- the tenant's user directory entry every das login (`/api/auth/users`) hangs off (pyfsr
+        `User`). Captured from a live create -> read -> update -> delete lifecycle. Relationship fields (`roles`, `teams`,
+        `user`, `type`) come back null unless expanded.
+      properties:
+        '@id':
+          type: string
+          description: IRI, e.g. `/api/3/people/<uuid>`.
+        '@type':
+          type: string
+        '@context':
+          type: string
+        '@settings':
+          type: string
+          description: IRI of this user's `/api/3/user_settings` collection.
+        uuid:
+          type: string
+        id:
+          type: integer
+        firstname:
+          type: string
+        lastname:
+          type: string
+        title:
+          type: string
+        email:
+          type: string
+        department:
+          type: string
+        description:
+          type: string
+        phoneWork:
+          type: string
+        phoneMobile:
+          type: string
+        phoneHome:
+          type: string
+        phoneFax:
+          type: string
+        csActive:
+          type: boolean
+          description: false deactivates the person and frees the license seat.
+        accessType:
+          type: string
+          enum:
+          - Named
+          - Concurrent
+        userType:
+          type: string
+        type:
+          type: string
+          description: Picklist type IRI; null unless expanded.
+        avatar:
+          description: Avatar reference; null when unset.
+        companyId:
+          description: Company reference; null when unset.
+        sourceControlUsername:
+          type: string
+          description: Username for the source-control (git) integration.
+        userId:
+          type: string
+          description: UUID of the linked das login in `/api/auth/users`.
+        createUser:
+          description: Creating user (Person IRI or embedded record).
+        modifyUser:
+          description: Last modifying user (Person IRI or embedded record).
+        createDate:
+          type: integer
+          description: Epoch seconds.
+        modifyDate:
+          type: integer
+          description: Epoch seconds.
+        user:
+          type: object
+          description: Linked das login record (`loginid`, `status`); null unless expanded.
+        roles:
+          type: array
+          items:
+            type: string
+          description: Role IRIs; null unless expanded.
+        teams:
+          type: array
+          items:
+            type: string
+          description: Team IRIs; null unless expanded.
+    PersonCreate:
+      type: object
+      required:
+      - firstname
+      - lastname
+      - email
+      - roles
+      - user
+      description: Create a People record. The nested `user` block provisions the das login -- omit `status` (or pass 2) and
+        the account is created INACTIVE and cannot log in (das defaults it to status 2). The People POST alone leaves the
+        login passwordless; set the password via `POST /api/3/resetpassword` afterwards (pyfsr's `UsersAPI.create` chains
+        both calls).
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        csActive:
+          type: boolean
+          description: pyfsr defaults true.
+        accessType:
+          type: string
+          enum:
+          - Named
+          - Concurrent
+          description: pyfsr defaults `Named`.
+        roles:
+          type: array
+          items:
+            type: string
+          description: Role names, UUIDs or IRIs (pyfsr resolves names to UUIDs). At least one required.
+        teams:
+          type: array
+          items:
+            type: string
+          description: Team names, UUIDs or IRIs.
+        user:
+          type: object
+          required:
+          - loginid
+          properties:
+            loginid:
+              type: string
+            password:
+              type: string
+              description: Initial password; must pass the password policy.
+            email:
+              type: string
+            status:
+              type: integer
+              enum:
+              - 1
+              - 2
+              description: 1 = active, 2 = inactive. das defaults to 2 when omitted.
+        department:
+          type: string
+        phoneWork:
+          type: string
+        phoneMobile:
+          type: string
+        description:
+          type: string
+    ResetPasswordRequest:
+      description: 'Two accepted shapes. Simple (captured live): `{loginId, password, confirmPassword}`. Full (the UI''s Reset
+        Password dialog, pyfsr `reset_password`): `{uuid, currentUUID, loginId, password, sendEmail}` where `uuid` is the
+        People UUID and `currentUUID` the das user UUID. das refuses resetting your own login this way -- use the change-password
+        flow. `sendEmail` defaults to false (pyfsr does not send email).'
+      anyOf:
+      - type: object
+        required:
+        - loginId
+        - password
+        - confirmPassword
+        properties:
+          loginId:
+            type: string
+          password:
+            type: string
+            description: New password; must pass the password policy and history check.
+          confirmPassword:
+            type: string
+      - type: object
+        required:
+        - uuid
+        - currentUUID
+        - loginId
+        - password
+        properties:
+          uuid:
+            type: string
+            description: People record UUID.
+          currentUUID:
+            type: string
+            description: das user UUID from `/api/auth/users`.
+          loginId:
+            type: string
+          password:
+            type: string
+          sendEmail:
+            type: boolean
+            default: false
+    InsightRecord:
+      type: object
+      description: A saved AI insight on the platform module (`/api/3/insights`) -- a named query bound to a plan execution,
+        rendered by the AI Insight widget (pyfsr `AIInsightsAPI.save`). Captured from a live create -> read -> update -> delete
+        lifecycle.
+      properties:
+        '@id':
+          type: string
+          description: IRI, e.g. `/api/3/insights/<uuid>`.
+        '@type':
+          type: string
+        '@context':
+          type: string
+        uuid:
+          type: string
+        id:
+          type: integer
+        title:
+          type: string
+        query:
+          type: string
+          description: The investigation question.
+        socrole:
+          type: string
+          description: Role the insight runs as.
+        planid:
+          type: string
+          description: UUID of the plan execution backing the insight. Not FK-validated on write (any UUID is accepted).
+        active:
+          type: boolean
+        conflict:
+          type: boolean
+        scheduleid:
+          description: UUID of the schedule the widget creates for the insight; absent/null when run on demand.
+        recordTags:
+          description: Record tags on the insight.
+        tenant:
+          description: Tenant reference.
+        tenantRecordId:
+          description: Tenant record identifier.
+        createDate:
+          type: integer
+          description: Epoch seconds.
+        modifyDate:
+          type: integer
+          description: Epoch seconds.
+        createUser:
+          description: Creating user (Person IRI or embedded record).
+        modifyUser:
+          description: Last modifying user (Person IRI or embedded record).
+    InsightSaveRequest:
+      type: object
+      required:
+      - title
+      - query
+      - planid
+      description: Save (POST) or update (PUT) a saved insight -- mirrors the AI Insight widget (pyfsr `AIInsightsAPI.save`).
+      properties:
+        title:
+          type: string
+        query:
+          type: string
+        socrole:
+          type: string
+          description: Defaults to `SOC Analyst`.
+        planid:
+          type: string
+          description: UUID of the plan execution; not FK-validated on write.
     AgentAcceptanceRequest:
       type: object
       required:
