@@ -117388,7 +117388,6 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-10-21",
         "request_body": null,
         "response_body": [],
         "response_status": 200
@@ -117450,18 +117449,17 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-10-21",
         "request_body": null,
         "response_body": {
           "active": true,
           "additional_information": [
             {
-              "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmask' to reveal masked data |\n| detransform_map  | JSON object required when `action=unmask`; used to reconstruct original data |\n",
+              "context": "The input must be provided as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Input data containing sensitive information to be masked or unmasked |\n| action           | Operation type: 'mask' to hide sensitive data or 'unmas...",
               "title": "INPUTS",
               "type": "textarea"
             },
             {
-              "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n| detransform_map  | JSON object containing mappings to reconstruct original data (present when `action=mask`) |\n",
+              "context": "The output is returned as a JSON object.\n\n### Parameters\n| Parameter         | Description |\n|------------------|-------------|\n| data             | Returned only when `action=unmask`; contains data after unmasking |\n| masked           | Returned only when `action=mask`; contains only masked data |\n...",
               "title": "OUTPUTS",
               "type": "textarea"
             }
@@ -157414,7 +157412,7 @@
                 "value": "",
                 "visible": true
               },
-              "... <1 more>"
+              "... <2 more>"
             ]
           },
           "configuration": [],
@@ -157447,7 +157445,7 @@
                   "value": "",
                   "visible": true
                 },
-                "... <1 more>"
+                "... <2 more>"
               ]
             },
             "contributor": null,
@@ -157524,7 +157522,7 @@
                     "value": "",
                     "visible": true
                   },
-                  "... <1 more>"
+                  "... <2 more>"
                 ],
                 "title": "Geolocate IP"
               },
@@ -157588,7 +157586,7 @@
                     "value": "",
                     "visible": true
                   },
-                  "... <1 more>"
+                  "... <2 more>"
                 ],
                 "title": "Geolocate Domain"
               }
@@ -157614,7 +157612,7 @@
           "icon_large_name": "ipstack_large.png",
           "icon_small": "data:image/jpeg;base64,REDACTED",
           "icon_small_name": "ipstack_small.png",
-          "id": 885,
+          "id": 916,
           "ingestion_supported": false,
           "install_result": {
             "message": "Success",
@@ -157628,10 +157626,10 @@
             {
               "annotation": "geolocation",
               "category": "investigation",
-              "connector": 885,
+              "connector": 916,
               "description": "Search geolocation of IP Address",
               "enabled": true,
-              "id": 24505,
+              "id": 24837,
               "operation": "ip_locate",
               "output_schema": [
                 {
@@ -157687,7 +157685,7 @@
                   "value": "",
                   "visible": true
                 },
-                "... <1 more>"
+                "... <2 more>"
               ],
               "roles": [],
               "title": "Geolocate IP",
@@ -157696,10 +157694,10 @@
             {
               "annotation": "geolocation",
               "category": "investigation",
-              "connector": 885,
+              "connector": 916,
               "description": "Search geolocation of Domain",
               "enabled": true,
-              "id": 24506,
+              "id": 24838,
               "operation": "domain_locate",
               "output_schema": [
                 {
@@ -157755,7 +157753,7 @@
                   "value": "",
                   "visible": true
                 },
-                "... <1 more>"
+                "... <2 more>"
               ],
               "roles": [],
               "title": "Geolocate Domain",
@@ -157881,7 +157879,7 @@
           "icon_large": "data:image/jpeg;base64,REDACTED=",
           "icon_large_name": "ipstack_large.png",
           "icon_small_name": "ipstack_small.png",
-          "id": 886,
+          "id": 917,
           "ingestion_supported": false,
           "install_result": {
             "message": "Success",
@@ -158840,23 +158838,20 @@
         "response_status": 200
       },
       "jwt": {
-        "captured_at": "2026-10-21",
         "request_body": {
           "agent": [
             "<self-agent>"
           ],
-          "category": [
-            "Utilities"
-          ],
+          "category": [],
           "description": "",
-          "label": "cyops_utilities",
-          "name": "cyops_utilities",
+          "label": "ipstack",
+          "name": "ipstack",
           "publisher": "Fortinet",
-          "rpm_full_name": "",
-          "version": "3.7.2"
+          "rpm_full_name": "ipstack-1.0.1.rpm",
+          "version": "1.0.1"
         },
         "response_body": {
-          "message": "Installing connector cyops_utilities version 3.7.2",
+          "message": "Installing connector ipstack version 1.0.1",
           "remote_status": {
             "status": "awaiting"
           }

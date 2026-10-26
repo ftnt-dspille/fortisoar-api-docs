@@ -155,17 +155,31 @@ def agent_install(cap: Capture) -> None:
     """Install, re-install and uninstall the throwaway connector on a remote agent."""
     c = cap.client
     agents = _members(c.get("/api/3/agents", params={"$limit": 50}))
-    agent = next((a["agentId"] for a in agents if a.get("active") and not a.get("isLocal")), None)
+    # Pick a CONNECTED agent: an unreachable one answers a bare 500 (the SME
+    # proxy can't reach it). configurationHealth is a picklist whose itemValue
+    # reads "Remote Node Connected" on a live agent.
+    def _connected(a: dict) -> bool:
+        return ((a.get("configurationHealth") or {}).get("itemValue") or "") == "Remote Node Connected"
+    agent = next((a["agentId"] for a in agents
+                  if a.get("active") and not a.get("isLocal") and _connected(a)), None)
     if agent is None:
+        print("  no connected remote agent; skipping")
         return
-    body = {"name": CONNECTOR, "version": c.connectors.connector_detail(CONNECTOR)["version"],
-            "agent_id": agent}
-    status, _ = cap.call("POST", "/api/integration/install-connector/", data=body)
+    version = c.connectors.connector_detail(CONNECTOR)["version"]
+    # Bodies mirror pyfsr's AgentsAPI exactly: POST keys the target as
+    # "agent": [agent_id]; PUT/DELETE key it as "agent_id". 8.0.0 rejects
+    # PUT/DELETE without an rpm name (400 "No connector rpm name ...").
+    post_body = {"name": CONNECTOR, "label": CONNECTOR, "version": version,
+                 "rpm_full_name": f"{CONNECTOR}-{version}.rpm", "category": [],
+                 "description": "", "publisher": "Fortinet", "agent": [agent]}
+    agent_body = {"name": CONNECTOR, "version": version, "agent_id": agent,
+                  "rpm_full_name": f"{CONNECTOR}-{version}.rpm"}
+    status, _ = cap.call("POST", "/api/integration/install-connector/", data=post_body)
     if status < 300:
         cap.later("agent install", lambda: c.request("DELETE", "/api/integration/install-connector/",
-                                                    data=body, raise_on_status=False))
-    cap.call("PUT", "/api/integration/install-connector/", data=body)
-    cap.call("DELETE", "/api/integration/install-connector/", data=body)
+                                                    data=agent_body, raise_on_status=False))
+    cap.call("PUT", "/api/integration/install-connector/", data=agent_body)
+    cap.call("DELETE", "/api/integration/install-connector/", data=agent_body)
 
 
 @group
@@ -387,6 +401,35 @@ def search_and_agents(cap: Capture) -> None:
     if llms and llms[0].get("uuid"):
         cap.call("GET", "/api/ai/llm/config/{uuid}/verify",
                  f"/api/ai/llm/config/{llms[0]['uuid']}/verify")
+
+
+@group
+def license(cap: Capture) -> None:
+    """Re-deploy this node's FortiFlex license via the authenticated route.
+
+    The appliance must already be licensed (``POST /api/auth/license`` is the
+    renewal/replacement path). The activation token is minted out-of-band --
+    fabric_studio_terraform's ``tools.fortiflex_soar_token``, keyed
+    fabric/node/pod so the same serial is reused -- and passed in
+    ``FSR_FLEX_TOKEN``. Re-deploying the same serial leaves licensing as it was.
+    """
+    token = os.environ.get("FSR_FLEX_TOKEN", "")
+    if not token:
+        print("  FSR_FLEX_TOKEN not set; mint one with fabric_studio_terraform's "
+              "tools.fortiflex_soar_token first")
+        return
+    status, _ = cap.call("POST", "/api/auth/license", data={"license_key": token})
+    if status < 300:
+        # The deployment is asynchronous; wait it out so later groups (and the
+        # cleanup of earlier ones) talk to a settled appliance.
+        for _ in range(40):
+            time.sleep(10)
+            probe = cap.client.request("GET", "/api/3/actors/current", raise_on_status=False)
+            if probe.status_code == 200:
+                print("  license re-deploy settled; login OK")
+                break
+        else:
+            print("  license re-deploy did not settle within 400s")
 
 
 def _find_file(node: Any, name: str) -> str | None:

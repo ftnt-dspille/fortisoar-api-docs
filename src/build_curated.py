@@ -1827,7 +1827,11 @@ PATHS["/api/auth/license"] = {
             "activation. For first-time activation on a fresh appliance use the unauthenticated "
             "`POST /api/public/license` with `action: deploy_license`.\n\n"
             "Body carries the raw `license_key` (the contents of the `.lic` file). Returns 200 OK "
-            "on success."
+            "on success.\n\n"
+            "A FortiFlex activation token is **rejected** here (live-verified: 400 `The server "
+            "encountered an error while handling the request`); deploy FortiFlex entitlements "
+            "through `POST /api/public/license` with `action: install_flex_license` and the token "
+            "under `data.license_token` instead."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {
@@ -6998,6 +7002,16 @@ def _apply_typed_response_wiring(spec: dict) -> int:
         ("/api/3/user_queries", "post", "201", "UserQuery"),
         ("/api/3/routers", "get", "200", ("Router", True)),
         ("/api/triggers/1/notrigger/{workflowId}", "post", "200", "TaskStatusRef"),
+        # Captured 2026-10-26 (post-license-recovery run): the dev-workspace
+        # round-trip and the AI agent reads.
+        ("post", "/api/integration/connector/development/entity/{id}/", "200", "ConnectorDefinition"),
+        ("post", "/api/integration/connector/development/entity/{id}/files/", "200", "ConnectorFileContent"),
+        ("put", "/api/integration/connector/development/entity/{id}/files/", "200", "ConnectorFileTree"),
+        ("post", "/api/integration/connector/development/entity/{id}/publish/", "200", "ConnectorDefinition"),
+        ("get", "/api/ai/agent/{uuid}", "200", "AiAgentDTO"),
+        ("get", "/api/ai/agent/{name}/{version}/relationships", "200",
+         {"type": "array", "items": {"type": "object"},
+          "description": "Relationship rows for the agent; `[]` unless relationships are configured."}),
         # JSON-LD machinery (structure is the @context document itself)
         ("/api/3/contexts/{shortName}", "get", "200",
          {"type": "object", "properties": {"@context": {
