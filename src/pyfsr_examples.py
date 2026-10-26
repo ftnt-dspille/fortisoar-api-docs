@@ -387,6 +387,36 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/wf/workflow/config/"): ("manual", "client.system.daily_action_count()"),
     # Change password (pyfsr-discovered)
     ("put", "/api/3/changepassword"): ("manual", 'client.users.change_password("old-pass", "new-pass")'),
+    # ------------------------------------------------------------------
+    # Auth/system/actors - the JWT-only admin routes (pyfsr-discovered)
+    ("get", "/api/3/actors/current"): ("manual", "client.users.whoami()"),
+    ("get", "/api/auth/license"): ("doctest", "pyfsr.api.system:SystemAPI.license"),
+    ("post", "/api/auth/license"): ("manual", 'client.system.deploy_license("<license key>")'),
+    ("get", "/api/auth/cluster/health"): ("doctest", "pyfsr.api.system:SystemAPI.cluster_health"),
+    ("get", "/api/auth/config"): ("manual", 'client.auth_config.get("API-KEYS")'),
+    ("put", "/api/auth/config"): ("manual", "client.auth_config.set_idle_timeout(30)"),
+    ("post", "/api/public/license"): ("manual", 'client.system.deploy_license_public("<license key>")'),
+    # Ad-hoc structured query - the live-verified filter grammar (pyfsr's
+    # RecordSet.query passes a Query or this same dict through verbatim).
+    ("post", "/api/query/{collection}"): ("manual", (
+        'rows = client.records("alerts").query({\n'
+        '    "filters": [{"field": "status.itemValue", "operator": "neq", "value": "Closed"}],\n'
+        '    "logic": "AND",\n'
+        '    "sort": [{"direction": "desc", "field": "createDate"}],\n'
+        '})'
+    )),
+    # Views / feeds / agent connector install / audit purge
+    ("get", "/api/views/1/{name}"): ("manual", 'client.views.detail("alerts")'),
+    ("post", "/api/ingest-feeds/{module}"): ("manual", 'client.feeds.insert("indicators", [{"value": "8.8.8.8", "typeofindicator": "IP Address"}])'),
+    ("post", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.install_connector"),
+    ("put", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.upgrade_connector"),
+    ("delete", "/api/integration/install-connector/"): ("doctest", "pyfsr.api.agents:AgentsAPI.uninstall_connector"),
+    ("delete", "/api/gateway/audit/activities"): ("doctest", "pyfsr.api.audit:AuditAPI.purge"),
+    # Connector development workspace (edit -> read/write files -> publish)
+    ("post", "/api/integration/connector/development/entity/{id}/"): ("manual", 'client.connectors.dev_edit("21")'),
+    ("post", "/api/integration/connector/development/entity/{id}/files/"): ("manual", 'client.connectors.dev_read_file("21", "info.json")'),
+    ("put", "/api/integration/connector/development/entity/{id}/files/"): ("manual", 'client.connectors.dev_write_file("21", {"xpath": "info.json", "fileData": "<file contents>"})'),
+    ("post", "/api/integration/connector/development/entity/{id}/publish/"): ("manual", 'client.connectors.dev_publish("21", replace=True)'),
 }
 
 
@@ -515,6 +545,8 @@ _MANUAL_RESPONSE_MODELS: dict[tuple[str, str], str] = {
     # Workflow runs -- manual raw-get samples over typed pyfsr models.
     ("get", "/api/wf/api/manual-wf-input/"): "list[ManualInput]",
     ("get", "/api/wf/api/scheduled/"): "list[ScheduledTask]",
+    # Auth config write (client.auth_config.set* -> {"response": "Success"})
+    ("put", "/api/auth/config"): "AuthConfigWriteResult",
     # Widgets (client.widgets -- publish/deploy/upload all return WidgetRecord)
     ("put", "/api/3/widgets/{uuid}"): "WidgetRecord",
     ("get", "/api/3/widgets/development/{uuid}"): "WidgetRecord",

@@ -59,7 +59,7 @@ def _fake_request(self, method, url, **kwargs):
     # All four ops return the {"usersresp": [user]} envelope. The doctests use
     # demo_client_jwt() (UserPasswordAuth), which hits /auth/authenticate first
     # (handled above) before these calls.
-    if url.endswith("/api/auth/users") or url.endswith("/api/auth/query/users"):
+    if url.endswith("/api/auth/users") or "/api/auth/users?" in url or url.endswith("/api/auth/query/users"):
         return _fake_response(200, json.dumps({
             "usersresp": [{
                 "uuid": "550e8400-e29b-41d4-a716-446655440007",
@@ -764,6 +764,38 @@ def _fake_request(self, method, url, **kwargs):
         return _fake_response(200, json.dumps({"userId": "test-uuid", "uuid": "person-uuid-123", "firstname": "Test", "lastname": "User"}).encode())
     if method == "PUT" and url.endswith("/api/3/changepassword"):
         return _fake_response(200, json.dumps({"status": "success"}).encode())
+    # --- Auth/license/config + views + audit purge (JWT-only admin routes) ---
+    if method == "GET" and url.endswith("/api/auth/license"):
+        return _fake_response(200, json.dumps({
+            "license_type": "FortiFlex", "expiry_date": "2030-01-01",
+            "licenses": [], "days_remaining": 999,
+        }).encode())
+    if method == "POST" and url.endswith("/api/auth/license"):
+        return _fake_response(200, json.dumps({"response": "Success"}).encode())
+    if method == "POST" and url.endswith("/api/public/license"):
+        return _fake_response(200, json.dumps({"response": "Success"}).encode())
+    if method == "GET" and url.endswith("/api/auth/cluster/health"):
+        return _fake_response(200, json.dumps([{
+            "uuid": "node-1", "hostname": "node1", "status": "Active",
+            "services": {}, "cpu": {"usage": 12}, "memory": {"usage": 40},
+        }]).encode())
+    if method == "GET" and url.endswith("/api/auth/config"):
+        return _fake_response(200, json.dumps({"hydra:member": [
+            {"id": 62, "section": "API-KEYS", "key": "retrievable_mode",
+             "dataType": "boolean", "value": False},
+            {"id": 60, "section": "API-KEYS", "key": "api_key_validity_min",
+             "dataType": "int", "value": 1},
+        ]}).encode())
+    if method == "PUT" and url.endswith("/api/auth/config"):
+        return _fake_response(200, json.dumps({"response": "Success"}).encode())
+    if method == "GET" and "/api/views/1/modules-" in url:
+        return _fake_response(200, json.dumps({
+            "uuid": "view-uuid-1234", "module": "alerts", "type": "rows",
+            "isDefault": True,
+            "config": {"metadata": {"customTemplateTitle": "Alerts"}, "rows": []},
+        }).encode())
+    if method == "DELETE" and url.rstrip("/").endswith("/api/gateway/audit/activities"):
+        return _fake_response(200, json.dumps({}).encode())
     # --- Module admin: publish, revert, staging ---
     if method == "PUT" and url.endswith("/api/publish"):
         return _fake_response(200, json.dumps({"status": "started"}).encode())
@@ -780,6 +812,15 @@ def _fake_request(self, method, url, **kwargs):
     # view templates lookup (discard_staging_draft calls get_view_templates)
     if method == "GET" and "/api/3/system_view_templates" in url:
         return _fake_response(200, json.dumps({"hydra:member": []}).encode())
+    # --- Connector development workspace (dev_edit/read_file/write_file/publish) ---
+    if method == "POST" and "/development/entity/" in url and "/files/" not in url and "/publish/" not in url:
+        return _fake_response(200, json.dumps({"id": 21, "name": "mitre-attack", "edit_repo_connector": True}).encode())
+    if method == "POST" and "/development/entity/" in url and "/files/" in url:
+        return _fake_response(200, json.dumps({"xpath": "info.json", "fileData": '{"connector_version": "1.0.0"}'}).encode())
+    if method == "PUT" and "/development/entity/" in url and "/files/" in url:
+        return _fake_response(200, json.dumps({"response": "Success"}).encode())
+    if method == "POST" and "/development/entity/" in url and "/publish/" in url:
+        return _fake_response(200, json.dumps({"id": 21, "name": "mitre-attack", "version": "1.0.1"}).encode())
     # --- Connector create configuration ---
     if method == "POST" and url.endswith("/api/integration/configuration/"):
         return _fake_response(200, json.dumps({"config_id": "new-config-uuid", "name": "prod", "connector": 21}).encode())
