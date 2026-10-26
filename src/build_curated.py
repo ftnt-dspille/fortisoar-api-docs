@@ -7111,6 +7111,19 @@ def _apply_typed_response_wiring(spec: dict) -> int:
          {"type": "object", "additionalProperties": True,
           "description": "No body required (live-verified with `{}`): rebuilds the "
                          "enrichment context index wholesale."}),
+        ("/api/triggers/1/notrigger/{workflowId}", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Arbitrary input payload exposed to the workflow as `$(input)`; "
+                         "`{}` is accepted for playbooks that take no input."}),
+        ("/api/ai/llm/config", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "The LLM profile to register (provider, endpoint, credentials, "
+                         "model parameters). See `GET /api/ai/llm/config` for the stored "
+                         "shape; the appliance keeps credentials write-only."}),
+        ("/mcp/config/import", "post",
+         {"type": "object", "additionalProperties": True,
+          "description": "Server tool sets in the shape `POST /mcp/config/export` "
+                         "produces (one `{uuid, tools: [...]}` entry per server)."}),
     ]:
         wire_request_schema(_path, _method, _schema)
     return applied

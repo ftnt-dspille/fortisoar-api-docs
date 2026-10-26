@@ -164,7 +164,8 @@ def _is_empty_object_schema(content_blob: dict | None) -> bool:
         schema = media.get("schema")
         if not isinstance(schema, dict):
             continue
-        if any(k in schema for k in ("$ref", "properties", "oneOf", "anyOf", "allOf", "additionalProperties")):
+        if any(k in schema for k in ("$ref", "properties", "oneOf", "anyOf", "allOf",
+                                     "additionalProperties", "items", "required", "enum")):
             return False
     return True
 
@@ -175,6 +176,9 @@ def _is_empty_object_schema(content_blob: dict | None) -> bool:
 _FREE_FORM_BODY_OPS: set[tuple[str, str]] = {
     # Connector action payloads are per-operation, defined in info.json.
     # (Top-level execute/ has a fixed envelope - it IS spec'd properly.)
+    # Deprecated sibling of /api/ingest-feeds/ -- not routed on 8.0.0, so the
+    # body was never captured; the generic object schema is as honest as it gets.
+    ("post", "/api/insert-feeds/{recordType}"),
 }
 
 

@@ -13415,7 +13415,9 @@ paths:
           application/json:
             schema:
               type: object
-              description: Arbitrary input payload exposed to the workflow.
+              additionalProperties: true
+              description: Arbitrary input payload exposed to the workflow as `$(input)`; `{}` is accepted for playbooks that
+                take no input.
             example: {}
       responses:
         '200':
@@ -26357,10 +26359,10 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/LLMConfigDTO'
-              type: array
-              title: Configs
+              type: object
+              additionalProperties: true
+              description: The LLM profile to register (provider, endpoint, credentials, model parameters). See `GET /api/ai/llm/config`
+                for the stored shape; the appliance keeps credentials write-only.
             example:
             - uuid: null
               name: null
@@ -27222,10 +27224,10 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/MCPConfigImport'
-              type: array
-              title: Mcp Configs
+              type: object
+              additionalProperties: true
+              description: 'Server tool sets in the shape `POST /mcp/config/export` produces (one `{uuid, tools: [...]}` entry
+                per server).'
             example:
             - tools:
               - annotations: {}
