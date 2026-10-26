@@ -762,6 +762,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ClusterNodeHealth'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nhealth = client.system.cluster_health()\nprint(health[0][\"\
+          status\"])"
       x-live-captured: true
       x-auth: &id003
         apikey: 'no'
@@ -893,6 +899,12 @@ paths:
                 users: 4
               schema:
                 $ref: '#/components/schemas/LicenseInfo'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nlic = client.system.license()\nprint(lic[\"license_type\"\
+          ])"
       x-live-captured: true
       x-auth: &id004
         apikey: 'no'
@@ -941,6 +953,11 @@ paths:
       responses:
         '200':
           description: License deployed.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.system.deploy_license(\"<license key>\")"
       x-auth: &id005
         apikey: untested
         jwt: untested
@@ -1025,6 +1042,12 @@ paths:
                 depl_status: finished
               schema:
                 $ref: '#/components/schemas/PublicLicenseResponse'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.system.deploy_license_public(\"<license key>\"\
+          )"
       x-live-captured: true
       x-auth: &id006
         apikey: public
@@ -1304,6 +1327,11 @@ paths:
                 uuid: <uuid>
               schema:
                 $ref: '#/components/schemas/CurrentUser'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.users.whoami()"
       x-live-captured: true
       x-auth: &id009
         apikey: 'yes'
@@ -8592,6 +8620,12 @@ paths:
                 - <uuid>
         '400':
           description: 'Unknown module (`MappingException`) or a row the database rejects (`Error: ...`).'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.feeds.insert(\"indicators\", [{\"value\": \"8.8.8.8\"\
+          , \"typeofindicator\": \"IP Address\"}])"
       x-live-captured: true
       x-auth: &id063
         apikey: 'yes'
@@ -9670,6 +9704,13 @@ paths:
                   hydra:first: /api/query/alerts?%24limit=1&%24page=1
                   hydra:last: /api/query/alerts?%24limit=1&%24page=10727
                   hydra:next: /api/query/alerts?%24limit=1&%24page=2
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nrows = client.records(\"alerts\").query({\n    \"filters\"\
+          : [{\"field\": \"status.itemValue\", \"operator\": \"neq\", \"value\": \"Closed\"}],\n    \"logic\": \"AND\",\n\
+          \    \"sort\": [{\"direction\": \"desc\", \"field\": \"createDate\"}],\n})"
       x-live-captured: true
       x-auth: &id072
         apikey: 'yes'
@@ -10345,6 +10386,12 @@ paths:
             application/json:
               example:
                 deleted: 1240
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.audit.purge(filters={\"operation\": \"login\"\
+          })"
       x-auth: &id077
         apikey: untested
         jwt: untested
@@ -14875,6 +14922,11 @@ paths:
                 version: 1.0.1_dev
               schema:
                 $ref: '#/components/schemas/ConnectorDefinition'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.dev_edit(\"21\")"
       x-live-captured: true
       x-auth: &id137
         apikey: 'yes'
@@ -14934,6 +14986,12 @@ paths:
                   : \"\",\n    \"icon_small_name... <103 more characters>"
               schema:
                 $ref: '#/components/schemas/ConnectorFileContent'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.dev_read_file(\"21\", \"info.json\"\
+          )"
       x-live-captured: true
       x-auth: &id138
         apikey: 'yes'
@@ -15040,6 +15098,12 @@ paths:
                     type: folder
               schema:
                 $ref: '#/components/schemas/ConnectorFileTree'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.dev_write_file(\"21\", {\"xpath\":\
+          \ \"info.json\", \"fileData\": \"<file contents>\"})"
       x-live-captured: true
       x-auth: &id139
         apikey: 'yes'
@@ -15158,6 +15222,11 @@ paths:
                 workspace_connector: true
               schema:
                 $ref: '#/components/schemas/ConnectorDefinition'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.connectors.dev_publish(\"21\", replace=True)"
       x-live-captured: true
       x-auth: &id140
         apikey: 'yes'
@@ -15243,6 +15312,12 @@ paths:
                   status: awaiting
               schema:
                 $ref: '#/components/schemas/InstallConnectorResult'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.install_connector(\"edge-1\", name=\"\
+          cyops_utilities\", version=\"3.7.1\"))"
       x-live-captured: true
       x-auth: &id141
         apikey: untested
@@ -15288,6 +15363,12 @@ paths:
       responses:
         '200':
           description: Upgrade accepted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.upgrade_connector(\"edge-1\", name=\"\
+          cyops_utilities\", version=\"3.8.0\"))"
       x-auth: &id142
         apikey: untested
         jwt: untested
@@ -15329,6 +15410,12 @@ paths:
       responses:
         '200':
           description: Uninstall accepted.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nprint(client.agents.uninstall_connector(\"edge-1\", name=\"\
+          cyops_utilities\", version=\"3.7.1\"))"
       x-auth: &id143
         apikey: untested
         jwt: untested
@@ -20950,6 +21037,11 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/AuthConfigRow'
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.auth_config.get(\"API-KEYS\")"
       x-live-captured: true
       x-auth: &id196
         apikey: 'no'
@@ -20994,12 +21086,18 @@ paths:
       responses:
         '200':
           description: Updated.
+          x-pyfsr-response-model: AuthConfigWriteResult
           content:
             application/json:
-              example:
-                response: Success
               schema:
                 $ref: '#/components/schemas/AuthConfigWriteResult'
+              example:
+                response: Success
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.auth_config.set_idle_timeout(30)"
       x-live-captured: true
       x-auth: &id197
         apikey: 'no'
@@ -21935,6 +22033,11 @@ paths:
                 $ref: '#/components/schemas/ViewConfig'
         '404':
           description: No template for that key.
+      x-codeSamples:
+      - lang: python
+        label: pyfsr
+        source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nclient.views.detail(\"alerts\")"
       x-live-captured: true
       x-auth: &id206
         apikey: 'yes'
