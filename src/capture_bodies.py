@@ -332,7 +332,65 @@ def dev_workspace(cap: Capture) -> None:
         time.sleep(2)
 
 
+@group
+def search_and_agents(cap: Capture) -> None:
+    """Read-only captures: ES search, agent detail/relationships, LLM verify.
+
+    Search needs a guaranteed hit, so the group first creates a throwaway
+    alert whose name carries an alphanumeric-only token -- a hyphen in the
+    ``q`` string trips ES's query_string parser into a bare 400 (the earlier
+    capture failed exactly that way). The alert is removed again in cleanup.
+    """
+    c = cap.client
+    token = "cap" + RUN  # alphanumeric only: no hyphens, no underscores
+
+    def _first_value(pln_id: str) -> str | None:
+        rr = c.get("/api/3/picklists", params={"listName": pln_id, "$limit": 1})
+        mem = _members(rr)
+        return mem[0].get("@id") if mem else None
+
+    sev_iri = status_iri = None
+    for m in _members(c.get("/api/3/picklist_names", params={"$limit": 200})):
+        name = m.get("name") or ""
+        if name == "Severity" and not sev_iri:
+            sev_iri = _first_value(m.get("@id"))
+        elif name == "AlertStatus" and not status_iri:
+            status_iri = _first_value(m.get("@id"))
+    alert_uuid = None
+    if sev_iri and status_iri:
+        alert = c.records("alerts").create({
+            "name": f"{token} search bait", "source": "live-capture",
+            "severity": sev_iri, "status": status_iri,
+        })
+        alert_uuid = (alert or {}).get("uuid")
+        if alert_uuid:
+            cap.later("search-bait alert",
+                      lambda: c.records("alerts").delete(alert_uuid))
+    if alert_uuid:
+        cap.call("POST", "/api/search",
+                 data={"q": token, "index": ["alerts"], "size": 5})
+    else:
+        print("  could not bait an alert (picklists/alert create); skipping search")
+    # Agent detail + relationships off the first listed agent (reads).
+    agents = _members(c.get("/api/ai/agent/"))
+    if agents:
+        first = agents[0]
+        name, version = first.get("name"), first.get("version")
+        uuid = first.get("uuid")
+        if uuid:
+            cap.call("GET", "/api/ai/agent/{uuid}", f"/api/ai/agent/{uuid}")
+        if name and version:
+            cap.call("GET", "/api/ai/agent/{name}/{version}/relationships",
+                     f"/api/ai/agent/{name}/{version}/relationships")
+    # LLM-config verify (read) off the first configured profile.
+    llms = _members(c.get("/api/ai/llm/config"))
+    if llms and llms[0].get("uuid"):
+        cap.call("GET", "/api/ai/llm/config/{uuid}/verify",
+                 f"/api/ai/llm/config/{llms[0]['uuid']}/verify")
+
+
 def _find_file(node: Any, name: str) -> str | None:
+
     if isinstance(node, dict):
         for key in ("xpath", "path"):
             if isinstance(node.get(key), str) and node[key].endswith("/" + name):
