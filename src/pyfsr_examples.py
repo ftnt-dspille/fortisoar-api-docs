@@ -164,6 +164,21 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/3/teams"): ("doctest", "pyfsr.api.teams:TeamsAPI.list"),
     ("post", "/api/3/roles"): ("manual", 'role = client.roles.create("SOC Analyst L2", description="Tier-2 analysts")\nprint(role.name, role.uuid)'),
     ("post", "/api/3/teams"): ("manual", 'team = client.teams.create("Tier 1", parents=["Tier 0"])\nprint(team.name, team.uuid)'),
+    # People (user directory) -- pyfsr UsersAPI; create chains a resetpassword
+    # call because the People POST alone leaves the das login passwordless.
+    ("get", "/api/3/people"): ("doctest", "pyfsr.api.users:UsersAPI.list"),
+    ("post", "/api/3/people"): ("manual",
+        'user = client.users.create("jdoe", "<initial password>", "Jane", "Doe",\n'
+        '                   "jdoe@example.com", roles=["SOC Analyst"])\n'
+        'print(user.firstname, user.lastname, user.uuid)'),
+    ("get", "/api/3/people/{uuid}"): ("manual", 'user = client.users.get("123e4567-e89b-12d3-a456-426614174000")\nprint(user.firstname, user.lastname)'),
+    ("put", "/api/3/people/{uuid}"): ("manual", 'user = client.users.update("123e4567-e89b-12d3-a456-426614174000", department="SOC")\nprint(user.department)'),
+    ("delete", "/api/3/people/{uuid}"): ("manual", 'client.request("DELETE", "/api/3/people/123e4567-e89b-12d3-a456-426614174000")'),
+    ("post", "/api/3/resetpassword"): ("manual", 'client.users.reset_password("jdoe", "<new password>")'),
+    # Per-user settings (current user; key may be /-separated)
+    ("get", "/api/3/user_settings/current/{key}"): ("manual", 'value = client.user_settings.get_direct("dashboards/filters")\nprint(value)'),
+    ("put", "/api/3/user_settings/current/{key}"): ("manual", 'client.user_settings.set("dashboards/filters", {"status": ["open"]})'),
+    ("delete", "/api/3/user_settings/current/{key}"): ("manual", 'client.user_settings.delete("dashboards/filters")'),
     # Agents (lifecycle + installer + connector push)
     ("get", "/api/3/agents"): ("doctest", "pyfsr.api.agents:AgentsAPI.list"),
     ("get", "/api/3/agents/{uuid}"): ("doctest", "pyfsr.api.agents:AgentsAPI.get"),
@@ -317,6 +332,20 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("post", "/api/ai/insight/trigger/schedule"): ("manual", 'client.ai.insights.trigger("abc123-def456", user_id="abc123-def456")'),
     ("get", "/api/ai/insight/{insight_id}"): ("manual", 'insight = client.ai.insights.get("abc123-def456")\nprint(insight.title)'),
     ("delete", "/api/ai/insight/{insight_id}"): ("manual", 'client.ai.insights.delete("abc123-def456")'),
+    # Saved insights on the platform module (/api/3/insights)
+    ("get", "/api/3/insights"): ("manual", 'client.get("/api/3/insights", params={"$limit": 2})'),
+    ("post", "/api/3/insights"): ("manual",
+        'insight_uuid = client.ai.insights.save("Weekly IOC review",\n'
+        '                                       query="Which IOCs hit last week?",\n'
+        '                                       planid="abc123-def456")\n'
+        'print(insight_uuid)'),
+    ("get", "/api/3/insights/{insight_id}"): ("manual", 'client.get("/api/3/insights/abc123-def456")'),
+    ("put", "/api/3/insights/{insight_id}"): ("manual",
+        'client.ai.insights.save("Weekly IOC review (updated)",\n'
+        '                        query="Which IOCs hit last week?",\n'
+        '                        planid="abc123-def456",\n'
+        '                        insight_id="abc123-def456")'),
+    ("delete", "/api/3/insights/{insight_id}"): ("manual", 'client.request("DELETE", "/api/3/insights/abc123-def456")'),
     ("post", "/api/3/insights"): ("manual",
         'client.ai.insights.save("Weekly critical alerts",\n'
         '                        query="Which critical alerts fired this week?",\n'
@@ -333,6 +362,7 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/ai/llm/config/{uuid}/verify"): ("manual", 'client.ai.verify_llm_config("abc123-def456")'),
     ("post", "/api/ai/llm/config"): ("manual", 'client.ai.create_llm_config([{"name": "test", "provider": "openai"}])'),
     ("delete", "/api/ai/llm/config/{uuid}"): ("manual", 'client.ai.delete_llm_config("abc123-def456")'),
+    ("get", "/api/ai/llm/allowed-providers"): ("manual", "providers = client.ai.list_providers()\nprint([p.label for p in providers])"),
     # AI MCP Registry
     ("get", "/api/ai/mcp"): ("manual", "client.ai.list_mcp_servers()"),
     ("post", "/api/ai/mcp/validate"): ("manual", 'client.ai.validate_mcp_server({"name": "...", "url": "..."})'),
@@ -542,6 +572,13 @@ _MANUAL_RESPONSE_MODELS: dict[tuple[str, str], str] = {
     # doctest (return ``Any``); the route returns a typed record.
     ("post", "/api/3/roles"): "Role",
     ("post", "/api/3/teams"): "Team",
+    # People (user directory) -- pyfsr UsersAPI
+    ("get", "/api/3/people"): "list[User]",
+    ("post", "/api/3/people"): "User",
+    ("get", "/api/3/people/{uuid}"): "User",
+    ("put", "/api/3/people/{uuid}"): "User",
+    # AI LLM -- provider catalog returns solution-pack refs, parsed by pyfsr
+    ("get", "/api/ai/llm/allowed-providers"): "list[LLMProvider]",
     # Workflow runs -- manual raw-get samples over typed pyfsr models.
     ("get", "/api/wf/api/manual-wf-input/"): "list[ManualInput]",
     ("get", "/api/wf/api/scheduled/"): "list[ScheduledTask]",
