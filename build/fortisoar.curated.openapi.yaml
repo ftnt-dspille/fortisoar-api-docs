@@ -935,7 +935,12 @@ paths:
         `POST /api/public/license` with `action: deploy_license`.
 
 
-        Body carries the raw `license_key` (the contents of the `.lic` file). Returns 200 OK on success.'
+        Body carries the raw `license_key` (the contents of the `.lic` file). Returns 200 OK on success.
+
+
+        A FortiFlex activation token is **rejected** here (live-verified: 400 `The server encountered an error while handling
+        the request`); deploy FortiFlex entitlements through `POST /api/public/license` with `action: install_flex_license`
+        and the token under `data.license_token` instead.'
       requestBody:
         required: true
         content:
@@ -14742,7 +14747,7 @@ paths:
                 icon_large_name: ipstack_large.png
                 icon_small: data:image/jpeg;base64,REDACTED
                 icon_small_name: ipstack_small.png
-                id: 885
+                id: 916
                 ingestion_supported: false
                 install_result:
                   message: Success
@@ -14754,10 +14759,10 @@ paths:
                 operations:
                 - annotation: geolocation
                   category: investigation
-                  connector: 885
+                  connector: 916
                   description: Search geolocation of IP Address
                   enabled: true
-                  id: 24505
+                  id: 24837
                   operation: ip_locate
                   output_schema:
                   - city: ''
@@ -14809,10 +14814,10 @@ paths:
                   visible: true
                 - annotation: geolocation
                   category: investigation
-                  connector: 885
+                  connector: 916
                   description: Search geolocation of Domain
                   enabled: true
-                  id: 24506
+                  id: 24838
                   operation: domain_locate
                   output_schema:
                   - city: ''
@@ -15189,7 +15194,7 @@ paths:
                 icon_large: data:image/jpeg;base64,REDACTED=
                 icon_large_name: ipstack_large.png
                 icon_small_name: ipstack_small.png
-                id: 886
+                id: 917
                 ingestion_supported: false
                 install_result:
                   message: Success
@@ -15295,21 +15300,20 @@ paths:
             example:
               agent:
               - <self-agent>
-              category:
-              - Utilities
+              category: []
               description: ''
-              label: cyops_utilities
-              name: cyops_utilities
+              label: ipstack
+              name: ipstack
               publisher: Fortinet
-              rpm_full_name: ''
-              version: 3.7.2
+              rpm_full_name: ipstack-1.0.1.rpm
+              version: 1.0.1
       responses:
         '200':
           description: Install accepted.
           content:
             application/json:
               example:
-                message: Installing connector cyops_utilities version 3.7.2
+                message: Installing connector ipstack version 1.0.1
                 remote_status:
                   status: awaiting
               schema:
@@ -26031,7 +26035,7 @@ paths:
 
                     |------------------|-------------|
 
-                    | data             | Input data containing sensitive information to ... <227 more characters>'
+                    | data             | Input data containing sensitive information to ... <103 more characters>'
                   title: INPUTS
                   type: textarea
                 - context: 'The output is returned as a JSON object.
@@ -26043,7 +26047,7 @@ paths:
 
                     |------------------|-------------|
 
-                    | data             | Returned only when `action=unmask`; contains data a... <213 more characters>'
+                    | data             | Returned only when `action=unmask`; contains data a... <103 more characters>'
                   title: OUTPUTS
                   type: textarea
                 category: '{Masking}'
@@ -26589,6 +26593,12 @@ paths:
         schema:
           type: string
         description: uuid of the LLM reasoning profile.
+      - name: model_id
+        in: query
+        required: true
+        schema:
+          type: string
+        description: uuid of the model to verify within the profile.
       responses:
         '200':
           description: Successful Response

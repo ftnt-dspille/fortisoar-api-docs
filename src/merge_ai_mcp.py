@@ -1127,6 +1127,15 @@ def merge_ai_mcp(spec: dict[str, Any]) -> int:
                     "schema": {"type": "string"},
                     "description": "uuid of the LLM reasoning profile.",
                 })
+                # The service 422s without it ("Field required"); the service
+                # OpenAPI never declared it.
+                op["parameters"].append({
+                    "name": "model_id",
+                    "in": "query",
+                    "required": True,
+                    "schema": {"type": "string"},
+                    "description": "uuid of the model to verify within the profile.",
+                })
 
             # Reachability filter - drop ops the PHP proxy rejects.
             if (method, path) in UNREACHABLE_OPS:
