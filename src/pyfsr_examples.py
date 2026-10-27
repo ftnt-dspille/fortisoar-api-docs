@@ -243,8 +243,19 @@ PYFSR_EXAMPLES: dict[tuple[str, str], tuple[str, str]] = {
     ("get", "/api/version"): ("doctest", "pyfsr.api.system:SystemAPI.version"),
     ("get", "/api/permissions/current"): ("doctest", "pyfsr.api.system:SystemAPI.permissions"),
     ("get", "/api/product/feature-access"): ("doctest", "pyfsr.api.system:SystemAPI.feature_access"),
-    # Search
-    ("post", "/api/search"): ("doctest", "pyfsr.api.search:SearchAPI.search"),
+    # Search -- MANUAL, deliberately not the doctest extraction. The extractor
+    # reads the pyfsr version INSTALLED in this repo's venv (the uv.lock pins
+    # the PyPI release, which lags the pyfsr repo), so a doctest-sourced sample
+    # here silently regressed to a pre-fix fabricated response shape once
+    # already. This entry shows the current repo behavior (hydrated
+    # GlobalSearchResult) and is version-independent; switch back to
+    # ("doctest", "pyfsr.api.search:SearchAPI.search") after the pyproject pin
+    # is bumped to a pyfsr release that includes hydration.
+    ("post", "/api/search"): ("manual", 'results = client.search("8.8.8.8", index=["alerts"])\n'
+                                        'print(results.total, results[0].name)  # hydrated typed records\n'
+                                        '\n'
+                                        'raw = client.search("8.8.8.8", index=["alerts"], hydrate=False)\n'
+                                        'print(raw["totalItems"], raw["results"][0]["_source"])  # raw ES hits'),
     ("post", "/api/query/{collection}/{id}/{field}"): ("doctest", "pyfsr.api.search:SearchAPI.query_related"),
     # Feeds (trigger-bypassing bulk ingest)
     ("post", "/api/ingest-feeds/indicators"): ("doctest", "pyfsr.api.feeds:IngestFeedsAPI.indicators"),

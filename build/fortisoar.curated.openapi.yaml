@@ -10180,8 +10180,9 @@ paths:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
-          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresults = client.search.search(\"8.8.8.8\", index=[\"\
-          alerts\"])\nprint(results[\"hits\"][\"hits\"][0][\"_source\"][\"severity\"])"
+          \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresults = client.search(\"8.8.8.8\", index=[\"alerts\"\
+          ])\nprint(results.total, results[0].name)  # hydrated typed records\n\nraw = client.search(\"8.8.8.8\", index=[\"\
+          alerts\"], hydrate=False)\nprint(raw[\"totalItems\"], raw[\"results\"][0][\"_source\"])  # raw ES hits"
       x-live-captured: true
       x-auth: &id075
         apikey: 'yes'
