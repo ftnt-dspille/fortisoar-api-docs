@@ -115,42 +115,53 @@ info:
     \ says \"minimal three character\", but the check is only that the array is non-empty - `{\"q\": [\"ab\"], \"index\":\
     \ [\"alerts\"]}` answers 200.\n- An `index` list that filters to empty (unknown module or no permission) answers 400 `You\
     \ must indicate which index to search on.`\n- The controller reads `size` as `offset + size` internally; page with `offset`\
-    \ + `size` pairs.\n\n### Persisted queries\n\nPersisted queries are stored in `/api/3/queries` (ad-hoc), `/api/3/system_queries`\
-    \ (system-owned), and `/api/3/user_queries` (user-saved). They're *inputs* you copy into the body of `POST /api/query/<resourceShortName>`\
-    \ - there is no separate execute route that takes a query ID. To run a saved query, GET the query record and POST its\
-    \ body to `/api/query/<shortName>`. (`POST /api/query/<shortName>/<id>/<field>` is a related but distinct endpoint - relationship-walk\
-    \ on a record, not query execute.)\n\n## Audit gateway quirks\n\n`POST /api/gateway/audit/activities` is the workhorse\
-    \ for SIEM-style log pulls. It has nine traps worth knowing about up-front.\n\n1. **Slice pagination, no totals.** The\
-    \ response has no `totalElements` / `totalPages` / `last` (intentional - the repository skips `COUNT(*)` for performance).\
-    \ Detect end-of-data via empty `content` or `content.length < limit`. For totals, call the sibling `/count` endpoint.\n\
-    2. **Default `limit` is 10 if you misname the param.** Conventions like `size`, `pageSize`, `max` are silently dropped\
-    \ and the server applies its default of 10. Only `limit` works.\n3. **`filterParams: { ... }` wrapper is silently ignored.**\
-    \ Filters must be at the top level of the body; anything nested under `filterParams` is dropped.\n4. **Arrays don't work\
-    \ for any filter.** `{\"operation\": [\"Login Success\"]}` (single-element array) silently no-ops. `{\"operation\": [\"\
-    A\", \"B\"]}` returns 400. To get multiple ops server-side, make multiple calls and merge.\n5. **`user` is not filterable,\
-    \ only `userId`.** `{\"user\": \"Jane Doe\"}` is silently ignored. `{\"userId\": \"jdoe\"}` works.\n6. **`search` is brittle.**\
-    \ `{\"search\": \"Login\"}` returned 0 hits even with many \"Login\" titles in the data. Probably searches a specific\
-    \ subset of fields with prefix-only matching. Don't rely on it.\n7. **No server-side sort control.** Records arrive `id\
-    \ DESC` (newest first). No `sort` param honored. Sort client-side if you need anything else.\n8. **`displayName` arrives\
-    \ dirty.** Some records have extra whitespace, embedded UUIDs, even unrelated text from other fields. Sanitize on read.\n\
-    9. **JWT lifetime is short.** Default ~30 min; long-running syncs need to re-auth on 401, or use an API key where the\
-    \ operation takes one.\n\nThe 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynamically from `GET\
-    \ /api/gateway/audit/operations`.\n\n### Purging audit logs (destructive)\n\nThe real purge is **`POST /api/gateway/audit/activities/delete`**\
-    \ (POST, not DELETE - the audit gateway exposes no DELETE mapping). Body: `{\"uptoDate\": <epoch ms>, \"operations\":\
-    \ [\"<op name>\", ...]}` - `uptoDate` becomes `transactionDate < uptoDate`, `operations` restricts to an `operation IN\
-    \ (...)` clause, and the proxy layer injects `userId`/`user`/`source` before forwarding (every purge also writes its own\
-    \ audit record). Response is a bare `200 {}` - the deleted-row count is not returned. There is no undo.\n\n- **`{\"uptoDate\"\
-    : 0}` is a safe probe** - `transactionDate` is never negative, so it deletes nothing (live-verified: 200 `{}` with the\
-    \ record count unchanged). Use it to smoke-test the route; pass a current timestamp for a real purge.\n- `DELETE /api/gateway/audit/activities?...`\
-    \ is **broken on 8.0.0-6034**: it proxies `DELETE /audit/activities?<query>` to the audit gateway, which has no such route\
-    \ - the upstream 404 surfaces as a bare `400` with an empty body. Use the POST route above.\n\n### Audit TTL auto-purge\
-    \ (broken)\n\nThe API routes `GET|POST|DELETE /api/gateway/audit/activities/ttl` (a read / set / stop-the-auto-purge control),\
-    \ but the appliance's audit gateway service on 8.0.0-6034 has **no ttl routes at all** (verified against the deployed\
-    \ service) - all three answer `400` with an empty body. On 8.0.1-6087 all three answer `403 Access Denied` for a probed\
-    \ admin that passes other delete voters on the same box. The \"disable audit purge via API\" recipe does not work on either\
-    \ build; manage the setting in the UI.\n\n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints\
-    \ below cover the most common control flows; less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`)\
-    \ are tracked as a future expansion.\n\n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/`\
+    \ + `size` pairs.\n- **`searchType` picks the match strategy** (the UI's Search-type dropdown; measured on 8.0.0-6034\
+    \ and 8.0.1-6087):\n  - `_default` (\"Broad Search\") -- each term is tokenized and the tokens OR together (\"Malware\
+    \ detected\" matches MORE than \"malware\" alone); separate `q` entries AND together.\n  - `phrase_prefix` (\"Exact Text\
+    \ Search\") -- the whole term must appear as a phrase, with the last word also matched as a prefix (\"Malware detected\"\
+    : 3749 broad vs 81 exact).\n  - `query_string` (\"Query Based Search\") -- each term is a Lucene query string against\
+    \ the ES field names: `name:malware*` works, `displayName:...` matches nothing; `AND`/`OR`/`NOT` are honored (`NOT <term>`\
+    \ returns everything, capped at 10000 rows); a malformed query is not an error (200, `totalItems: 0`).\n  - Anything else\
+    \ is silently treated as `_default`.\n- **`_source` is a variable projection.** Which fields it carries differs between\
+    \ calls (one capture had `name`/`severity`, the next only `@id`/`@type`/`uuid`/`displayName` and the dates). Treat `@id`\
+    \ (e.g. `/api/3/alerts/<uuid>`) as the only reliable handle and re-fetch the full record from it. `highlight` carries\
+    \ the matched fields with the term wrapped in `<em>` tags.\n\n### Persisted queries\n\nPersisted queries are stored in\
+    \ `/api/3/queries` (ad-hoc), `/api/3/system_queries` (system-owned), and `/api/3/user_queries` (user-saved). They're *inputs*\
+    \ you copy into the body of `POST /api/query/<resourceShortName>` - there is no separate execute route that takes a query\
+    \ ID. To run a saved query, GET the query record and POST its body to `/api/query/<shortName>`. (`POST /api/query/<shortName>/<id>/<field>`\
+    \ is a related but distinct endpoint - relationship-walk on a record, not query execute.)\n\n## Audit gateway quirks\n\
+    \n`POST /api/gateway/audit/activities` is the workhorse for SIEM-style log pulls. It has nine traps worth knowing about\
+    \ up-front.\n\n1. **Slice pagination, no totals.** The response has no `totalElements` / `totalPages` / `last` (intentional\
+    \ - the repository skips `COUNT(*)` for performance). Detect end-of-data via empty `content` or `content.length < limit`.\
+    \ For totals, call the sibling `/count` endpoint.\n2. **Default `limit` is 10 if you misname the param.** Conventions\
+    \ like `size`, `pageSize`, `max` are silently dropped and the server applies its default of 10. Only `limit` works.\n\
+    3. **`filterParams: { ... }` wrapper is silently ignored.** Filters must be at the top level of the body; anything nested\
+    \ under `filterParams` is dropped.\n4. **Arrays don't work for any filter.** `{\"operation\": [\"Login Success\"]}` (single-element\
+    \ array) silently no-ops. `{\"operation\": [\"A\", \"B\"]}` returns 400. To get multiple ops server-side, make multiple\
+    \ calls and merge.\n5. **`user` is not filterable, only `userId`.** `{\"user\": \"Jane Doe\"}` is silently ignored. `{\"\
+    userId\": \"jdoe\"}` works.\n6. **`search` is brittle.** `{\"search\": \"Login\"}` returned 0 hits even with many \"Login\"\
+    \ titles in the data. Probably searches a specific subset of fields with prefix-only matching. Don't rely on it.\n7. **No\
+    \ server-side sort control.** Records arrive `id DESC` (newest first). No `sort` param honored. Sort client-side if you\
+    \ need anything else.\n8. **`displayName` arrives dirty.** Some records have extra whitespace, embedded UUIDs, even unrelated\
+    \ text from other fields. Sanitize on read.\n9. **JWT lifetime is short.** Default ~30 min; long-running syncs need to\
+    \ re-auth on 401, or use an API key where the operation takes one.\n\nThe 45-value `operation` enum is in the `AuditOperation`\
+    \ schema; fetch it dynamically from `GET /api/gateway/audit/operations`.\n\n### Purging audit logs (destructive)\n\nThe\
+    \ real purge is **`POST /api/gateway/audit/activities/delete`** (POST, not DELETE - the audit gateway exposes no DELETE\
+    \ mapping). Body: `{\"uptoDate\": <epoch ms>, \"operations\": [\"<op name>\", ...]}` - `uptoDate` becomes `transactionDate\
+    \ < uptoDate`, `operations` restricts to an `operation IN (...)` clause, and the proxy layer injects `userId`/`user`/`source`\
+    \ before forwarding (every purge also writes its own audit record). Response is a bare `200 {}` - the deleted-row count\
+    \ is not returned. There is no undo.\n\n- **`{\"uptoDate\": 0}` is a safe probe** - `transactionDate` is never negative,\
+    \ so it deletes nothing (live-verified: 200 `{}` with the record count unchanged). Use it to smoke-test the route; pass\
+    \ a current timestamp for a real purge.\n- `DELETE /api/gateway/audit/activities?...` is **broken on 8.0.0-6034**: it\
+    \ proxies `DELETE /audit/activities?<query>` to the audit gateway, which has no such route - the upstream 404 surfaces\
+    \ as a bare `400` with an empty body. Use the POST route above.\n\n### Audit TTL auto-purge (broken)\n\nThe API routes\
+    \ `GET|POST|DELETE /api/gateway/audit/activities/ttl` (a read / set / stop-the-auto-purge control), but the appliance's\
+    \ audit gateway service on 8.0.0-6034 has **no ttl routes at all** (verified against the deployed service) - all three\
+    \ answer `400` with an empty body. On 8.0.1-6087 all three answer `403 Access Denied` for a probed admin that passes other\
+    \ delete voters on the same box. The \"disable audit purge via API\" recipe does not work on either build; manage the\
+    \ setting in the UI.\n\n## Workflows & triggers\n\nRun control lives under `/api/wf/*`. The endpoints below cover the\
+    \ most common control flows; less-used ones (`historical-workflows/*`, `expressions/*`, `dynamic-variable/*`) are tracked\
+    \ as a future expansion.\n\n- `POST /api/wf/api/workflows/{pk}/start/` - manually queue.\n- `POST /api/wf/api/workflows/{pk}/resume/`\
     \ - resume a `paused` run. **Not for `awaiting`** manual-input runs - those use `wfinput_resume` (below).\n- `GET /api/wf/api/workflows/{pk}/retry/`\
     \ - retry a failed run from the failed step. **GET, not the guide's POST** (POST answers 405 on 8.0.0).\n- `POST /api/wf/api/workflows/{pk}/approval/`\
     \ - approval-step shortcut.\n\n**Resuming an `awaiting` manual-input run** (verified live end-to-end; the run advances\
@@ -10084,6 +10095,14 @@ paths:
                 searchType:
                   type: string
                   default: _default
+                  description: 'Match strategy -- the UI''s Search-type dropdown. `_default` (Broad Search): each term is
+                    tokenized and the tokens OR together, while separate `q` entries AND together (measured: `Malware detected`
+                    -> 3749 hits vs `malware` -> 2151; `[''malware'',''ransomware'']` -> 2036). `phrase_prefix` (Exact Text
+                    Search): the whole term must appear as a phrase with the last word prefix-matched (`Malware detected`
+                    -> 81). `query_string` (Query Based Search): each term is a Lucene query string against the ES field names
+                    -- `name:malware*` works, `displayName:...` matches nothing, AND/OR/NOT are honored (`NOT <term>` returns
+                    everything, capped at 10000 rows) and a malformed query is NOT an error (200 with `totalItems: 0`). Any
+                    other value is silently treated as `_default`. Semantics live-verified on 8.0.0-6034 and 8.0.1-6087.'
                 modifyDateGte:
                   type: integer
                   description: Lower bound on `modifyDate` (epoch). Omit or 0 for unbounded.
@@ -10096,6 +10115,7 @@ paths:
               offset: 0
               q:
               - malware
+              searchType: _default
               size: 5
       responses:
         '200':
@@ -10110,8 +10130,10 @@ paths:
                     description: ES `total.value` from the underlying search hit count.
                   results:
                     type: array
-                    description: ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`, and `highlight`
-                      carrying the matched fields with the query term wrapped in `<em>` tags).
+                    description: 'ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`, and `highlight`
+                      carrying the matched fields with the query term wrapped in `<em>` tags). `_source` is a variable projection:
+                      which fields it carries differs between calls (one capture had `name`/`severity`, the next only `@id`/`@type`/`uuid`/`displayName`
+                      and the dates) - treat `@id` as the only reliable handle and re-fetch the full record from it.'
                     items:
                       type: object
                   context_code:
@@ -31264,44 +31286,44 @@ paths:
                   $ref: '#/components/schemas/TraceSummary'
               example:
                 traces:
-                - trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
+                - end_time: '2026-10-26T00:03:43.052820+00:00'
+                  name: Summary
                   parent_trace_id: null
                   project_id: default
                   root_span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                  name: Summary
-                  status: OK
                   session_id: null
-                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
-                  start_time: '2026-10-26T00:03:33.722671+00:00'
-                  end_time: '2026-10-26T00:03:43.052820+00:00'
-                  total_tokens: 1814
-                  total_cost: 0.0
                   span_counts:
-                    LLM: 1
                     AGENT: 3
-                    LLM_WRAPPER: 1
                     DOCUMENT_SEARCH: 1
+                    LLM: 1
+                    LLM_WRAPPER: 1
                     SKILL_RETRIEVER: 1
+                  start_time: '2026-10-26T00:03:33.722671+00:00'
+                  status: OK
                   tags: []
-                - trace_id: 55e450e2-d990-47ac-8a73-891301e58617
+                  total_cost: 0.0
+                  total_tokens: 1814
+                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
+                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
+                - end_time: '2026-10-26T00:03:33.655477+00:00'
+                  name: Metric Computation
                   parent_trace_id: null
                   project_id: default
                   root_span_id: 9f91275a-ddae-44a3-80e5-346eecceabc1
-                  name: Metric Computation
-                  status: OK
                   session_id: null
-                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
-                  start_time: '2026-10-26T00:03:21.643822+00:00'
-                  end_time: '2026-10-26T00:03:33.655477+00:00'
-                  total_tokens: 5109
-                  total_cost: 0.0
                   span_counts:
-                    LLM: 1
                     AGENT: 3
-                    LLM_WRAPPER: 1
                     DOCUMENT_SEARCH: 1
+                    LLM: 1
+                    LLM_WRAPPER: 1
                     SKILL_RETRIEVER: 1
+                  start_time: '2026-10-26T00:03:21.643822+00:00'
+                  status: OK
                   tags: []
+                  total_cost: 0.0
+                  total_tokens: 5109
+                  trace_id: 55e450e2-d990-47ac-8a73-891301e58617
+                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
                 - '... <1 more items truncated>'
           x-pyfsr-response-model: list[TraceSummary]
         '404':
@@ -31417,64 +31439,64 @@ paths:
               schema:
                 $ref: '#/components/schemas/TraceTree'
               example:
-                trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
                 root:
-                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                  name: Summary
-                  span_type: AGENT
-                  status: OK
-                  start_time: '2026-10-26T00:03:33.722671+00:00'
-                  end_time: '2026-10-26T00:03:43.052820+00:00'
-                  start_offset_ms: 0
-                  duration_ms: 9330
                   attributes: {}
                   child_count: 3
                   children:
-                  - span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
-                    name: Org Context Search
-                    span_type: DOCUMENT_SEARCH
-                    status: OK
-                    start_time: '2026-10-26T00:03:33.759464+00:00'
-                    end_time: '2026-10-26T00:03:33.840249+00:00'
-                    start_offset_ms: 37
-                    duration_ms: 81
-                    attributes:
+                  - attributes:
                       index: organizational_context_index
-                      top_k: 1
                       results_count: 1
+                      top_k: 1
                     child_count: 0
                     children: []
                     children_truncated: false
+                    duration_ms: 81
+                    end_time: '2026-10-26T00:03:33.840249+00:00'
                     io_preview:
                       input: '{''name'': ''Org Context Search'', ''query'': ''category:SECOPS subCategory:SOC_ANALYST'', ''top_k'':
                         1}'
                       output: '{''index'': ''organizational_context_index'', ''top_k'': 1, ''records'': [{''uuid'': ''73029b83-f40f-477c-aa51-074511618923'',
                         ''score'': 0.80396914, ''title'': ''Role & Responsibility'', ''type_'': ''organizational_conte'
-                  - span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
-                    name: Skill Search
-                    span_type: SKILL_RETRIEVER
+                    name: Org Context Search
+                    span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
+                    span_type: DOCUMENT_SEARCH
+                    start_offset_ms: 37
+                    start_time: '2026-10-26T00:03:33.759464+00:00'
                     status: OK
-                    start_time: '2026-10-26T00:03:33.841626+00:00'
-                    end_time: '2026-10-26T00:03:33.847499+00:00'
-                    start_offset_ms: 119
-                    duration_ms: 6
-                    attributes: {}
+                  - attributes: {}
                     child_count: 0
                     children: []
                     children_truncated: false
+                    duration_ms: 6
+                    end_time: '2026-10-26T00:03:33.847499+00:00'
                     io_preview:
                       input: '{''val'': ''8a42ba92-f54b-42bb-89de-af9328193537'', ''name'': ''Skill Search''}'
                       output: '{''match'': ''EXACT'', ''lookup'': ''uuid'', ''records'': [{''name'': ''Agent Framework - General
                         - Generate Actionable Recommendations from Insights'', ''uuid'': ''8a42ba92-f54b-42bb-89de-af9328193537'',
                         ''config'': Non'
+                    name: Skill Search
+                    span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
+                    span_type: SKILL_RETRIEVER
+                    start_offset_ms: 119
+                    start_time: '2026-10-26T00:03:33.841626+00:00'
+                    status: OK
                   - '... <1 more items truncated>'
                   children_truncated: false
+                  duration_ms: 9330
+                  end_time: '2026-10-26T00:03:43.052820+00:00'
                   io_preview:
                     input: '{''input_data'': {''preview'': ''{"data": {"step1": {"status": "success", "metadata": {}, "original_data":
                       [], "data": {"records": [{"@id": "/api/3/alerts/9b128596-f7b7-4e7e-8fca-5567fdd0acd0", "@type": "A'
                     output: '{''data'': {''summary'': ''Six active alerts have been identified as sharing the highest potential
                       impact to the organization, all classified with high severity and malicious indicator involvement. No
                       sing'
+                  name: Summary
+                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  span_type: AGENT
+                  start_offset_ms: 0
+                  start_time: '2026-10-26T00:03:33.722671+00:00'
+                  status: OK
+                trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
           x-pyfsr-response-model: TraceNode
         '404':
           description: Trace not found.
@@ -31545,66 +31567,66 @@ paths:
               schema:
                 $ref: '#/components/schemas/TraceTree'
               example:
-                root_trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
-                traces:
-                - 94c9abac-4e62-4a6a-a9af-7f383191d40a
                 root:
-                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                  name: Summary
-                  span_type: AGENT
-                  status: OK
-                  start_time: '2026-10-26T00:03:33.722671+00:00'
-                  end_time: '2026-10-26T00:03:43.052820+00:00'
-                  start_offset_ms: 0
-                  duration_ms: 9330
                   attributes: {}
                   child_count: 3
                   children:
-                  - span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
-                    name: Org Context Search
-                    span_type: DOCUMENT_SEARCH
-                    status: OK
-                    start_time: '2026-10-26T00:03:33.759464+00:00'
-                    end_time: '2026-10-26T00:03:33.840249+00:00'
-                    start_offset_ms: 37
-                    duration_ms: 81
-                    attributes:
+                  - attributes:
                       index: organizational_context_index
-                      top_k: 1
                       results_count: 1
+                      top_k: 1
                     child_count: 0
                     children: []
                     children_truncated: false
+                    duration_ms: 81
+                    end_time: '2026-10-26T00:03:33.840249+00:00'
                     io_preview:
                       input: '{''name'': ''Org Context Search'', ''query'': ''category:SECOPS subCategory:SOC_ANALYST'', ''top_k'':
                         1}'
                       output: '{''index'': ''organizational_context_index'', ''top_k'': 1, ''records'': [{''uuid'': ''73029b83-f40f-477c-aa51-074511618923'',
                         ''score'': 0.80396914, ''title'': ''Role & Responsibility'', ''type_'': ''organizational_conte'
-                  - span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
-                    name: Skill Search
-                    span_type: SKILL_RETRIEVER
+                    name: Org Context Search
+                    span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
+                    span_type: DOCUMENT_SEARCH
+                    start_offset_ms: 37
+                    start_time: '2026-10-26T00:03:33.759464+00:00'
                     status: OK
-                    start_time: '2026-10-26T00:03:33.841626+00:00'
-                    end_time: '2026-10-26T00:03:33.847499+00:00'
-                    start_offset_ms: 119
-                    duration_ms: 6
-                    attributes: {}
+                  - attributes: {}
                     child_count: 0
                     children: []
                     children_truncated: false
+                    duration_ms: 6
+                    end_time: '2026-10-26T00:03:33.847499+00:00'
                     io_preview:
                       input: '{''val'': ''8a42ba92-f54b-42bb-89de-af9328193537'', ''name'': ''Skill Search''}'
                       output: '{''match'': ''EXACT'', ''lookup'': ''uuid'', ''records'': [{''name'': ''Agent Framework - General
                         - Generate Actionable Recommendations from Insights'', ''uuid'': ''8a42ba92-f54b-42bb-89de-af9328193537'',
                         ''config'': Non'
+                    name: Skill Search
+                    span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
+                    span_type: SKILL_RETRIEVER
+                    start_offset_ms: 119
+                    start_time: '2026-10-26T00:03:33.841626+00:00'
+                    status: OK
                   - '... <1 more items truncated>'
                   children_truncated: false
+                  duration_ms: 9330
+                  end_time: '2026-10-26T00:03:43.052820+00:00'
                   io_preview:
                     input: '{''input_data'': {''preview'': ''{"data": {"step1": {"status": "success", "metadata": {}, "original_data":
                       [], "data": {"records": [{"@id": "/api/3/alerts/9b128596-f7b7-4e7e-8fca-5567fdd0acd0", "@type": "A'
                     output: '{''data'': {''summary'': ''Six active alerts have been identified as sharing the highest potential
                       impact to the organization, all classified with high severity and malicious indicator involvement. No
                       sing'
+                  name: Summary
+                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  span_type: AGENT
+                  start_offset_ms: 0
+                  start_time: '2026-10-26T00:03:33.722671+00:00'
+                  status: OK
+                root_trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
+                traces:
+                - 94c9abac-4e62-4a6a-a9af-7f383191d40a
           x-pyfsr-response-model: ExecutionTree
         '404':
           description: Trace not found.
@@ -31661,28 +31683,23 @@ paths:
                   $ref: '#/components/schemas/TraceSpan'
               example:
                 spans:
-                - span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
-                  parent_span_id: null
-                  project_id: default
-                  span_type: AGENT
-                  name: Summary
-                  start_time: '2026-10-26T00:03:33.722671+00:00'
+                - attributes: {}
                   end_time: '2026-10-26T00:03:43.052820+00:00'
-                  status: OK
                   error: null
+                  events: []
                   input:
                     input_data:
+                      original_size: 1314195
                       preview: '{"data": {"step1": {"status": "success", "metadata": {}, "original_data": [], "data": {"records":
                         [{"@id": "/api/3/alerts/9b128596-f7b7-4e7e-8fca-5567fdd0acd0", "@type": "Alert", "hostIPAddress":
                         "216... <32568 more characters>'
                       truncated: true
-                      original_size: 1314195
+                  links: []
+                  name: Summary
                   output:
                     data:
-                      summary: Six active alerts have been identified as sharing the highest potential impact to the organization,
-                        all classified with high severity and malicious indicator involvement. No single alert is ranked hig...
-                        <151 more characters>
+                      concise_summary: Six active alerts are tied for highest impact; all require top-priority action due
+                        to high severity and malicious indicators.
                       metadata:
                         record_type: alert
                         record_uuid:
@@ -31692,37 +31709,37 @@ paths:
                       next_action:
                       - 'Quickly triage the six high-risk alerts (record IDs: 9b128596-f7b7-4e7e-8fca-5567fdd0acd0, 17c72c4e-9eec-45fa-add3-67b3205c3c59,
                         5f5e2d9a-7d06-4d85-aa27-51fb51df2627, f4b30b93-e14d-4792-9c19-4ea02de5e... <188 more characters>'
-                      concise_summary: Six active alerts are tied for highest impact; all require top-priority action due
-                        to high severity and malicious indicators.
+                      summary: Six active alerts have been identified as sharing the highest potential impact to the organization,
+                        all classified with high severity and malicious indicator involvement. No single alert is ranked hig...
+                        <151 more characters>
                     status: success
-                  attributes: {}
-                  events: []
-                  links: []
-                  tags: []
-                  session_id: null
-                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
-                - span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
-                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
-                  parent_span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  parent_span_id: null
                   project_id: default
-                  span_type: DOCUMENT_SEARCH
-                  name: Org Context Search
-                  start_time: '2026-10-26T00:03:33.759464+00:00'
-                  end_time: '2026-10-26T00:03:33.840249+00:00'
+                  session_id: null
+                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  span_type: AGENT
+                  start_time: '2026-10-26T00:03:33.722671+00:00'
                   status: OK
+                  tags: []
+                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
+                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
+                - attributes:
+                    index: organizational_context_index
+                    results_count: 1
+                    top_k: 1
+                  end_time: '2026-10-26T00:03:33.840249+00:00'
                   error: null
+                  events: []
                   input:
                     name: Org Context Search
                     query: category:SECOPS subCategory:SOC_ANALYST
                     top_k: 1
+                  links: []
+                  name: Org Context Search
                   output:
                     index: organizational_context_index
-                    top_k: 1
                     records:
-                    - uuid: 73029b83-f40f-477c-aa51-074511618923
-                      score: 0.80396914
-                      title: Role & Responsibility
-                      type_: organizational_context
+                    - category: SECOPS
                       content: 'Role: SOC_ANALYST
 
 
@@ -31739,22 +31756,27 @@ paths:
                         Execution Depth:
 
                         s... <396 more characters>'
-                      category: SECOPS
                       description: 'Responsible for monitoring, validating, and triaging security events to determine their
                         significance and required action.
 
                         Focuses on quick decision-making and prioritization of alerts or entities.'
-                      subCategory: SOC_ANALYST
                       llmSummarize: false
+                      score: 0.80396914
+                      subCategory: SOC_ANALYST
+                      title: Role & Responsibility
+                      type_: organizational_context
+                      uuid: 73029b83-f40f-477c-aa51-074511618923
                     results_count: 1
-                  attributes:
-                    index: organizational_context_index
                     top_k: 1
-                    results_count: 1
-                  events: []
-                  links: []
-                  tags: []
+                  parent_span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  project_id: default
                   session_id: null
+                  span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
+                  span_type: DOCUMENT_SEARCH
+                  start_time: '2026-10-26T00:03:33.759464+00:00'
+                  status: OK
+                  tags: []
+                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
                   user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
                 - '... <1 more items truncated>'
           x-pyfsr-response-model: list[TraceSpan]
@@ -31809,28 +31831,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/TraceSpan'
               example:
-                span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
-                parent_span_id: null
-                project_id: default
-                span_type: AGENT
-                name: Summary
-                start_time: '2026-10-26T00:03:33.722671+00:00'
+                attributes: {}
+                duration_ms: 9330
                 end_time: '2026-10-26T00:03:43.052820+00:00'
-                status: OK
                 error: null
+                events: []
                 input:
                   input_data:
+                    original_size: 1314195
                     preview: '{"data": {"step1": {"status": "success", "metadata": {}, "original_data": [], "data": {"records":
                       [{"@id": "/api/3/alerts/9b128596-f7b7-4e7e-8fca-5567fdd0acd0", "@type": "Alert", "hostIPAddress": "216...
                       <32568 more characters>'
                     truncated: true
-                    original_size: 1314195
+                links: []
+                name: Summary
                 output:
                   data:
-                    summary: Six active alerts have been identified as sharing the highest potential impact to the organization,
-                      all classified with high severity and malicious indicator involvement. No single alert is ranked hig...
-                      <151 more characters>
+                    concise_summary: Six active alerts are tied for highest impact; all require top-priority action due to
+                      high severity and malicious indicators.
                     metadata:
                       record_type: alert
                       record_uuid:
@@ -31840,21 +31858,25 @@ paths:
                     next_action:
                     - 'Quickly triage the six high-risk alerts (record IDs: 9b128596-f7b7-4e7e-8fca-5567fdd0acd0, 17c72c4e-9eec-45fa-add3-67b3205c3c59,
                       5f5e2d9a-7d06-4d85-aa27-51fb51df2627, f4b30b93-e14d-4792-9c19-4ea02de5e... <188 more characters>'
-                    concise_summary: Six active alerts are tied for highest impact; all require top-priority action due to
-                      high severity and malicious indicators.
+                    summary: Six active alerts have been identified as sharing the highest potential impact to the organization,
+                      all classified with high severity and malicious indicator involvement. No single alert is ranked hig...
+                      <151 more characters>
                   status: success
-                attributes: {}
-                events: []
-                links: []
-                tags: []
-                session_id: null
-                user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
-                duration_ms: 9330
+                parent_span_id: null
+                project_id: default
                 rollups:
                   input_tokens: 1380
+                  llm_calls: 1
                   output_tokens: 434
                   total_tokens: 1814
-                  llm_calls: 1
+                session_id: null
+                span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                span_type: AGENT
+                start_time: '2026-10-26T00:03:33.722671+00:00'
+                status: OK
+                tags: []
+                trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
+                user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
           x-pyfsr-response-model: TraceSpan
         '404':
           description: Span not found.
@@ -31913,28 +31935,23 @@ paths:
                       $ref: '#/components/schemas/TraceSpan'
               example:
                 children:
-                - span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
-                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
-                  parent_span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                  project_id: default
-                  span_type: DOCUMENT_SEARCH
-                  name: Org Context Search
-                  start_time: '2026-10-26T00:03:33.759464+00:00'
+                - attributes:
+                    index: organizational_context_index
+                    results_count: 1
+                    top_k: 1
                   end_time: '2026-10-26T00:03:33.840249+00:00'
-                  status: OK
                   error: null
+                  events: []
                   input:
                     name: Org Context Search
                     query: category:SECOPS subCategory:SOC_ANALYST
                     top_k: 1
+                  links: []
+                  name: Org Context Search
                   output:
                     index: organizational_context_index
-                    top_k: 1
                     records:
-                    - uuid: 73029b83-f40f-477c-aa51-074511618923
-                      score: 0.80396914
-                      title: Role & Responsibility
-                      type_: organizational_context
+                    - category: SECOPS
                       content: 'Role: SOC_ANALYST
 
 
@@ -31951,43 +31968,44 @@ paths:
                         Execution Depth:
 
                         s... <396 more characters>'
-                      category: SECOPS
                       description: 'Responsible for monitoring, validating, and triaging security events to determine their
                         significance and required action.
 
                         Focuses on quick decision-making and prioritization of alerts or entities.'
-                      subCategory: SOC_ANALYST
                       llmSummarize: false
+                      score: 0.80396914
+                      subCategory: SOC_ANALYST
+                      title: Role & Responsibility
+                      type_: organizational_context
+                      uuid: 73029b83-f40f-477c-aa51-074511618923
                     results_count: 1
-                  attributes:
-                    index: organizational_context_index
                     top_k: 1
-                    results_count: 1
-                  events: []
-                  links: []
-                  tags: []
-                  session_id: null
-                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
-                - span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
-                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
                   parent_span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
                   project_id: default
-                  span_type: SKILL_RETRIEVER
-                  name: Skill Search
-                  start_time: '2026-10-26T00:03:33.841626+00:00'
-                  end_time: '2026-10-26T00:03:33.847499+00:00'
+                  session_id: null
+                  span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
+                  span_type: DOCUMENT_SEARCH
+                  start_time: '2026-10-26T00:03:33.759464+00:00'
                   status: OK
+                  tags: []
+                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
+                  user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
+                - attributes: {}
+                  end_time: '2026-10-26T00:03:33.847499+00:00'
                   error: null
+                  events: []
                   input:
-                    val: 8a42ba92-f54b-42bb-89de-af9328193537
                     name: Skill Search
+                    val: 8a42ba92-f54b-42bb-89de-af9328193537
+                  links: []
+                  name: Skill Search
                   output:
-                    match: EXACT
                     lookup: uuid
+                    match: EXACT
                     records:
-                    - name: Agent Framework - General - Generate Actionable Recommendations from Insights
-                      uuid: 8a42ba92-f54b-42bb-89de-af9328193537
-                      config: null
+                    - config: null
+                      name: Agent Framework - General - Generate Actionable Recommendations from Insights
+                      response_format: null
                       system_prompt: '## Role
 
                         You are an AI SOC insight assistant.
@@ -32000,15 +32018,19 @@ paths:
                         1. Summarize the key security insights with what implications they will have on the system.
 
                         2. Recommend the next best action the SOC a... <619 more characters>'
-                      response_format: null
                       user_prompt_template: "## Objective: \n{objective}\n\n## Investigation Output: \n{investigation_output}\n"
+                      uuid: 8a42ba92-f54b-42bb-89de-af9328193537
                       validation_prompt_template: null
                     results_count: 1
-                  attributes: {}
-                  events: []
-                  links: []
-                  tags: []
+                  parent_span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  project_id: default
                   session_id: null
+                  span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
+                  span_type: SKILL_RETRIEVER
+                  start_time: '2026-10-26T00:03:33.841626+00:00'
+                  status: OK
+                  tags: []
+                  trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
                   user_id: 57545210-2adc-472b-a24f-2df6ee8dfe63
                 - '... <1 more items truncated>'
         '404':
@@ -32133,64 +32155,64 @@ paths:
               schema:
                 $ref: '#/components/schemas/TraceTree'
               example:
-                trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
                 root:
-                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
-                  name: Summary
-                  span_type: AGENT
-                  status: OK
-                  start_time: '2026-10-26T00:03:33.722671+00:00'
-                  end_time: '2026-10-26T00:03:43.052820+00:00'
-                  start_offset_ms: 0
-                  duration_ms: 9330
                   attributes: {}
                   child_count: 3
                   children:
-                  - span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
-                    name: Org Context Search
-                    span_type: DOCUMENT_SEARCH
-                    status: OK
-                    start_time: '2026-10-26T00:03:33.759464+00:00'
-                    end_time: '2026-10-26T00:03:33.840249+00:00'
-                    start_offset_ms: 37
-                    duration_ms: 81
-                    attributes:
+                  - attributes:
                       index: organizational_context_index
-                      top_k: 1
                       results_count: 1
+                      top_k: 1
                     child_count: 0
                     children: []
                     children_truncated: false
+                    duration_ms: 81
+                    end_time: '2026-10-26T00:03:33.840249+00:00'
                     io_preview:
                       input: '{''name'': ''Org Context Search'', ''query'': ''category:SECOPS subCategory:SOC_ANALYST'', ''top_k'':
                         1}'
                       output: '{''index'': ''organizational_context_index'', ''top_k'': 1, ''records'': [{''uuid'': ''73029b83-f40f-477c-aa51-074511618923'',
                         ''score'': 0.80396914, ''title'': ''Role & Responsibility'', ''type_'': ''organizational_conte'
-                  - span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
-                    name: Skill Search
-                    span_type: SKILL_RETRIEVER
+                    name: Org Context Search
+                    span_id: 49c7c9b2-3ae3-47b8-8f48-a02ae465a1d9
+                    span_type: DOCUMENT_SEARCH
+                    start_offset_ms: 37
+                    start_time: '2026-10-26T00:03:33.759464+00:00'
                     status: OK
-                    start_time: '2026-10-26T00:03:33.841626+00:00'
-                    end_time: '2026-10-26T00:03:33.847499+00:00'
-                    start_offset_ms: 119
-                    duration_ms: 6
-                    attributes: {}
+                  - attributes: {}
                     child_count: 0
                     children: []
                     children_truncated: false
+                    duration_ms: 6
+                    end_time: '2026-10-26T00:03:33.847499+00:00'
                     io_preview:
                       input: '{''val'': ''8a42ba92-f54b-42bb-89de-af9328193537'', ''name'': ''Skill Search''}'
                       output: '{''match'': ''EXACT'', ''lookup'': ''uuid'', ''records'': [{''name'': ''Agent Framework - General
                         - Generate Actionable Recommendations from Insights'', ''uuid'': ''8a42ba92-f54b-42bb-89de-af9328193537'',
                         ''config'': Non'
+                    name: Skill Search
+                    span_id: 580d913d-7926-41ad-985d-8ef9b7e1e26a
+                    span_type: SKILL_RETRIEVER
+                    start_offset_ms: 119
+                    start_time: '2026-10-26T00:03:33.841626+00:00'
+                    status: OK
                   - '... <1 more items truncated>'
                   children_truncated: false
+                  duration_ms: 9330
+                  end_time: '2026-10-26T00:03:43.052820+00:00'
                   io_preview:
                     input: '{''input_data'': {''preview'': ''{"data": {"step1": {"status": "success", "metadata": {}, "original_data":
                       [], "data": {"records": [{"@id": "/api/3/alerts/9b128596-f7b7-4e7e-8fca-5567fdd0acd0", "@type": "A'
                     output: '{''data'': {''summary'': ''Six active alerts have been identified as sharing the highest potential
                       impact to the organization, all classified with high severity and malicious indicator involvement. No
                       sing'
+                  name: Summary
+                  span_id: 9e681053-5f2e-456f-b67d-e62ce403e522
+                  span_type: AGENT
+                  start_offset_ms: 0
+                  start_time: '2026-10-26T00:03:33.722671+00:00'
+                  status: OK
+                trace_id: 94c9abac-4e62-4a6a-a9af-7f383191d40a
           x-pyfsr-response-model: TraceNode
         '404':
           description: Span not found.
@@ -32244,9 +32266,9 @@ paths:
                 $ref: '#/components/schemas/TraceTokenTotals'
               example:
                 input_tokens: 1380
+                llm_calls: 1
                 output_tokens: 434
                 total_tokens: 1814
-                llm_calls: 1
         '404':
           description: Trace not found.
       x-codeSamples:

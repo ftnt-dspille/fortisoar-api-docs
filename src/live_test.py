@@ -1288,7 +1288,9 @@ def scenario_search(s: Session) -> None:
     STRING q throws a PHP TypeError 400, which is why every earlier probe
     with a scalar term looked 'server-broken'. `q` must be a LIST of terms
     and `index` a non-empty LIST of searchable module names (filtered
-    against the caller's permissions). Read-only; safe under both modes.
+    against the caller's permissions). The three searchType strategies
+    (the UI's Search-type dropdown) are each captured. Read-only; safe
+    under both modes.
     """
     _ok = (200, 400, 401, 403)
     print("[search] string q records the TypeError 400 (documented trap)")
@@ -1301,12 +1303,18 @@ def scenario_search(s: Session) -> None:
            json={"q": ["incident"], "index": ["alerts", "incidents"],
                  "offset": 0, "size": 5, "sort": "_score",
                  "modifyDateGte": 0, "modifyDateLte": 0, "searchType": "_default"})
+    print("[search] the three searchType strategies (the UI Search-type dropdown)")
+    for st in ("_default", "phrase_prefix", "query_string"):
+        s.call("POST", "/api/search", want=_ok,
+               json={"q": ["Malware detected"], "index": ["alerts"],
+                     "offset": 0, "size": 3, "searchType": st})
     # LAST: the canonical capture that lands in the spec -- each call to the
     # same op key overwrites the previous observation, so the shape we want
     # documented goes last.
-    print("[search] term list + index list (the shape the controller requires)")
+    print("[search] term list + index list + searchType (the shape the controller requires)")
     s.call("POST", "/api/search", want=_ok,
-           json={"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5})
+           json={"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5,
+                 "searchType": "_default"})
 
 
 @scenario("misc_reads")

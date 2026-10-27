@@ -2730,7 +2730,19 @@ PATHS["/api/search"] = {
                 "offset": {"type": "integer", "default": 0, "description": "0-indexed offset for paging."},
                 "sort": {"type": "string", "default": "_score",
                          "description": "ES sort spec. Defaults to relevance."},
-                "searchType": {"type": "string", "default": "_default"},
+                "searchType": {"type": "string", "default": "_default",
+                               "description": "Match strategy -- the UI's Search-type dropdown. `_default` "
+                                              "(Broad Search): each term is tokenized and the tokens OR together, "
+                                              "while separate `q` entries AND together (measured: `Malware detected` "
+                                              "-> 3749 hits vs `malware` -> 2151; `['malware','ransomware']` -> 2036). "
+                                              "`phrase_prefix` (Exact Text Search): the whole term must appear as a "
+                                              "phrase with the last word prefix-matched (`Malware detected` -> 81). "
+                                              "`query_string` (Query Based Search): each term is a Lucene query string "
+                                              "against the ES field names -- `name:malware*` works, `displayName:...` "
+                                              "matches nothing, AND/OR/NOT are honored (`NOT <term>` returns everything, "
+                                              "capped at 10000 rows) and a malformed query is NOT an error (200 with "
+                                              "`totalItems: 0`). Any other value is silently treated as `_default`. "
+                                              "Semantics live-verified on 8.0.0-6034 and 8.0.1-6087."},
                 "modifyDateGte": {"type": "integer",
                                   "description": "Lower bound on `modifyDate` (epoch). Omit or 0 for unbounded."},
                 "modifyDateLte": {"type": "integer",
@@ -2747,7 +2759,11 @@ PATHS["/api/search"] = {
                                    "description": "ES `total.value` from the underlying search hit count."},
                     "results": {"type": "array",
                                 "description": "ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`, "
-                                               "and `highlight` carrying the matched fields with the query term wrapped in `<em>` tags).",
+                                               "and `highlight` carrying the matched fields with the query term wrapped in `<em>` tags). "
+                                               "`_source` is a variable projection: which fields it carries differs between "
+                                               "calls (one capture had `name`/`severity`, the next only `@id`/`@type`/`uuid`/"
+                                               "`displayName` and the dates) - treat `@id` as the only reliable handle and "
+                                               "re-fetch the full record from it.",
                                 "items": {"type": "object"}},
                     "context_code": {"type": "integer",
                                      "description": "Internal status from the search consumer. `200` on success."},
@@ -5974,6 +5990,12 @@ Different beast. Use for "global search bar" UX; for deterministic per-entity fi
 - **There is no 3-character minimum.** The `q`-empty 400 message says "minimal three character", but the check is only that the array is non-empty - `{"q": ["ab"], "index": ["alerts"]}` answers 200.
 - An `index` list that filters to empty (unknown module or no permission) answers 400 `You must indicate which index to search on.`
 - The controller reads `size` as `offset + size` internally; page with `offset` + `size` pairs.
+- **`searchType` picks the match strategy** (the UI's Search-type dropdown; measured on 8.0.0-6034 and 8.0.1-6087):
+  - `_default` ("Broad Search") -- each term is tokenized and the tokens OR together ("Malware detected" matches MORE than "malware" alone); separate `q` entries AND together.
+  - `phrase_prefix` ("Exact Text Search") -- the whole term must appear as a phrase, with the last word also matched as a prefix ("Malware detected": 3749 broad vs 81 exact).
+  - `query_string` ("Query Based Search") -- each term is a Lucene query string against the ES field names: `name:malware*` works, `displayName:...` matches nothing; `AND`/`OR`/`NOT` are honored (`NOT <term>` returns everything, capped at 10000 rows); a malformed query is not an error (200, `totalItems: 0`).
+  - Anything else is silently treated as `_default`.
+- **`_source` is a variable projection.** Which fields it carries differs between calls (one capture had `name`/`severity`, the next only `@id`/`@type`/`uuid`/`displayName` and the dates). Treat `@id` (e.g. `/api/3/alerts/<uuid>`) as the only reliable handle and re-fetch the full record from it. `highlight` carries the matched fields with the term wrapped in `<em>` tags.
 
 ### Persisted queries
 
