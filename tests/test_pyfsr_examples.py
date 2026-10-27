@@ -23,26 +23,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from pyfsr_examples import PYFSR_EXAMPLES, build_pyfsr_sample  # noqa: E402
 
-# Samples that document pyfsr features NEWER than the pyfsr release this
-# repo's uv.lock pins: (method, path) -> (probe, reason). The probe returns
-# True when the installed pyfsr HAS the feature. Drop the entry once the pin
-# includes it -- the sample then runs against the mock like every other.
-def _pyfsr_has_hydrated_search() -> bool:
-    import pyfsr.api.search as _search
-
-    return (
-        hasattr(_search, "GlobalSearchResult")
-        and callable(getattr(_search.SearchAPI, "__call__", None))
-    )
-
-
-_PIN_LAGS_SAMPLE: dict[tuple[str, str], tuple[object, str]] = {
-    ("post", "/api/search"): (
-        _pyfsr_has_hydrated_search,
-        "SearchAPI callable + hydrated GlobalSearchResult (pyfsr repo, post-0.29.0)",
-    ),
-}
-
 _ALERT_UUID = "9f0eb603-ac1e-41c3-b47b-444589beed39"
 _AGENT_UUID = "6f5e4d3c-2b1a-4c9d-8e7f-1a2b3c4d5e6f"
 _APIKEY_UUID = "660e8400-e29b-41d4-a716-446655440008"
@@ -972,17 +952,7 @@ def mocked_fortisoar():
 
 @pytest.mark.parametrize("key", list(PYFSR_EXAMPLES))
 def test_pyfsr_sample_runs(key, mocked_fortisoar):
-    """Every entry's rendered source executes cleanly against a mocked appliance.
-
-    The mock is built from the pyfsr version installed in THIS repo's venv --
-    the uv.lock pins the PyPI release, which can lag the pyfsr repo that a
-    sample documents. An entry whose sample needs a newer pyfsr than the pin
-    is skipped with a reason (and should flip back to running once the pin is
-    bumped), rather than silently documenting code the pin can't run.
-    """
-    missing = _PIN_LAGS_SAMPLE.get(key)
-    if missing and not missing[0]():
-        pytest.skip(f"sample needs newer pyfsr than the pin: {missing[1]}")
+    """Every entry's rendered source executes cleanly against a mocked appliance."""
     http_method, path = key
     sample = build_pyfsr_sample(http_method, path)
     assert sample["lang"] == "python"

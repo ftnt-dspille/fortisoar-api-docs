@@ -10176,13 +10176,14 @@ paths:
                     - <em>Malware</em> detected on host WS-039
                 - '... <1 more items truncated>'
                 totalItems: 2147
+          x-pyfsr-response-model: GlobalSearchResult
       x-codeSamples:
       - lang: python
         label: pyfsr
         source: "from pyfsr import FortiSOAR\n\nclient = FortiSOAR(\n    base_url=\"https://fortisoar.example.com\",\n   \
           \ username=\"<user>\",\n    password=\"<password>\",\n)\n\nresults = client.search(\"8.8.8.8\", index=[\"alerts\"\
-          ])\nprint(results.total, results[0].name)  # hydrated typed records\n\nraw = client.search(\"8.8.8.8\", index=[\"\
-          alerts\"], hydrate=False)\nprint(raw[\"totalItems\"], raw[\"results\"][0][\"_source\"])  # raw ES hits"
+          ])\nprint(results.total)\nprint(results[0].name)\nraw = client.search(\"8.8.8.8\", index=[\"alerts\"], hydrate=False)\n\
+          print((raw[\"totalItems\"], raw[\"results\"][0][\"_source\"][\"severity\"]))"
       x-live-captured: true
       x-auth: &id075
         apikey: 'yes'
