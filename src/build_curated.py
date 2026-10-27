@@ -6600,13 +6600,6 @@ CURATED_EXAMPLES = {
         "response": {"200": {"status": "Success", "data": {"blocked": True, "ruleId": "deny-3409",
                               "appliedAt": 1736380800}, "operation": "block_ip"}},
     },
-    ("POST", "/api/integration/connectors/healthcheck/"): {
-        "request": {"name": "fortinet-fortigate", "version": "3.2.1",
-                     "config": {"hostname": "fgt-east.example.com"}},
-        "response": {"200": {"status": "Available", "checkedAt": 1736380800,
-                              "responseMs": 184, "version": "3.2.1"}},
-    },
-
     ("GET", "/api/3/picklists/{uuid}"): {"response": {"200": {
         "@context": "/api/3/contexts/Picklist",
         "@id": f"/api/3/picklists/{_UUID}", "@type": "Picklist",
