@@ -1248,32 +1248,36 @@ def scenario_ai(s: Session) -> None:
 
 @scenario("audit_gateway_destructive")
 def scenario_audit_gateway_destructive(s: Session) -> None:
-    """Real audit-log purges -- run ONLY with ``--destructive``.
+    """Audit-gateway purge + TTL -- run ONLY with ``--destructive``.
 
-    Neither call touches a record this run created: the wholesale purge
-    removes audit-activity history for the whole appliance, and the TTL
-    delete flips the audit auto-purge setting. They are captured because
-    they are real API surface, but a default run must never fire them.
-    The purge proxies query params to the gateway (`deleteBefore=...`);
-    the TTL delete proxies a JSON body (the controller injects user
-    fields) and the GET/POST round it so a run can restore what it disabled.
+    The purge goes through the real route (``POST
+    /api/gateway/audit/activities/delete``; the Java gateway exposes no
+    DELETE mapping, so the older ``DELETE /api/gateway/audit/activities``
+    proxy 400s). The scenario fires the purge with ``uptoDate: 0`` -- a
+    measured no-op (``transactionDate`` is never negative), which captures
+    the 200 ``{}`` contract without destroying audit history. A real
+    wholesale purge is the same route with ``uptoDate: <now>``; it is
+    deliberately NOT fired here because its response is identical.
+    The TTL trio is recorded as-is: it has no routes in the 8.0.0 gateway
+    build (400s), and 403s on 8.0.1 for this admin.
     """
     if not s.destructive:
         print("[audit_gateway_destructive] SKIPPED -- pass --destructive to run")
         return
     _ok = (200, 201, 202, 204, 400, 401, 403, 404)
 
-    print("[audit-destructive] TTL: read -> disable -> restore")
+    print("[audit-destructive] TTL trio (no routes in the 8.0.0 gateway -- recorded as-is)")
     _, ttl = s.call("GET", "/api/gateway/audit/activities/ttl", want=_ok)
     s.call("DELETE", "/api/gateway/audit/activities/ttl", want=_ok, json={})
     if isinstance(ttl, dict) and ttl:
         s.call("POST", "/api/gateway/audit/activities/ttl", want=_ok, json=ttl)
-    else:
-        print("[audit-destructive] WARNING: could not read prior TTL to restore")
 
-    print("[audit-destructive] wholesale purge (deleteBefore=epoch)")
+    print("[audit-destructive] broken purge proxy (DELETE /activities, upstream 404 -> 400)")
     s.call("DELETE", "/api/gateway/audit/activities", want=_ok,
            params={"deleteBefore": "1970-01-01T00:00:00Z"})
+
+    print("[audit-destructive] purge via the real route (uptoDate=0 -- deletes nothing)")
+    s.call("POST", "/api/gateway/audit/activities/delete", want=_ok, json={"uptoDate": 0})
 
 
 @scenario("search")
@@ -1287,19 +1291,22 @@ def scenario_search(s: Session) -> None:
     against the caller's permissions). Read-only; safe under both modes.
     """
     _ok = (200, 400, 401, 403)
-    print("[search] term list + index list (the shape the controller requires)")
-    s.call("POST", "/api/search", want=_ok,
-           json={"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5})
-    print("[search] modifyDate window + sort fields")
-    s.call("POST", "/api/search", want=_ok,
-           json={"q": ["incident"], "index": ["alerts", "incidents"],
-                 "offset": 0, "size": 5, "sort": "_score",
-                 "modifyDateGte": 0, "modifyDateLte": 0, "searchType": "_default"})
     print("[search] string q records the TypeError 400 (documented trap)")
     s.call("POST", "/api/search", want=_ok,
            json={"q": "malware", "index": ["alerts"]})
     print("[search] missing index records the BadRequest 400")
     s.call("POST", "/api/search", want=_ok, json={"q": ["malware"]})
+    print("[search] modifyDate window + sort fields")
+    s.call("POST", "/api/search", want=_ok,
+           json={"q": ["incident"], "index": ["alerts", "incidents"],
+                 "offset": 0, "size": 5, "sort": "_score",
+                 "modifyDateGte": 0, "modifyDateLte": 0, "searchType": "_default"})
+    # LAST: the canonical capture that lands in the spec -- each call to the
+    # same op key overwrites the previous observation, so the shape we want
+    # documented goes last.
+    print("[search] term list + index list (the shape the controller requires)")
+    s.call("POST", "/api/search", want=_ok,
+           json={"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5})
 
 
 @scenario("misc_reads")

@@ -78,6 +78,15 @@ UNSAFE = {
     ("POST", "/ai/enrich/index/build"),
 }
 
+# Routes where the junk body is DESTRUCTIVE and a measured no-op body must be
+# sent instead (with valid credentials too). The audit purge treats a missing
+# `uptoDate` as "no date filter" and would delete the entire audit log, so the
+# probe sends `{"uptoDate": 0}` -- `transactionDate < 0` matches no record
+# (live-verified: response 200 {}, record count unchanged).
+SAFE_BODIES = {
+    ("POST", "/api/gateway/audit/activities/delete"): {"uptoDate": 0},
+}
+
 # A real module name keeps the request on the module's handler instead of a
 # routing 404 that can answer before auth.
 MODULE_PARAMS = {"module", "collection", "moduleType", "recordType", "type"}
@@ -593,7 +602,7 @@ def _probe(args: argparse.Namespace, clients: dict[str, FortiSOAR]) -> int:
     }
 
     def send(client: FortiSOAR, method: str, path: str, headers: dict | None = None):
-        data = PROBE_BODY if method != "GET" else None
+        data = None if method == "GET" else SAFE_BODIES.get((method, path), PROBE_BODY)
         try:
             return client.request(method, path, data=data, headers=headers, raise_on_status=False)
         except Exception as exc:  # noqa: BLE001 -- transport errors become a recorded ERROR

@@ -194,7 +194,7 @@ SCHEMAS = {
             "source": {"type": ["string", "null"], "example": "FireEye EX - Email MPS"},
             "description": {"type": ["string", "null"]},
             "type": {"type": ["string", "null"], "description": "IRI to picklist value, e.g. /api/3/picklists/<uuid>."},
-            "severity": {"type": ["string", "null"], "description": "IRI to AlertSeverity picklist value."},
+            "severity": {"type": ["string", "null"], "description": "IRI to Severity picklist value."},
             "status": {"type": ["string", "null"], "description": "IRI to AlertStatus picklist value."},
             "assignedTo": {"type": ["string", "null"], "description": "IRI to /api/3/people/<uuid>."},
             "dueDate": {"type": ["integer", "null"], "format": "int64"},
@@ -2700,23 +2700,32 @@ PATHS["/api/search"] = {
         "tags": ["Query"],
         "summary": "Global Elasticsearch search",
         "description": (
-            "Cross-module text search backed by Elasticsearch. **Min 3 chars** enforced. "
-            "Team / RBAC scoped automatically (your accessible team IRIs are appended to "
-            "the ES filter). Use this for global-search-bar UX; for deterministic "
-            "per-entity filtering prefer `POST /api/query/<resourceShortName>`.\n\n"
-            "**Diagnostic gotcha:** this route returns `400 TypeError` when the "
-            "downstream search service is unhealthy, not when the request body is "
-            "wrong. If you see that error with a well-formed body, the search "
-            "subsystem on the appliance needs attention - the API surface itself is "
-            "fine."
+            "Cross-module text search backed by Elasticsearch. Team / RBAC scoped "
+            "automatically (your accessible team IRIs are appended to the ES filter). "
+            "Use this for global-search-bar UX; for deterministic per-entity filtering "
+            "prefer `POST /api/query/<resourceShortName>`.\n\n"
+            "**Body-shape gotchas (root-caused in the search controller, "
+            "live-verified 200 on 8.0.0-6034 and 8.0.1-6087):** `q` MUST be an array "
+            "of terms and `index` a non-empty array of module names. A STRING `q` "
+            "crashes the controller with `400 {\"type\": \"TypeError\"}` (it counts the "
+            "terms array), and an empty/permission-filtered `index` answers 400 "
+            "`You must indicate which index to search on.` The controller reads "
+            "`size` as `offset + size` internally, so page with `offset` + `size` "
+            "pairs. The `q`-empty 400 message says 'minimal three character' but the "
+            "check is only non-empty: 2-char terms answer 200. Earlier builds' docs "
+            "called this route server-broken; the TypeError was the string `q`, not "
+            "the search service."
         ),
         "requestBody": {"required": True, "content": {"application/json": {
             "schema": {"type": "object", "required": ["q", "index"], "properties": {
-                "q": {"type": "string", "minLength": 3,
-                      "description": "Search term. Server enforces a min-3-character rule and rejects shorter strings."},
+                "q": {"type": "array", "items": {"type": "string"}, "minItems": 1,
+                      "description": "Search terms as a LIST (a bare string throws the controller's `count()` TypeError). "
+                                     "The server only checks the list is non-empty -- the 400 message claims a "
+                                     "min-3-char rule but 2-char terms answer 200 (live-verified)."},
                 "index": {"type": "array", "items": {"type": "string"}, "minItems": 1,
-                          "example": ["alerts", "incidents"],
-                          "description": "Plural module names to search across. The server intersects this with the caller's accessible types."},
+                          "description": "Plural module names to search across (e.g. `alerts`, `incidents`, `workflows`). "
+                                         "The server intersects this with the caller's accessible types; a list that "
+                                         "filters to empty answers the `You must indicate which index` 400."},
                 "size": {"type": "integer", "default": 30, "description": "Max hits to return."},
                 "offset": {"type": "integer", "default": 0, "description": "0-indexed offset for paging."},
                 "sort": {"type": "string", "default": "_score",
@@ -2727,7 +2736,7 @@ PATHS["/api/search"] = {
                 "modifyDateLte": {"type": "integer",
                                   "description": "Upper bound on `modifyDate` (epoch). Omit or 0 for unbounded."},
             }},
-            "example": {"q": "fortinet phishing", "index": ["alerts", "incidents"], "size": 30},
+            "example": {"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5},
         }}},
         "responses": {"200": {
             "description": "Search payload.",
@@ -2737,7 +2746,8 @@ PATHS["/api/search"] = {
                     "totalItems": {"type": "integer",
                                    "description": "ES `total.value` from the underlying search hit count."},
                     "results": {"type": "array",
-                                "description": "ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`).",
+                                "description": "ES `hits` array (raw - each entry has `_index`, `_id`, `_score`, `_source`, "
+                                               "and `highlight` carrying the matched fields with the query term wrapped in `<em>` tags).",
                                 "items": {"type": "object"}},
                     "context_code": {"type": "integer",
                                      "description": "Internal status from the search consumer. `200` on success."},
@@ -2783,9 +2793,48 @@ PATHS["/api/gateway/audit/activities"] = {
     },
     "delete": {
         "tags": ["Audit"],
-        "summary": "Wholesale purge (research)",
-        "description": "Mass-delete by body filter. Behavior unverified in this curated pass; treat as risky. See TODOS.",
-        "responses": {"200": _resp("Purge result.")},
+        "summary": "Wholesale purge (broken - use POST /api/gateway/audit/activities/delete)",
+        "description": (
+            "**Broken on 8.0.0-6034** - every call answers `400` with an empty body "
+            "(live-verified under JWT and API key). Root cause (route tables plus "
+            "the deployed audit gateway): this route proxies `DELETE "
+            "/audit/activities?<query>` to the audit gateway service, but the "
+            "gateway only exposes the purge at "
+            "`POST /audit/activities/delete` - the upstream 404 surfaces here as a bare 400. "
+            "Use `POST /api/gateway/audit/activities/delete` instead."
+        ),
+        "deprecated": True,
+        "responses": {"400": _resp("Empty body - upstream 404 wrapped by the API proxy.")},
+    },
+}
+
+PATHS["/api/gateway/audit/activities/delete"] = {
+    "post": {
+        "tags": ["Audit"],
+        "summary": "Wholesale purge of audit records (destructive)",
+        "description": (
+            "Mass-delete audit records matching the body filter. The audit "
+            "gateway runs a filtered bulk delete: `uptoDate` becomes "
+            "`transactionDate < uptoDate` "
+            "(epoch ms), `operations` becomes an `operation IN (...)` clause; `userId`, "
+            "`user` and `source` are injected server-side by the proxy layer and every "
+            "purge writes its own audit record. Live-verified on 8.0.0-6034: "
+            "`{\"uptoDate\": 0}` answers `200 {}` and deletes nothing (`transactionDate` "
+            "is never negative) - a safe probe shape; `uptoDate: <now>` purges everything "
+            "before now. There is no undo.\n\n"
+            "Note the proxy forwards this as a **POST** to the gateway (the gateway "
+            "has no DELETE mapping here) - the public route is POST, not DELETE."
+        ),
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object", "required": ["uptoDate"], "properties": {
+                "uptoDate": {"$ref": "#/components/schemas/EpochMs",
+                             "description": "Delete audit records with `transactionDate` strictly before this epoch-ms cutoff. `0` is a no-op."},
+                "operations": {"type": "array", "items": {"$ref": "#/components/schemas/AuditOperation"},
+                               "description": "Optional restrictor - purge only these operation names (e.g. `[\"Login Success\"]`)."},
+            }},
+            "example": {"uptoDate": 0},
+        }}},
+        "responses": {"200": _resp("Purge accepted - empty JSON object (the count of deleted rows is not returned).", example={})},
     },
 }
 
@@ -2819,10 +2868,50 @@ PATHS["/api/gateway/audit/operations"] = {
     },
 }
 
+_audit_ttl_desc = (
+    "The API exposes GET/POST/DELETE on this path (a read / set / "
+    "stop-the-audit-auto-purge-TTL control), but **none of them work on the "
+    "probed builds**. Live-verified: on 8.0.0-6034 all three answer `400` with "
+    "an empty body - the appliance's audit gateway service has no "
+    "`/audit/activities/ttl` routes at all on that build (verified against "
+    "the deployed service), so the upstream 404 surfaces as a bare 400. On "
+    "8.0.1-6087 all three answer `403 Access Denied` for the probed admin "
+    "(which passes other delete voters on the same box). Treat this family as "
+    "unusable via the API; manage audit purge settings in the UI."
+)
+
 PATHS["/api/gateway/audit/activities/ttl"] = {
-    "delete": {"tags": ["Audit"], "summary": "Disable TTL (stop auto-purge of audit logs)",
-               "description": "Documented Fortinet recipe to **stop automatic purging of audit logs**. Returns 200.",
-               "responses": {"200": _resp("Disabled.")}},
+    "get": {
+        "tags": ["Audit"],
+        "summary": "Read audit TTL (broken - 400 on 8.0.0, 403 on 8.0.1)",
+        "description": _audit_ttl_desc,
+        "deprecated": True,
+        "responses": {"400": _resp("Empty body - upstream 404 wrapped by the API proxy (8.0.0)."),
+                      "403": _resp("Access Denied (8.0.1).")},
+    },
+    "post": {
+        "tags": ["Audit"],
+        "summary": "Set audit TTL (broken - 400 on 8.0.0, 403 on 8.0.1)",
+        "description": _audit_ttl_desc,
+        "deprecated": True,
+        "requestBody": {"required": True, "content": {"application/json": {
+            "schema": {"type": "object",
+                       "description": "TTL settings object. Its fields were never observable - the route "
+                                      "404s upstream on 8.0.0-6034 and answers 403 on 8.0.1-6087 before any "
+                                      "body is accepted, so no body shape could be captured."},
+            "example": {},
+        }}},
+        "responses": {"400": _resp("Empty body - upstream 404 wrapped by the API proxy (8.0.0)."),
+                      "403": _resp("Access Denied (8.0.1).")},
+    },
+    "delete": {
+        "tags": ["Audit"],
+        "summary": "Disable TTL / stop auto-purge (broken - 400 on 8.0.0, 403 on 8.0.1)",
+        "description": _audit_ttl_desc,
+        "deprecated": True,
+        "responses": {"400": _resp("Empty body - upstream 404 wrapped by the API proxy (8.0.0)."),
+                      "403": _resp("Access Denied (8.0.1).")},
+    },
 }
 
 
@@ -4570,7 +4659,8 @@ PATHS["/api/3/picklist_names"] = {
                 "Hydra collection of every picklist *taxonomy* (named list). Each entry's `@id` is the "
                 "IRI you pass as `listName` when fetching values via "
                 "`GET /api/3/picklists?listName=<iri>`. Names are PascalCase "
-                "(e.g. `AlertSeverity`, `AlertStatus`, `Severity`)."
+                "(e.g. `AlertStatus`, `Severity`). Resolve a field's taxonomy "
+                "with `?name=<taxonomy>`."
             ),
             "responses": {"200": _resp("Hydra collection of picklist taxonomies.")}},
     "post": {
@@ -4599,7 +4689,7 @@ PATHS["/api/3/picklist_names/{uuid}"] = {
     "parameters": [{"name": "uuid", "in": "path", "required": True, "schema": {"$ref": "#/components/schemas/UUID"}}],
     "get": {"tags": ["Metadata"], "summary": "Picklist taxonomy",
             "description": (
-                "Resolves one picklist *taxonomy* record by uuid - the named list (e.g. `AlertSeverity`) "
+                "Resolves one picklist *taxonomy* record by uuid - the named list (e.g. `Severity`) "
                 "whose members are exposed via `GET /api/3/picklists/{uuid}`."
             ),
             "responses": {"200": _resp("Picklist name record.")}},
@@ -5378,7 +5468,14 @@ PATHS["/api/views/1/{name}"] = {
                            "400": {"description": "Missing body, or a required column such as `module`."},
                            "409": {"description": "A non-default copy already exists for this user."}}},
     "put": {"tags": ["Views"], "summary": "Update the caller's own layout for a view",
-            "description": "Same handler and body as POST.",
+            "description": (
+                "Updates the **caller's own** layout for the view - same handler and body "
+                "as `POST /api/views/1/{name}` (send `type`, `module`, `viewOptions`, "
+                "`config` and `isDefault: true`). A copy saved without `isDefault` is "
+                "never read back, and the next write fails with 409 (`module, "
+                "viewoptions, name, owner` must be unique). User view templates cannot "
+                "be deleted through the API."
+            ),
             "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
             "responses": {"200": _resp("Saved view template."),
                           "409": {"description": "A non-default copy already exists for this user."}}},
@@ -5677,7 +5774,25 @@ Responses follow the **JSON-LD + Hydra** convention. In practice that means ever
 - **IRI** - a relative URL like `/api/3/alerts/<uuid>`. Treat it as a foreign-key pointer: wherever JSON references another record, that's what you'll see. The server generates `@id` on insert; clients should not send it.
 - **UUID** - 36-character hex w/ hyphens. Optional on POST: send your own to retain it for cross-system reference, or omit and read it back from the response IRI.
 - **CamelCase** - every key is camelCase (`sourceId`, `dueDate`, `hydra:variableRepresentation`). Use the same convention for any custom modules.
-- **Picklist values are IRIs from 7.5.0+.** Posting `"severity": "High"` is rejected; you must post `"severity": "/api/3/picklists/<value-uuid>"`. Fetch the value's IRI from `GET /api/3/picklists?listName.name=AlertSeverity&itemValue=High`. Bulk-feed paths are an exception (no validation).
+- **Picklist values are IRIs from 7.5.0+.** Posting `"severity": "High"` is rejected; you must post `"severity": "/api/3/picklists/<value-uuid>"`. Bulk-feed paths are an exception (no validation).
+
+**Resolving a picklist IRI** (the caller-side recipe every create/update above assumes):
+
+```jsonc
+// 1. You know the picklist's name -- one GET. The name is the LIST's name
+//    (e.g. "Severity"), not the field's module label; itemValue alone is
+//    ambiguous (three different lists carry "High"), so always qualify it:
+GET /api/3/picklists?listName.name=Severity&itemValue=High
+//    -> hydra:member[0].@id is the IRI to post.
+
+// 2. You only know the field's taxonomy name -- two GETs:
+GET /api/3/picklist_names?name=Severity&$limit=1
+//    -> hydra:member[0].@id is the list IRI (/api/3/picklist_names/<uuid>)
+GET /api/3/picklists?listName=/api/3/picklist_names/<uuid>&$limit=100
+//    -> find the member whose itemValue matches; its @id is the IRI.
+```
+
+Cache the resolved IRIs per process - records reference the same values repeatedly, and the second form costs two GETs per uncached (taxonomy, value) pair.
 - **Trigger-bypass semantics.** `POST /api/ingest-feeds/*` and `POST /api/insert-feeds/*` skip on-create playbook triggers (intentional, for high-volume feeds). `POST /api/3/insert/*` (with optional `__bulk: true` for batching) does **not** skip triggers.
 
 ## Authentication
@@ -5844,9 +5959,10 @@ Different beast. Use for "global search bar" UX; for deterministic per-entity fi
 
 ```jsonc
 {
-  "q": "fortinet phishing",         // **min 3 chars** enforced
-  "index": ["alerts", "incidents"], // required, non-empty
+  "q": ["malware"],                  // ARRAY of terms -- a bare string 400s (TypeError)
+  "index": ["alerts", "incidents"],  // required, non-empty
   "size": 30, "offset": 0,
+  "sort": "_score",
   "searchType": "_default",
   "modifyDateGte": 0, "modifyDateLte": 0
 }
@@ -5854,8 +5970,10 @@ Different beast. Use for "global search bar" UX; for deterministic per-entity fi
 
 - Multi-index in one call.
 - Team / RBAC scoped automatically (joins `accessibleTeamIris`).
-- 3-character minimum enforced server-side.
-- `400 TypeError` from this route means the downstream `cyops-search` MQ consumer is unhealthy, not that the body shape is wrong. Check `systemctl status cyops-search` on the appliance.
+- **`q` must be an array.** Root-caused in the search controller and live-verified 200 on 8.0.0-6034 and 8.0.1-6087: the handler counts the terms array, so a string `q` throws `400 TypeError`. The long-standing "this route is server-broken" impression was the string body, not the search service.
+- **There is no 3-character minimum.** The `q`-empty 400 message says "minimal three character", but the check is only that the array is non-empty - `{"q": ["ab"], "index": ["alerts"]}` answers 200.
+- An `index` list that filters to empty (unknown module or no permission) answers 400 `You must indicate which index to search on.`
+- The controller reads `size` as `offset + size` internally; page with `offset` + `size` pairs.
 
 ### Persisted queries
 
@@ -5876,6 +5994,17 @@ Persisted queries are stored in `/api/3/queries` (ad-hoc), `/api/3/system_querie
 9. **JWT lifetime is short.** Default ~30 min; long-running syncs need to re-auth on 401, or use an API key where the operation takes one.
 
 The 45-value `operation` enum is in the `AuditOperation` schema; fetch it dynamically from `GET /api/gateway/audit/operations`.
+
+### Purging audit logs (destructive)
+
+The real purge is **`POST /api/gateway/audit/activities/delete`** (POST, not DELETE - the audit gateway exposes no DELETE mapping). Body: `{"uptoDate": <epoch ms>, "operations": ["<op name>", ...]}` - `uptoDate` becomes `transactionDate < uptoDate`, `operations` restricts to an `operation IN (...)` clause, and the proxy layer injects `userId`/`user`/`source` before forwarding (every purge also writes its own audit record). Response is a bare `200 {}` - the deleted-row count is not returned. There is no undo.
+
+- **`{"uptoDate": 0}` is a safe probe** - `transactionDate` is never negative, so it deletes nothing (live-verified: 200 `{}` with the record count unchanged). Use it to smoke-test the route; pass a current timestamp for a real purge.
+- `DELETE /api/gateway/audit/activities?...` is **broken on 8.0.0-6034**: it proxies `DELETE /audit/activities?<query>` to the audit gateway, which has no such route - the upstream 404 surfaces as a bare `400` with an empty body. Use the POST route above.
+
+### Audit TTL auto-purge (broken)
+
+The API routes `GET|POST|DELETE /api/gateway/audit/activities/ttl` (a read / set / stop-the-auto-purge control), but the appliance's audit gateway service on 8.0.0-6034 has **no ttl routes at all** (verified against the deployed service) - all three answer `400` with an empty body. On 8.0.1-6087 all three answer `403 Access Denied` for a probed admin that passes other delete voters on the same box. The "disable audit purge via API" recipe does not work on either build; manage the setting in the UI.
 
 ## Workflows & triggers
 
@@ -6399,18 +6528,20 @@ CURATED_EXAMPLES = {
     },
 
     ("POST", "/api/search"): {
-        "request": {"q": "fortinet phishing", "index": ["alerts", "incidents"], "size": 30},
+        # Measured shape (8.0.0-6034 / 8.0.1-6087): q is a LIST of terms and the
+        # response carries {totalItems, results[{_index,_id,_score,_source}],
+        # context_code} -- the old string-q + ES-hits example here was invented
+        # and never matched the wire.
+        "request": {"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5},
         "response": {"200": {
-            "took": 142, "timed_out": False,
-            "hits": {"total": 87, "max_score": 6.42, "hits": [
-                {"_index": "alerts", "_id": _UUID, "_score": 6.42,
-                 "_source": {"name": "Fortinet phishing - exec impersonation",
-                              "source": "Proofpoint", "severity": "High",
-                              "modifyDate": 1736380800}},
-                {"_index": "incidents", "_id": _UUID2, "_score": 5.81,
-                 "_source": {"name": "INC-204 phishing campaign",
-                              "status": "Investigating", "modifyDate": 1736294400}},
-            ]},
+            "totalItems": 2147,
+            "results": [
+                {"_index": "cyops_alerts", "_id": _UUID, "_score": 9.33,
+                 "_source": {"@id": f"/api/3/alerts/{_UUID}", "@type": "Alert",
+                              "uuid": _UUID, "name": "Fortinet phishing - exec impersonation",
+                              "severity": "High", "modifyDate": 1736380800}},
+            ],
+            "context_code": 200,
         }},
     },
 
@@ -6486,7 +6617,7 @@ CURATED_EXAMPLES = {
     ("GET", "/api/3/picklist_names/{uuid}"): {"response": {"200": {
         "@context": "/api/3/contexts/PicklistName",
         "@id": f"/api/3/picklist_names/{_UUID}", "@type": "PicklistName",
-        "uuid": _UUID, "name": "AlertSeverity", "displayName": "Alert Severity",
+        "uuid": _UUID, "name": "Severity", "displayName": "Severity",
         "picklists": [
             f"/api/3/picklists/{_UUID2}",
             "/api/3/picklists/3b0f2a4d-1c8e-4b5a-9d6f-7e2b3c1a4d5e",
@@ -6784,6 +6915,7 @@ CROSS_LINKS = {
     "/api/search": "[Query reference](#description/query-reference) (`/api/search` section)",
     # Audit
     "/api/gateway/audit/activities": "[Audit gateway quirks](#description/audit-gateway-quirks)",
+    "/api/gateway/audit/activities/delete": "[Audit gateway quirks](#description/audit-gateway-quirks)",
     "/api/gateway/audit/activities/count": "[Audit gateway quirks](#description/audit-gateway-quirks)",
     "/api/gateway/audit/activities/{auditId}": "[Audit gateway quirks](#description/audit-gateway-quirks)",
     "/api/gateway/audit/operations": "[Audit gateway quirks](#description/audit-gateway-quirks)",

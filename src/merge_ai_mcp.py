@@ -106,15 +106,42 @@ SUMMARY_OVERRIDES = {
     ("post", "/api/ai/agent/activate"): {"summary": "Activate or deactivate an agent",
                                "description": "Activate or deactivate one or more agents by uuid. Accepts `uuids` (list of agent uuids) and `active` (boolean, default true). Must be installed before activation."},
     ("post", "/api/ai/agent/config"): {"summary": "Update agent configuration (LLM profile, MCP allowlist)",
-                               "description": "Create or update an agent's LLM configuration profile, including which LLM provider and MCP servers the agent may call. Body requires `agent_name`, `agent_version`, and `config` object."},
+                               "description": (
+                                   "NOT ROUTED: the fsr-ai router implements only `POST /api/ai/agent/config/default` "
+                                   "and `GET /api/ai/agent/config/{agent_name}/{version}` -- there is no per-agent config "
+                                   "POST, so every body answers `404 {\"detail\": \"'NoneType' object has no attribute "
+                                   "'id'\"}` (live-verified on 8.0.0-6034 and 8.0.1-6087). To set an agent's LLM profile "
+                                   "and MCP allowlist, update the default template (`POST /api/ai/agent/config/default`) "
+                                   "before installing the agent, or manage the profile in the UI."
+                               ),
+                               "deprecated": True},
     ("get", "/api/ai/agent/config/default"): {"summary": "Get default agent configuration template",
                                "description": "Return the system-wide agent configuration template (LLM provider, version, MCP allowlist) used for newly installed agents. Response: `AiAgentConfigurationDTO`."},
     ("post", "/api/ai/agent/config/default"): {"summary": "Update default agent configuration template",
-                                           "description": "Update the system-wide agent configuration template. Affects all agents that use the default profile. Body: `config` object with LLM provider, model, and MCP server allowlist."},
+                                           "description": (
+                                               "Update the system-wide agent configuration template. Affects all agents that use the "
+                                               "default profile. Body is the `AiAgentConfigurationDTO` read from "
+                                               "`GET /api/ai/agent/config/default` (`{agent_name, agent_version, config, config_id, "
+                                               "default, ...}`) -- writing the SAME values back is a no-op update (200 echoes the "
+                                               "DTO, live-verified)."
+                                           )},
     ("get", "/api/ai/agent/config/{agent_name}/{version}"): {"summary": "Get agent-specific configuration",
-                                                       "description": "Return the configuration for a specific agent, including LLM provider, model version, and MCP server allowlist."},
+                                                       "description": (
+                                                           "Return the configuration for a specific agent, including LLM provider, model version, and MCP "
+                                                           "server allowlist. **500s on 8.0.0-6034 and 8.0.1-6087** for the built-in ioc-masking agent "
+                                                           "AND for a freshly imported custom agent (live-verified both) -- the per-agent config read "
+                                                           "is broken; `GET /api/ai/agent/config/default` works."
+                                                       )},
     ("post", "/ai/agent/import"): {"summary": "Import an agent package (zip)",
-                              "description": "Upload an agent package as multipart form (`file`). The agent lands inactive; call `POST /api/ai/agent/activate` with its uuid to make it eligible for routing. Set `?replace=true` to overwrite an existing agent of the same name+version."},
+                              "description": (
+                                  "Upload an agent package as multipart form (`file`). The route must be called WITHOUT the "
+                                  "`/api` prefix (`POST /ai/agent/import`, straight to fsr-ai) -- the `/api/ai` gateway drops "
+                                  "multipart bodies (422 `file: Field required`). Requires JWT: fsr-ai refuses API keys (401, "
+                                  "live-verified). Returns the created agent record (`{name, version, uuid, active, category, "
+                                  "classpath, ...}` -- `active: true` on 8.0.0-6034). Set `?replace=true` to overwrite an "
+                                  "existing agent of the same name+version. `DELETE /api/ai/agent/{name}/{version}` removes it "
+                                  "again (200 with the deleted record, live-verified)."
+                              )},
     ("post", "/api/ai/agent/export/{agent_id}"): {"summary": "Export an agent as a zip package",
                                        "description": "Download an installed agent as a zip archive. `agent_id` is the agent's uuid from `list_agents`."},
     ("delete", "/api/ai/agent/{name}/{version}"): {"summary": "Delete an installed agent",
@@ -136,7 +163,20 @@ SUMMARY_OVERRIDES = {
     ("post", "/api/ai/llm/config"): {"summary": "Create LLM reasoning profiles",
                               "description": "Create one or more LLM reasoning profiles. Body is a LIST of profile objects: `[{\"name\": ...}]` at minimum (a bare object 422s `Input should be a valid list`; an empty list is a no-op 201). Each item: `{name, isdefault, active, modelname, provider, apikey, baseurl, config}`. Returns the echoed list (server assigns uuids; the echo shows `uuid: null`)."},
     ("delete", "/api/ai/llm/config/{uuid}"): {"summary": "Delete an LLM reasoning profile",
-                                        "description": "Delete the specified LLM reasoning profile by uuid. **Broken on 8.0.0**: every DELETE answers `400 {\"type\": \"TypeError\", \"message\": \"Internal Server Error...\"}` regardless of profile state (full-field profile included, live-verified) -- the fsr-ai delete handler raises. Profiles therefore cannot be removed via the API on this build."},
+                                        "description": (
+                                            "Delete the specified LLM reasoning profile by uuid. **Broken on every "
+                                            "probed build -- the profile is NOT deleted.** Root cause (read from the "
+                                            "fsr-ai source): the delete handler is a copy-paste of the getter -- it "
+                                            "calls `get_llm_config_by_uuid(uuid)` and returns `\"<uuid> deleted "
+                                            "successfully\"` without deleting anything. Live-verified: on 8.0.0-6034 "
+                                            "the gateway route answers `400 {\"type\": \"TypeError\"}` before reaching "
+                                            "fsr-ai; calling fsr-ai directly (`DELETE /ai/llm/config/{uuid}`, no `/api` "
+                                            "prefix) answers `200 \"<uuid> deleted successfully\"` -- and a re-`GET` of "
+                                            "`/api/ai/llm/config` still lists the profile. On 8.0.1-6087 the gateway "
+                                            "route forwards and fails DTO validation instead. Profiles are therefore "
+                                            "undeletable via the API on all probed builds; automation should treat "
+                                            "`POST /api/ai/llm/config` as irreversible (profiles accumulate)."
+                                        )},
     ("get", "/api/ai/llm/config/{uuid}"): {"summary": "Get an LLM reasoning profile by uuid",
                                     "description": "Return the full LLM configuration record for the specified uuid, including provider, model name, temperature, system prompt, and active/default status."},
     ("get", "/api/ai/llm/config/{uuid}/verify"): {"summary": "Verify an LLM reasoning profile is callable",
@@ -176,9 +216,9 @@ SUMMARY_OVERRIDES = {
     # the reference appliance; context/index answers
     # `{"detail": "Failed to index context record"}` and bare context 500s.
     ("post", "/api/ai/enrich/context"): {"summary": "Retrieve knowledge-base enrichment for context",
-                                  "description": "Retrieve vector-search enrichment from the knowledge base for a given context. Returns relevant indexed documents with similarity scores. On 8.0.0 with no organizational-context KB configured this 500s (bare `Internal Server Error`) -- environment-limited, not a route problem."},
+                                  "description": "Retrieve vector-search enrichment from the knowledge base for a given context. Returns relevant indexed documents with similarity scores. On 8.0.0-6034 AND 8.0.1-6087 with no organizational-context KB configured this 500s (bare `Internal Server Error`) -- environment-limited, not a route problem."},
     ("post", "/api/ai/enrich/context/index"): {"summary": "Index a document into the knowledge base",
-                                       "description": "Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Body is an `OrganizationalContextDTO`: `{\"uuid\", \"title\", \"category\", \"subCategory\", \"description\", \"content\", \"llmSummarize\", \"type_\": \"organizational_context\"}`. On 8.0.0 with no KB configured: 500 `{\"detail\": \"Failed to index context record\"}`."},
+                                       "description": "Embed and index a document into the knowledge-base vector store for later retrieval via RAG. Body is an `OrganizationalContextDTO`: `{\"uuid\", \"title\", \"category\", \"subCategory\", \"description\", \"content\", \"llmSummarize\", \"type_\": \"organizational_context\"}`. On 8.0.0-6034 AND 8.0.1-6087 with no KB configured: 500 `{\"detail\": \"Failed to index context record\"}`."},
     ("delete", "/api/ai/enrich/context/index/{uuid}"): {"summary": "Remove a document from the knowledge base index",
                                                  "description": "Delete a previously-indexed document from the knowledge-base vector store. The document will no longer be returned by RAG enrichment queries."},
     ("post", "/api/ai/enrich/index/build"): {"summary": "Build or rebuild the knowledge-base vector index",
@@ -396,6 +436,11 @@ def _build_pyfsr_only_paths():
 
     # --- /api/ai/traces - AI trace observability (pyfsr-only, not in service OpenAPI) ---
     _t = "AI Traces"
+    # Response shapes measured on 8.0.1-6087 (scratch/traces-8.0.1-bodies.json:
+    # every GET in this family answers 200 there). The 8.0.0 docs box 403s the
+    # whole family behind the tracer store, so these schemas come from the
+    # 8.0.1 payloads -- not invented. The schemas live in EXTRA_SCHEMAS below
+    # (TraceSummary / TraceSpan / TraceSpanNode / TraceTree / TraceTokenTotals).
     PYFSR_ONLY_PATHS["/api/ai/traces/"] = {
         "get": {
             "tags": [_t],
@@ -404,6 +449,8 @@ def _build_pyfsr_only_paths():
                 "One page of top-level traces, newest first. Query params: `status` "
                 "(`OK`, `ERROR`, `RUNNING`), `session_id` (chat session filter), `limit` "
                 "(page size, default 50), `cursor` (start-time cursor for paging). "
+                "Version note: the 8.0.0 docs box 403s this whole family behind the "
+                "tracer store; measured 200 on 8.0.1-6087. "
                 "pyfsr: `client.ai.traces.list()`."
             ),
             "x-fsr-version": "8.0.1+",
@@ -417,7 +464,12 @@ def _build_pyfsr_only_paths():
                 {"name": "cursor", "in": "query", "schema": {"type": "string"},
                  "description": "Start-time cursor for paging (from the previous page's last item)."},
             ],
-            "responses": {"200": _ai_resp("Array of trace summaries with id, status, start_time, session_id.")},
+            "responses": {"200": {"description": "Array of trace summaries with id, status, start_time, session_id.",
+                                  "content": {"application/json": {"schema": {
+                                      "type": "object",
+                                      "properties": {"traces": {"type": "array",
+                                                                "items": {"$ref": "#/components/schemas/TraceSummary"}}}}}}},
+                          "404": {"description": "Trace store unreachable."}},
         },
     }
 
@@ -427,7 +479,11 @@ def _build_pyfsr_only_paths():
             "summary": "Check tracer store health",
             "description": "Returns 200 when the trace store is reachable and serving queries.",
             "x-fsr-version": "8.0.1+",
-            "responses": {"200": _ai_resp("Health status.")},
+            "responses": {"200": {"description": "Health status.",
+                                  "content": {"application/json": {"schema": {
+                                      "type": "object",
+                                      "properties": {"status": {"type": "string",
+                                                                "description": "`ok` when the trace store serves queries."}}}}}}},
         },
     }
 
@@ -453,7 +509,10 @@ def _build_pyfsr_only_paths():
                 {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"},
                  "description": "`summary` (default) or `full` (includes I/O payloads)."},
             ],
-            "responses": {"200": _ai_resp("Trace span tree."), "404": {"description": "Trace not found."}},
+            "responses": {"200": {"description": "Trace span tree.",
+                                  "content": {"application/json": {"schema": {
+                                      "$ref": "#/components/schemas/TraceTree"}}}},
+                          "404": {"description": "Trace not found."}},
         },
     }
 
@@ -477,7 +536,10 @@ def _build_pyfsr_only_paths():
                 {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"}},
                 {"name": "max_traces", "in": "query", "schema": {"type": "integer", "default": 25}},
             ],
-            "responses": {"200": _ai_resp("Full execution tree."), "404": {"description": "Trace not found."}},
+            "responses": {"200": {"description": "Full execution tree.",
+                                  "content": {"application/json": {"schema": {
+                                      "$ref": "#/components/schemas/TraceTree"}}}},
+                          "404": {"description": "Trace not found."}},
         },
     }
 
@@ -496,7 +558,12 @@ def _build_pyfsr_only_paths():
                 "pyfsr: `client.ai.traces.spans(trace_id)`."
             ),
             "x-fsr-version": "8.0.1+",
-            "responses": {"200": _ai_resp("Flat array of spans."), "404": {"description": "Trace not found."}},
+            "responses": {"200": {"description": "Flat array of spans.",
+                                  "content": {"application/json": {"schema": {
+                                      "type": "object",
+                                      "properties": {"spans": {"type": "array",
+                                                               "items": {"$ref": "#/components/schemas/TraceSpan"}}}}}}},
+                          "404": {"description": "Trace not found."}},
         },
     }
 
@@ -513,7 +580,10 @@ def _build_pyfsr_only_paths():
                 "pyfsr: `client.ai.traces.span(span_id)`."
             ),
             "x-fsr-version": "8.0.1+",
-            "responses": {"200": _ai_resp("Span detail."), "404": {"description": "Span not found."}},
+            "responses": {"200": {"description": "Span detail.",
+                                  "content": {"application/json": {"schema": {
+                                      "$ref": "#/components/schemas/TraceSpan"}}}},
+                          "404": {"description": "Span not found."}},
         },
     }
 
@@ -527,7 +597,12 @@ def _build_pyfsr_only_paths():
             "summary": "List direct children of a span",
             "description": "Returns the immediate child spans (one level deep).",
             "x-fsr-version": "8.0.1+",
-            "responses": {"200": _ai_resp("Array of child spans."), "404": {"description": "Span not found."}},
+            "responses": {"200": {"description": "Array of child spans.",
+                                  "content": {"application/json": {"schema": {
+                                      "type": "object",
+                                      "properties": {"children": {"type": "array",
+                                                                  "items": {"$ref": "#/components/schemas/TraceSpan"}}}}}}},
+                          "404": {"description": "Span not found."}},
         },
     }
 
@@ -571,7 +646,10 @@ def _build_pyfsr_only_paths():
                 {"name": "depth", "in": "query", "schema": {"type": "integer", "default": 10}},
                 {"name": "io", "in": "query", "schema": {"type": "string", "default": "summary"}},
             ],
-            "responses": {"200": _ai_resp("Span subtree."), "404": {"description": "Span not found."}},
+            "responses": {"200": {"description": "Span subtree.",
+                                  "content": {"application/json": {"schema": {
+                                      "$ref": "#/components/schemas/TraceTree"}}}},
+                          "404": {"description": "Span not found."}},
         },
     }
 
@@ -585,7 +663,10 @@ def _build_pyfsr_only_paths():
             "summary": "Token totals for a trace",
             "description": "Prompt, completion, and total token counts for all LLM calls in the trace.",
             "x-fsr-version": "8.0.1+",
-            "responses": {"200": _ai_resp("Token totals."), "404": {"description": "Trace not found."}},
+            "responses": {"200": {"description": "Token totals.",
+                                  "content": {"application/json": {"schema": {
+                                      "$ref": "#/components/schemas/TraceTokenTotals"}}}},
+                          "404": {"description": "Trace not found."}},
         },
     }
 
@@ -597,9 +678,12 @@ def _build_pyfsr_only_paths():
         "get": {
             "tags": [_t],
             "summary": "Token totals across a chat session",
-            "description": "Aggregate token usage for every trace in a chat session.",
+            "description": "Aggregate token usage for every trace in a chat session. Same counters as the per-trace route.",
             "x-fsr-version": "8.0.1+",
-            "responses": {"200": _ai_resp("Session token totals."), "404": {"description": "Session not found."}},
+            "responses": {"200": {"description": "Session token totals.",
+                                  "content": {"application/json": {"schema": {
+                                      "$ref": "#/components/schemas/TraceTokenTotals"}}}},
+                          "404": {"description": "Session not found."}},
         },
     }
 
@@ -906,6 +990,101 @@ EXTRA_SCHEMAS = {
     # Hand-authored schemas for routes whose handlers return plain dicts (the
     # fsr-ai OpenAPI declares no schema for them). Shapes are live-verified
     # against 8.0.0 captures; see SCHEMA_OVERRIDES for where each applies.
+    # The Trace* shapes are live-verified against 8.0.1-6087 payloads
+    # (scratch/traces-8.0.1-bodies.json): the tracer store answers 200 there,
+    # while the 8.0.0 docs box 403s the whole family.
+    "TraceSummary": {
+        "type": "object",
+        "description": "One row of `GET /api/ai/traces/` -- a top-level agent run.",
+        "required": ["trace_id"],
+        "properties": {
+            "trace_id": {"type": "string", "description": "Trace id (== the agent run's task_id)."},
+            "parent_trace_id": {"type": ["string", "null"],
+                                "description": "Set when this run was submitted by another run (investigations fan out into child traces)."},
+            "project_id": {"type": "string", "description": "Tracer project; `default` on this appliance."},
+            "root_span_id": {"type": "string"},
+            "name": {"type": "string", "description": "Agent or pipeline that produced the run."},
+            "status": {"type": "string",
+                       "description": "`OK`, `ERROR` or `RUNNING` (the values the list's `status` filter accepts)."},
+            "session_id": {"type": ["string", "null"],
+                           "description": "Chat session the run belongs to (AI-assistant widget runs)."},
+            "user_id": {"type": "string", "description": "Login id the run is attributed to."},
+            "start_time": {"type": "string", "description": "ISO-8601 span-start timestamp."},
+            "end_time": {"type": ["string", "null"],
+                         "description": "ISO-8601; null while the run is still going."},
+            "total_tokens": {"type": "integer", "description": "All LLM tokens consumed inside the trace."},
+            "total_cost": {"type": "number", "description": "Estimated LLM cost."},
+            "span_counts": {"type": "object", "additionalProperties": {"type": "integer"},
+                            "description": "Span count per type, e.g. `{\"LLM\": 2, \"AGENT\": 3}`."},
+            "tags": {"type": "array", "items": {}, "description": "Tracer tags."},
+        },
+    },
+    "TraceSpan": {
+        "type": "object",
+        "description": (
+            "One span of a trace (`GET /api/ai/traces/spans/{span_id}`, a row of "
+            "`.../{trace_id}/spans`, or an element of `.../children`). For an `LLM` span "
+            "the prompt is under `input.payload.params.messages` and the reply under "
+            "`output` (`content`, `tools`, `usage`, `provider`, `model`); for a `TOOL` "
+            "span `output` is the tool result."
+        ),
+        "required": ["span_id"],
+        "properties": {
+            "span_id": {"type": "string"},
+            "trace_id": {"type": "string"},
+            "parent_span_id": {"type": ["string", "null"]},
+            "project_id": {"type": "string", "description": "Tracer project; `default` on this appliance."},
+            "span_type": {"type": "string",
+                          "description": "e.g. `AGENT` / `LLM` / `LLM_WRAPPER` / `TOOL` / `SKILL_RETRIEVER` / `DOCUMENT_SEARCH`."},
+            "name": {"type": "string",
+                     "description": "Step name (tool name for `TOOL` spans, agent name for `AGENT` spans)."},
+            "status": {"type": "string", "description": "`OK` / `ERROR` / `RUNNING`."},
+            "error": {"type": ["string", "null"], "description": "Failure detail when `status` is `ERROR`."},
+            "session_id": {"type": ["string", "null"], "description": "Chat session the span belongs to."},
+            "user_id": {"type": "string", "description": "Login id the span is attributed to."},
+            "start_time": {"type": "string", "description": "ISO-8601 span-start timestamp."},
+            "end_time": {"type": ["string", "null"], "description": "ISO-8601 span-end timestamp."},
+            "input": {"type": "object", "additionalProperties": True,
+                      "description": "Raw span input. For `TOOL` spans carries the `tool_call` (`name`, `args`)."},
+            "output": {"type": "object", "additionalProperties": True,
+                       "description": "Raw span output. For `LLM` spans: `content`, `tools`, `usage`, `provider`, `model`. For `TOOL` spans: the tool result."},
+            "attributes": {"type": "object", "additionalProperties": True},
+            "events": {"type": "array", "items": {}, "description": "Span events (retries, tool calls)."},
+            "links": {"type": "array", "items": {}, "description": "Cross-trace span links."},
+            "tags": {"type": "array", "items": {}, "description": "Tracer tags."},
+        },
+    },
+    "TraceSpanNode": {
+        "type": "object",
+        "description": "One node of a trace span tree (summary view: I/O reduced to previews).",
+        "properties": {
+            "span_id": {"type": "string"}, "name": {"type": "string"},
+            "span_type": {"type": "string"}, "status": {"type": "string"},
+            "start_time": {"type": "string"}, "end_time": {"type": "string"},
+            "start_offset_ms": {"type": "integer"}, "duration_ms": {"type": "integer"},
+            "attributes": {"type": "object", "additionalProperties": True},
+            "child_count": {"type": "integer"},
+            "children": {"type": "array", "items": {"$ref": "#/components/schemas/TraceSpanNode"}},
+            "children_truncated": {"type": "boolean", "description": "True when depth or max_traces cut the tree."},
+            "io_preview": {"type": "object", "properties": {
+                "input": {"type": "string"}, "output": {"type": "string"}}},
+        },
+    },
+    "TraceTree": {
+        "type": "object",
+        "properties": {
+            "trace_id": {"type": "string"},
+            "root": {"$ref": "#/components/schemas/TraceSpanNode"},
+        },
+    },
+    "TraceTokenTotals": {
+        "type": "object",
+        "properties": {
+            "input_tokens": {"type": "integer"}, "output_tokens": {"type": "integer"},
+            "total_tokens": {"type": "integer"},
+            "llm_calls": {"type": "integer", "description": "Number of LLM calls in the trace/session."},
+        },
+    },
     "AgentTriggerRequest": {
         "type": "object",
         "required": ["input_data"],

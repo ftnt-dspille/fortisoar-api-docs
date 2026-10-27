@@ -50,13 +50,15 @@ OBS_PATH = ROOT / "build" / "live_observations.json"
 VERBS = ("get", "post", "put", "delete", "patch")
 SANITIZER_TOKENS = {"<uuid>", "<api-key>", "<self-agent>", "<jwt-token>", "<binary>",
                     "<run>", "<lab-host>", "<redacted-secret>",
-                    "<license-file-contents>", "<table>", "<tr>", "<code>", "<value>"}
+                    "<license-file-contents>", "<table>", "<tr>", "<code>", "<value>",
+                    "<em>"}
 # Tokens that are NOT unresolved placeholders: intentional example-only bodies
 # (`<license-file-contents>`: POST /api/auth/license needs a real .lic key)
 # and literal HTML/doc content captured live — rich-text markup inside alert
-# and task descriptions (`<table>`, `<tr>`, `<code>`) and connector help prose
-# ("return <value> to set code_output"). Everything else matching
-# PLACEHOLDER_RE is a real leak and must stay flagged.
+# and task descriptions (`<table>`, `<tr>`, `<code>`), connector help prose
+# ("return <value> to set code_output"), and the `<em>` match highlights the
+# search endpoint wraps query terms in (`highlight.*` fragments). Everything
+# else matching PLACEHOLDER_RE is a real leak and must stay flagged.
 # Secret-bearing field names redacted by name in live_test._scrub. check_secrets
 # fails the build if any example value under one of these keys is NOT the
 # placeholder -- the guard that keeps agent/credential secrets out of the
@@ -193,6 +195,14 @@ _FREE_FORM_BODY_OPS: set[tuple[str, str]] = {
     # Deprecated sibling of /api/ingest-feeds/ -- not routed on 8.0.0, so the
     # body was never captured; the generic object schema is as honest as it gets.
     ("post", "/api/insert-feeds/{recordType}"),
+    # Audit TTL set - broken on every probed build (no upstream routes on
+    # 8.0.0; 403 on 8.0.1), so the settings object's fields were never
+    # observable. The generic object schema is as honest as it gets.
+    ("post", "/api/gateway/audit/activities/ttl"),
+    # Per-user settings are a free-form key/value store: the value under any
+    # key is arbitrary JSON (live-verified PUT with a plain string value), so
+    # the generic object schema is the honest one.
+    ("put", "/api/3/user_settings/current/{key}"),
 }
 
 

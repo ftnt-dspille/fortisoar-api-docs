@@ -512,7 +512,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/3/alerts/00000000-0000-0000-0000-000000000000",
-      "probed_real": "/api/3/alerts/9dff82db-c787-4127-9acb-faf5740b96af"
+      "probed_real": "/api/3/alerts/ccdebf97-3523-49c9-ab03-1b1a7b3cf633"
     },
     "GET /api/3/api_keys": {
       "apikey": {
@@ -1484,6 +1484,21 @@
       },
       "probed": "/api/auth/users"
     },
+    "GET /api/gateway/audit/activities/ttl": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/gateway/audit/activities/ttl"
+    },
     "GET /api/gateway/audit/activities/{auditId}": {
       "apikey": {
         "bogus_status": 401,
@@ -1874,7 +1889,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/wf/api/historical-workflows/authprobe-nonexistent/",
-      "probed_real": "/api/wf/api/historical-workflows/152663/"
+      "probed_real": "/api/wf/api/historical-workflows/170598/"
     },
     "GET /api/wf/api/manual-wf-input/": {
       "apikey": {
@@ -1950,7 +1965,7 @@
         "why": "200 on a real id"
       },
       "probed": "/api/wf/api/workflows/authprobe-nonexistent/",
-      "probed_real": "/api/wf/api/workflows/152758/"
+      "probed_real": "/api/wf/api/workflows/170623/"
     },
     "GET /api/wf/api/workflows/{pk}/retry/": {
       "apikey": {
@@ -2776,6 +2791,36 @@
         "why": "400 from the handler (bogus gets 401)"
       },
       "probed": "/api/gateway/audit/activities/count"
+    },
+    "POST /api/gateway/audit/activities/delete": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 200,
+        "verdict": "YES",
+        "why": "200"
+      },
+      "probed": "/api/gateway/audit/activities/delete"
+    },
+    "POST /api/gateway/audit/activities/ttl": {
+      "apikey": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "jwt": {
+        "bogus_status": 401,
+        "status": 400,
+        "verdict": "YES",
+        "why": "400 from the handler (bogus gets 401)"
+      },
+      "probed": "/api/gateway/audit/activities/ttl"
     },
     "POST /api/ingest-feeds/indicators": {
       "apikey": {
