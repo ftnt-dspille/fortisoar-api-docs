@@ -536,7 +536,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
               example:
-                token: <jwt-token>
+                token: <redacted-secret>
         '401':
           description: Invalid credentials.
           content:
@@ -14381,7 +14381,7 @@ paths:
               example:
                 agent: <self-agent>
                 config:
-                  api_key: REDACTED
+                  api_key: <redacted-secret>
                   protocol: HTTP
                   server_url: https://api.ipstack.example.com
                   verify_ssl: true
@@ -14450,7 +14450,7 @@ paths:
             example:
               agent: <self-agent>
               config:
-                api_key: REDACTED
+                api_key: <redacted-secret>
                 protocol: HTTP
                 server_url: https://api.ipstack.example.com
                 verify_ssl: true
@@ -14470,7 +14470,7 @@ paths:
               example:
                 agent: <self-agent>
                 config:
-                  api_key: REDACTED
+                  api_key: <redacted-secret>
                   protocol: HTTP
                   server_url: https://api.ipstack.example.com
                   verify_ssl: true
@@ -16904,7 +16904,7 @@ paths:
                 - /api/3/teams/<uuid>
                 - /api/3/teams/<uuid>
                 - '... <1 more items truncated>'
-                password: <self-agent>
+                password: <redacted-secret>
                 role: tenant
                 router:
                   '@id': /api/3/routers/<uuid>
@@ -20373,7 +20373,7 @@ paths:
               user:
                 email: capee517004@example.com
                 loginid: capee517004u
-                password: REDACTED
+                password: <redacted-secret>
                 status: 1
       responses:
         '201':
@@ -20873,7 +20873,7 @@ paths:
             example:
               confirmPassword: REDACTED
               loginId: capee517004u
-              password: REDACTED
+              password: <redacted-secret>
       responses:
         '200':
           description: The bare JSON string "Password Changed sucessfully" (sic).
@@ -27880,7 +27880,7 @@ paths:
                 title: Response Get Config Ai Llm Config Get
               example:
               - active: true
-                apikey: default
+                apikey: <redacted-secret>
                 baseurl: null
                 config:
                   connector_config_id: <uuid>
@@ -27892,7 +27892,7 @@ paths:
                 provider: fortisoar
                 uuid: <uuid>
               - active: true
-                apikey: default
+                apikey: <redacted-secret>
                 baseurl: null
                 config:
                   connector_config_id: <uuid>
@@ -28045,7 +28045,7 @@ paths:
                 $ref: '#/components/schemas/LLMConfigDTO'
               example:
                 active: true
-                apikey: default
+                apikey: <redacted-secret>
                 baseurl: null
                 config:
                   connector_config_id: <uuid>

@@ -141341,7 +141341,7 @@
         "response_body": [
           {
             "active": true,
-            "apikey": "default",
+            "apikey": "<redacted-secret>",
             "baseurl": null,
             "config": {
               "connector_config_id": "<uuid>",
@@ -141356,7 +141356,7 @@
           },
           {
             "active": true,
-            "apikey": "default",
+            "apikey": "<redacted-secret>",
             "baseurl": null,
             "config": {
               "connector_config_id": "<uuid>",
@@ -141383,7 +141383,7 @@
           },
           {
             "active": true,
-            "apikey": "default",
+            "apikey": "<redacted-secret>",
             "baseurl": null,
             "config": {
               "connector_config_id": "<uuid>",
@@ -141405,7 +141405,7 @@
         "response_body": [
           {
             "active": true,
-            "apikey": "default",
+            "apikey": "<redacted-secret>",
             "baseurl": null,
             "config": {
               "connector_config_id": "<uuid>",
@@ -141420,7 +141420,7 @@
           },
           {
             "active": true,
-            "apikey": "default",
+            "apikey": "<redacted-secret>",
             "baseurl": null,
             "config": {
               "connector_config_id": "<uuid>",
@@ -141457,7 +141457,7 @@
         "request_body": null,
         "response_body": {
           "active": true,
-          "apikey": "default",
+          "apikey": "<redacted-secret>",
           "baseurl": null,
           "config": {
             "connector_config_id": "<uuid>",
@@ -141477,7 +141477,7 @@
         "request_body": null,
         "response_body": {
           "active": true,
-          "apikey": "default",
+          "apikey": "<redacted-secret>",
           "baseurl": null,
           "config": {
             "connector_config_id": "<uuid>",
@@ -142667,7 +142667,7 @@
         "response_body": {
           "agent": "<self-agent>",
           "config": {
-            "api_key": "REDACTED",
+            "api_key": "<redacted-secret>",
             "protocol": "HTTP",
             "server_url": "https://api.ipstack.example.com",
             "verify_ssl": true
@@ -149943,7 +149943,7 @@
               "headers": {
                 "accept": "*/*",
                 "accept-encoding": "gzip, deflate",
-                "authorization": "*******",
+                "authorization": "<redacted-secret>",
                 "connection": "keep-alive",
                 "content-length": "456",
                 "content-type": "application/json",
@@ -151250,7 +151250,7 @@
             "/api/3/teams/<uuid>",
             "/api/3/teams/<uuid>"
           ],
-          "password": "<self-agent>",
+          "password": "<redacted-secret>",
           "role": "tenant",
           "router": {
             "@id": "/api/3/routers/<uuid>",
@@ -151445,7 +151445,7 @@
             "/api/3/teams/<uuid>",
             "/api/3/teams/<uuid>"
           ],
-          "password": "<self-agent>",
+          "password": "<redacted-secret>",
           "role": "tenant",
           "router": {
             "@id": "/api/3/routers/<uuid>",
@@ -154615,7 +154615,7 @@
           "user": {
             "email": "capee517004@example.com",
             "loginid": "capee517004u",
-            "password": "REDACTED",
+            "password": "<redacted-secret>",
             "status": 1
           }
         },
@@ -154819,7 +154819,7 @@
         "request_body": {
           "confirmPassword": "REDACTED",
           "loginId": "capee517004u",
-          "password": "REDACTED"
+          "password": "<redacted-secret>"
         },
         "response_body": "Password Changed sucessfully",
         "response_status": 200
@@ -162070,7 +162070,7 @@
           }
         },
         "response_body": {
-          "token": "<jwt-token>"
+          "token": "<redacted-secret>"
         },
         "response_status": 200
       },
@@ -162083,7 +162083,7 @@
           }
         },
         "response_body": {
-          "token": "<jwt-token>"
+          "token": "<redacted-secret>"
         },
         "response_status": 200
       }
@@ -170339,7 +170339,7 @@
         "request_body": {
           "agent": "<self-agent>",
           "config": {
-            "api_key": "REDACTED",
+            "api_key": "<redacted-secret>",
             "protocol": "HTTP",
             "server_url": "https://api.ipstack.example.com",
             "verify_ssl": true
@@ -170353,7 +170353,7 @@
         "response_body": {
           "agent": "<self-agent>",
           "config": {
-            "api_key": "REDACTED",
+            "api_key": "<redacted-secret>",
             "protocol": "HTTP",
             "server_url": "https://api.ipstack.example.com",
             "verify_ssl": true

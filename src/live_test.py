@@ -35,6 +35,12 @@ import urllib3
 from dotenv import load_dotenv
 from pyfsr.pagination import extract_members
 
+from secret_fields import (
+    ENCRYPTED_VALUE_RE as _ENCRYPTED_VALUE_RE,
+    SECRET_PLACEHOLDER as _SECRET_PLACEHOLDER,
+    is_secret_key,
+)
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,6 +62,10 @@ _LIVE_RUN_RE = re.compile(r"\blive-[0-9a-f]{8}-", re.I)
 _PRIVATE_IP_RE = re.compile(
     r"\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}\b")
 _MIRROR_KEY_RE = re.compile(r"\bauthprobe-mirror-[0-9a-f]{8}\b")
+# Agent AMQP identity: `user_<32hex>` / `vhost_<32hex>`. The `user_`/`vhost_`
+# prefix means the bare agent-hash regex (word-boundary anchored) misses it, so
+# this credential-linked identifier must be scrubbed on its own.
+_AMQP_IDENT_RE = re.compile(r"\b(?:user|vhost)_[0-9a-f]{32}\b")
 
 # Server-side timestamps that vary record-by-record and run-by-run. Normalized
 # to a fixed epoch in `_scrub` so observation files diff only when shape /
@@ -69,6 +79,16 @@ _TIMESTAMP_KEYS = frozenset((
     "respDueDate", "dueBy", "uploadDate", "expiryDate",
     "lastModified", "lastTriggered",
 ))
+
+# Secret-bearing fields redacted by NAME -- their values have formats the regex
+# sanitizers above don't match (e.g. the agent `encryptionKey`'s
+# `PREFIX.0xHEX.<base64>` shape), so a value-regex pass lets them through. The
+# agent-create response returns the full `encryptionKey`/`username`/`password`/
+# `vhost` bundle once; credential records carry `loginid`/`password`. ANY
+# non-null value under one of these keys (regardless of type) becomes the
+# placeholder. The field set lives in `secret_fields` (imported above) so
+# `spec_health` shares it; `spec_health.check_secrets` fails the build if an
+# unredacted one survives.
 
 # Built at first scrub call from FSR_BASE_URL so we never persist the
 # operator's appliance hostname (incl. :port) in observations. Hydra
@@ -96,6 +116,31 @@ def _base_host_re() -> re.Pattern[str] | None:
     return _BASE_HOST_RE
 
 
+def _scrub_field(key: str, value: Any) -> Any:
+    """Scrub a dict value, applying by-name rules (secret / timestamp) before
+    falling back to the generic value scrubber."""
+    if is_secret_key(key):
+        # Any non-empty scalar (str/int/float/bool) under a secret key is secret
+        # material; a list under a secret key is a list of secret scalars. A
+        # DICT, however, may be structure keyed by a secret-ish name (e.g.
+        # observation `by_auth: {"apikey": {...record...}}`) -- blanket-redacting
+        # it would corrupt the capture, so fall through to normal recursion,
+        # where nested string secrets are still caught by the value scrubber.
+        if _is_secret_scalar(value):
+            return _SECRET_PLACEHOLDER
+        if isinstance(value, list):
+            return [_SECRET_PLACEHOLDER if _is_secret_scalar(x) else _scrub(x)
+                    for x in value]
+    if key in _TIMESTAMP_KEYS and isinstance(value, (int, float)):
+        return _TIMESTAMP_PLACEHOLDER
+    return _scrub(value)
+
+
+def _is_secret_scalar(value: Any) -> bool:
+    """A non-empty scalar carried under a secret key is secret material."""
+    return isinstance(value, (str, int, float, bool)) and value != ""
+
+
 def _scrub(value: Any) -> Any:
     """Replace per-instance identifiers with stable placeholders for docs."""
     if isinstance(value, str):
@@ -103,6 +148,11 @@ def _scrub(value: Any) -> Any:
         host_re = _base_host_re()
         if host_re is not None:
             v = host_re.sub(_HOST_PLACEHOLDER, v)
+        # Redact the FortiSOAR encrypted envelope FIRST: its base64 blob can
+        # contain a 32/64-hex run that the agent-hash / api-key regexes below
+        # would otherwise rewrite mid-value, breaking this match and leaving a
+        # partially-scrubbed secret.
+        v = _ENCRYPTED_VALUE_RE.sub(_SECRET_PLACEHOLDER, v)
         v = _JWT_RE.sub("<jwt-token>", v)
         v = _API_KEY_RE.sub("<api-key>", v)
         v = _UUID_RE.sub("<uuid>", v)
@@ -110,12 +160,10 @@ def _scrub(value: Any) -> Any:
         v = _LIVE_RUN_RE.sub("live-<run>-", v)
         v = _PRIVATE_IP_RE.sub("<lab-host>", v)
         v = _MIRROR_KEY_RE.sub("authprobe-mirror-<run>", v)
+        v = _AMQP_IDENT_RE.sub("<self-agent>", v)
         return v
     if isinstance(value, dict):
-        return {k: (_TIMESTAMP_PLACEHOLDER
-                    if k in _TIMESTAMP_KEYS and isinstance(v, (int, float))
-                    else _scrub(v))
-                for k, v in value.items()}
+        return {k: _scrub_field(k, v) for k, v in value.items()}
     if isinstance(value, list):
         return [_scrub(v) for v in value]
     return value
@@ -245,6 +293,38 @@ class Session:
     # we followed it. Surfaced at the end of the run so we can flag routes
     # whose curl examples need `-L`.
     redirects: list[tuple[str, str, int, str]] = field(default_factory=list)
+    # Cache for Session.picklist_iri: (taxonomy, value) -> IRI, so repeated
+    # resolutions inside one run don't re-hit the picklist API.
+    _picklist_cache: dict[tuple[str, str], str | None] = field(default_factory=dict)
+    # True only when the CLI passed --destructive: enables scenarios that
+    # mutate state the run did NOT create (audit purge, TTL toggle).
+    destructive: bool = False
+
+    def picklist_iri(self, taxonomy: str, value: str) -> str | None:
+        """Resolve the IRI of one picklist value, e.g. ``("Severity", "High")``.
+
+        Two GETs per miss (`/api/3/picklist_names?name=<taxonomy>` then that
+        list's `/api/3/picklists`); cached per session so repeated calls in
+        one run don't re-hit the API. Returns None when the taxonomy or value
+        doesn't resolve (callers decide whether that skips the step).
+        """
+        key = (taxonomy, value)
+        if key in self._picklist_cache:
+            return self._picklist_cache[key]
+        iri = None
+        r = self.request("GET", "/api/3/picklist_names", params={"name": taxonomy, "$limit": 1})
+        members = (r.json() or {}).get("hydra:member") or [] if r.ok else []
+        if members:
+            pln_iri = members[0].get("@id")
+            rr = self.request("GET", "/api/3/picklists",
+                              params={"listName": pln_iri, "$limit": 100})
+            if rr.ok:
+                for pmem in (rr.json() or {}).get("hydra:member") or []:
+                    if pmem.get("itemValue") == value:
+                        iri = pmem.get("@id")
+                        break
+        self._picklist_cache[key] = iri
+        return iri
 
     def set_auth(self, mode: str) -> None:
         if mode not in self.auth_modes:
@@ -439,6 +519,7 @@ def sweep(s: Session) -> int:
     removed += _sweep_named(s, "/api/3/roles", "role")
     removed += _sweep_named(s, "/api/3/teams", "team")
     removed += _sweep_named(s, "/api/3/agents", "agent")
+    removed += _sweep_live_ai_agents(s)
     removed += _sweep_picklists(s)
     removed += _sweep_mcp_configs(s)
     removed += _sweep_scheduled(s)
@@ -933,6 +1014,44 @@ def scenario_ai(s: Session) -> None:
                path_params={"uuid": default_llm["uuid"]},
                params={"model_id": default_llm["uuid"]})
 
+    print("[ai] llm config create+delete (only create once delete is proven)")
+    # DELETE /api/ai/llm/config/{uuid} 400s with a TypeError for every profile
+    # on 8.0.0 (FortiAI bug) -- a create would be uncleanable, so the lifecycle
+    # POSTs a profile ONLY after a DELETE has succeeded on one of OUR leftover
+    # profiles from earlier runs. Otherwise the DELETE attempt itself is the
+    # recorded observation and nothing new is created.
+    leftovers = [p for p in llms if isinstance(p, dict)
+                 and str(p.get("name", "")).startswith(LIVE_PREFIX) and p.get("uuid")]
+    delete_works = False
+    for p in leftovers:
+        r, _ = s.call("DELETE", "/api/ai/llm/config/{uuid}",
+                      want=(200, 202, 204, 400, 401, 403, 404, 500),
+                      path_params={"uuid": p["uuid"]})
+        delete_works = delete_works or r.status_code < 300
+    if delete_works:
+        tmpl = next((p for p in llms if isinstance(p, dict) and not p.get("isdefault")), None)
+        if isinstance(tmpl, dict):
+            body = {k: v for k, v in tmpl.items()
+                    if k not in ("uuid", "@id", "@type", "isdefault", "isDefault",
+                                 "createDate", "modifyDate", "createdBy", "modifiedBy")}
+            body["name"] = s.live_name("llm")
+            _, created = s.call("POST", "/api/ai/llm/config", want=_post, json=[body])
+            new_uuid = None
+            if isinstance(created, list) and created and isinstance(created[0], dict):
+                new_uuid = created[0].get("uuid")
+            elif isinstance(created, dict):
+                new_uuid = created.get("uuid")
+            if new_uuid:
+                s.call("DELETE", "/api/ai/llm/config/{uuid}",
+                       want=(200, 202, 204, 400, 401, 403, 404, 500),
+                       path_params={"uuid": new_uuid})
+                gone = s.request("GET", f"/api/ai/llm/config/{new_uuid}")
+                if gone.status_code != 404:
+                    print(f"[ai] WARNING: llm profile {new_uuid} still readable after DELETE "
+                          f"({gone.status_code})")
+    else:
+        print("[ai] llm DELETE still broken; no profile created (would be uncleanable)")
+
     print("[ai] chat (messages are plain strings)")
     _, chat = s.call("POST", "/api/ai/chat/", want=(200, 401, 403, 422, 500),
                      json={"user_id": s.live_name("ai"), "messages": ["Reply with exactly: pong"]})
@@ -1035,14 +1154,86 @@ def scenario_ai(s: Session) -> None:
             print(f"  [ai] {path}: initialize -> {r.status_code}; skipping tools/list capture")
 
     print("[ai] agent config write + export/import (error shapes recorded)")
+    # POST /api/ai/agent/config is a phantom: fsr-ai only routes
+    # /config/default and GET /config/{agent_name}/{version} -- every body
+    # 404s with 'NoneType' object has no attribute 'id'.
     s.call("POST", "/api/ai/agent/config", want=_post, json={})
-    s.call("POST", "/api/ai/agent/config/default", want=_post, json={})
+    # config/default: read the current template, then POST the SAME values
+    # back -- a no-op update that captures the real AiAgentConfigurationDTO
+    # body without changing the box's default template.
+    _, default_cfg = s.call("GET", "/api/ai/agent/config/default", want=_ok)
+    s.call("POST", "/api/ai/agent/config/default",
+           want=_post, json=default_cfg if isinstance(default_cfg, dict) and default_cfg else {})
     if agents:
         a_id = agents[0].get("id") or agents[0].get("uuid")
         if a_id:
             s.call("POST", "/api/ai/agent/export/{agent_id}", want=_post,
                    path_params={"agent_id": str(a_id)}, json={})
-    s.call("POST", "/ai/agent/import", want=_post, json={})
+
+    print("[ai] custom agent lifecycle: pack -> import -> config read -> delete")
+    # POST /ai/agent/import is multipart and must go STRAIGHT to fsr-ai (the
+    # /api/ai gateway route drops multipart bodies). The package is packed
+    # with pyfsr.pack_agent from a minimal throwaway source tree; the import
+    # lands inactive and DELETE /api/ai/agent/{name}/{version} removes it.
+    try:
+        from pyfsr import pack_agent
+    except Exception:
+        pack_agent = None
+    if pack_agent is None:
+        print("[ai] pyfsr.pack_agent unavailable; skipping agent import lifecycle")
+    else:
+        import pathlib
+        import tempfile
+        name_ = s.live_name("agent")
+        version_ = "1.0.0"
+        prompt_uuid = "d63013a4-8e06-4d87-beba-ef0a2e6d51f5"
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td) / name_
+            (root / "config").mkdir(parents=True)
+            (root / "images").mkdir()
+            (root / "info.json").write_text(json.dumps({
+                "name": name_, "label": f"Live {s.run_id} agent",
+                "agentclass": "LiveProbeAgent", "version": version_,
+                "description": "live-test throwaway agent", "publisher": "live-test",
+                "category": "Custom", "icon_small_name": "small.png",
+                "icon_large_name": "large.png", "tags": ["Insight"],
+                "fsrMinCompatibility": "8.0.0"}))
+            (root / "prompt.yaml").write_text(
+                'prompts:\n  "%s":\n    name: Count things\n'
+                '    system_instruction: "You count. {{data}}"\n'
+                '    user_instruction: "{{query}}"\n'
+                "    validation_instruction: null\n"
+                "    response_format: null\n    description: counting\n" % prompt_uuid)
+            (root / "config" / "memory.yaml").write_text(
+                "allowed_tools:\n"
+                '  "2e541107-0b55-4623-b297-dfac495a863e": [\'query_records\']\n'
+                '  "c8ef6eb0-3d0e-4c5b-b98c-6d03a23148d6": []\n')
+            (root / "agent.py").write_text(
+                "from agents.base_agent import BaseAgent\n\n\n"
+                "class LiveProbeAgent(BaseAgent):\n"
+                "    def act(self, input_data):\n"
+                f"        self.prompt = self.get_prompt_by_uuid('{prompt_uuid}')\n"
+                '        return {"status": "success"}\n')
+            (root / "__init__.py").write_text("")
+            (root / "images" / "small.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+            (root / "images" / "large.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+            zip_path = pathlib.Path(pack_agent(str(root)))
+            zip_bytes = zip_path.read_bytes()
+        s.track("ai_agent", f"{name_}/{version_}")
+        _, imported = s.call("POST", "/ai/agent/import",
+                             want=(200, 201, 400, 401, 403, 413, 422, 500),
+                             files={"file": (zip_path.name, zip_bytes, "application/zip")},
+                             params={"replace": "true"})
+        if isinstance(imported, dict) and imported.get("name"):
+            # Per-agent config read against OUR agent (this 500s on built-ins).
+            s.call("GET", "/api/ai/agent/config/{agent_name}/{version}",
+                   want=(200, 400, 404, 500, 401, 403),
+                   path_params={"agent_name": name_, "version": version_})
+            rdel, _ = s.call("DELETE", "/api/ai/agent/{name}/{version}",
+                             want=(200, 400, 404, 401, 403),
+                             path_params={"name": name_, "version": version_})
+            if rdel.status_code >= 300:
+                print(f"[ai] WARNING: imported agent {name_} delete failed ({rdel.status_code})")
 
     print("[ai] enrich (context KB not configured on this box -- 500s recorded)")
     s.call("POST", "/api/ai/enrich/context", want=_post,
@@ -1053,6 +1244,62 @@ def scenario_ai(s: Session) -> None:
                  "content": "live-test content", "llmSummarize": False,
                  "type_": "organizational_context"})
     s.call("POST", "/api/ai/enrich/index/build", want=_post, json={})
+
+
+@scenario("audit_gateway_destructive")
+def scenario_audit_gateway_destructive(s: Session) -> None:
+    """Real audit-log purges -- run ONLY with ``--destructive``.
+
+    Neither call touches a record this run created: the wholesale purge
+    removes audit-activity history for the whole appliance, and the TTL
+    delete flips the audit auto-purge setting. They are captured because
+    they are real API surface, but a default run must never fire them.
+    The purge proxies query params to the gateway (`deleteBefore=...`);
+    the TTL delete proxies a JSON body (the controller injects user
+    fields) and the GET/POST round it so a run can restore what it disabled.
+    """
+    if not s.destructive:
+        print("[audit_gateway_destructive] SKIPPED -- pass --destructive to run")
+        return
+    _ok = (200, 201, 202, 204, 400, 401, 403, 404)
+
+    print("[audit-destructive] TTL: read -> disable -> restore")
+    _, ttl = s.call("GET", "/api/gateway/audit/activities/ttl", want=_ok)
+    s.call("DELETE", "/api/gateway/audit/activities/ttl", want=_ok, json={})
+    if isinstance(ttl, dict) and ttl:
+        s.call("POST", "/api/gateway/audit/activities/ttl", want=_ok, json=ttl)
+    else:
+        print("[audit-destructive] WARNING: could not read prior TTL to restore")
+
+    print("[audit-destructive] wholesale purge (deleteBefore=epoch)")
+    s.call("DELETE", "/api/gateway/audit/activities", want=_ok,
+           params={"deleteBefore": "1970-01-01T00:00:00Z"})
+
+
+@scenario("search")
+def scenario_search(s: Session) -> None:
+    """POST /api/search with the real body shape.
+
+    The controller (SearchController::search) reads `q` with count() -- a
+    STRING q throws a PHP TypeError 400, which is why every earlier probe
+    with a scalar term looked 'server-broken'. `q` must be a LIST of terms
+    and `index` a non-empty LIST of searchable module names (filtered
+    against the caller's permissions). Read-only; safe under both modes.
+    """
+    _ok = (200, 400, 401, 403)
+    print("[search] term list + index list (the shape the controller requires)")
+    s.call("POST", "/api/search", want=_ok,
+           json={"q": ["malware"], "index": ["alerts"], "offset": 0, "size": 5})
+    print("[search] modifyDate window + sort fields")
+    s.call("POST", "/api/search", want=_ok,
+           json={"q": ["incident"], "index": ["alerts", "incidents"],
+                 "offset": 0, "size": 5, "sort": "_score",
+                 "modifyDateGte": 0, "modifyDateLte": 0, "searchType": "_default"})
+    print("[search] string q records the TypeError 400 (documented trap)")
+    s.call("POST", "/api/search", want=_ok,
+           json={"q": "malware", "index": ["alerts"]})
+    print("[search] missing index records the BadRequest 400")
+    s.call("POST", "/api/search", want=_ok, json={"q": ["malware"]})
 
 
 @scenario("misc_reads")
@@ -1575,6 +1822,18 @@ def scenario_api3_lifecycles(s: Session) -> None:
                    path_params={"uuid": val_iri.rsplit("/", 1)[-1]})
         s.call("DELETE", "/api/3/picklist_names/{uuid}", want=(204, 401, 403, 404),
                path_params={"uuid": pln_iri.rsplit("/", 1)[-1]})
+
+    # --- user settings: our own key, deleted before we leave (the GET/PUT
+    # examples come from the capture_bodies run; DELETE had no lifecycle) ---
+    key = f"live-{s.run_id}-setting"
+    s.call("PUT", "/api/3/user_settings/current/{key}", want=(200, 201, 400, 401, 403),
+           path_params={"key": key}, json={"note": f"created by run {s.run_id}"})
+    s.call("DELETE", "/api/3/user_settings/current/{key}", want=(200, 204, 400, 401, 403, 404),
+           path_params={"key": key})
+    gone = s.request("GET", f"/api/3/user_settings/current/{key}")
+    if gone.status_code != 404:
+        print(f"[api3] WARNING: user setting {key} still readable after DELETE "
+              f"({gone.status_code})")
 
     # --- MCP configurations: mirror an existing record's shape, then CRUD --
     r = s.request("GET", "/api/3/mcp_configurations", params={"$limit": 1})
@@ -2260,21 +2519,46 @@ def scenario_taxii_and_feed_ingest(s: Session) -> None:
 
 
 def _picklist_iri(s: Session, taxonomy: str, value: str) -> str | None:
-    """Resolve the IRI of one specific picklist value (e.g. ("Severity", "High"))."""
-    r = s.request("GET", "/api/3/picklist_names", params={"name": taxonomy, "$limit": 1})
+    """Resolve the IRI of one specific picklist value (e.g. ("Severity", "High")).
+
+    Thin wrapper over ``Session.picklist_iri`` (the cached method); kept so
+    existing callers don't change.
+    """
+    return s.picklist_iri(taxonomy, value)
+
+
+def _sweep_live_ai_agents(s: Session) -> int:
+    """Delete AI agents imported by a run (name carries LIVE_PREFIX).
+
+    fsr-ai DELETE /api/ai/agent/{name}/{version} returns 200 with the deleted
+    agent record, so this is a clean sweeper for a crashed import lifecycle.
+    fsr-ai refuses API keys, so sweep under JWT (temporarily switching if the
+    session is in apikey mode) and restore the mode afterwards.
+    """
+    removed = 0
+    r = s.request("GET", "/api/ai/agent/")
     if not r.ok:
-        return None
-    members = (r.json() or {}).get("hydra:member") or []
-    if not members:
-        return None
-    pln_iri = members[0].get("@id")
-    rr = s.request("GET", "/api/3/picklists", params={"listName": pln_iri, "$limit": 100})
-    if not rr.ok:
-        return None
-    for pmem in (rr.json() or {}).get("hydra:member") or []:
-        if pmem.get("itemValue") == value:
-            return pmem.get("@id")
-    return None
+        return 0
+    rows = r.json()
+    rows = rows if isinstance(rows, list) else (rows or {}).get("data") or []
+    targets = [a for a in rows if isinstance(a, dict)
+               and str(a.get("name") or "").startswith(LIVE_PREFIX)]
+    if not targets:
+        return 0
+    saved = None
+    if s.current_auth != "jwt" and "jwt" in s.auth_modes:
+        saved = s.current_auth
+        s.set_auth("jwt")
+    try:
+        for a in targets:
+            name = str(a.get("name"))
+            rr = s.request("DELETE", f"/api/ai/agent/{name}/{a.get('version')}")
+            if rr.status_code < 300:
+                removed += 1
+    finally:
+        if saved:
+            s.set_auth(saved)
+    return removed
 
 
 def _sweep_picklists(s: Session) -> int:
@@ -2553,9 +2837,13 @@ def _run(api_key: str = "") -> int:
                     help="Run up to N scenario/auth jobs concurrently (default 1, sequential). "
                          "Each job runs in its own cloned Session; observations/redirects are "
                          "merged back into the main session after each completes.")
+    ap.add_argument("--destructive", action="store_true",
+                    help="Also run scenarios that mutate state the run did NOT create "
+                         "(audit purge, audit TTL toggle). Off by default.")
     args = ap.parse_args()
 
     s = open_session(api_key)
+    s.destructive = args.destructive
     print(f"base: {s.base}")
     print(f"run id: {s.run_id}")
 
@@ -2609,6 +2897,7 @@ def _run(api_key: str = "") -> int:
                 headers={**s.headers, "Authorization": s.auth_modes[mode]},
                 run_id=s.run_id, host=s.host, tenant=s.tenant,
                 auth_modes=s.auth_modes, current_auth=mode,
+                destructive=s.destructive,
             )
             t0 = time.time()
             err: str | None = None

@@ -41,13 +41,27 @@ from typing import Any
 
 import yaml
 
+from secret_fields import SECRET_PLACEHOLDER, is_secret_key, looks_encrypted
+
 ROOT = Path(__file__).resolve().parents[1]
 SPEC_PATH = ROOT / "build" / "fortisoar.curated.openapi.yaml"
 OBS_PATH = ROOT / "build" / "live_observations.json"
 
 VERBS = ("get", "post", "put", "delete", "patch")
 SANITIZER_TOKENS = {"<uuid>", "<api-key>", "<self-agent>", "<jwt-token>", "<binary>",
-                    "<run>", "<lab-host>"}  # live-capture scrubbers: run id + appliance host
+                    "<run>", "<lab-host>", "<redacted-secret>",
+                    "<license-file-contents>", "<table>", "<tr>", "<code>", "<value>"}
+# Tokens that are NOT unresolved placeholders: intentional example-only bodies
+# (`<license-file-contents>`: POST /api/auth/license needs a real .lic key)
+# and literal HTML/doc content captured live — rich-text markup inside alert
+# and task descriptions (`<table>`, `<tr>`, `<code>`) and connector help prose
+# ("return <value> to set code_output"). Everything else matching
+# PLACEHOLDER_RE is a real leak and must stay flagged.
+# Secret-bearing field names redacted by name in live_test._scrub. check_secrets
+# fails the build if any example value under one of these keys is NOT the
+# placeholder -- the guard that keeps agent/credential secrets out of the
+# published spec. The field set is shared with live_test via `secret_fields`
+# (imported above).
 PLACEHOLDER_RE = re.compile(r"<[A-Za-z][A-Za-z0-9_\- ]{1,40}>")
 PATH_PARAM_RE = re.compile(r"\{([^}]+)\}")
 
@@ -279,6 +293,45 @@ def _find_placeholders(value: Any) -> set[str]:
     return found
 
 
+def _find_leaked_secrets(value: Any) -> set[str]:
+    """Secret-field keys whose example value isn't the redaction placeholder."""
+    leaked: set[str] = set()
+    if isinstance(value, dict):
+        for k, v in value.items():
+            # Flag a non-empty SCALAR under a listed secret key (a dict/list
+            # under a secret-named key is structure, e.g. a `by_auth.apikey`
+            # bucket -- recursed into below), or any string shaped like an
+            # encrypted secret in any field (the by-value safety net).
+            is_scalar = isinstance(v, (str, int, float, bool))
+            if (is_scalar and v != "" and v != SECRET_PLACEHOLDER
+                    and (is_secret_key(k) or (isinstance(v, str) and looks_encrypted(v)))):
+                leaked.add(k)
+            leaked |= _find_leaked_secrets(v)
+    elif isinstance(value, list):
+        for v in value:
+            leaked |= _find_leaked_secrets(v)
+    return leaked
+
+
+def check_secrets(spec: dict, obs: dict) -> list[str]:
+    """Fail if any example carries an unredacted secret value (agent
+    encryptionKey/username/password/vhost, credential passwords, etc.)."""
+    issues = []
+    for path, verb, op in _iter_ops(spec):
+        for kind, blob in (("req", (op.get("requestBody") or {}).get("content")),
+                           ("res", _flat_responses(op))):
+            if not isinstance(blob, dict):
+                continue
+            for media in blob.values():
+                ex = (media or {}).get("example") if isinstance(media, dict) else None
+                if ex is None:
+                    continue
+                leaked = _find_leaked_secrets(ex)
+                if leaked:
+                    issues.append(f"{verb.upper()} {path} ({kind})  unredacted secret fields: {sorted(leaked)}")
+    return issues
+
+
 def check_schema_drift(spec: dict, obs: dict) -> list[str]:
     """Captured response top-level keys outside the declared 2xx schema."""
     issues = []
@@ -321,6 +374,7 @@ CHECKS = {
     "description":  (check_description,  "Empty or near-empty descriptions"),
     "schema_drift": (check_schema_drift, "Captured response has keys outside declared schema"),
     "placeholders": (check_placeholders, "Examples carrying unresolved `<...>` placeholders"),
+    "secrets":      (check_secrets,      "Examples carrying unredacted secret values"),
 }
 
 
